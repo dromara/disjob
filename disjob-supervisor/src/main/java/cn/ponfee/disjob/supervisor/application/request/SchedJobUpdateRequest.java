@@ -28,15 +28,17 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class SchedJobUpdateRequest extends AbstractSchedJobRequest {
+public class SchedJobUpdateRequest extends SchedJobAddRequest {
     private static final long serialVersionUID = -1481890923435762900L;
 
     private Long jobId;
-    private String updatedBy;
     private Integer version;
 
-    public SchedJob tosSchedJob() {
-        return SchedJobConverter.INSTANCE.convert(this);
+    @Override
+    public SchedJob tosSchedJob(String user) {
+        SchedJob job = SchedJobConverter.INSTANCE.convert(this);
+        job.setUpdatedBy(user);
+        return job;
     }
 
 }

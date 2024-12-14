@@ -113,6 +113,7 @@
 </div>
 
 <th:block th:include="include :: footer" />
+<th:block th:include="include :: bootstrap-table-fixed-columns-js" />
 <th:block th:include="include :: select2-js" />
 
 <script th:inline="javascript">
@@ -131,6 +132,8 @@
     pagination: true,
     viewUrl: prefix + "/tasks/{id}",
     modalName: "任务实例",
+    fixedColumns: true,
+    fixedNumber: 2,
     onLoadSuccess: function () {
       $("input[name='resetSearch']").val("false");
     },
@@ -376,7 +379,7 @@
     // ---------------------------------select2
     $("select[name='jobId']").select2({
       ajax: {
-        url: prefix + "/search_job",
+        url: prefix + "/job/search",
         type: "get",
         dataType: 'json',
         delay: 600,

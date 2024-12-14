@@ -20,7 +20,7 @@ import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
-import cn.ponfee.disjob.core.dto.worker.SubscribeSupervisorChangedParam;
+import cn.ponfee.disjob.core.dto.worker.SupervisorEventParam;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
@@ -127,8 +127,8 @@ public final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
         */
         try {
             String authToken = Supervisor.local().createSupervisorAuthenticationToken(worker.getGroup());
-            SubscribeSupervisorChangedParam param = SubscribeSupervisorChangedParam.of(authToken, eventType, supervisor);
-            workerRpcClient.invoke(worker, client -> client.subscribeSupervisorChanged(param));
+            SupervisorEventParam param = SupervisorEventParam.of(authToken, eventType, supervisor);
+            workerRpcClient.invoke(worker, client -> client.subscribeSupervisorEvent(param));
         } catch (Throwable t) {
             log.error("Notify server error: {}, {}", worker, t.getMessage());
         }

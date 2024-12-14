@@ -34,8 +34,8 @@ import java.util.List;
 @RequestMapping("/supervisor/rpc")
 public interface SupervisorRpcService {
 
-    @PostMapping("/worker/changed/subscribe")
-    void subscribeWorkerChanged(RegistryEventType eventType, Worker worker);
+    @PostMapping("/worker/event/subscribe")
+    void subscribeWorkerEvent(RegistryEventType eventType, Worker worker);
 
     @PostMapping("/task/worker/update")
     void updateTaskWorker(String worker, List<Long> taskIds) throws Exception;

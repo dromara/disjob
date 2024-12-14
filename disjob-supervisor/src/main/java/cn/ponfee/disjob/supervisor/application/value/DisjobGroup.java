@@ -55,10 +55,6 @@ public class DisjobGroup {
         this.webHook           = o.getWebHook();
     }
 
-    public boolean isDeveloper(String user) {
-        return devUsers.contains(user);
-    }
-
     // --------------------------------------------------------------private methods
 
     private static ImmutableSet<String> parse(String str, String ownUser) {

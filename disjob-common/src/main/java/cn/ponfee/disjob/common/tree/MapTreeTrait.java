@@ -29,8 +29,8 @@ import java.util.List;
  */
 public class MapTreeTrait<T extends Serializable & Comparable<T>, A>
     extends LinkedHashMap<String, Object> implements TreeTrait<T, A, MapTreeTrait<T, A>> {
-    private static final long serialVersionUID = -5799393887664198242L;
 
+    private static final long serialVersionUID = -5799393887664198242L;
     public static final String DEFAULT_CHILDREN_KEY = "children";
 
     private final String childrenKey;

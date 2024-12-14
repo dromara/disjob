@@ -79,16 +79,26 @@ public class Worker extends Server implements Comparable<Worker> {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public int hashCode() {
+        return Objects.hash(group, workerId, host, port);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (!(o instanceof Worker) || !super.equals(o)) {
+        if (!(obj instanceof Worker) || !super.equals(obj)) {
             return false;
         }
-        Worker other = (Worker) o;
-        return this.group.equals(other.group)
-            && this.workerId.equals(other.workerId);
+        Worker that = (Worker) obj;
+        return this.group.equals(that.group)
+            && this.workerId.equals(that.workerId);
+    }
+
+    @Override
+    public final String serialize() {
+        return serializedValue;
     }
 
     /**
@@ -113,16 +123,6 @@ public class Worker extends Server implements Comparable<Worker> {
         return this.group.equals(group);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(group, workerId, host, port);
-    }
-
-    @Override
-    public final String serialize() {
-        return serializedValue;
-    }
-
     public String getGroup() {
         return group;
     }
@@ -145,7 +145,7 @@ public class Worker extends Server implements Comparable<Worker> {
      */
     public static Worker deserialize(String text) {
         String[] array = text.split(COLON, 4);
-        Assert.isTrue(array.length == 4, "Invalid worker value: " + text);
+        Assert.isTrue(array.length == 4, () -> "Invalid worker value: " + text);
         return new Worker(array[0], array[1], array[2], Integer.parseInt(array[3]));
     }
 
@@ -168,22 +168,6 @@ public class Worker extends Server implements Comparable<Worker> {
             return n;
         }
         return this.group.compareTo(that.group);
-    }
-
-    // --------------------------------------------------------custom jackson serialize & deserialize
-
-    /**
-     * Custom serialize Worker based jackson.
-     */
-    public static class JacksonSerializer extends JsonSerializer<Worker> {
-        @Override
-        public void serialize(Worker value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-            if (value == null) {
-                gen.writeNull();
-            } else {
-                gen.writeString(value.serialize());
-            }
-        }
     }
 
     // --------------------------------------------------------local Worker
@@ -278,12 +262,26 @@ public class Worker extends Server implements Comparable<Worker> {
         }
     }
 
-    // --------------------------------------------------------custom jackson deserialize
+    // --------------------------------------------------------custom jackson serialize & deserialize
+
+    /**
+     * Custom serialize Worker based jackson.
+     */
+    static class JacksonSerializer extends JsonSerializer<Worker> {
+        @Override
+        public void serialize(Worker value, JsonGenerator generator, SerializerProvider provider) throws IOException {
+            if (value == null) {
+                generator.writeNull();
+            } else {
+                generator.writeString(value.serialize());
+            }
+        }
+    }
 
     /**
      * Custom deserialize Worker based jackson.
      */
-    public static class JacksonDeserializer extends JsonDeserializer<Worker> {
+    static class JacksonDeserializer extends JsonDeserializer<Worker> {
         @Override
         public Worker deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             return Worker.deserialize(p.getText());

@@ -41,11 +41,10 @@ public class ConsistentHashExecutionRouter extends ExecutionRouter {
     private final ConsistentHash.HashFunction hashFunction;
 
     public ConsistentHashExecutionRouter() {
-        this(17, ConsistentHash.HashFunction.FNV);
+        this(17, ConsistentHash.HashFunction.MURMUR3_32);
     }
 
-    public ConsistentHashExecutionRouter(int virtualCount,
-                                         ConsistentHash.HashFunction hashFunction) {
+    public ConsistentHashExecutionRouter(int virtualCount, ConsistentHash.HashFunction hashFunction) {
         this.virtualCount = virtualCount;
         this.hashFunction = hashFunction;
     }

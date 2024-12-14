@@ -149,7 +149,7 @@ public class DAGExpression {
         ImmutableGraph.Builder<DAGNode> graphBuilder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
 
         List<DAGEdge> edges;
-        if (JSON_ARRAY_PATTERN.matcher(expression).matches() && (edges = parseJsonGraph(expression)) != null) {
+        if (JSON_ARRAY_PATTERN.matcher(expression).matches() && (edges = parseJsonArray(expression)) != null) {
             parseJsonGraph(graphBuilder, edges);
         } else {
             parsePlainExpr(graphBuilder);
@@ -312,7 +312,7 @@ public class DAGExpression {
 
     // ------------------------------------------------------------------------------------static methods
 
-    private static List<DAGEdge> parseJsonGraph(String json) {
+    private static List<DAGEdge> parseJsonArray(String json) {
         try {
             List<String> list = Jsons.fromJson(json, Jsons.LIST_STRING);
             if (CollectionUtils.isEmpty(list)) {
@@ -544,6 +544,9 @@ public class DAGExpression {
 
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             if (!(obj instanceof TreeNodeId)) {
                 return false;
             }
@@ -558,9 +561,9 @@ public class DAGExpression {
         }
 
         @Override
-        public int compareTo(TreeNodeId other) {
-            int n = this.open - other.open;
-            return n != 0 ? n : (this.close - other.close);
+        public int compareTo(TreeNodeId that) {
+            int n = this.open - that.open;
+            return n != 0 ? n : (this.close - that.close);
         }
 
         @Override
@@ -585,6 +588,9 @@ public class DAGExpression {
 
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             if (!(obj instanceof PartitionIdentityKey)) {
                 return false;
             }

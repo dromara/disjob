@@ -112,7 +112,7 @@ public final class SupervisorDiscovery extends ServerDiscovery<Supervisor, Worke
         }
         */
         try {
-            supervisorRpcClient.invoke(supervisor, client -> client.subscribeWorkerChanged(eventType, worker));
+            supervisorRpcClient.invoke(supervisor, client -> client.subscribeWorkerEvent(eventType, worker));
         } catch (Throwable t) {
             log.error("Notify server error: {}, {}", supervisor, t.getMessage());
         }

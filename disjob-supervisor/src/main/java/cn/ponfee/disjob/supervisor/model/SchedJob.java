@@ -230,7 +230,8 @@ public class SchedJob extends BaseEntity {
         verifyAndDefaultSetting(maximumJobRetryCount);
     }
 
-    public boolean requiredUpdateExecutor() {
+    @Transient
+    public boolean isNeedUpdateExecutor() {
         if (jobExecutor == null) {
             Assert.isNull(jobParam, "Job param must be null when not set job executor.");
             Assert.isNull(jobType, "Job type must be null when not set job executor.");
@@ -240,7 +241,8 @@ public class SchedJob extends BaseEntity {
         return true;
     }
 
-    public boolean requiredUpdateTrigger(Integer curTriggerType, String curTriggerValue) {
+    @Transient
+    public boolean isNeedUpdateTrigger(Integer curTriggerType, String curTriggerValue) {
         if (triggerType == null) {
             Assert.isNull(triggerValue, "Trigger value must be null when not set trigger type.");
             return false;

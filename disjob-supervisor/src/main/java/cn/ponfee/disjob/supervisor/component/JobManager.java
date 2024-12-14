@@ -193,7 +193,6 @@ public class JobManager {
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public Long addJob(SchedJob job) throws JobException {
-        job.setUpdatedBy(job.getCreatedBy());
         job.verifyForAdd(conf.getMaximumJobRetryCount());
         if (jobMapper.getJobId(job.getGroup(), job.getJobName()) != null) {
             throw new KeyExistsException("Exists job name: " + job.getJobName());
@@ -209,7 +208,7 @@ public class JobManager {
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void updateJob(SchedJob job) throws JobException {
         job.verifyForUpdate(conf.getMaximumJobRetryCount());
-        if (job.requiredUpdateExecutor()) {
+        if (job.isNeedUpdateExecutor()) {
             workerClient.verifyJob(job);
         }
         Long jobId0 = jobMapper.getJobId(job.getGroup(), job.getJobName());
@@ -220,7 +219,7 @@ public class JobManager {
         SchedJob dbJob = jobMapper.get(job.getJobId());
         Assert.notNull(dbJob, () -> "Sched job id not found " + job.getJobId());
         Assert.isTrue(dbJob.getGroup().equals(job.getGroup()), "Job group cannot be modify.");
-        if (job.requiredUpdateTrigger(dbJob.getTriggerType(), dbJob.getTriggerValue())) {
+        if (job.isNeedUpdateTrigger(dbJob.getTriggerType(), dbJob.getTriggerValue())) {
             dependMapper.deleteByChildJobId(job.getJobId());
             parseTriggerConfig(job);
         }
@@ -229,22 +228,23 @@ public class JobManager {
     }
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
-    public void deleteJob(long jobId) {
+    public void deleteJob(String user, long jobId) {
         SchedJob job = jobMapper.get(jobId);
         Assert.notNull(job, () -> "Job id not found: " + jobId);
         Assert.state(!job.isEnabled(), "Please disable job before delete this job.");
-        assertOneAffectedRow(jobMapper.softDelete(jobId), "Delete sched job fail or conflict.");
+        assertOneAffectedRow(jobMapper.softDelete(jobId, user), "Delete sched job fail or conflict.");
         dependMapper.deleteByParentJobId(jobId);
         dependMapper.deleteByChildJobId(jobId);
     }
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
-    public boolean changeJobState(long jobId, JobState toState) {
-        boolean updated = isOneAffectedRow(jobMapper.updateState(jobId, toState.value(), 1 ^ toState.value()));
-        if (updated && toState == JobState.ENABLED) {
+    public void changeJobState(String user, long jobId, JobState toState) {
+        if (isNotAffectedRow(jobMapper.updateState(jobId, user, toState.value(), 1 ^ toState.value()))) {
+            throw new IllegalStateException("Change job state failed: " + jobId);
+        }
+        if (toState == JobState.ENABLED) {
             updateNextTriggerTime(jobMapper.get(jobId));
         }
-        return updated;
     }
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
@@ -271,7 +271,7 @@ public class JobManager {
     public void updateTaskWorker(String worker, List<Long> taskIds) {
         if (CollectionUtils.isNotEmpty(taskIds)) {
             // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
-            Collections.sort(taskIds);
+            taskIds = taskIds.stream().distinct().sorted().collect(Collectors.toList());
             Lists.partition(taskIds, PROCESS_BATCH_SIZE).forEach(ids -> taskMapper.batchUpdateWorker(worker, ids));
         }
     }

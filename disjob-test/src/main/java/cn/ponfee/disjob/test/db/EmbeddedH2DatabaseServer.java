@@ -93,7 +93,7 @@ public class EmbeddedH2DatabaseServer {
                 String script = IOUtils.toString(new FileInputStream(scriptPath), StandardCharsets.UTF_8);
                 RunScript.execute(conn, new StringReader(script));
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
             return null;
         });

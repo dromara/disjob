@@ -140,14 +140,14 @@ final class WorkerTask {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (!(o instanceof WorkerTask)) {
+        if (!(obj instanceof WorkerTask)) {
             return false;
         }
-        WorkerTask that = (WorkerTask) o;
+        WorkerTask that = (WorkerTask) obj;
         return this.taskId == that.taskId
             && this.operationRef.get() == that.operationRef.get();
     }

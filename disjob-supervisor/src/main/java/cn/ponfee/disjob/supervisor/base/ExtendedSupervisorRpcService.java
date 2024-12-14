@@ -30,7 +30,7 @@ public interface ExtendedSupervisorRpcService extends SupervisorRpcService {
     @GetMapping("/metrics/get")
     SupervisorMetrics getMetrics();
 
-    @PostMapping("event/publish")
-    void publishEvent(SupervisorEvent event);
+    @PostMapping("/operation/event/subscribe")
+    void subscribeOperationEvent(OperationEventType eventType, String data);
 
 }

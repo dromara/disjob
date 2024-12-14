@@ -250,8 +250,7 @@ public class JavaUtilDateFormat extends DateFormat {
         if (!(obj instanceof JavaUtilDateFormat)) {
             return false;
         }
-        JavaUtilDateFormat other = (JavaUtilDateFormat) obj;
-        return this.backstopFormat.equals(other.backstopFormat);
+        return this.backstopFormat.equals(((JavaUtilDateFormat) obj).backstopFormat);
     }
 
     @Override

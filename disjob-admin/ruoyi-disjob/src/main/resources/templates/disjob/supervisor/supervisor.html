@@ -13,6 +13,8 @@
   </div>
 
   <div th:include="include :: footer"></div>
+  <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
+
   <script th:inline="javascript">
     $(function () {
       const options = {
@@ -22,6 +24,8 @@
         showRefresh: false,
         showToggle: false,
         showColumns: false,
+        fixedColumns: true,
+        fixedNumber: 2,
         columns: [{
           field: 'host',
           title: 'Host',
@@ -50,7 +54,7 @@
         },
         {
           field: 'startupTime',
-          title: 'Supervisor启动时间'
+          title: '启动时间'
         }]
       };
 

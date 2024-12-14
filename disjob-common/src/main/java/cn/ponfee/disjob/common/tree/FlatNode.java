@@ -31,7 +31,10 @@ import java.util.function.Function;
 public final class FlatNode<T extends Serializable & Comparable<T>, A> extends BaseNode<T, A> {
     private static final long serialVersionUID = 5191371614061952661L;
 
-    private final boolean leaf; // 是否叶子节点
+    /**
+     * 是否叶子节点
+     */
+    private final boolean leaf;
 
     FlatNode(TreeNode<T, A> n) {
         super(n.nid, n.pid, n.enabled, n.available, n.attach);

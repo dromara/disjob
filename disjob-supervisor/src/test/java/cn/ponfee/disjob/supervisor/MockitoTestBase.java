@@ -109,14 +109,14 @@ public abstract class MockitoTestBase {
             try {
                 Object mockedObj = field.get(this);
                 if (mockedObj == null) {
-                    throw new RuntimeException("Mock field value is null: " + field.toGenericString());
+                    throw new RuntimeException("Mocked object cannot null: " + field.toGenericString());
                 } else if (mockedObj instanceof MockedStatic) {
                     ((MockedStatic<?>) mockedObj).close();
                 } else {
                     reset(mockedObj);
                 }
             } catch (Exception ex) {
-                throw new RuntimeException("Mock field object reset error: " + field.toGenericString(), ex);
+                throw new RuntimeException("Mocked object reset error: " + field.toGenericString(), ex);
             }
         }
     }

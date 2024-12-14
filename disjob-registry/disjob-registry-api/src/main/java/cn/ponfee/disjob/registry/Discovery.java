@@ -63,12 +63,12 @@ public interface Discovery<D extends Server> extends Closeable {
     boolean isDiscoveredServer(D server);
 
     /**
-     * Subscribe server changed event
+     * Subscribe server event
      *
      * @param eventType the registry event type
      * @param server    the discovery server
      */
-    void subscribeServerChanged(RegistryEventType eventType, D server);
+    void subscribeServerEvent(RegistryEventType eventType, D server);
 
     /**
      * Returns discovery server role.

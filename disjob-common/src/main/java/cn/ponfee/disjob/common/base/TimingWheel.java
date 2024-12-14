@@ -237,12 +237,12 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
         /**
          * Provides default compare
          *
-         * @param other the other
+         * @param that the other object
          * @return the value 0 if this == other; a value less than 0 if this < other; and a value greater than 0 if this > other
          */
         @Override
-        default int compareTo(T other) {
-            return Long.compare(this.timing(), other.timing());
+        default int compareTo(T that) {
+            return Long.compare(this.timing(), that.timing());
         }
     }
 

@@ -58,9 +58,9 @@ public abstract class TriggerInstance {
                                      RunType runType, long triggerTime) throws JobException {
         JobType jobType = JobType.of(job.getJobType());
         TriggerInstance triggerInstance;
-        if (jobType == JobType.GENERAL) {
+        if (jobType.isGeneral()) {
             triggerInstance = new GeneralInstance(jobManager, job);
-        } else if (jobType == JobType.WORKFLOW) {
+        } else if (jobType.isWorkflow()) {
             triggerInstance = new WorkflowInstance(jobManager, job);
         } else {
             throw new UnsupportedOperationException("Unknown job type: " + jobType);

@@ -47,24 +47,6 @@ public abstract class Server implements Serializable {
         this.port = port;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Server)) {
-            return false;
-        }
-        Server that = (Server) o;
-        return this.host.equals(that.host)
-            && this.port == that.port;
-    }
-
-    public final String buildHttpUrlPrefix() {
-        return String.format("http://%s:%d", host, port);
-    }
-
-    public final String buildHttpsUrlPrefix() {
-        return String.format("https://%s:%d", host, port);
-    }
-
     /**
      * Extends {@code Object#hashCode()}
      *
@@ -73,12 +55,15 @@ public abstract class Server implements Serializable {
     @Override
     public abstract int hashCode();
 
-    /**
-     * Serialize to string
-     *
-     * @return string of the worker serialized result
-     */
-    public abstract String serialize();
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Server)) {
+            return false;
+        }
+        Server that = (Server) obj;
+        return this.host.equals(that.host)
+            && this.port == that.port;
+    }
 
     /**
      * Returns a string representation of the object.
@@ -89,6 +74,21 @@ public abstract class Server implements Serializable {
     @Override
     public final String toString() {
         return serialize();
+    }
+
+    /**
+     * Serialize to string
+     *
+     * @return string of the worker serialized result
+     */
+    public abstract String serialize();
+
+    public final String buildHttpUrlPrefix() {
+        return String.format("http://%s:%d", host, port);
+    }
+
+    public final String buildHttpsUrlPrefix() {
+        return String.format("https://%s:%d", host, port);
     }
 
     static String check(String str) {

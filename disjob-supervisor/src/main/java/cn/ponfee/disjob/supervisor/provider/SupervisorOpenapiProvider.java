@@ -21,7 +21,7 @@ import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.spring.BaseController;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
-import cn.ponfee.disjob.supervisor.application.OpenapiService;
+import cn.ponfee.disjob.supervisor.application.SchedJobService;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
@@ -50,47 +50,53 @@ import static cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer.requestU
 @RequiredArgsConstructor
 public class SupervisorOpenapiProvider extends BaseController {
 
-    private final OpenapiService openapiService;
+    private final SchedJobService schedJobService;
     private final AuthorizeGroupService authorizeGroupService;
 
     // ------------------------------------------------------------------job
 
     @PostMapping("/job/add")
     public Result<Long> addJob(@RequestBody SchedJobAddRequest req) throws JobException {
-        AuthorizeGroupService.authorizeGroup(requestUser(), requestGroup(), req.getGroup());
+        String user = requestUser();
+        AuthorizeGroupService.authorizeGroup(user, requestGroup(), req.getGroup());
 
-        return Result.success(openapiService.addJob(req));
+        return Result.success(schedJobService.addJob(user, req));
     }
 
     @PutMapping("/job/update")
     public Result<Void> updateJob(@RequestBody SchedJobUpdateRequest req) throws JobException {
-        AuthorizeGroupService.authorizeGroup(requestUser(), requestGroup(), req.getGroup());
+        String user = requestUser();
+        AuthorizeGroupService.authorizeGroup(user, requestGroup(), req.getGroup());
 
-        openapiService.updateJob(req);
+        schedJobService.updateJob(user, req);
         return Result.success();
     }
 
     @DeleteMapping("/job/delete")
     public Result<Void> deleteJob(@RequestParam("jobId") long jobId) {
-        authorizeGroupService.authorizeJob(requestUser(), requestGroup(), jobId);
+        String user = requestUser();
+        authorizeGroupService.authorizeJob(user, requestGroup(), jobId);
 
-        openapiService.deleteJob(jobId);
+        schedJobService.deleteJob(user, jobId);
         return Result.success();
     }
 
     @PostMapping("/job/state/change")
-    public Result<Boolean> changeJobState(@RequestParam("jobId") long jobId,
-                                          @RequestParam("jobState") int jobState) {
-        authorizeGroupService.authorizeJob(requestUser(), requestGroup(), jobId);
+    public Result<Void> changeJobState(@RequestParam("jobId") long jobId,
+                                       @RequestParam("jobState") int jobState) {
+        String user = requestUser();
+        authorizeGroupService.authorizeJob(user, requestGroup(), jobId);
 
-        return Result.success(openapiService.changeJobState(jobId, jobState));
+        schedJobService.changeJobState(user, jobId, jobState);
+        return Result.success();
     }
 
     @PostMapping("/job/trigger")
     public Result<Void> manualTriggerJob(@RequestParam("jobId") long jobId) throws JobException {
-        authorizeGroupService.authorizeJob(requestUser(), requestGroup(), jobId);
+        String user = requestUser();
+        authorizeGroupService.authorizeJob(user, requestGroup(), jobId);
 
-        openapiService.manualTriggerJob(jobId);
+        schedJobService.manualTriggerJob(user, jobId);
         return Result.success();
     }
 
@@ -98,7 +104,7 @@ public class SupervisorOpenapiProvider extends BaseController {
     public Result<SchedJobResponse> getJob(@RequestParam("jobId") long jobId) {
         authorizeGroupService.authorizeJob(requestUser(), requestGroup(), jobId);
 
-        return Result.success(openapiService.getJob(jobId));
+        return Result.success(schedJobService.getJob(jobId));
     }
 
     /**
@@ -113,49 +119,54 @@ public class SupervisorOpenapiProvider extends BaseController {
     public Result<PageResponse<SchedJobResponse>> queryJobForPage(SchedJobPageRequest pageRequest) {
         pageRequest.authorizeAndTruncateGroup(requestUser());
 
-        return Result.success(openapiService.queryJobForPage(pageRequest));
+        return Result.success(schedJobService.queryJobForPage(pageRequest));
     }
 
-    // ------------------------------------------------------------------ sched instance
+    // ------------------------------------------------------------------instance
 
     @PostMapping("/instance/pause")
     public Result<Void> pauseInstance(@RequestParam("instanceId") long instanceId) {
-        authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
+        String user = requestUser();
+        authorizeGroupService.authorizeInstance(user, requestGroup(), instanceId);
 
-        openapiService.pauseInstance(instanceId);
+        schedJobService.pauseInstance(user, instanceId);
         return Result.success();
     }
 
     @PostMapping("/instance/cancel")
     public Result<Void> cancelInstance(@RequestParam("instanceId") long instanceId) {
-        authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
+        String user = requestUser();
+        authorizeGroupService.authorizeInstance(user, requestGroup(), instanceId);
 
-        openapiService.cancelInstance(instanceId);
+        schedJobService.cancelInstance(user, instanceId);
         return Result.success();
     }
 
     @PostMapping("/instance/resume")
     public Result<Void> resumeInstance(@RequestParam("instanceId") long instanceId) {
-        authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
+        String user = requestUser();
+        authorizeGroupService.authorizeInstance(user, requestGroup(), instanceId);
 
-        openapiService.resumeInstance(instanceId);
+        schedJobService.resumeInstance(user, instanceId);
         return Result.success();
     }
 
     @DeleteMapping("/instance/delete")
     public Result<Void> deleteInstance(@RequestParam("instanceId") long instanceId) {
-        authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
+        String user = requestUser();
+        authorizeGroupService.authorizeInstance(user, requestGroup(), instanceId);
 
-        openapiService.deleteInstance(instanceId);
+        schedJobService.deleteInstance(user, instanceId);
         return Result.success();
     }
 
     @PostMapping("/instance/state/change")
     public Result<Void> changeInstanceState(@RequestParam("instanceId") long instanceId,
                                             @RequestParam("targetExecuteState") int targetExecuteState) {
-        authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
+        String user = requestUser();
+        authorizeGroupService.authorizeInstance(user, requestGroup(), instanceId);
 
-        openapiService.changeInstanceState(instanceId, targetExecuteState);
+        schedJobService.changeInstanceState(user, instanceId, targetExecuteState);
         return Result.success();
     }
 
@@ -164,36 +175,28 @@ public class SupervisorOpenapiProvider extends BaseController {
                                                      @RequestParam(value = "includeTasks", defaultValue = "false") boolean includeTasks) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
 
-        return Result.success(openapiService.getInstance(instanceId, includeTasks));
+        return Result.success(schedJobService.getInstance(instanceId, includeTasks));
     }
 
     @GetMapping("/instance/tasks")
     public Result<List<SchedTaskResponse>> getInstanceTasks(@RequestParam("instanceId") long instanceId) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
 
-        return Result.success(openapiService.getInstanceTasks(instanceId));
+        return Result.success(schedJobService.getInstanceTasks(instanceId));
     }
 
-    /**
-     * Http request Content-Type: Http form-data or application/x-www-form-urlencoded
-     *
-     * @param pageRequest the page request
-     * @return page result
-     * @see org.springframework.http.MediaType#APPLICATION_FORM_URLENCODED
-     * @see org.springframework.http.MediaType#MULTIPART_FORM_DATA
-     */
     @GetMapping("/instance/page")
     public Result<PageResponse<SchedInstanceResponse>> queryInstanceForPage(SchedInstancePageRequest pageRequest) {
         pageRequest.authorize(requestUser(), authorizeGroupService);
 
-        return Result.success(openapiService.queryInstanceForPage(pageRequest));
+        return Result.success(schedJobService.queryInstanceForPage(pageRequest));
     }
 
     @GetMapping("/instance/children")
     public Result<List<SchedInstanceResponse>> listInstanceChildren(@RequestParam("pnstanceId") long pnstanceId) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), pnstanceId);
 
-        return Result.success(openapiService.listInstanceChildren(pnstanceId));
+        return Result.success(schedJobService.listInstanceChildren(pnstanceId));
     }
 
 }

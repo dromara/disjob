@@ -17,11 +17,12 @@
 package cn.ponfee.disjob.common.tuple;
 
 import cn.ponfee.disjob.common.collect.DelegatedIntSpliterator;
-import cn.ponfee.disjob.common.collect.ImmutableArrayList;
 import cn.ponfee.disjob.common.util.Comparators;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -117,14 +118,13 @@ public abstract class Tuple implements Comparable<Object>, Iterable<Object>, Ser
         if (this == obj) {
             return true;
         }
-
         if (obj == null || obj.getClass() != this.getClass()) {
             return false;
         }
 
-        Tuple other = (Tuple) obj;
+        Tuple that = (Tuple) obj;
         for (int i = 0, len = length(); i < len; i++) {
-            if (!Objects.equals(this.get(i), other.get(i))) {
+            if (!Objects.equals(this.get(i), that.get(i))) {
                 return false;
             }
         }
@@ -151,19 +151,19 @@ public abstract class Tuple implements Comparable<Object>, Iterable<Object>, Ser
     }
 
     @Override
-    public final int compareTo(Object o) {
-        if (this == o) {
+    public final int compareTo(@Nonnull Object obj) {
+        if (this == obj) {
             return Comparators.EQ;
         }
-        if (this.getClass() != o.getClass()) {
-            return Comparators.compare(this, o);
+        if (this.getClass() != obj.getClass()) {
+            return Comparators.compare(this, obj);
         }
 
-        Tuple other = (Tuple) o;
-        for (int c, i = 0, n = this.length(); i < n; i++) {
-            c = Comparators.compare(this.get(i), other.get(i));
-            if (c != Comparators.EQ) {
-                return c;
+        Tuple that = (Tuple) obj;
+        for (int compared, i = 0, n = this.length(); i < n; i++) {
+            compared = Comparators.compare(this.get(i), that.get(i));
+            if (compared != Comparators.EQ) {
+                return compared;
             }
         }
 
@@ -178,7 +178,7 @@ public abstract class Tuple implements Comparable<Object>, Iterable<Object>, Ser
      * @return A copy of the tuple as a new {@link List List&lt;Object&gt;}.
      */
     public List<Object> toList() {
-        return ImmutableArrayList.of(toArray());
+        return Arrays.asList(toArray());
     }
 
     /**
@@ -193,6 +193,14 @@ public abstract class Tuple implements Comparable<Object>, Iterable<Object>, Ser
     public Iterator<Object> iterator() {
         // Also use: toList().iterator();
         return new TupleIterator<>();
+    }
+
+    @Override
+    public final void forEach(Consumer<? super Object> action) {
+        Objects.requireNonNull(action);
+        for (int len = length(), i = 0; i < len; i++) {
+            action.accept(get(i));
+        }
     }
 
     @Override

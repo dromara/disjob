@@ -30,7 +30,7 @@ import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import cn.ponfee.disjob.supervisor.application.value.DisjobGroup;
-import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
+import cn.ponfee.disjob.supervisor.base.OperationEventType;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper;
 import cn.ponfee.disjob.supervisor.exception.GroupNotFoundException;
@@ -42,7 +42,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import java.util.Collections;
 import java.util.List;
@@ -67,7 +66,7 @@ public class SchedGroupService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(SchedGroupService.class);
 
     private static final Lock LOCK = new ReentrantLock();
-    private static final AtomicReference<Cache> CACHE = new AtomicReference<>(Cache.of());
+    private static final AtomicReference<Cache> CACHE = new AtomicReference<>(Cache.empty());
 
     private final SchedGroupMapper groupMapper;
     private final Discovery<Worker> discoverWorker;
@@ -89,33 +88,32 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     // ------------------------------------------------------------sched group
 
-    public long add(SchedGroupAddRequest request) {
+    public long add(String user, SchedGroupAddRequest request) {
         request.checkAndTrim();
         if (groupMapper.exists(request.getGroup())) {
             throw new KeyExistsException("Group already exists: " + request.getGroup());
         }
-        SchedGroup schedGroup = request.toSchedGroup();
-        schedGroup.setUpdatedBy(schedGroup.getCreatedBy());
+        SchedGroup schedGroup = request.toSchedGroup(user);
         groupMapper.insert(schedGroup);
         refreshAndPublish();
         return schedGroup.getId();
     }
 
-    public boolean delete(String group, String updatedBy) {
+    public boolean delete(String user, String group) {
         List<Worker> list = discoverWorker.getDiscoveredServers(group);
         if (CollectionUtils.isNotEmpty(list)) {
             throw new KeyExistsException("Group '" + group + "' has registered workers, cannot delete.");
         }
         return Functions.doIfTrue(
-            isOneAffectedRow(groupMapper.softDelete(group, updatedBy)),
+            isOneAffectedRow(groupMapper.softDelete(group, user)),
             this::refreshAndPublish
         );
     }
 
-    public boolean edit(SchedGroupUpdateRequest request) {
+    public boolean update(String user, SchedGroupUpdateRequest request) {
         request.checkAndTrim();
         return Functions.doIfTrue(
-            isOneAffectedRow(groupMapper.edit(request.toSchedGroup())),
+            isOneAffectedRow(groupMapper.update(request.toSchedGroup(user))),
             this::refreshAndPublish
         );
     }
@@ -124,17 +122,17 @@ public class SchedGroupService extends SingletonClassConstraint {
         return SchedGroupConverter.INSTANCE.convert(groupMapper.get(group));
     }
 
-    public boolean updateToken(String group, TokenType type, String newToken, String updatedBy, String oldToken) {
+    public boolean updateToken(String user, String group, TokenType type, String newToken, String oldToken) {
         return Functions.doIfTrue(
-            isOneAffectedRow(groupMapper.updateToken(group, type, newToken, updatedBy, oldToken)),
+            isOneAffectedRow(groupMapper.updateToken(group, type, newToken, user, oldToken)),
             this::refreshAndPublish
         );
     }
 
-    public boolean updateOwnUser(String group, String ownUser, String updatedBy) {
-        Assert.hasText(ownUser, "Own user cannot be blank.");
+    public boolean updateOwnUser(String user, String group, String ownUser) {
+        ownUser = SchedGroup.checkOwnUser(ownUser);
         return Functions.doIfTrue(
-            isOneAffectedRow(groupMapper.updateOwnUser(group, ownUser.trim(), updatedBy)),
+            isOneAffectedRow(groupMapper.updateOwnUser(group, ownUser, user)),
             this::refreshAndPublish
         );
     }
@@ -164,9 +162,7 @@ public class SchedGroupService extends SingletonClassConstraint {
         return CACHE.get().getGroup(group);
     }
 
-    public static boolean isDeveloper(String group, String user) {
-        return getGroup(group).isDeveloper(user);
-    }
+    // ------------------------------------------------------------default package methods
 
     void refresh() {
         if (LOCK.tryLock()) {
@@ -185,8 +181,7 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     private void refreshAndPublish() {
         refresh();
-        SupervisorEvent event = SupervisorEvent.of(SupervisorEvent.Type.REFRESH_GROUP, null);
-        serverInvokeService.publishOtherSupervisors(event);
+        serverInvokeService.publishOperationEvent(OperationEventType.REFRESH_GROUP, null);
     }
 
     private static Map<String, DisjobGroup> toGroupMap(List<DisjobGroup> list) {
@@ -214,7 +209,7 @@ public class SchedGroupService extends SingletonClassConstraint {
             this.userMap = userMap;
         }
 
-        static Cache of() {
+        static Cache empty() {
             return new Cache(Collections.emptyMap(), Collections.emptyMap());
         }
 

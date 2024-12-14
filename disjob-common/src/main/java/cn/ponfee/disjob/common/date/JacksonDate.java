@@ -62,11 +62,11 @@ public class JacksonDate {
         }
 
         @Override
-        public void serialize(Date date, JsonGenerator generator, SerializerProvider provider) throws IOException {
-            if (date == null) {
+        public void serialize(Date value, JsonGenerator generator, SerializerProvider provider) throws IOException {
+            if (value == null) {
                 generator.writeNull();
             } else {
-                generator.writeString(format.format(date));
+                generator.writeString(format.format(value));
             }
         }
     }

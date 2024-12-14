@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.supervisor.application.request;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,5 +37,9 @@ public class SchedJobSearchRequest extends ToJsonString implements Serializable 
     private Set<String> groups;
     private String jobName;
     private Long jobId;
+
+    public void authorizeAndTruncateGroup(String user) {
+        this.groups = AuthorizeGroupService.authorizeAndTruncateGroup(user, groups);
+    }
 
 }

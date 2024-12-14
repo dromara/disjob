@@ -23,13 +23,13 @@ import lombok.Setter;
 import org.springframework.util.Assert;
 
 /**
- * Subscribe supervisor changed param.
+ * Supervisor changed event param.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class SubscribeSupervisorChangedParam extends AuthenticationParam {
+public class SupervisorEventParam extends AuthenticationParam {
     private static final long serialVersionUID = -216622646271234535L;
 
     private RegistryEventType eventType;
@@ -40,10 +40,10 @@ public class SubscribeSupervisorChangedParam extends AuthenticationParam {
         Assert.notNull(supervisor, "Supervisor cannot be null.");
     }
 
-    public static SubscribeSupervisorChangedParam of(String supervisorAuthenticationToken,
-                                                     RegistryEventType eventType,
-                                                     Supervisor supervisor) {
-        SubscribeSupervisorChangedParam param = new SubscribeSupervisorChangedParam();
+    public static SupervisorEventParam of(String supervisorAuthenticationToken,
+                                          RegistryEventType eventType,
+                                          Supervisor supervisor) {
+        SupervisorEventParam param = new SupervisorEventParam();
         param.setSupervisorAuthenticationToken(supervisorAuthenticationToken);
         param.setEventType(eventType);
         param.setSupervisor(supervisor);

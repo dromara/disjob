@@ -18,7 +18,6 @@ package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.base.TextTokenizer;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
@@ -38,7 +37,7 @@ import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest
 import cn.ponfee.disjob.supervisor.application.response.SupervisorMetricsResponse;
 import cn.ponfee.disjob.supervisor.application.response.WorkerMetricsResponse;
 import cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService;
-import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
+import cn.ponfee.disjob.supervisor.base.OperationEventType;
 import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
@@ -105,16 +104,16 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     public WorkerMetricsResponse worker(String group, String worker) {
-        if (StringUtils.isBlank(worker) || !worker.contains(COLON)) {
+        String[] array;
+        if (StringUtils.isBlank(worker) || (array = worker.split(COLON, 2)).length != 2) {
             return null;
         }
-        TextTokenizer tokenizer = new TextTokenizer(worker, COLON);
-        String host = tokenizer.next();
-        Integer port = Numbers.toWrapInt(tokenizer.next());
+        String host = array[0];
+        Integer port = Numbers.toWrapInt(StringUtils.trim(array[1]));
         if (StringUtils.isBlank(host) || port == null) {
             return null;
         }
-        WorkerMetricsResponse metrics = getWorkerMetrics(new Worker(group, "-", host, port));
+        WorkerMetricsResponse metrics = getWorkerMetrics(new Worker(group, "-", host.trim(), port));
         return StringUtils.isBlank(metrics.getWorkerId()) ? null : metrics;
     }
 
@@ -141,16 +140,16 @@ public class ServerInvokeService extends SingletonClassConstraint {
         MultithreadExecutors.run(workers, action, ThreadPoolExecutors.commonThreadPool());
     }
 
-    public void publishOtherSupervisors(SupervisorEvent event) {
+    public void publishOperationEvent(OperationEventType eventType, String data) {
         try {
             List<Supervisor> supervisors = supervisorRegistry.getRegisteredServers()
                 .stream()
                 .filter(e -> !localSupervisor.equals(e))
                 .collect(Collectors.toList());
-            Consumer<Supervisor> action = supervisor -> publishSupervisor(supervisor, event);
+            Consumer<Supervisor> action = supervisor -> publishOperationEvent(supervisor, eventType, data);
             MultithreadExecutors.run(supervisors, action, ThreadPoolExecutors.commonThreadPool());
         } catch (Exception e) {
-            LOG.error("Publish other supervisor error.", e);
+            LOG.error("Publish operation event to other supervisor error.", e);
         }
     }
 
@@ -228,9 +227,9 @@ public class ServerInvokeService extends SingletonClassConstraint {
         workerClient.invoke(worker, service -> service.configureWorker(param));
     }
 
-    private void publishSupervisor(Supervisor supervisor, SupervisorEvent event) {
+    private void publishOperationEvent(Supervisor supervisor, OperationEventType eventType, String data) {
         RetryTemplate.executeQuietly(
-            () -> supervisorRpcClient.invoke(supervisor, service -> service.publishEvent(event)),
+            () -> supervisorRpcClient.invoke(supervisor, service -> service.subscribeOperationEvent(eventType, data)),
             1,
             2000
         );

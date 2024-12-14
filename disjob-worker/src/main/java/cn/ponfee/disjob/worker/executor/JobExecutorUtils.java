@@ -27,7 +27,6 @@ import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
-import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
 import org.apache.commons.io.IOUtils;
@@ -52,7 +51,7 @@ public class JobExecutorUtils {
     public static void verify(VerifyJobParam param) throws JobException {
         try {
             Set<String> jobExecutors;
-            if (param.getJobType() == JobType.WORKFLOW) {
+            if (param.getJobType().isWorkflow()) {
                 jobExecutors = DAGExpression.parse(param.getJobExecutor())
                     .nodes()
                     .stream()

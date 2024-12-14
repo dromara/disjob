@@ -88,7 +88,10 @@
         },
         {
           field: 'jobName',
-          title: 'Job名称'
+          title: 'Job名称',
+          cellStyle: function (value, row, index) {
+            return { css: { "min-width": "50px", "white-space": "nowrap", "text-overflow": "ellipsis", "overflow": "hidden", "max-width": "200px" } }
+          }
         },
         {
           field: 'jobState',
@@ -119,8 +122,8 @@
         {
           field: 'triggerValue',
           title: '触发器值',
-          formatter: function (value, row, index) {
-            return $.table.tooltip(value, 19, "open");
+          cellStyle: function (value, row, index) {
+            return { css: { "min-width": "50px", "white-space": "nowrap", "text-overflow": "ellipsis", "overflow": "hidden", "max-width": "200px" } }
           }
         },
         {
@@ -207,7 +210,7 @@
     function changeState(jobId, fromJobState) {
       const toJobState = (fromJobState === 0) ? 1 : 0;
       $.modal.confirm("确认要" + (toJobState === 0 ? "禁用" : "启用") + "吗？", function () {
-        $.operate.post(prefix + "/changeState", {"jobId": jobId, "toState": toJobState});
+        $.operate.post(prefix + "/state/change", {"jobId": jobId, "toState": toJobState});
       });
     }
 

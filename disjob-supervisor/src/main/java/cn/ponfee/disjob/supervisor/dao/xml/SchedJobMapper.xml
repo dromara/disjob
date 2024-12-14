@@ -185,6 +185,7 @@
   <update id="updateState">
     UPDATE <include refid="Table_Name" />
     SET job_state = #{toState,jdbcType=TINYINT},
+        updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND job_state = #{fromState,jdbcType=TINYINT}
@@ -206,6 +207,7 @@
   <update id="softDelete" parameterType="_long">
     UPDATE <include refid="Table_Name" />
     SET is_deleted = id,
+        updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND job_state = 0

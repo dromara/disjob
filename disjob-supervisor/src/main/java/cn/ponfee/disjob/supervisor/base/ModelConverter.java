@@ -61,13 +61,13 @@ public final class ModelConverter {
     }
 
     public static SplitJobParam toSplitJobParam(SchedJob job, SchedInstance instance) {
-        Assert.isTrue(JobType.GENERAL.equalsValue(job.getJobType()), "Job must be general.");
+        Assert.isTrue(JobType.of(job.getJobType()).isGeneral(), "Job must be general.");
         return toSplitJobParam(job, instance.getRetriedCount(), job.getJobExecutor(), null);
     }
 
     public static SplitJobParam toSplitJobParam(SchedJob job, SchedInstance instance,
                                                 List<PredecessorInstance> predecessorInstances) {
-        Assert.isTrue(JobType.WORKFLOW.equalsValue(job.getJobType()), "Job must be workflow.");
+        Assert.isTrue(JobType.of(job.getJobType()).isWorkflow(), "Job must be workflow.");
         Assert.isTrue(instance.isWorkflowNode(), () -> "Split job must be node instance: " + instance);
         String curJobExecutor = instance.parseWorkflowCurNode().getName();
         return toSplitJobParam(job, instance.getRetriedCount(), curJobExecutor, predecessorInstances);

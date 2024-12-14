@@ -152,7 +152,7 @@ CREATE TABLE `sched_workflow` (
 CREATE TABLE `sched_group` (
   `id`                    BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `group`                 VARCHAR(60)              NOT NULL                               COMMENT '分组名称(同sched_job.group)',
-  `own_user`              VARCHAR(36)              NOT NULL                               COMMENT '负责人',
+  `own_user`              VARCHAR(60)              NOT NULL                               COMMENT '负责人',
   `supervisor_token`      VARCHAR(60)              NOT NULL  DEFAULT ''                   COMMENT 'Supervisor访问Worker的密钥令牌',
   `worker_token`          VARCHAR(60)              NOT NULL  DEFAULT ''                   COMMENT 'Worker访问Supervisor的密钥令牌',
   `user_token`            VARCHAR(60)              NOT NULL  DEFAULT ''                   COMMENT 'User访问Supervisor Openapi接口的密钥令牌(`未部署Admin` 或 `提供类似开放平台` 时使用)',

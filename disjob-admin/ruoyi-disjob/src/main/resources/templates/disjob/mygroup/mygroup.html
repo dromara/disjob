@@ -64,8 +64,8 @@
         {
           field: 'workerContextPath',
           title: 'Context-path',
-          formatter: function (value, row, index) {
-            return $.table.tooltip(value, 30, "open");
+          cellStyle: function (value, row, index) {
+            return { css: { "min-width": "50px", "white-space": "nowrap", "text-overflow": "ellipsis", "overflow": "hidden", "max-width": "200px" } }
           }
         },
         {

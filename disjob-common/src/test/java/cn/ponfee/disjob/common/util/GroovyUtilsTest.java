@@ -94,7 +94,7 @@ public class GroovyUtilsTest {
                     try {
                         GroovyUtils.Evaluator.SHELL.eval(SCRIPT_TEXT, PARAMS);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        throw new RuntimeException(e);
                     }
                 }
             });

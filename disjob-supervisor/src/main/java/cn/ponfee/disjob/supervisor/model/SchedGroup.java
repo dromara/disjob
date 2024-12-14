@@ -16,9 +16,11 @@
 
 package cn.ponfee.disjob.supervisor.model;
 
+import cn.ponfee.disjob.common.base.Symbol;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.util.Assert;
 
 /**
  * The schedule group entity, mapped database table sched_group
@@ -89,5 +91,18 @@ public class SchedGroup extends BaseEntity {
      * 创建人
      */
     private String createdBy;
+
+    public static String checkGroup(String group) {
+        Assert.hasText(group, "Group cannot be blank.");
+        Assert.isTrue((group = group.trim()).length() <= 60, "Group length cannot exceed limit 60.");
+        return group;
+    }
+
+    public static String checkOwnUser(String ownUser) {
+        Assert.hasText(ownUser, "Own user cannot be blank.");
+        Assert.isTrue(!ownUser.contains(Symbol.Str.COMMA), "Own user cannot contains character ','");
+        Assert.isTrue((ownUser = ownUser.trim()).length() <= 60, "Own user length cannot exceed limit 60.");
+        return ownUser;
+    }
 
 }

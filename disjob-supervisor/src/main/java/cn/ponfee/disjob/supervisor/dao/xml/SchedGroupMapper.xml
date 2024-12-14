@@ -69,7 +69,7 @@
       AND is_deleted = 0
   </update>
 
-  <update id="edit">
+  <update id="update">
     UPDATE <include refid="Table_Name" />
     SET own_user = #{ownUser,jdbcType=VARCHAR},
         dev_users = #{devUsers,jdbcType=VARCHAR},

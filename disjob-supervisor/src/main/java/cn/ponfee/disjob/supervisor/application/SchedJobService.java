@@ -25,10 +25,7 @@ import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
-import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
-import cn.ponfee.disjob.supervisor.application.request.SchedJobAddRequest;
-import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
-import cn.ponfee.disjob.supervisor.application.request.SchedJobUpdateRequest;
+import cn.ponfee.disjob.supervisor.application.request.*;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
@@ -44,54 +41,54 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Supervisor openapi service.
+ * Sched job service.
  *
  * @author Ponfee
  */
 @Service
 @RequiredArgsConstructor
-public class OpenapiService extends SingletonClassConstraint {
+public class SchedJobService extends SingletonClassConstraint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OpenapiService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SchedJobService.class);
 
     private final JobManager jobManager;
     private final JobQuerier jobQuerier;
 
-    // ------------------------------------------------------------------ sched job
+    // ------------------------------------------------------------------job
 
-    public Long addJob(SchedJobAddRequest req) throws JobException {
-        String user = req.getCreatedBy(), group = req.getGroup();
-        Set<String> groups = SchedGroupService.myGroups(user);
-        Assert.isTrue(groups.contains(group), () -> "User '" + user + "' not has group '" + group + "' permission.");
-        return jobManager.addJob(req.tosSchedJob());
+    public Long addJob(String user, SchedJobAddRequest req) throws JobException {
+        LOG.info("Adding job by {}: {}", user, req);
+        return jobManager.addJob(req.tosSchedJob(user));
     }
 
-    public void updateJob(SchedJobUpdateRequest req) throws JobException {
-        LOG.info("Do updating sched job {}", req.getJobId());
-        jobManager.updateJob(req.tosSchedJob());
+    public void updateJob(String user, SchedJobUpdateRequest req) throws JobException {
+        LOG.info("Updating job by {}: {}", user, req);
+        jobManager.updateJob(req.tosSchedJob(user));
     }
 
-    public void deleteJob(long jobId) {
-        LOG.info("Do deleting sched job {}", jobId);
-        jobManager.deleteJob(jobId);
+    public void deleteJob(String user, long jobId) {
+        LOG.info("Deleting job by {}: {}", user, jobId);
+        jobManager.deleteJob(user, jobId);
     }
 
-    public Boolean changeJobState(long jobId, int jobState) {
-        LOG.info("Do change sched job state {}", jobId);
-        return jobManager.changeJobState(jobId, JobState.of(jobState));
+    public void changeJobState(String user, long jobId, int toJobState) {
+        JobState toState = JobState.of(toJobState);
+        LOG.info("Changing job state by {}: {}, {}", user, jobId, toState);
+        jobManager.changeJobState(user, jobId, toState);
     }
 
-    public void manualTriggerJob(long jobId) throws JobException {
-        LOG.info("Do manual trigger sched job {}", jobId);
+    public void manualTriggerJob(String user, long jobId) throws JobException {
+        LOG.info("Manual trigger job by {}: {}", user, jobId);
         jobManager.manualTriggerJob(jobId);
     }
 
     public SchedJobResponse getJob(long jobId) {
         SchedJob job = jobQuerier.getJob(jobId);
+        Assert.notNull(job, () -> "Job not found: " + jobId);
         return SchedJobConverter.INSTANCE.convert(job);
     }
 
@@ -99,47 +96,47 @@ public class OpenapiService extends SingletonClassConstraint {
         return jobQuerier.queryJobForPage(pageRequest);
     }
 
-    // ------------------------------------------------------------------ sched instance
+    public List<Map<String, Object>> searchJob(SchedJobSearchRequest req) {
+        return jobQuerier.searchJob(req);
+    }
 
-    public void pauseInstance(long instanceId) {
-        LOG.info("Do pausing sched instance {}", instanceId);
+    // ------------------------------------------------------------------instance
+
+    public void pauseInstance(String user, long instanceId) {
+        LOG.info("Pausing instance by {}: {}", user, instanceId);
         if (!jobManager.pauseInstance(instanceId)) {
             throw new JobRuntimeException(JobCodeMsg.NOT_PAUSABLE_INSTANCE);
         }
     }
 
-    public void cancelInstance(long instanceId) {
-        LOG.info("Do canceling sched instance {}", instanceId);
+    public void cancelInstance(String user, long instanceId) {
+        LOG.info("Canceling instance by {}: {}", user, instanceId);
         if (!jobManager.cancelInstance(instanceId, Operation.MANUAL_CANCEL)) {
             throw new JobRuntimeException(JobCodeMsg.NOT_CANCELABLE_INSTANCE);
         }
     }
 
-    public void resumeInstance(long instanceId) {
-        LOG.info("Do resuming sched instance {}", instanceId);
+    public void resumeInstance(String user, long instanceId) {
+        LOG.info("Resuming instance by {}: {}", user, instanceId);
         if (!jobManager.resumeInstance(instanceId)) {
             throw new JobRuntimeException(JobCodeMsg.NOT_RESUMABLE_INSTANCE);
         }
     }
 
-    public void changeInstanceState(long instanceId, int targetExecuteState) {
-        // verify the execution state
-        ExecuteState executeState = ExecuteState.of(targetExecuteState);
-
-        LOG.info("Do force change sched instance state {}, {}", instanceId, targetExecuteState);
-        jobManager.changeInstanceState(instanceId, executeState);
+    public void changeInstanceState(String user, long instanceId, int toExecuteState) {
+        ExecuteState toState = ExecuteState.of(toExecuteState);
+        LOG.info("Changing instance state by {}: {}, {}", user, instanceId, toState);
+        jobManager.changeInstanceState(instanceId, toState);
     }
 
-    public void deleteInstance(long instanceId) {
-        LOG.info("Do deleting sched instance {}", instanceId);
+    public void deleteInstance(String user, long instanceId) {
+        LOG.info("Deleting instance by {}: {}", user, instanceId);
         jobManager.deleteInstance(instanceId);
     }
 
     public SchedInstanceResponse getInstance(long instanceId, boolean includeTasks) {
         SchedInstance instance = jobQuerier.getInstance(instanceId);
-        if (instance == null) {
-            return null;
-        }
+        Assert.notNull(instance, () -> "Instance not found: " + instanceId);
 
         List<SchedTask> tasks = includeTasks ? jobQuerier.findLargeInstanceTasks(instanceId) : null;
         return SchedInstanceResponse.of(instance, tasks);
@@ -147,9 +144,6 @@ public class OpenapiService extends SingletonClassConstraint {
 
     public List<SchedTaskResponse> getInstanceTasks(long instanceId) {
         List<SchedTask> tasks = jobQuerier.findLargeInstanceTasks(instanceId);
-        if (tasks == null) {
-            return null;
-        }
         return tasks.stream().map(SchedJobConverter.INSTANCE::convert).collect(Collectors.toList());
     }
 

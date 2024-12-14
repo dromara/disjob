@@ -17,21 +17,26 @@
 package cn.ponfee.disjob.common.tree;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
- * Base node id
+ * Representing tree node id
  *
- * @param <T> the NodeId implementation sub class
+ * @param <T> the NodeId implementation subclass
  * @author Ponfee
  */
-public abstract class NodeId<T extends NodeId<T>> extends ToJsonString implements Comparable<T>, Serializable, Cloneable {
-
+public abstract class NodeId<T extends NodeId<T>>
+    extends ToJsonString implements Comparable<T>, Serializable {
     private static final long serialVersionUID = -9004940918491918780L;
 
+    /**
+     * Parent node id, null value if root node
+     */
     protected final T parent;
 
     protected NodeId(T parent) {
@@ -40,44 +45,42 @@ public abstract class NodeId<T extends NodeId<T>> extends ToJsonString implement
 
     @SuppressWarnings("unchecked")
     @Override
-    public final boolean equals(Object obj) {
-        if (obj == null || this.getClass() != obj.getClass()) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || !this.getClass().equals(obj.getClass())) {
             return false;
         }
-
-        T o = (T) obj;
-        return Objects.equals(this.parent, o.parent) && this.equals(o);
+        return Objects.equals(this.parent, ((T) obj).parent);
     }
 
     @Override
-    public final int compareTo(T that) {
+    public int compareTo(@Nonnull T that) {
         if (this.parent == null) {
-            return that.parent == null ? this.compare(that) : -1;
+            // null parent first (root node should be first)
+            return that.parent == null ? 0 : -1;
         }
-        if (that.parent == null) {
-            return 1;
-        }
-
-        int a = this.parent.compareTo(that.parent);
-        return a != 0 ? a : this.compare(that);
+        return that.parent == null ? 1 : this.parent.compareTo(that.parent);
     }
 
     @Override
-    public final int hashCode() {
-        return new HashCodeBuilder().append(parent).append(hash()).build();
+    public int hashCode() {
+        return Objects.hashCode(parent);
     }
-
-    protected abstract boolean equals(T that);
-
-    protected abstract int compare(T that);
-
-    protected abstract int hash();
-
-    @Override
-    public abstract T clone();
 
     public final T getParent() {
         return parent;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <E extends Serializable & Comparable<E>> NodePath<E> toNodePath(Function<T, E> mapper) {
+        LinkedList<E> path = new LinkedList<>();
+        for (T node = (T) this; node != null; node = node.parent) {
+            // [root, parent, child]
+            path.addFirst(mapper.apply(node));
+        }
+        return new NodePath<>(path);
     }
 
 }

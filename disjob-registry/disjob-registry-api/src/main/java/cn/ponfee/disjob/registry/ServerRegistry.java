@@ -117,14 +117,14 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         return discoveryRole;
     }
 
-    protected void publishServerChanged(RegistryEventType eventType, R rServer) {
-        log.info("Publish server changed: {}, {}", eventType, rServer);
+    protected void publishServerEvent(RegistryEventType eventType, R rServer) {
+        log.info("Publish server event: {}, {}", eventType, rServer);
         serverDiscovery.notifyServers(eventType, rServer);
     }
 
     @Override
-    public final void subscribeServerChanged(RegistryEventType eventType, D dServer) {
-        log.info("Subscribe server changed: {}, {}", eventType, dServer);
+    public final void subscribeServerEvent(RegistryEventType eventType, D dServer) {
+        log.info("Subscribe server event: {}, {}", eventType, dServer);
         serverDiscovery.updateServers(eventType, dServer);
     }
 

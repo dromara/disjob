@@ -105,19 +105,25 @@ public interface SchedJobMapper {
      * Updates job state
      *
      * @param jobId     the job id
+     * @param updatedBy the updated by
      * @param toState   the target state
      * @param fromState the source state
      * @return update sql affected rows
      */
-    int updateState(@Param("jobId") long jobId, @Param("toState") int toState, @Param("fromState") int fromState);
+    int updateState(@Param("jobId") long jobId,
+                    @Param("updatedBy") String updatedBy,
+                    @Param("toState") int toState,
+                    @Param("fromState") int fromState);
 
     /**
      * Soft delete the job.
      *
-     * @param jobId the job id
+     * @param jobId     the job id
+     * @param updatedBy the updated by
      * @return delete sql affected rows
      */
-    int softDelete(long jobId);
+    int softDelete(@Param("jobId") long jobId,
+                   @Param("updatedBy") String updatedBy);
 
     List<Map<String, Object>> searchJob(@Param("groups") Set<String> groups,
                                         @Param("jobName") String jobName,

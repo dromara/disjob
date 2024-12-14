@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.registry.redis;
 
 import cn.ponfee.disjob.common.base.RetryTemplate;
-import cn.ponfee.disjob.common.base.TextTokenizer;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
@@ -146,7 +145,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
         registerServers(Collections.singleton(server));
         registered.add(server);
-        publishServerChanged(RegistryEventType.REGISTER, server);
+        publishServerEvent(RegistryEventType.REGISTER, server);
         log.info("Server registered: {}, {}", registryRole, server);
     }
 
@@ -154,7 +153,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     public final void deregister(R server) {
         registered.remove(server);
         ThrowingSupplier.doCaught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
-        publishServerChanged(RegistryEventType.DEREGISTER, server);
+        publishServerEvent(RegistryEventType.DEREGISTER, server);
         log.info("Server deregister: {}, {}", registryRole, server);
     }
 
@@ -196,18 +195,18 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     public void handleMessage(String message, String channel) {
         try {
             log.info("Handle message begin: {}, {}", message, channel);
-            TextTokenizer tokenizer = new TextTokenizer(message, COLON);
-            RegistryEventType eventType = RegistryEventType.valueOf(tokenizer.next());
-            D server = deserializeServer(tokenizer.tail(), discoveryRole);
-            subscribeServerChanged(eventType, server);
+            String[] array = message.split(COLON, 2);
+            RegistryEventType eventType = RegistryEventType.valueOf(array[0]);
+            D server = deserializeServer(array[1], discoveryRole);
+            subscribeServerEvent(eventType, server);
         } catch (Throwable t) {
             log.error("Handle message error: " + message + ", " + channel, t);
         }
     }
 
     @Override
-    protected void publishServerChanged(RegistryEventType eventType, R server) {
-        log.info("Publish server changed: {}, {}", eventType, server);
+    protected void publishServerEvent(RegistryEventType eventType, R server) {
+        log.info("Publish server event: {}, {}", eventType, server);
         String message = eventType.name() + COLON + server.serialize();
         ThrowingRunnable.doCaught(() -> stringRedisTemplate.convertAndSend(registryChannel, message));
     }

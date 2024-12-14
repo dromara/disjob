@@ -146,7 +146,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         }
         register(server.serialize());
         registered.add(server);
-        publishServerChanged(RegistryEventType.REGISTER, server);
+        publishServerEvent(RegistryEventType.REGISTER, server);
     }
 
     @Override
@@ -154,7 +154,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         registered.remove(server);
         Object[] args = new Object[]{namespace, registerRoleName, server.serialize()};
         RetryTemplate.executeQuietly(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args), 3, 1000L);
-        publishServerChanged(RegistryEventType.DEREGISTER, server);
+        publishServerEvent(RegistryEventType.DEREGISTER, server);
         log.info("Server deregister: {}, {}", registryRole, server);
     }
 

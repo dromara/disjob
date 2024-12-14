@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.supervisor.application.request;
 
 import cn.ponfee.disjob.common.base.Symbol.Str;
-import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import cn.ponfee.disjob.supervisor.model.SchedGroup;
@@ -26,7 +25,6 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -37,27 +35,26 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Setter
-public class SchedGroupUpdateRequest extends ToJsonString implements Serializable {
+public class SchedGroupUpdateRequest extends SchedGroupAddRequest {
     private static final long serialVersionUID = 7531416191031943146L;
 
-    private String group;
-    private String ownUser;
     private String devUsers;
     private String alarmUsers;
     private String workerContextPath;
     private String webHook;
-    private String updatedBy;
     private int version;
 
-    public SchedGroup toSchedGroup() {
-        return SchedGroupConverter.INSTANCE.convert(this);
+    @Override
+    public SchedGroup toSchedGroup(String user) {
+        SchedGroup schedGroup = SchedGroupConverter.INSTANCE.convert(this);
+        schedGroup.setUpdatedBy(user);
+        return schedGroup;
     }
 
+    @Override
     public void checkAndTrim() {
-        Assert.hasText(ownUser, "Own user cannot be blank.");
-        Assert.isTrue(!ownUser.contains(Str.COMMA), "Own user cannot contains ','");
-        Assert.hasText(updatedBy, "Updated by cannot be blank.");
-        this.ownUser = StringUtils.trim(ownUser);
+        Assert.hasText(group, "Group cannot be blank.");
+        this.ownUser = SchedGroup.checkOwnUser(ownUser);
         this.devUsers = prune(devUsers);
         this.alarmUsers = prune(alarmUsers);
         this.workerContextPath = Strings.trimPath(workerContextPath);

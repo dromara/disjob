@@ -27,11 +27,11 @@ import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.supervisor.application.SupervisorEventSubscribeService;
+import cn.ponfee.disjob.supervisor.application.OperationEventService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication.Subject;
 import cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService;
-import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
+import cn.ponfee.disjob.supervisor.base.OperationEventType;
 import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import lombok.RequiredArgsConstructor;
@@ -55,8 +55,8 @@ public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
     // -------------------------------------------------------for worker invoke method
 
     @Override
-    public void subscribeWorkerChanged(RegistryEventType eventType, Worker worker) {
-        supervisorRegistry.subscribeServerChanged(eventType, worker);
+    public void subscribeWorkerEvent(RegistryEventType eventType, Worker worker) {
+        supervisorRegistry.subscribeServerEvent(eventType, worker);
     }
 
     @Override
@@ -103,8 +103,8 @@ public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
 
     @SupervisorAuthentication(Subject.ANON)
     @Override
-    public void publishEvent(SupervisorEvent event) {
-        SupervisorEventSubscribeService.subscribe(event);
+    public void subscribeOperationEvent(OperationEventType eventType, String data) {
+        OperationEventService.subscribe(eventType, data);
     }
 
 }

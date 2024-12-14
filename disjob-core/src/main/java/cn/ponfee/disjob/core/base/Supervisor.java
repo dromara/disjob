@@ -58,6 +58,23 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        return (obj instanceof Supervisor) && super.equals(obj);
+    }
+
+    @Override
+    public int compareTo(Supervisor that) {
+        int n = this.host.compareTo(that.host);
+        if (n != 0) {
+            return n;
+        }
+        return Integer.compare(this.port, that.port);
+    }
+
+    @Override
     public final String serialize() {
         return serializedValue;
     }
@@ -72,45 +89,12 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
      */
     public static Supervisor deserialize(String text) {
         String[] array = text.split(COLON, 2);
-        Assert.isTrue(array.length == 2, "Invalid supervisor value: " + text);
+        Assert.isTrue(array.length == 2, () -> "Invalid supervisor value: " + text);
         return new Supervisor(array[0], Integer.parseInt(array[1]));
     }
 
     public static Local local() {
         return Local.instance;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        return (o instanceof Supervisor) && super.equals(o);
-    }
-
-    @Override
-    public int compareTo(Supervisor that) {
-        int n = this.host.compareTo(that.host);
-        if (n != 0) {
-            return n;
-        }
-        return Integer.compare(this.port, that.port);
-    }
-
-    // --------------------------------------------------------custom jackson serialize & deserialize
-
-    /**
-     * Custom serialize Supervisor based jackson.
-     */
-    public static class JacksonSerializer extends JsonSerializer<Supervisor> {
-        @Override
-        public void serialize(Supervisor value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-            if (value == null) {
-                gen.writeNull();
-            } else {
-                gen.writeString(value.serialize());
-            }
-        }
     }
 
     // --------------------------------------------------------local Supervisor
@@ -228,12 +212,26 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
         }
     }
 
-    // --------------------------------------------------------custom jackson deserialize
+    // --------------------------------------------------------custom jackson serialize & deserialize
+
+    /**
+     * Custom serialize Supervisor based jackson.
+     */
+    static class JacksonSerializer extends JsonSerializer<Supervisor> {
+        @Override
+        public void serialize(Supervisor value, JsonGenerator generator, SerializerProvider provider) throws IOException {
+            if (value == null) {
+                generator.writeNull();
+            } else {
+                generator.writeString(value.serialize());
+            }
+        }
+    }
 
     /**
      * Custom deserialize Supervisor based jackson.
      */
-    public static class JacksonDeserializer extends JsonDeserializer<Supervisor> {
+    static class JacksonDeserializer extends JsonDeserializer<Supervisor> {
         @Override
         public Supervisor deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             return Supervisor.deserialize(p.getText());

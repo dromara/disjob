@@ -37,6 +37,7 @@ public class DisjobService {
     /**
      * 加载枚举定义
      */
+    @SuppressWarnings("unchecked")
     private static final Map<String, Class<IntValueEnum<?>>> ENUM_MAP = new ResourceScanner("cn/ponfee/disjob/core/enums/**/*.class")
         .scan4class(new Class<?>[]{IntValueEnum.class}, null)
         .stream()

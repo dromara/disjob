@@ -100,7 +100,6 @@ public abstract class AbstractTxManagerTestService<E, I> {
                 throw new IllegalStateException("Invalid row " + row);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw e;
         }
 
@@ -114,7 +113,6 @@ public abstract class AbstractTxManagerTestService<E, I> {
                 throw new IllegalStateException("Invalid row " + row);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw e;
         }
     }

@@ -106,9 +106,9 @@ public class VertxWebServer extends AbstractVerticle {
 
         //String[] args = ctx.body().asPojo(String[].class);
 
-        router.post(prefixPath + "/supervisor/changed/subscribe").handler(ctx -> handle(() -> {
-            SubscribeSupervisorChangedParam param = parseBodyArg(ctx, SubscribeSupervisorChangedParam.class);
-            workerRpcService.subscribeSupervisorChanged(param);
+        router.post(prefixPath + "/supervisor/event/subscribe").handler(ctx -> handle(() -> {
+            SupervisorEventParam param = parseBodyArg(ctx, SupervisorEventParam.class);
+            workerRpcService.subscribeSupervisorEvent(param);
         }, ctx, BAD_REQUEST));
 
         router.post(prefixPath + "/job/verify").handler(ctx -> handle(() -> {

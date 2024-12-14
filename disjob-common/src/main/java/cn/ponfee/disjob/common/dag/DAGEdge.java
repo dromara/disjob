@@ -70,9 +70,9 @@ public final class DAGEdge extends ToJsonString implements Serializable {
             return false;
         }
 
-        DAGEdge other = (DAGEdge) obj;
-        return this.source.equals(other.source)
-            && this.target.equals(other.target);
+        DAGEdge that = (DAGEdge) obj;
+        return this.source.equals(that.source)
+            && this.target.equals(that.target);
     }
 
     @Override

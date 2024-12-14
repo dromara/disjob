@@ -17,20 +17,17 @@
 package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.base.Pagination;
-import cn.ponfee.disjob.common.base.TextTokenizer;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
-import cn.ponfee.disjob.supervisor.application.OpenapiService;
-import cn.ponfee.disjob.supervisor.application.SchedGroupService;
+import cn.ponfee.disjob.supervisor.application.SchedJobService;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobSearchRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
-import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
@@ -45,7 +42,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -64,24 +60,25 @@ public class DisjobInstanceController extends BaseController {
     private static final long[] WAIT_SLEEP_MILLIS = {2500, 1000};
     private static final Pattern NUMBER_PATTERN = Pattern.compile("^[1-9]\\d*$");
 
-    private final OpenapiService openapiService;
-    private final JobQuerier jobQuerier;
+    private final SchedJobService schedJobService;
     private final AuthorizeGroupService authorizeGroupService;
 
-    public DisjobInstanceController(OpenapiService openapiService,
-                                    JobQuerier jobQuerier,
+    public DisjobInstanceController(SchedJobService schedJobService,
                                     AuthorizeGroupService authorizeGroupService) {
-        this.openapiService = openapiService;
-        this.jobQuerier = jobQuerier;
+        this.schedJobService = schedJobService;
         this.authorizeGroupService = authorizeGroupService;
     }
 
     @RequiresPermissions(PERMISSION_CODE)
-    @GetMapping("/search_job")
+    @GetMapping("/job/search")
     @ResponseBody
     public AjaxResult searchJob(@RequestParam(value = "term") String term) {
-        SchedJobSearchRequest req = parseTerm(term);
-        return AjaxResult.success(req == null ? Collections.emptyList() : jobQuerier.searchJob(req));
+        if (StringUtils.isEmpty(term)) {
+            return AjaxResult.success(Collections.emptyList());
+        }
+        SchedJobSearchRequest request = parseTerm(term);
+        request.authorizeAndTruncateGroup(getLoginName());
+        return AjaxResult.success(schedJobService.searchJob(request));
     }
 
     @RequiresPermissions(PERMISSION_CODE)
@@ -118,7 +115,7 @@ public class DisjobInstanceController extends BaseController {
     public List<SchedInstanceResponse> children(@RequestParam("pnstanceId") Long pnstanceId) {
         authorizeGroupService.authorizeInstance(getLoginName(), pnstanceId);
 
-        return openapiService.listInstanceChildren(pnstanceId);
+        return schedJobService.listInstanceChildren(pnstanceId);
     }
 
     /**
@@ -144,7 +141,7 @@ public class DisjobInstanceController extends BaseController {
     public String tasks(@PathVariable("instanceId") Long instanceId, ModelMap mmap) {
         authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
 
-        List<SchedTaskResponse> tasks = openapiService.getInstanceTasks(instanceId);
+        List<SchedTaskResponse> tasks = schedJobService.getInstanceTasks(instanceId);
         mmap.put("tasks", Jsons.toJson(tasks));
         return PREFIX + "/tasks";
     }
@@ -159,9 +156,10 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/remove/{instanceId}")
     @ResponseBody
     public AjaxResult remove(@PathVariable("instanceId") Long instanceId) {
-        authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
+        String user = getLoginName();
+        authorizeGroupService.authorizeInstance(user, instanceId);
 
-        openapiService.deleteInstance(instanceId);
+        schedJobService.deleteInstance(user, instanceId);
         return success();
     }
 
@@ -173,11 +171,12 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/pause/{instanceId}")
     @ResponseBody
     public AjaxResult pause(@PathVariable("instanceId") Long instanceId) {
-        authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
+        String user = getLoginName();
+        authorizeGroupService.authorizeInstance(user, instanceId);
 
-        openapiService.pauseInstance(instanceId);
+        schedJobService.pauseInstance(user, instanceId);
         Threads.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
-            SchedInstanceResponse instance = openapiService.getInstance(instanceId, false);
+            SchedInstanceResponse instance = schedJobService.getInstance(instanceId, false);
             return !RunState.of(instance.getRunState()).isPausable();
         });
         return success();
@@ -191,11 +190,12 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/resume/{instanceId}")
     @ResponseBody
     public AjaxResult resume(@PathVariable("instanceId") Long instanceId) {
-        authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
+        String user = getLoginName();
+        authorizeGroupService.authorizeInstance(user, instanceId);
 
-        openapiService.resumeInstance(instanceId);
+        schedJobService.resumeInstance(user, instanceId);
         Threads.waitUntil(WAIT_SLEEP_ROUND, new long[]{500, 200}, () -> {
-            SchedInstanceResponse instance = openapiService.getInstance(instanceId, false);
+            SchedInstanceResponse instance = schedJobService.getInstance(instanceId, false);
             return !RunState.PAUSED.equalsValue(instance.getRunState());
         });
         return success();
@@ -209,11 +209,12 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/cancel/{instanceId}")
     @ResponseBody
     public AjaxResult cancel(@PathVariable("instanceId") Long instanceId) {
-        authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
+        String user = getLoginName();
+        authorizeGroupService.authorizeInstance(user, instanceId);
 
-        openapiService.cancelInstance(instanceId);
+        schedJobService.cancelInstance(user, instanceId);
         Threads.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
-            SchedInstanceResponse instance = openapiService.getInstance(instanceId, false);
+            SchedInstanceResponse instance = schedJobService.getInstance(instanceId, false);
             return RunState.of(instance.getRunState()).isTerminal();
         });
         return success();
@@ -222,32 +223,18 @@ public class DisjobInstanceController extends BaseController {
     // ------------------------------------------------------------private methods
 
     private SchedJobSearchRequest parseTerm(String term) {
-        if (StringUtils.isBlank(term)) {
-            return null;
-        }
-
         SchedJobSearchRequest request = new SchedJobSearchRequest();
-        Set<String> groups = null;
-        String user = getLoginName();
         if ("*".equals(term)) {
-            request.setGroups(AuthorizeGroupService.truncateGroup(SchedGroupService.myGroups(user)));
             return request;
         }
 
-        TextTokenizer tokenizer = new TextTokenizer(term, ": ");
-        if (tokenizer.hasNext()) {
-            String str = tokenizer.next().trim();
-            if (SchedGroupService.myGroups(user).contains(str)) {
-                groups = Collections.singleton(str);
-                term = tokenizer.tail();
-            }
-        }
-        if (groups == null) {
-            groups = AuthorizeGroupService.truncateGroup(SchedGroupService.myGroups(user));
+        String[] array = term.split(": ", 2);
+        if (array.length == 2 && StringUtils.isNotBlank(array[0])) {
+            request.setGroups(Collections.singleton(array[0].trim()));
+            term = array[1];
         }
 
         term = term.trim();
-        request.setGroups(groups);
         request.setJobName(Strings.concatSqlLike(term));
         if (NUMBER_PATTERN.matcher(term).matches()) {
             request.setJobId(Numbers.toWrapLong(term));
@@ -271,7 +258,7 @@ public class DisjobInstanceController extends BaseController {
         request.setRoot(root);
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
-        return Pagination.toTableDataInfo(openapiService.queryInstanceForPage(request));
+        return Pagination.toTableDataInfo(schedJobService.queryInstanceForPage(request));
     }
 
 }

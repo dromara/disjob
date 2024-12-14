@@ -27,8 +27,8 @@ import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
-import cn.ponfee.disjob.supervisor.application.OpenapiService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
+import cn.ponfee.disjob.supervisor.application.SchedJobService;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobUpdateRequest;
@@ -66,12 +66,12 @@ public class DisjobJobController extends BaseController {
     private static final int MAX_TEXT_LENGTH = 900;
     private static final String PERMISSION_CODE = "disjob:job:operate";
 
-    private final OpenapiService openapiService;
+    private final SchedJobService schedJobService;
     private final AuthorizeGroupService authorizeGroupService;
 
-    public DisjobJobController(OpenapiService openapiService,
+    public DisjobJobController(SchedJobService schedJobService,
                                AuthorizeGroupService authorizeGroupService) {
-        this.openapiService = openapiService;
+        this.schedJobService = schedJobService;
         this.authorizeGroupService = authorizeGroupService;
     }
 
@@ -115,7 +115,7 @@ public class DisjobJobController extends BaseController {
         }
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
-        PageResponse<SchedJobResponse> response = openapiService.queryJobForPage(request);
+        PageResponse<SchedJobResponse> response = schedJobService.queryJobForPage(request);
         return Pagination.toTableDataInfo(response);
     }
 
@@ -125,8 +125,7 @@ public class DisjobJobController extends BaseController {
     @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/detail/{jobId}")
     public String detail(@PathVariable("jobId") long jobId, ModelMap mmap) {
-        SchedJobResponse job = openapiService.getJob(jobId);
-        Assert.notNull(job, () -> "Job id not found: " + jobId);
+        SchedJobResponse job = schedJobService.getJob(jobId);
         AuthorizeGroupService.authorizeGroup(getLoginName(), job.getGroup());
 
         mmap.put("job", job);
@@ -147,7 +146,7 @@ public class DisjobJobController extends BaseController {
         if (CollectionUtils.isNotEmpty(request.getGroups())) {
             // 不分页查询，导出全部数据
             request.setPaged(false);
-            List<SchedJobResponse> rows = openapiService.queryJobForPage(request).getRows();
+            List<SchedJobResponse> rows = schedJobService.queryJobForPage(request).getRows();
             list = Collects.convert(rows, SchedJobExport::ofSchedJobResponse);
         }
         ExcelUtil<SchedJobExport> excel = new ExcelUtil<>(SchedJobExport.class);
@@ -171,7 +170,7 @@ public class DisjobJobController extends BaseController {
     @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/copy/{jobId}")
     public String copy(@PathVariable("jobId") long jobId, ModelMap mmap) {
-        SchedJobResponse job = openapiService.getJob(jobId);
+        SchedJobResponse job = schedJobService.getJob(jobId);
         AuthorizeGroupService.authorizeGroup(getLoginName(), job.getGroup());
 
         return toAdd(job, mmap);
@@ -188,8 +187,7 @@ public class DisjobJobController extends BaseController {
         String user = getLoginName();
         AuthorizeGroupService.authorizeGroup(user, req.getGroup());
 
-        req.setCreatedBy(user);
-        return success(openapiService.addJob(req));
+        return success(schedJobService.addJob(user, req));
     }
 
     /**
@@ -198,8 +196,7 @@ public class DisjobJobController extends BaseController {
     @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/edit/{jobId}")
     public String edit(@PathVariable("jobId") long jobId, ModelMap mmap) {
-        SchedJobResponse job = openapiService.getJob(jobId);
-        Assert.notNull(job, () -> "Job id not found: " + jobId);
+        SchedJobResponse job = schedJobService.getJob(jobId);
         AuthorizeGroupService.authorizeGroup(getLoginName(), job.getGroup());
 
         mmap.put("job", job);
@@ -217,8 +214,7 @@ public class DisjobJobController extends BaseController {
         String user = getLoginName();
         AuthorizeGroupService.authorizeGroup(user, req.getGroup());
 
-        req.setUpdatedBy(user);
-        openapiService.updateJob(req);
+        schedJobService.updateJob(user, req);
         return success();
     }
 
@@ -245,14 +241,15 @@ public class DisjobJobController extends BaseController {
      */
     @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "修改作业配置状态", businessType = BusinessType.UPDATE)
-    @PostMapping("/changeState")
+    @PostMapping("/state/change")
     @ResponseBody
     public AjaxResult changeState(@RequestParam("jobId") long jobId,
                                   @RequestParam("toState") Integer toState) {
-        authorizeGroupService.authorizeJob(getLoginName(), jobId);
+        String user = getLoginName();
+        authorizeGroupService.authorizeJob(user, jobId);
 
-        boolean result = openapiService.changeJobState(jobId, toState);
-        return toAjax(result);
+        schedJobService.changeJobState(user, jobId, toState);
+        return success();
     }
 
     /**
@@ -263,9 +260,10 @@ public class DisjobJobController extends BaseController {
     @PostMapping("/trigger")
     @ResponseBody
     public AjaxResult manualTriggerJob(@RequestParam("jobId") long jobId) throws JobException {
-        authorizeGroupService.authorizeJob(getLoginName(), jobId);
+        String user = getLoginName();
+        authorizeGroupService.authorizeJob(user, jobId);
 
-        openapiService.manualTriggerJob(jobId);
+        schedJobService.manualTriggerJob(user, jobId);
         return success();
     }
 
@@ -279,7 +277,7 @@ public class DisjobJobController extends BaseController {
 
     private void doDeleteJob(String user, long jobId) {
         authorizeGroupService.authorizeJob(user, jobId);
-        openapiService.deleteJob(jobId);
+        schedJobService.deleteJob(user, jobId);
     }
 
 }

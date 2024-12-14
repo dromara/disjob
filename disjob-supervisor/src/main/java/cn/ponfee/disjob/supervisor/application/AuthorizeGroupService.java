@@ -49,7 +49,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     /**
      * SQL中`group IN (a, b, ..., x)`允许的最大长度
      */
-    public static final int SQL_GROUP_IN_MAX_SIZE = 50;
+    public static final int SQL_GROUP_IN_MAX_SIZE = 20;
 
     private final JobQuerier jobQuerier;
 
@@ -65,7 +65,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     public AuthorizeGroupService(JobQuerier jobQuerier) {
         this.jobQuerier = jobQuerier;
 
-        commonScheduledPool().scheduleWithFixedDelay(ThrowingRunnable.toCaught(jobGroupCache::cleanUp), 2, 2, TimeUnit.DAYS);
+        commonScheduledPool().scheduleWithFixedDelay(ThrowingRunnable.toCaught(jobGroupCache::cleanUp), 1, 1, TimeUnit.DAYS);
     }
 
     public static Set<String> authorizeAndTruncateGroup(String user, Set<String> paramGroups) {
@@ -75,10 +75,6 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
         } else if (!permitGroups.containsAll(paramGroups)) {
             throw new AuthenticationException("Unauthorized group: " + Sets.difference(paramGroups, permitGroups));
         }
-        return truncateGroup(paramGroups);
-    }
-
-    public static Set<String> truncateGroup(Set<String> paramGroups) {
         return Collects.truncate(paramGroups, SQL_GROUP_IN_MAX_SIZE);
     }
 
@@ -90,7 +86,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
 
     public static void authorizeGroup(String user, String authGroup, String dataGroup) {
         if (!authGroup.equals(dataGroup)) {
-            throw new AuthenticationException("User group and job group not equals: " + authGroup + " != " + dataGroup);
+            throw new AuthenticationException("Inconsistent group: " + authGroup + " != " + dataGroup);
         }
         authorizeGroup(user, dataGroup);
     }
@@ -126,6 +122,8 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
         }
         authorizeJob(user, authGroup, jobId);
     }
+
+    // -----------------------------------------------------------private methods
 
     private String getJobGroup(Long jobId) {
         String group = jobGroupCache.getIfPresent(jobId);

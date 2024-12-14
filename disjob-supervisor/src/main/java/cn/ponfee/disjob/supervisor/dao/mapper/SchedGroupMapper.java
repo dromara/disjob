@@ -46,7 +46,7 @@ public interface SchedGroupMapper {
 
     int softDelete(@Param("group") String group, @Param("updatedBy") String updatedBy);
 
-    int edit(SchedGroup schedGroup);
+    int update(SchedGroup schedGroup);
 
     boolean exists(String group);
 

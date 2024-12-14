@@ -32,8 +32,8 @@ public interface WorkerRpcService {
 
     String PREFIX_PATH = "/worker/rpc";
 
-    @PostMapping("/supervisor/changed/subscribe")
-    void subscribeSupervisorChanged(SubscribeSupervisorChangedParam param);
+    @PostMapping("/supervisor/event/subscribe")
+    void subscribeSupervisorEvent(SupervisorEventParam param);
 
     @PostMapping("/job/verify")
     void verifyJob(VerifyJobParam param) throws JobException;

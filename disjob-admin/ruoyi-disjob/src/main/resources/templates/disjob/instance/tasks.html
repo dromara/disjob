@@ -13,6 +13,8 @@
   </div>
 
   <div th:include="include :: footer"></div>
+  <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
+
   <script th:inline="javascript">
     const executeStates = [[${@disjobService.enums('ExecuteState')}]];
     const stateMap = {10: "info", 20: "success", 30: "warning", 40: "primary", 50: "danger"};
@@ -25,6 +27,8 @@
         showRefresh: false,
         showToggle: false,
         showColumns: false,
+        fixedColumns: true,
+        fixedNumber: 1,
         columns: [{
           field: 'taskId',
           title: 'TaskId'

@@ -16,31 +16,20 @@
 
 package cn.ponfee.disjob.common.tree;
 
-import cn.ponfee.disjob.common.collect.ImmutableArrayList;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
-
-import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-
 
 /**
- * Representing immutable node path array
+ * Representing tree node path
  *
  * @param <T> the node id type
  * @author Ponfee
  */
-@JsonDeserialize(using = NodePath.JacksonDeserializer.class)
 public final class NodePath<T extends Serializable & Comparable<T>>
-    extends ImmutableArrayList<T> implements Comparable<NodePath<T>> {
-
+    extends ArrayList<T> implements Comparable<NodePath<T>> {
     private static final long serialVersionUID = 9090552044337950223L;
 
     public NodePath() {
@@ -49,60 +38,49 @@ public final class NodePath<T extends Serializable & Comparable<T>>
 
     @SafeVarargs
     public NodePath(T... path) {
-        super(path);
-    }
-
-    @SuppressWarnings("unchecked")
-    public NodePath(T[] parent, T child) {
-        super(ArrayUtils.addAll(Objects.requireNonNull(parent), child));
+        super(path.length);
+        super.addAll(Arrays.asList(path));
     }
 
     public NodePath(List<T> path) {
-        super(path.toArray());
-    }
-
-    public NodePath(List<T> path, T child) {
-        super(ArrayUtils.addAll(path.toArray(), child));
-    }
-
-    public NodePath(NodePath<T> parent) {
-        super(parent.toArray());
+        super(path.size());
+        super.addAll(path);
     }
 
     public NodePath(NodePath<T> parent, T child) {
-        super(parent.join(child));
+        super(parent.size() + 1);
+        super.addAll(parent);
+        super.add(child);
     }
 
     @Override
-    public int compareTo(NodePath<T> o) {
-        int c;
-        for (Iterator<T> a = this.iterator(), b = o.iterator(); a.hasNext() && b.hasNext(); ) {
-            if ((c = a.next().compareTo(b.next())) != 0) {
-                return c;
+    public int compareTo(NodePath<T> that) {
+        int compared;
+        for (Iterator<T> a = this.iterator(), b = that.iterator(); a.hasNext() && b.hasNext(); ) {
+            if ((compared = a.next().compareTo(b.next())) != 0) {
+                return compared;
             }
         }
-        return super.size() - o.size();
+        return this.size() - that.size();
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         return (obj instanceof NodePath) && super.equals(obj);
     }
 
     @Override
-    public NodePath<T> clone() {
-        return new NodePath<>(this);
+    public int hashCode() {
+        return super.hashCode();
     }
 
-    // --------------------------------------------------------custom jackson deserialize
-
-    public static class JacksonDeserializer<T extends Serializable & Comparable<T>> extends JsonDeserializer<NodePath<T>> {
-        @Override
-        @SuppressWarnings("unchecked")
-        public NodePath<T> deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            List<T> list = p.readValueAs(List.class);
-            return CollectionUtils.isEmpty(list) ? null : new NodePath<>(list);
-        }
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    @Override
+    public NodePath<T> clone() {
+        return new NodePath<>(this);
     }
 
 }

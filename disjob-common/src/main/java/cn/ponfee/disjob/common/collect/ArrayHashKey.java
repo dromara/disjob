@@ -39,12 +39,12 @@ public final class ArrayHashKey implements Comparable<ArrayHashKey> {
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (other == this) {
+    public boolean equals(Object obj) {
+        if (obj == this) {
             return true;
         }
-        return (other instanceof ArrayHashKey)
-            && Arrays.equals(key, ((ArrayHashKey) other).key);
+        return (obj instanceof ArrayHashKey)
+            && Arrays.equals(key, ((ArrayHashKey) obj).key);
     }
 
     @Override
@@ -53,8 +53,8 @@ public final class ArrayHashKey implements Comparable<ArrayHashKey> {
     }
 
     @Override
-    public int compareTo(ArrayHashKey o) {
-        return new CompareToBuilder().append(key, o.key).toComparison();
+    public int compareTo(ArrayHashKey that) {
+        return new CompareToBuilder().append(this.key, that.key).toComparison();
     }
 
 }

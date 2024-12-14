@@ -46,10 +46,10 @@ public class ModelClassFileDiffTest {
         Assertions.assertThat(Objects.equals(null, null)).isTrue();
 
         // SchedJob ⇋ AddSchedJobRequest
-        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobAddRequest.class), "createdAt", "id", "updatedAt", "updatedBy", "lastTriggerTime", "version", "jobId", "nextTriggerTime", "nextScanTime", "scanFailedCount");
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobAddRequest.class), "createdAt", "createdBy", "id", "updatedAt", "updatedBy", "lastTriggerTime", "version", "jobId", "nextTriggerTime", "nextScanTime", "scanFailedCount");
 
         // SchedJob ⇋ UpdateSchedJobRequest
-        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobUpdateRequest.class), "createdAt", "id", "updatedAt", "lastTriggerTime", "createdBy", "nextTriggerTime", "nextScanTime", "scanFailedCount");
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobUpdateRequest.class), "createdAt", "createdBy", "id", "updatedAt", "updatedBy", "lastTriggerTime", "createdBy", "nextTriggerTime", "nextScanTime", "scanFailedCount");
 
         // SchedJob ⇋ SchedJobResponse
         assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobResponse.class), "id", "nextScanTime", "scanFailedCount");

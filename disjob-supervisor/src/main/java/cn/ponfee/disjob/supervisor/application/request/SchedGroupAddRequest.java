@@ -16,13 +16,11 @@
 
 package cn.ponfee.disjob.supervisor.application.request;
 
-import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import cn.ponfee.disjob.supervisor.model.SchedGroup;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.util.Assert;
 
 import java.io.Serializable;
 
@@ -36,22 +34,19 @@ import java.io.Serializable;
 public class SchedGroupAddRequest extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 8022970678398556635L;
 
-    private String group;
-    private String ownUser;
-    private String createdBy;
+    protected String group;
+    protected String ownUser;
 
-    public SchedGroup toSchedGroup() {
-        return SchedGroupConverter.INSTANCE.convert(this);
+    public SchedGroup toSchedGroup(String user) {
+        SchedGroup schedGroup = SchedGroupConverter.INSTANCE.convert(this);
+        schedGroup.setCreatedBy(user);
+        schedGroup.setUpdatedBy(user);
+        return schedGroup;
     }
 
     public void checkAndTrim() {
-        Assert.hasText(group, "Group cannot be blank.");
-        Assert.hasText(ownUser, "Own user cannot be blank.");
-        Assert.isTrue(!ownUser.contains(Str.COMMA), "Own user cannot contains ','");
-        Assert.hasText(createdBy, "Created by cannot be blank.");
-
-        group = group.trim();
-        ownUser = ownUser.trim();
+        this.group = SchedGroup.checkGroup(group);
+        this.ownUser = SchedGroup.checkOwnUser(ownUser);
     }
 
 }

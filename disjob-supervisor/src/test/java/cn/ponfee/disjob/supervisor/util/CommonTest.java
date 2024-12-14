@@ -27,12 +27,15 @@ import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.enums.ShutdownStrategy;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.net.URL;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -238,6 +241,48 @@ public class CommonTest {
         param.setWorker(worker);
         param.setJobExecutor(jobExecutor);
         return param;
+    }
+
+    @Test
+    public void testCache1() throws InterruptedException {
+        Cache<Long, String> cache = CacheBuilder.newBuilder()
+            .initialCapacity(10)
+            .maximumSize(100)
+            .expireAfterAccess(Duration.ofSeconds(2))
+            .build();
+        cache.put(1L,"a");
+        cache.put(2L,"b");
+        cache.put(3L,"c");
+
+        Thread.sleep(1000);
+        cache.cleanUp();
+        Assertions.assertEquals(3, cache.size());
+        Thread.sleep(1000);
+        Assertions.assertEquals(3, cache.size());
+        cache.cleanUp();
+        Assertions.assertEquals(0, cache.size());
+    }
+
+    @Test
+    public void testCache2() throws InterruptedException {
+        Cache<Long, String> cache = CacheBuilder.newBuilder()
+            .initialCapacity(10)
+            .maximumSize(100)
+            .expireAfterAccess(Duration.ofSeconds(2))
+            .build();
+        cache.put(111L,"a");
+        cache.put(222L,"b");
+        cache.put(333L,"c");
+
+        Thread.sleep(1000);
+        cache.cleanUp();
+        Assertions.assertEquals(3, cache.size());
+        Assertions.assertEquals("a", cache.getIfPresent(111L));
+        Thread.sleep(1000);
+        Assertions.assertEquals(3, cache.size());
+        cache.cleanUp();
+        Assertions.assertEquals(1, cache.size());
+        System.out.println(cache.stats());
     }
 
 }

@@ -32,7 +32,6 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 
 import java.lang.annotation.*;
 
@@ -68,17 +67,15 @@ public @interface DbSnowflakeIdGenerator {
     /**
      * Basic DbDistributedSnowflake
      */
-    class BasicDbdSnowflake extends DbDistributedSnowflake {
+    class BasicDbSnowflake extends DbDistributedSnowflake {
 
-        BasicDbdSnowflake(JdbcTemplate jdbcTemplate,
-                          Object supervisor,
-                          String bizTag,
-                          int sequenceBitLength,
-                          int workerIdBitLength) {
+        BasicDbSnowflake(JdbcTemplate jdbcTemplate,
+                         Object supervisor,
+                         String bizTag,
+                         int sequenceBitLength,
+                         int workerIdBitLength) {
             super(jdbcTemplate, bizTag, serializeSupervisor(supervisor), sequenceBitLength, workerIdBitLength);
         }
-
-        private static final String LOCAL_SUPERVISOR_CLASS_NAME = "cn.ponfee.disjob.core.base.Supervisor$Local$1";
 
         /**
          * Local supervisor spring bean name
@@ -92,20 +89,19 @@ public @interface DbSnowflakeIdGenerator {
          *
          * @param supervisor the local supervisor
          * @return serialization string
-         * @see cn.ponfee.disjob.core.base.Supervisor.Local#serialize()
          */
-        @SuppressWarnings("ConstantConditions")
         private static String serializeSupervisor(Object supervisor) {
-            Class<?> clazz = supervisor.getClass();
-            Assert.isTrue(LOCAL_SUPERVISOR_CLASS_NAME.equals(clazz.getName()), () -> "Not Supervisor$Local$1 instance: " + clazz);
-            return (String) ReflectionUtils.invokeMethod(ReflectionUtils.findMethod(clazz, "serialize"), supervisor);
+            String expectCls = "cn.ponfee.disjob.core.base.Supervisor$Local$1";
+            String actualCls = supervisor.getClass().getName();
+            Assert.isTrue(expectCls.equals(actualCls), () -> "Not a Supervisor$Local$1 instance: " + actualCls);
+            return supervisor.toString();
         }
     }
 
     /**
      * Annotated DbDistributedSnowflake
      */
-    class AnnotatedDbSnowflake extends BasicDbdSnowflake {
+    class AnnotatedDbSnowflake extends BasicDbSnowflake {
 
         AnnotatedDbSnowflake(@Autowired JdbcTemplate jdbcTemplate, // use @Primary JdbcTemplate bean
                              @Autowired @Qualifier(SPRING_BEAN_NAME_LOCAL_SUPERVISOR) Object supervisor,
@@ -132,9 +128,9 @@ public @interface DbSnowflakeIdGenerator {
                 bd = new AnnotatedGenericBeanDefinition(AnnotatedDbSnowflake.class);
             } else {
                 bd = new GenericBeanDefinition();
-                bd.setBeanClass(BasicDbdSnowflake.class);
+                bd.setBeanClass(BasicDbSnowflake.class);
                 bd.getConstructorArgumentValues().addIndexedArgumentValue(0, new RuntimeBeanReference(jdbcTemplateRef));
-                bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicDbdSnowflake.SPRING_BEAN_NAME_LOCAL_SUPERVISOR));
+                bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicDbSnowflake.SPRING_BEAN_NAME_LOCAL_SUPERVISOR));
             }
 
             bd.getConstructorArgumentValues().addIndexedArgumentValue(2, config.bizTag());

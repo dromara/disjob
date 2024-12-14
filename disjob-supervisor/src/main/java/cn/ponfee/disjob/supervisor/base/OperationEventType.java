@@ -14,28 +14,27 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.application.request;
-
-import cn.ponfee.disjob.common.model.PageRequest;
-import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.Set;
+package cn.ponfee.disjob.supervisor.base;
 
 /**
- * Sched group page request
+ * Operation event type
  *
  * @author Ponfee
  */
-@Getter
-@Setter
-public class SchedGroupPageRequest extends PageRequest {
-    private static final long serialVersionUID = -213388921649759103L;
-    private Set<String> groups;
+public enum OperationEventType {
 
-    public void authorizeAndTruncateGroup(String user) {
-        this.groups = AuthorizeGroupService.authorizeAndTruncateGroup(user, groups);
-    }
+    /**
+     * Refresh group config
+     */
+    REFRESH_GROUP {
+        @Override
+        public <T> T parse(String data) {
+            throw new UnsupportedOperationException("Refresh group not support argument.");
+        }
+    },
+
+    ;
+
+    public abstract <T> T parse(String data);
 
 }

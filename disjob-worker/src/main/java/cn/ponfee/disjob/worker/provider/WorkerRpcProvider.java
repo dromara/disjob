@@ -83,9 +83,9 @@ public interface WorkerRpcProvider extends WorkerRpcService {
         }
 
         @Override
-        public void subscribeSupervisorChanged(SubscribeSupervisorChangedParam param) {
+        public void subscribeSupervisorEvent(SupervisorEventParam param) {
             param.check();
-            workerRegistry.subscribeServerChanged(param.getEventType(), param.getSupervisor());
+            workerRegistry.subscribeServerEvent(param.getEventType(), param.getSupervisor());
         }
 
         @Override

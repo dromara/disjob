@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.model.PageRequest;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.util.Assert;
 
 import java.util.Date;
 
@@ -42,12 +43,12 @@ public class SchedInstancePageRequest extends PageRequest {
     private boolean root;
 
     public void authorize(String user, AuthorizeGroupService authorizeGroupService) {
+        Assert.isTrue(jobId != null || instanceId != null, "JobId和InstanceId请至少输入一项");
         if (jobId != null) {
             authorizeGroupService.authorizeJob(user, jobId);
-        } else if (instanceId != null) {
+        }
+        if (instanceId != null) {
             authorizeGroupService.authorizeInstance(user, instanceId);
-        } else {
-            throw new IllegalArgumentException("JobId和InstanceId请至少输入一项");
         }
     }
 

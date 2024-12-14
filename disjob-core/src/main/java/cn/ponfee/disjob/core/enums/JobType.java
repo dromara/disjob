@@ -56,6 +56,14 @@ public enum JobType implements IntValueEnum<JobType> {
         return desc;
     }
 
+    public boolean isGeneral() {
+        return this == GENERAL;
+    }
+
+    public boolean isWorkflow() {
+        return this == WORKFLOW;
+    }
+
     public static JobType of(int value) {
         for (JobType e : VALUES) {
             if (e.value() == value) {

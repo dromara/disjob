@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.common.dag;
 
-import cn.ponfee.disjob.common.base.TextTokenizer;
 import org.springframework.util.Assert;
 
 import java.beans.Transient;
@@ -110,10 +109,10 @@ public final class DAGNode implements Serializable {
         if (!(obj instanceof DAGNode)) {
             return false;
         }
-        DAGNode other = (DAGNode) obj;
-        return this.section == other.section
-            && this.ordinal == other.ordinal
-            && this.name.equals(other.name);
+        DAGNode that = (DAGNode) obj;
+        return this.section == that.section
+            && this.ordinal == that.ordinal
+            && this.name.equals(that.name);
     }
 
     public boolean equals(int section, int ordinal, String name) {
@@ -128,10 +127,10 @@ public final class DAGNode implements Serializable {
     }
 
     public static DAGNode fromString(String str) {
-        TextTokenizer tokenizer = new TextTokenizer(str, COLON);
-        int section = Integer.parseInt(tokenizer.next());
-        int ordinal = Integer.parseInt(tokenizer.next());
-        String name = tokenizer.tail();
+        String[] array = str.split(COLON, 3);
+        int section = Integer.parseInt(array[0]);
+        int ordinal = Integer.parseInt(array[1]);
+        String name = array[2];
         if (START.equals(section, ordinal, name)) {
             return START;
         }

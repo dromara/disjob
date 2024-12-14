@@ -93,10 +93,10 @@ public class DisjobMyGroupController extends BaseController {
     @ResponseBody
     public TableDataInfo list(SchedGroupPageRequest request) {
         request.authorizeAndTruncateGroup(getLoginName());
+
         if (CollectionUtils.isEmpty(request.getGroups())) {
             return TableDataInfo.empty();
         }
-
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
         return Pagination.toTableDataInfo(schedGroupService.queryForPage(request));
@@ -135,8 +135,7 @@ public class DisjobMyGroupController extends BaseController {
             // 非Own User不可更换own_user数据(即只有Own User本人才能更换该group的own_user为其它人)
             Assert.isTrue(req.getOwnUser().equals(data.getOwnUser()), "Cannot modify own user.");
         }
-        req.setUpdatedBy(user);
-        boolean result = schedGroupService.edit(req);
+        boolean result = schedGroupService.update(user, req);
         return result ? success() : error("修改冲突，请刷新页面");
     }
 
@@ -154,7 +153,6 @@ public class DisjobMyGroupController extends BaseController {
             WorkerMetricsResponse w = serverInvokeService.worker(group, worker);
             workers = (w == null) ? Collections.emptyList() : Collections.singletonList(w);
         }
-
         mmap.put("group", group);
         mmap.put("worker", worker);
         mmap.put("workers", workers);

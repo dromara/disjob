@@ -87,7 +87,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         }
 
         private static void authenticateUser(String group) {
-            if (!SchedGroupService.isDeveloper(group, requestUser())) {
+            if (!SchedGroupService.myGroups(requestUser()).contains(group)) {
                 throw new AuthenticationException(ERR_MSG);
             }
 

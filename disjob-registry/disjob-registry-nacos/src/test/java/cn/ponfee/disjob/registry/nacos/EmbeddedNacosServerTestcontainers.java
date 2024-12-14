@@ -69,7 +69,7 @@ public final class EmbeddedNacosServerTestcontainers {
     private static final String NACOS_DOCKER_IMAGE_NAME = "nacos/nacos-server:v2.4.0.1-slim";
     private static final List<String> PORT_BINDINGS = Arrays.asList("8848:8848/tcp", "8849:8849/tcp", "9848:9848/tcp", "9849:9849/tcp");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         DockerImageName nacosImage = DockerImageName.parse(NACOS_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("nacos-test");
 
         // --name: DockerImageName
@@ -100,8 +100,6 @@ public final class EmbeddedNacosServerTestcontainers {
             System.out.println("Embedded docker nacos server started!");
 
             new CountDownLatch(1).await();
-        } catch (Exception e) {
-            e.printStackTrace();
         } finally {
             dockerNacosContainer.close();
         }

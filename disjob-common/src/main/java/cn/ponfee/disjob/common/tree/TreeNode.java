@@ -482,7 +482,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         /*
         if (IterableUtils.matchesAny(parentPath, nid::equals)) {
             // 节点路径中已经包含了此节点，则视为环状
-            throw new IllegalStateException("Node circular dependencies: " + parentPath + " -> " + nid);
+            throw new IllegalStateException("Tree has cycle dependencies: " + parentPath + " -> " + nid);
         }
         */
 

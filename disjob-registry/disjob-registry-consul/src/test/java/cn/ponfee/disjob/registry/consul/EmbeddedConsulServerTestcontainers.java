@@ -47,7 +47,7 @@ public final class EmbeddedConsulServerTestcontainers {
     private static final String CONSUL_DOCKER_IMAGE_NAME = "consul:1.15.4";
     private static final List<String> PORT_BINDINGS = Arrays.asList("8500:8500/tcp", "8502:8502/tcp");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         String key = "config/testing1", val = "value123";
 
         DockerImageName consulImage = DockerImageName.parse(CONSUL_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("consul-test");
@@ -68,8 +68,6 @@ public final class EmbeddedConsulServerTestcontainers {
             Assertions.assertThat(consulContainer.execInContainer("consul", "kv", "get", key).getStdout().trim()).isEqualTo(val);
             System.out.println("Embedded docker consul server started!");
             new CountDownLatch(1).await();
-        } catch (Exception e) {
-            e.printStackTrace();
         } finally {
             consulContainer.close();
         }

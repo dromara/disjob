@@ -16,10 +16,14 @@
 
 package cn.ponfee.disjob.supervisor.application.request;
 
+import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Add sched job request parameter structure.
@@ -28,13 +32,34 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class SchedJobAddRequest extends AbstractSchedJobRequest {
+public class SchedJobAddRequest extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -3122300447277606053L;
 
-    private String createdBy;
+    private String group;
+    private String jobName;
+    private String jobExecutor;
+    private Integer jobState;
+    private Integer jobType;
+    private String jobParam;
+    private Integer retryType;
+    private Integer retryCount;
+    private Integer retryInterval;
+    private Date startTime;
+    private Date endTime;
+    private Integer triggerType;
+    private String triggerValue;
+    private Integer executeTimeout;
+    private Integer collidedStrategy;
+    private Integer misfireStrategy;
+    private Integer routeStrategy;
+    private Integer shutdownStrategy;
+    private String remark;
 
-    public SchedJob tosSchedJob() {
-        return SchedJobConverter.INSTANCE.convert(this);
+    public SchedJob tosSchedJob(String user) {
+        SchedJob job = SchedJobConverter.INSTANCE.convert(this);
+        job.setCreatedBy(user);
+        job.setUpdatedBy(user);
+        return job;
     }
 
 }

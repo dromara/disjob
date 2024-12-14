@@ -30,9 +30,11 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -87,9 +89,9 @@ public class DisjobMgGroupController extends BaseController {
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(SchedGroupPageRequest request) {
+        Assert.isTrue(CollectionUtils.size(request.getGroups()) <= 20, "Groups size cannot greater than 20.");
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
-        request.truncateGroup();
         return Pagination.toTableDataInfo(schedGroupService.queryForPage(request));
     }
 
@@ -112,8 +114,7 @@ public class DisjobMgGroupController extends BaseController {
     @PostMapping("/add")
     @ResponseBody
     public AjaxResult add(SchedGroupAddRequest req) {
-        req.setCreatedBy(getLoginName());
-        schedGroupService.add(req);
+        schedGroupService.add(getLoginName(), req);
         return success();
     }
 
@@ -125,7 +126,7 @@ public class DisjobMgGroupController extends BaseController {
     @PostMapping("/remove")
     @ResponseBody
     public AjaxResult remove(@RequestParam("group") String group) {
-        if (schedGroupService.delete(group, getLoginName())) {
+        if (schedGroupService.delete(getLoginName(), group)) {
             return AjaxResult.success("删除成功");
         } else {
             return AjaxResult.error("删除失败");
@@ -155,7 +156,7 @@ public class DisjobMgGroupController extends BaseController {
                             @RequestParam("currentValue") String currentValue) {
         String newToken = TokenOperation.clear == operation ? "" : UuidUtils.uuid32();
         String oldToken = TokenOperation.set == operation ? "" : currentValue;
-        if (schedGroupService.updateToken(group, type, newToken, getLoginName(), oldToken)) {
+        if (schedGroupService.updateToken(getLoginName(), group, type, newToken, oldToken)) {
             return AjaxResult.success("操作成功", newToken);
         } else {
             return AjaxResult.error("操作失败");
@@ -171,7 +172,7 @@ public class DisjobMgGroupController extends BaseController {
     @ResponseBody
     public AjaxResult updateOwnUser(@RequestParam("group") String group,
                                     @RequestParam("ownUser") String ownUser) {
-        if (schedGroupService.updateOwnUser(group, ownUser, getLoginName())) {
+        if (schedGroupService.updateOwnUser(getLoginName(), group, ownUser)) {
             return AjaxResult.success("更新成功", ownUser);
         } else {
             return AjaxResult.error("更新失败");
