@@ -33,10 +33,11 @@ public final class EmbeddedZookeeperServer {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Embedded zookeeper server starting...");
-        TestingServer testingServer = new TestingServer(2181, createTempDir());
-        System.out.println("Embedded zookeeper server started!");
 
-        Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.toCaught(testingServer::stop)));
+        TestingServer testingServer = new TestingServer(2181, createTempDir());
+        Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.toCaught(testingServer::close)));
+
+        System.out.println("Embedded zookeeper server started!");
     }
 
     private static File createTempDir() throws IOException {

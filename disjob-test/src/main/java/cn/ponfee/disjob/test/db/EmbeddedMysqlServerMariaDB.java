@@ -60,7 +60,6 @@ public class EmbeddedMysqlServerMariaDB {
 
     public static void main(String[] args) throws Exception {
         DB db = start(3306);
-        Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.toCaught(db::stop)));
     }
 
     public static DB start(int port) throws Exception {
@@ -75,9 +74,9 @@ public class EmbeddedMysqlServerMariaDB {
             //.addArg("--skip-grant-tables") // 默认就是skip-grant-tables
             .build();
 
-        System.out.println("Embedded maria db starting...");
-
         DB db = DB.newEmbeddedDB(configuration);
+        System.out.println("Embedded maria db starting...");
+        Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.toCaught(db::stop)));
         db.start();
 
         db.source(IOUtils.toInputStream(loadScript(DISJOB_ADMIN_SCRIPT_CLASSPATH), StandardCharsets.UTF_8));

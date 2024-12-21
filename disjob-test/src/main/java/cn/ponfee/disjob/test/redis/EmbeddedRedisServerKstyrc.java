@@ -33,7 +33,6 @@ public final class EmbeddedRedisServerKstyrc {
 
     public static void main(String[] args) {
         RedisServer redisServer = start(6379, 6380);
-        Runtime.getRuntime().addShutdownHook(new Thread(redisServer::stop));
     }
 
     public static RedisServer start(int masterPort, int slavePort) {
@@ -55,6 +54,7 @@ public final class EmbeddedRedisServerKstyrc {
             .build();
 
         System.out.println("Embedded kstyrc redis server starting...");
+        Runtime.getRuntime().addShutdownHook(new Thread(redisServer::stop));
         redisServer.start();
         System.out.println("Embedded kstyrc redis server started!");
 

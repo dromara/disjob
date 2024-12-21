@@ -32,7 +32,7 @@ import java.util.concurrent.CountDownLatch;
  *
  *
  * <pre>
- *   docker pull nacos/nacos-server:v2.4.0.1-slim
+ *   docker pull nacos/nacos-server:v2.4.3
  *
  *   mkdir -p /opt/docker/nacos/init.d /opt/docker/nacos/logs
  *   touch /opt/docker/nacos/init.d/custom.properties
@@ -54,7 +54,7 @@ import java.util.concurrent.CountDownLatch;
  *     -e PREFER_HOST_MODE=hostname \
  *     -v /opt/docker/nacos/init.d/custom.properties:/home/nacos/init.d/custom.properties \
  *     -v /opt/docker/nacos/logs:/home/nacos/logs \
- *     nacos/nacos-server:v2.4.0.1-slim
+ *     nacos/nacos-server:v2.4.3
  *
  *     # 初始账号密码都为nacos
  *     # http://localhost:8848/nacos
@@ -66,32 +66,30 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class EmbeddedNacosServerTestcontainers {
 
-    private static final String NACOS_DOCKER_IMAGE_NAME = "nacos/nacos-server:v2.4.0.1-slim";
+    private static final String NACOS_DOCKER_IMAGE_NAME = "nacos/nacos-server:v2.4.3";
     private static final List<String> PORT_BINDINGS = Arrays.asList("8848:8848/tcp", "8849:8849/tcp", "9848:9848/tcp", "9849:9849/tcp");
 
     public static void main(String[] args) throws Exception {
         DockerImageName nacosImage = DockerImageName.parse(NACOS_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("nacos-test");
+        try (
+            // --name: DockerImageName
+            // --privileged: withPrivilegedMode
+            // -p: setPortBindings
+            // -v: withFileSystemBind
+            // -e: withEnv
+            GenericContainer<?> dockerNacosContainer = new GenericContainer<>(nacosImage)
+                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedNacosServerTestcontainers.class)))
+                // 挂载映射文件非必需
+                //.withFileSystemBind("/opt/docker/nacos/init.d/custom.properties", "/home/nacos/init.d/custom.properties", BindMode.READ_ONLY)
+                //.withFileSystemBind("/opt/docker/nacos/logs", "/home/nacos/logs", BindMode.READ_WRITE)
+                .withPrivilegedMode(true)
+                .withEnv("MODE", "standalone")
+                .withEnv("PREFER_HOST_MODE", "hostname")
+                .withEnv("JVM_XMS", "256m")
+                .withEnv("JVM_XMX", "256m")
+        ) {
+            dockerNacosContainer.setPortBindings(PORT_BINDINGS);
 
-        // --name: DockerImageName
-        // --privileged: withPrivilegedMode
-        // -p: setPortBindings
-        // -v: withFileSystemBind
-        // -e: withEnv
-        GenericContainer<?> dockerNacosContainer = new GenericContainer<>(nacosImage)
-            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedNacosServerTestcontainers.class)))
-            // 挂载映射文件非必需
-            //.withFileSystemBind("/opt/docker/nacos/init.d/custom.properties", "/home/nacos/init.d/custom.properties", BindMode.READ_ONLY)
-            //.withFileSystemBind("/opt/docker/nacos/logs", "/home/nacos/logs", BindMode.READ_WRITE)
-            .withPrivilegedMode(true)
-            .withEnv("MODE", "standalone")
-            .withEnv("PREFER_HOST_MODE", "hostname")
-            .withEnv("JVM_XMS", "256m")
-            .withEnv("JVM_XMX", "256m");
-
-        dockerNacosContainer.setPortBindings(PORT_BINDINGS);
-        Runtime.getRuntime().addShutdownHook(new Thread(dockerNacosContainer::close));
-
-        try {
             System.out.println("Embedded docker nacos server starting...");
             dockerNacosContainer.start();
             Assertions.assertThat(dockerNacosContainer.isCreated()).isTrue();
@@ -100,8 +98,6 @@ public final class EmbeddedNacosServerTestcontainers {
             System.out.println("Embedded docker nacos server started!");
 
             new CountDownLatch(1).await();
-        } finally {
-            dockerNacosContainer.close();
         }
     }
 

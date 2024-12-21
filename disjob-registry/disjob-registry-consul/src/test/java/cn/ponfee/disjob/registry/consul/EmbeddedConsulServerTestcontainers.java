@@ -29,8 +29,8 @@ import java.util.concurrent.CountDownLatch;
  * Embedded consul server based testcontainers.
  * <a href="https://www.testcontainers.org/modules/consul/">testcontainers consul</a>
  * 1、startup local docker environment
- * 2、pull docker consul image: docker pull consul:1.15.4
- * 3、"consul:1.15.4" is docker {image-name:version}
+ * 2、pull docker consul image: docker pull hashicorp/consul:1.20.1
+ * 3、"hashicorp/consul:1.20.1" is docker {image-name:version}
  *
  * Other:
  *  本地搜索：docker search consul --limit 20
@@ -38,27 +38,25 @@ import java.util.concurrent.CountDownLatch;
  * 查看latest的具体版本号：docker image inspect {image-name}:latest | grep -i version
  * </pre>
  *
- * <a href="https://hub.docker.com/_/consul/tags">docker官网查看版本</a>
+ * <a href="https://hub.docker.com/r/hashicorp/consul">docker官网查看版本</a>
  *
  * @author Ponfee
  */
 public final class EmbeddedConsulServerTestcontainers {
 
-    private static final String CONSUL_DOCKER_IMAGE_NAME = "consul:1.15.4";
+    private static final String CONSUL_DOCKER_IMAGE_NAME = "hashicorp/consul:1.20.1";
     private static final List<String> PORT_BINDINGS = Arrays.asList("8500:8500/tcp", "8502:8502/tcp");
 
     public static void main(String[] args) throws Exception {
         String key = "config/testing1", val = "value123";
-
         DockerImageName consulImage = DockerImageName.parse(CONSUL_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("consul-test");
 
-        ConsulContainer consulContainer = new ConsulContainer(consulImage)
-            .withConsulCommand("kv put " + key + " " + val);
+        try (
+            ConsulContainer consulContainer = new ConsulContainer(consulImage)
+                .withConsulCommand("kv put " + key + " " + val)
+        ) {
+            consulContainer.setPortBindings(PORT_BINDINGS);
 
-        consulContainer.setPortBindings(PORT_BINDINGS);
-        Runtime.getRuntime().addShutdownHook(new Thread(consulContainer::close));
-        try {
-            Runtime.getRuntime().addShutdownHook(new Thread(consulContainer::close));
             System.out.println("Embedded docker consul server starting...");
             consulContainer.start();
             Assertions.assertThat(consulContainer.isCreated()).isTrue();
@@ -67,9 +65,8 @@ public final class EmbeddedConsulServerTestcontainers {
             Assertions.assertThat(consulContainer.getExposedPorts()).hasSameElementsAs(Arrays.asList(8500, 8502));
             Assertions.assertThat(consulContainer.execInContainer("consul", "kv", "get", key).getStdout().trim()).isEqualTo(val);
             System.out.println("Embedded docker consul server started!");
+
             new CountDownLatch(1).await();
-        } finally {
-            consulContainer.close();
         }
     }
 

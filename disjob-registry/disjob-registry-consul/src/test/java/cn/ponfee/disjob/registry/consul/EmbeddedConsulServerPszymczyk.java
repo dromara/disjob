@@ -35,17 +35,17 @@ public final class EmbeddedConsulServerPszymczyk {
 
     public static void main(String[] args) throws IOException {
         System.setProperty(HttpBinaryRepository.CONSUL_BINARY_CDN, "https://releases.hashicorp.com/consul/");
-
         System.out.println("Embedded pszymczyk consul server starting...");
+
         ConsulProcess consul = ConsulStarterBuilder.consulStarter()
-            .withConsulVersion("1.15.4")
+            .withConsulVersion("1.20.1")
             .withConsulBinaryDownloadDirectory(createConsulBinaryDownloadDirectory())
             .withHttpPort(8500)
             .buildAndStart();
-        System.out.println("------------ http://127.0.0.1:8500 ------------");
-        System.out.println("Embedded pszymczyk consul server started!");
-
         Runtime.getRuntime().addShutdownHook(new Thread(consul::close));
+        System.out.println("------------ http://127.0.0.1:8500 ------------");
+
+        System.out.println("Embedded pszymczyk consul server started!");
     }
 
     private static Path createConsulBinaryDownloadDirectory() throws IOException {

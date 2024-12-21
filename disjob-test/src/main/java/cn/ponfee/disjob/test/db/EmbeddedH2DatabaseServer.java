@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
+import org.h2.server.TcpServer;
 import org.h2.tools.RunScript;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,7 +37,7 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * H2 database server
- *
+ * <p>
  * 内存中（私有）      -> jdbc:h2:mem:;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
  * 内存中（命名）      -> jdbc:h2:mem:<databaseName>;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
  * 嵌入式（本地）连接   -> jdbc:h2:[file:][<data-dir-path>]<databaseName>
@@ -53,7 +54,9 @@ public class EmbeddedH2DatabaseServer {
         System.out.println("Embedded h2 database starting...");
         //new org.h2.server.web.JakartaDbStarter(); // error: need dependency servlet-api
         //new org.h2.server.web.DbStarter(); // error: need dependency servlet-api
-        new org.h2.server.TcpServer().start();
+        TcpServer tcpServer = new TcpServer();
+        Runtime.getRuntime().addShutdownHook(new Thread(tcpServer::stop));
+        tcpServer.start();
         //new org.h2.server.web.WebServer().start();
         //new org.h2.server.pg.PgServer().start();
 

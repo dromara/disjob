@@ -30,7 +30,7 @@ import java.util.concurrent.CountDownLatch;
  *
  * io.etcd:jetcd-launcher:0.7.7
  *
- * docker pull gcr.io/etcd-development/etcd:v3.5.15
+ * docker pull gcr.io/etcd-development/etcd:v3.5.17
  * </pre>
  *
  * <a href="https://github.com/etcd-io/etcd/releases">github官网查看版本</a>
@@ -39,22 +39,22 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class EmbeddedEtcdServerTestcontainers {
 
-    private static final String ETCD_DOCKER_IMAGE_NAME = "gcr.io/etcd-development/etcd:v3.5.15";
+    private static final String ETCD_DOCKER_IMAGE_NAME = "gcr.io/etcd-development/etcd:v3.5.17";
     private static final List<String> PORT_BINDINGS = Arrays.asList("2379:2379/tcp", "2380:2380/tcp", "8080:8080/tcp");
 
     public static void main(String[] args) throws Exception {
-        EtcdCluster etcd = Etcd.builder()
-            .withImage(ETCD_DOCKER_IMAGE_NAME)
-            .withClusterName(EmbeddedEtcdServerTestcontainers.class.getSimpleName())
-            .withAdditionalArgs("--max-txn-ops", "1024")
-            .build();
+        try (
+            EtcdCluster etcd = Etcd.builder()
+                .withImage(ETCD_DOCKER_IMAGE_NAME)
+                .withClusterName(EmbeddedEtcdServerTestcontainers.class.getSimpleName())
+                .withAdditionalArgs("--max-txn-ops", "1024")
+                .build()
+        ) {
+            etcd.containers().forEach(container -> {
+                container.setPortBindings(PORT_BINDINGS);
+                // other docker container settings
+            });
 
-        etcd.containers().forEach(container -> {
-            container.setPortBindings(PORT_BINDINGS);
-            // other docker container settings
-        });
-        Runtime.getRuntime().addShutdownHook(new Thread(etcd::close));
-        try {
             System.out.println("Embedded docker etcd server starting...");
             etcd.start();
             Assertions.assertThat(etcd.containers()).hasSize(1);
@@ -64,8 +64,6 @@ public final class EmbeddedEtcdServerTestcontainers {
             System.out.println("Embedded docker etcd server started!");
 
             new CountDownLatch(1).await();
-        } finally {
-            etcd.close();
         }
     }
 
