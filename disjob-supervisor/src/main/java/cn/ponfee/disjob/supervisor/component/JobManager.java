@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.supervisor.component;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.base.Symbol;
+import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGNode;
@@ -584,25 +584,25 @@ public class JobManager {
                 Assert.isTrue(cGroup.equals(pGroup), () -> "Inconsistent depend group: " + cGroup + ", " + pGroup);
             }
             // 校验是否有循环依赖 以及 依赖层级是否太深
-            checkCircularDepends(jobId, new HashSet<>(parentJobIds));
+            checkCycleDepends(jobId, new HashSet<>(parentJobIds));
 
             List<SchedDepend> list = Collects.convert(parentJobIds, pid -> SchedDepend.of(pid, jobId));
             Collects.batchProcess(list, dependMapper::batchInsert, JobConstants.PROCESS_BATCH_SIZE);
-            job.setTriggerValue(Joiner.on(Symbol.Str.COMMA).join(parentJobIds));
+            job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {
             job.setNextTriggerTime(TriggerTimes.updateNextTriggerTime(job));
         }
     }
 
-    private void checkCircularDepends(Long jobId, Set<Long> parentJobIds) {
+    private void checkCycleDepends(Long jobId, Set<Long> parentJobIds) {
         Set<Long> outerDepends = parentJobIds;
         for (int i = 1; ; i++) {
             Map<Long, SchedDepend> map = Collects.toMap(dependMapper.findByChildJobIds(parentJobIds), SchedDepend::getParentJobId);
             if (MapUtils.isEmpty(map)) {
                 return;
             }
-            Assert.isTrue(!map.containsKey(jobId), () -> "Circular depends job: " + map.get(jobId));
+            Assert.isTrue(!map.containsKey(jobId), () -> "Depends job has cycle: " + map.get(jobId));
             Assert.isTrue(i < conf.getMaximumJobDependsDepth(), () -> "Exceed depends depth: " + outerDepends);
             parentJobIds = map.keySet();
         }

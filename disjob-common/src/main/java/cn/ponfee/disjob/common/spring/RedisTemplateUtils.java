@@ -125,19 +125,17 @@ public class RedisTemplateUtils {
         return container;
     }
 
-    private static boolean exceptionContainsNoScriptError(Throwable e) {
-        if (!(e instanceof NonTransientDataAccessException)) {
+    private static boolean exceptionContainsNoScriptError(Throwable t) {
+        if (!(t instanceof NonTransientDataAccessException)) {
             return false;
         }
 
         Set<Throwable> set = new HashSet<>();
-        Throwable current = e;
-        while (current != null && set.add(current)) {
-            String exMessage = current.getMessage();
+        for (; t != null && set.add(t); t = t.getCause()) {
+            String exMessage = t.getMessage();
             if (exMessage != null && exMessage.contains("NOSCRIPT")) {
                 return true;
             }
-            current = current.getCause();
         }
         return false;
     }

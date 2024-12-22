@@ -24,7 +24,6 @@ import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.configuration.BaseServerRegistryAutoConfiguration;
 import cn.ponfee.disjob.registry.redis.RedisSupervisorRegistry;
 import cn.ponfee.disjob.registry.redis.RedisWorkerRegistry;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -34,6 +33,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Objects;
 
 import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_PREFIX;
 
@@ -45,6 +46,14 @@ import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_PREFIX;
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(RedisRegistryProperties.class)
 public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAutoConfiguration {
+
+    public static class StringRedisTemplateWrapper {
+        private final StringRedisTemplate stringRedisTemplate;
+
+        public StringRedisTemplateWrapper(StringRedisTemplate stringRedisTemplate) {
+            this.stringRedisTemplate = Objects.requireNonNull(stringRedisTemplate);
+        }
+    }
 
     /**
      * Redis registry StringRedisTemplate spring bean name
@@ -63,17 +72,17 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      */
     @ConditionalOnMissingBean(name = SPRING_BEAN_NAME_STRING_REDIS_TEMPLATE_WRAPPER)
     @Bean(SPRING_BEAN_NAME_STRING_REDIS_TEMPLATE_WRAPPER)
-    public MutableObject<StringRedisTemplate> stringRedisTemplateWrapper(StringRedisTemplate stringRedisTemplate) {
-        return new MutableObject<>(stringRedisTemplate);
+    public StringRedisTemplateWrapper stringRedisTemplateWrapper(StringRedisTemplate stringRedisTemplate) {
+        return new StringRedisTemplateWrapper(stringRedisTemplate);
     }
 
     /**
      * Configuration redis supervisor registry.
      * <p>@ConditionalOnBean：如果注解没有入参，则默认以方法的返回类型判断，即容器中已存在类型为SupervisorRegistry的实例才创建
      *
-     * @param config                     redis registry configuration
-     * @param restTemplate               the rest template
-     * @param stringRedisTemplateWrapper the string redis template wrapper
+     * @param config       the redis registry config
+     * @param restTemplate the rest template
+     * @param wrapper      the string redis template wrapper
      * @return SupervisorRegistry
      * @see org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
      */
@@ -81,8 +90,8 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
     @Bean
     public SupervisorRegistry supervisorRegistry(RedisRegistryProperties config,
                                                  @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                                 @Qualifier(SPRING_BEAN_NAME_STRING_REDIS_TEMPLATE_WRAPPER) MutableObject<StringRedisTemplate> stringRedisTemplateWrapper) {
-        return new RedisSupervisorRegistry(config, restTemplate, stringRedisTemplateWrapper.getValue());
+                                                 @Qualifier(SPRING_BEAN_NAME_STRING_REDIS_TEMPLATE_WRAPPER) StringRedisTemplateWrapper wrapper) {
+        return new RedisSupervisorRegistry(config, restTemplate, wrapper.stringRedisTemplate);
     }
 
     /**
@@ -92,8 +101,8 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
     @Bean
     public WorkerRegistry workerRegistry(RedisRegistryProperties config,
                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                         @Qualifier(SPRING_BEAN_NAME_STRING_REDIS_TEMPLATE_WRAPPER) MutableObject<StringRedisTemplate> stringRedisTemplateWrapper) {
-        return new RedisWorkerRegistry(config, restTemplate, stringRedisTemplateWrapper.getValue());
+                                         @Qualifier(SPRING_BEAN_NAME_STRING_REDIS_TEMPLATE_WRAPPER) StringRedisTemplateWrapper wrapper) {
+        return new RedisWorkerRegistry(config, restTemplate, wrapper.stringRedisTemplate);
     }
 
 }

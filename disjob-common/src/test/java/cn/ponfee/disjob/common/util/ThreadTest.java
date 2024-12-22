@@ -100,7 +100,7 @@ class ThreadTest {
                     Thread.sleep("main".equals(Thread.currentThread().getName()) ? 2000 : 200);
                     System.out.println("----------" + Thread.currentThread().getName() + ", " + x);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             });
         }
@@ -126,7 +126,7 @@ class ThreadTest {
                     Thread.sleep("main".equals(Thread.currentThread().getName()) ? 2000 : 200);
                     System.out.println("----------" + Thread.currentThread().getName() + ", " + x);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             });
         }
@@ -153,7 +153,7 @@ class ThreadTest {
                     Thread.sleep("main".equals(Thread.currentThread().getName()) ? 2000 : 200);
                     System.out.println("----------" + Thread.currentThread().getName() + ", " + x);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             });
         }
@@ -180,7 +180,7 @@ class ThreadTest {
                     Thread.sleep("main".equals(Thread.currentThread().getName()) ? 2000 : 200);
                     System.out.println("----------" + Thread.currentThread().getName() + ", " + x);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             });
         }

@@ -84,7 +84,10 @@
         },
         {
           field: 'group',
-          title: '分组名称'
+          title: '分组名称',
+          cellStyle: function (value, row, index) {
+            return { css: { "white-space": "nowrap" } }
+          }
         },
         {
           field: 'jobName',
@@ -145,6 +148,9 @@
           title: '上一次触发时间',
           formatter: function (value, row, index) {
             return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
+          },
+          cellStyle: function (value, row, index) {
+            return { css: { "white-space": "nowrap" } }
           }
         },
         {
@@ -155,6 +161,9 @@
               return "-"
             }
             return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
+          },
+          cellStyle: function (value, row, index) {
+            return { css: { "white-space": "nowrap" } }
           }
         },
         {
@@ -165,7 +174,10 @@
         {
           field: 'updatedAt',
           title: '更新时间',
-          visible: false
+          visible: false,
+          cellStyle: function (value, row, index) {
+            return { css: { "white-space": "nowrap" } }
+          }
         },
         {
           field: 'createdBy',
@@ -173,7 +185,10 @@
         },
         {
           field: 'createdAt',
-          title: '创建时间'
+          title: '创建时间',
+          cellStyle: function (value, row, index) {
+            return { css: { "white-space": "nowrap" } }
+          }
         },
         {
           title: '操作',

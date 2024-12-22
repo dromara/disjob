@@ -77,7 +77,7 @@
 ├── disjob-admin                              # 管理后台项目②(基于Ruoyi框架二次开发)
 ├── disjob-bom                                # Maven项目bom模块
 ├── disjob-common                             # 公共的工具类模块
-├── disjob-core                               # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
+├── disjob-core                               # 任务调度相关的核心类（如枚举类、接口定义、接口参数等）
 ├── disjob-dispatch                           # 任务派发模块
 │   ├── disjob-dispatch-api                   # 任务派发的抽象接口层
 │   ├── disjob-dispatch-http                  # 任务派发的Http实现
@@ -106,7 +106,7 @@
 ├── disjob-admin                              # 管理后台项目②(基于Ruoyi框架二次开发)
 ├── disjob-bom                                # Maven项目bom模块
 ├── disjob-common                             # 公共的工具类模块
-├── disjob-core                               # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
+├── disjob-core                               # 任务调度相关的核心类（如枚举类、接口定义、接口参数等）
 ├── disjob-dispatch                           # 任务派发模块
 │   ├── disjob-dispatch-api                   # 任务派发的抽象接口层
 │   ├── disjob-dispatch-http                  # 任务派发的Http实现
@@ -332,7 +332,7 @@
       <li>默认使用<code>disjob-registry-redis</code>做注册中心，<code>disjob-dispatch-http</code>做任务派发</li>
     </ul>
     <ol start="3" dir="auto">
-      <li>Samples项目配置文件</li>
+      <li>Samples项目配置文件【disjob-samples】</li>
     </ol>
     <ul dir="auto">
       <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf-supervisor/src/main/resources/application-mysql.yml">Supervisor角色Mysql配置</a></li>
@@ -343,14 +343,14 @@
       <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-frameless-worker/src/main/resources/worker-conf.yml">Worker角色普通Java-main应用配置</a></li>
     </ul>
     <ol start="4" dir="auto">
-      <li>Admin项目配置文件</li>
+      <li>Admin项目配置文件【disjob-admin】</li>
     </ol>
     <ul dir="auto">
       <li><a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml">Supervisor角色相关的Mysql配置</a></li>
       <li><a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml">Redis配置</a>（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）</li>
       <li><a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java">可加@EnableWorker注解启用Worker角色</a>（管理后台必须启用Supervisor角色）</li>
       <li><a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml">管理后台功能相关的Mysql配置</a></li>
-      <li><a href="http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE" rel="nofollow">RuoYi框架相关配置参考</a>（disjob-admin中只新增了<a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-disjob">ruoyi-disjob</a>模块，其它RuoYi原有的模块基本没有改动）</li>
+      <li><a href="http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE" rel="nofollow">RuoYi框架相关配置参考官方文档</a>（只增加了<a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-disjob">ruoyi-disjob</a>模块，其它的RuoYi原有模块基本未改动）</li>
     </ul>
     <ol start="5" dir="auto">
       <li>各种注册中心配置类参考（Redis使用Spring-boot自带的配置方式）</li>

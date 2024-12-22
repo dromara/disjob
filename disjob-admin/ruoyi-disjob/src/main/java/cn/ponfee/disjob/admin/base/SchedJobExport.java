@@ -146,12 +146,13 @@ public class SchedJobExport {
     @Excel(name = "Worker关机的执行策略")
     private Integer shutdownStrategy;
 
-
-    public static SchedJobExport ofSchedJobResponse(SchedJobResponse schedJobResponse) {
+    public static SchedJobExport of(SchedJobResponse schedJobResponse) {
         SchedJobExport schedJobExport = new SchedJobExport();
         BeanUtils.copyProperties(schedJobResponse, schedJobExport);
         return schedJobExport;
     }
+
+    // ------------------------------------------------------------getter/setter
 
     public Long getJobId() {
         return jobId;

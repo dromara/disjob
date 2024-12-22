@@ -118,7 +118,7 @@ public class JavaUtilDateFormatTest {
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01/02T03:04:05.678Z").toString());
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022-01-02T03:04:05.678+08").toString());
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01/02T03:04:05.678+08").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("Sun Jan 02 03:04:05 CST 2022").toString()); // FIXME
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("Sun Jan 02 03:04:05 CST 2022").toString());
 
 
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse(String.valueOf(date.getTime())).toString());

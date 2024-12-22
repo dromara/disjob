@@ -169,11 +169,11 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
      * @return a list nodes for DFS tree node
      */
     public List<FlatNode<T, A>> flatDFS() {
-        List<FlatNode<T, A>> collect = Lists.newLinkedList();
+        List<FlatNode<T, A>> list = Lists.newLinkedList();
         Deque<TreeNode<T, A>> stack = Collects.newLinkedList(this);
         while (!stack.isEmpty()) {
             TreeNode<T, A> node = stack.pop();
-            collect.add(new FlatNode<>(node));
+            list.add(new FlatNode<>(node));
             node.ifChildrenPresent(cs -> {
                 // 反向遍历子节点
                 for (Iterator<TreeNode<T, A>> iter = cs.descendingIterator(); iter.hasNext(); ) {
@@ -181,19 +181,19 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
                 }
             });
         }
-        return collect;
+        return list;
     }
 
     /*
     // 递归方式DFS
     public List<FlatNode<T, A>> flatDFS() {
-        List<FlatNode<T, A>> collect = Lists.newLinkedList();
-        dfs(collect);
-        return collect;
+        List<FlatNode<T, A>> list = Lists.newLinkedList();
+        dfs(list);
+        return list;
     }
-    private void dfs(List<FlatNode<T, A>> collect) {
-        collect.add(new FlatNode<>(this));
-        forEachChild(child -> child.dfs(collect));
+    private void dfs(List<FlatNode<T, A>> list) {
+        list.add(new FlatNode<>(this));
+        forEachChild(child -> child.dfs(list));
     }
     */
 
@@ -210,12 +210,12 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
      * @return a list nodes for CFS tree node
      */
     public List<FlatNode<T, A>> flatCFS() {
-        List<FlatNode<T, A>> collect = Collects.newLinkedList(new FlatNode<>(this));
+        List<FlatNode<T, A>> list = Collects.newLinkedList(new FlatNode<>(this));
         Deque<TreeNode<T, A>> stack = Collects.newLinkedList(this);
         while (!stack.isEmpty()) {
             TreeNode<T, A> node = stack.pop();
             node.ifChildrenPresent(cs -> {
-                cs.forEach(child -> collect.add(new FlatNode<>(child)));
+                cs.forEach(child -> list.add(new FlatNode<>(child)));
 
                 // 反向遍历子节点
                 for (Iterator<TreeNode<T, A>> iter = cs.descendingIterator(); iter.hasNext(); ) {
@@ -223,19 +223,19 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
                 }
             });
         }
-        return collect;
+        return list;
     }
 
     /*
     // 递归方式CFS
     public List<FlatNode<T, A>> flatCFS() {
-        List<FlatNode<T, A>> collect = Collects.newLinkedList(new FlatNode<>(this));
-        cfs(collect);
-        return collect;
+        List<FlatNode<T, A>> list = Collects.newLinkedList(new FlatNode<>(this));
+        cfs(list);
+        return list;
     }
-    private void cfs(List<FlatNode<T, A>> collect) {
-        forEachChild(child -> collect.add(new FlatNode<>(child)));
-        forEachChild(child -> child.cfs(collect));
+    private void cfs(List<FlatNode<T, A>> list) {
+        forEachChild(child -> list.add(new FlatNode<>(child)));
+        forEachChild(child -> child.cfs(list));
     }
     */
 
@@ -247,37 +247,37 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
      * @return a list nodes for BFS tree node
      */
     public List<FlatNode<T, A>> flatBFS() {
-        List<FlatNode<T, A>> collect = new LinkedList<>();
+        List<FlatNode<T, A>> list = new LinkedList<>();
         Queue<TreeNode<T, A>> queue = Collects.newLinkedList(this);
         while (!queue.isEmpty()) {
             for (int i = queue.size(); i > 0; i--) {
-                TreeNode<T, A> node = queue.poll();
-                collect.add(new FlatNode<>(node));
+                TreeNode<T, A> node = Objects.requireNonNull(queue.poll());
+                list.add(new FlatNode<>(node));
                 node.forEachChild(queue::offer);
             }
         }
-        return collect;
+        return list;
     }
 
     /*
     // 递归方式BFS
     public List<FlatNode<T, A>> flatBFS() {
-        List<FlatNode<T, A>> collect = new LinkedList<>();
+        List<FlatNode<T, A>> list = new LinkedList<>();
         Queue<TreeNode<T, A>> queue = Collects.newLinkedList(this);
-        bfs(queue, collect);
-        return collect;
+        bfs(queue, list);
+        return list;
     }
-    private void bfs(Queue<TreeNode<T, A>> queue, List<FlatNode<T, A>> collect) {
+    private void bfs(Queue<TreeNode<T, A>> queue, List<FlatNode<T, A>> list) {
         int size = queue.size();
         if (size == 0) {
             return;
         }
         while (size-- > 0) {
-            TreeNode<T, A> node = queue.poll();
-            collect.add(new FlatNode<>(node));
+            TreeNode<T, A> node = Objects.requireNonNull(queue.poll());
+            list.add(new FlatNode<>(node));
             node.forEachChild(queue::offer);
         }
-        bfs(queue, collect);
+        bfs(queue, list);
     }
     */
 
@@ -478,7 +478,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
             return null;
         }
 
-        // already check duplicated, so cannot happen exists circular dependencies
+        // already check duplicated, so cannot happen exists cycle dependencies
         /*
         if (IterableUtils.matchesAny(parentPath, nid::equals)) {
             // 节点路径中已经包含了此节点，则视为环状

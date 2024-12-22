@@ -36,7 +36,7 @@ disjob                                        # 主项目①pom.xml
 ├── disjob-admin                              # 管理后台项目②pom.xml(基于Ruoyi框架二次开发)
 ├── disjob-bom                                # Maven项目bom模块
 ├── disjob-common                             # 公共的工具类模块
-├── disjob-core                               # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
+├── disjob-core                               # 任务调度相关的核心类（如枚举类、接口定义、接口参数等）
 ├── disjob-dispatch                           # 任务派发模块
 │   ├── disjob-dispatch-api                   # 任务派发的抽象接口层
 │   ├── disjob-dispatch-http                  # 任务派发的Http实现
@@ -163,7 +163,7 @@ disjob                                        # 主项目①pom.xml
 - [Admin项目](disjob-admin/ruoyi-disjob/pom.xml)
 - 默认使用`disjob-registry-redis`做注册中心，`disjob-dispatch-http`做任务派发
 
-3. Samples项目配置文件
+3. Samples项目配置文件【disjob-samples】
 
 - [Supervisor角色Mysql配置](disjob-samples/disjob-samples-conf-supervisor/src/main/resources/application-mysql.yml)
 - [Supervisor角色核心配置](disjob-samples/disjob-samples-conf-supervisor/src/main/resources/application-supervisor.yml)
@@ -172,12 +172,12 @@ disjob                                        # 主项目①pom.xml
 - [Spring-boot Web相关配置](disjob-samples/disjob-samples-springboot-common/src/main/resources/application-web.yml)（Worker与Supervisor共用）
 - [Worker角色普通Java-main应用配置](disjob-samples/disjob-samples-frameless-worker/src/main/resources/worker-conf.yml)
 
-4. Admin项目配置文件
+4. Admin项目配置文件【disjob-admin】
 - [Supervisor角色相关的Mysql配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)
 - [Redis配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
 - [可加@EnableWorker注解启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)（管理后台必须启用Supervisor角色）
 - [管理后台功能相关的Mysql配置](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)
-- [RuoYi框架相关配置参考](http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE )（disjob-admin中只新增了[ruoyi-disjob](disjob-admin/ruoyi-disjob)模块，其它RuoYi原有的模块基本没有改动）
+- [RuoYi框架相关配置参考官方文档](http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE )（只增加了[ruoyi-disjob](disjob-admin/ruoyi-disjob)模块，其它的RuoYi原有模块基本未改动）
 
 5. 各种注册中心配置类参考（Redis使用Spring-boot自带的配置方式）
 - [Consul](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java)

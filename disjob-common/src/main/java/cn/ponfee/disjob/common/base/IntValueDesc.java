@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.common.base;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
 
@@ -27,17 +26,15 @@ import java.io.Serializable;
  * @author Ponfee
  */
 @Getter
-@Setter
 public class IntValueDesc extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 86017761570053534L;
 
-    private int value;
-    private String desc;
+    private final int value;
+    private final String desc;
 
-    public static IntValueDesc of(int value, String desc) {
-        IntValueDesc intValueDesc = new IntValueDesc();
-        intValueDesc.setValue(value);
-        intValueDesc.setDesc(desc);
-        return intValueDesc;
+    public IntValueDesc(int value, String desc) {
+        this.value = value;
+        this.desc = desc;
     }
+
 }

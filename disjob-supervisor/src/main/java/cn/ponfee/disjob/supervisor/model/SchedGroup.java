@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.model;
 
-import cn.ponfee.disjob.common.base.Symbol;
+import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
@@ -94,13 +94,14 @@ public class SchedGroup extends BaseEntity {
 
     public static String checkGroup(String group) {
         Assert.hasText(group, "Group cannot be blank.");
+        Assert.isTrue(!group.contains(Str.COLON), "Group cannot contains character ':'");
         Assert.isTrue((group = group.trim()).length() <= 60, "Group length cannot exceed limit 60.");
         return group;
     }
 
     public static String checkOwnUser(String ownUser) {
         Assert.hasText(ownUser, "Own user cannot be blank.");
-        Assert.isTrue(!ownUser.contains(Symbol.Str.COMMA), "Own user cannot contains character ','");
+        Assert.isTrue(!ownUser.contains(Str.COMMA), "Own user cannot contains character ','");
         Assert.isTrue((ownUser = ownUser.trim()).length() <= 60, "Own user length cannot exceed limit 60.");
         return ownUser;
     }

@@ -56,7 +56,7 @@ public abstract class TaskReceiver implements Startable {
      */
     protected final boolean doReceive(ExecuteTaskParam param) {
         if (param == null) {
-            log.error("Received task cannot be null.");
+            log.error("Received task param cannot be null.");
             return false;
         }
 

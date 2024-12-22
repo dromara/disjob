@@ -121,11 +121,17 @@
         },
         {
           field: 'version',
-          title: 'Version'
+          title: 'Version',
+          cellStyle: function (value, row, index) {
+            return { css: { "white-space": "nowrap" } }
+          }
         },
         {
           field: 'startupTime',
-          title: '启动时间'
+          title: '启动时间',
+          cellStyle: function (value, row, index) {
+            return { css: { "white-space": "nowrap" } }
+          }
         },
         {
           title: '操作',

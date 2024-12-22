@@ -120,11 +120,18 @@ public class TransactionUtils {
             TransactionSynchronization ts = new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
+                    boolean readOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();
+                    if (!readOnly) {
+                        TransactionSynchronizationManager.setCurrentTransactionReadOnly(true);
+                    }
                     DO_AFTER_COMMIT.set(Boolean.TRUE);
                     try {
                         action.run();
                     } finally {
                         DO_AFTER_COMMIT.remove();
+                        if (!readOnly) {
+                            TransactionSynchronizationManager.setCurrentTransactionReadOnly(false);
+                        }
                     }
                 }
             };

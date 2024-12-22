@@ -86,7 +86,7 @@ public class SchedGroupService extends SingletonClassConstraint {
         refresh();
     }
 
-    // ------------------------------------------------------------sched group
+    // ------------------------------------------------------------database single operation without spring transactional
 
     public long add(String user, SchedGroupAddRequest request) {
         request.checkAndTrim();

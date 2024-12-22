@@ -45,7 +45,6 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -147,7 +146,7 @@ public class DisjobJobController extends BaseController {
             // 不分页查询，导出全部数据
             request.setPaged(false);
             List<SchedJobResponse> rows = schedJobService.queryJobForPage(request).getRows();
-            list = Collects.convert(rows, SchedJobExport::ofSchedJobResponse);
+            list = Collects.convert(rows, SchedJobExport::of);
         }
         ExcelUtil<SchedJobExport> excel = new ExcelUtil<>(SchedJobExport.class);
         return excel.exportExcel(list, "作业配置数据");

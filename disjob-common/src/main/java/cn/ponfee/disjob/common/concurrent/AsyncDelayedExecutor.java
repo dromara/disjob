@@ -123,7 +123,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
             try {
                 delayed = queue.poll(2000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
-                LOG.error("Delayed queue pool interrupted.", e);
+                LOG.warn("Delayed queue pool interrupted: {}", e.getMessage());
                 Thread.currentThread().interrupt();
                 break;
             }

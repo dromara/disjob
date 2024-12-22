@@ -88,7 +88,7 @@ public abstract class TaskDispatcher implements Startable {
     }
 
     /**
-     * Assign a worker and dispatch to the assigned worker.
+     * Assign a worker and dispatch to the destination worker.
      *
      * @param group the group
      * @param tasks the list of execution task param
