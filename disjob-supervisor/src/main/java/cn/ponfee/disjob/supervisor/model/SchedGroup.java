@@ -65,7 +65,7 @@ public class SchedGroup extends BaseEntity {
     /**
      * 告警接收人员(多个逗号分隔)
      */
-    private String alarmUsers;
+    private String alertUsers;
 
     /**
      * 该组下的Worker服务的context-path
@@ -73,9 +73,9 @@ public class SchedGroup extends BaseEntity {
     private String workerContextPath;
 
     /**
-     * 告警web hook地址
+     * Webhook地址
      */
-    private String webHook;
+    private String webhook;
 
     /**
      * 行记录版本号

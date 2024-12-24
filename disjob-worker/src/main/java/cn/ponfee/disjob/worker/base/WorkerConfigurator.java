@@ -54,7 +54,7 @@ public class WorkerConfigurator {
     }
 
     public static void modifyMaximumPoolSize(int maximumPoolSize) {
-        workerThreadPool.modifyMaximumPoolSize(maximumPoolSize);
+        workerThreadPool.setMaximumPoolSize(maximumPoolSize);
     }
 
     public static boolean existsTask(long taskId) {

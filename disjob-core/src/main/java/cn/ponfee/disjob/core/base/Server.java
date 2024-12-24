@@ -16,7 +16,8 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.common.base.Symbol.Str;
+import cn.ponfee.disjob.common.base.Symbol.Char;
+import cn.ponfee.disjob.common.util.Strings;
 import lombok.Getter;
 import org.springframework.util.Assert;
 
@@ -92,11 +93,7 @@ public abstract class Server implements Serializable {
     }
 
     static String check(String str) {
-        if (str == null ||
-            str.isEmpty() ||
-            str.contains(Str.COLON) ||
-            Character.isWhitespace(str.charAt(0)) ||
-            Character.isWhitespace(str.charAt(str.length() - 1))) {
+        if (str == null || str.isEmpty() || Strings.containsCharOrWhitespace(str, Char.COLON)) {
             throw new IllegalArgumentException("Invalid server part value: " + (str == null ? "null" : "'" + str + "'"));
         }
         return str;

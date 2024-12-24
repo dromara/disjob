@@ -105,7 +105,7 @@ public class SchedInstance extends BaseEntity {
     private Date runEndTime;
 
     /**
-     * 已重试的次数(the maximum value is sched_job.retry_count)
+     * 当前是第几次重试(the maximum value is sched_job.retry_count)
      */
     private Integer retriedCount;
 
@@ -223,6 +223,11 @@ public class SchedInstance extends BaseEntity {
         return RunState.of(runState).isTerminal();
     }
 
+    /**
+     * 当前实例是否为重试实例：true-是重试实例；false-非重试实例；
+     *
+     * @return {@code true} if current is retry instance
+     */
     @Transient
     public boolean isRunRetry() {
         return RunType.RETRY.equalsValue(runType);

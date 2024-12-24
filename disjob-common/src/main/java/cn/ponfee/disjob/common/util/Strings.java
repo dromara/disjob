@@ -260,4 +260,18 @@ public final class Strings {
         return lastIndexOf == -1 ? str : str.substring(lastIndexOf + 1);
     }
 
+    public static boolean containsCharOrWhitespace(String str, char chr) {
+        if (StringUtils.isEmpty(str)) {
+            return false;
+        }
+        char c;
+        for (int len = str.length(), i = 0; i < len; i++) {
+            c = str.charAt(i);
+            if (c == chr || Character.isWhitespace(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

@@ -81,19 +81,19 @@ public class SchedJob extends BaseEntity {
     private String jobParam;
 
     /**
-     * 调度失败重试类型：0-不重试；1-只重试失败的Task；2-重试所有的Task；
+     * 实例失败的重试类型：0-不重试；1-只重试失败的Task；2-重试所有的Task；
      *
      * @see RetryType
      */
     private Integer retryType;
 
     /**
-     * 调度失败可重试的最大次数
+     * 实例失败的最大重试次数
      */
     private Integer retryCount;
 
     /**
-     * 调度失败重试间隔(毫秒)，阶梯递增(square of sched_instance.retried_count)
+     * 实例失败的重试间隔(毫秒)，阶梯递增(square of sched_instance.retried_count)
      */
     private Integer retryInterval;
 
@@ -168,7 +168,7 @@ public class SchedJob extends BaseEntity {
     private Date nextScanTime;
 
     /**
-     * 连续失败的扫描次数，连续失败次数达到阈值后自动禁用(set job_state=0)
+     * 连续扫描失败的次数，连续失败次数达到阈值后自动禁用(set job_state=0)
      */
     private Integer scanFailedCount;
 

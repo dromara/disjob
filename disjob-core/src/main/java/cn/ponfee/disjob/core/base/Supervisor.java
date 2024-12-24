@@ -99,17 +99,6 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
 
     // --------------------------------------------------------local Supervisor
 
-    public interface GroupInfo {
-
-        String getWorkerContextPath(String group);
-
-        String getSupervisorToken(String group);
-
-        String getWorkerToken(String group);
-
-        String getUserToken(String group);
-    }
-
     /**
      * Supervisor.class.getDeclaredClasses()[0]
      */
@@ -172,7 +161,7 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
          */
         public abstract boolean verifyWorkerSignatureToken(String group, String workerSignatureToken);
 
-        private static synchronized Local create(final String host, final int port, final GroupInfo groupInfo) {
+        private static synchronized Local create(final String host, final int port, final GroupInfoService groupInfoService) {
             if (instance != null) {
                 throw new Error("Local supervisor already created.");
             }
@@ -180,30 +169,30 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
             instance = new Local(host, port) {
                 @Override
                 public String getWorkerContextPath(String group) {
-                    return groupInfo.getWorkerContextPath(group);
+                    return groupInfoService.getWorkerContextPath(group);
                 }
 
                 @Override
                 public String createSupervisorAuthenticationToken(String group) {
-                    String supervisorToken = groupInfo.getSupervisorToken(group);
+                    String supervisorToken = groupInfoService.getSupervisorToken(group);
                     return Tokens.createAuthentication(supervisorToken, TokenType.supervisor, group);
                 }
 
                 @Override
                 public boolean verifyWorkerAuthenticationToken(String group, String workerAuthenticationToken) {
-                    String workerToken = groupInfo.getWorkerToken(group);
+                    String workerToken = groupInfoService.getWorkerToken(group);
                     return Tokens.verifyAuthentication(workerAuthenticationToken, workerToken, TokenType.worker, group);
                 }
 
                 @Override
                 public boolean verifyUserAuthenticationToken(String group, String userAuthenticationToken) {
-                    String userToken = groupInfo.getUserToken(group);
+                    String userToken = groupInfoService.getUserToken(group);
                     return Tokens.verifyAuthentication(userAuthenticationToken, userToken, TokenType.user, group);
                 }
 
                 @Override
                 public boolean verifyWorkerSignatureToken(String group, String workerSignatureToken) {
-                    String workerToken = groupInfo.getWorkerToken(group);
+                    String workerToken = groupInfoService.getWorkerToken(group);
                     return Tokens.verifySignature(workerSignatureToken, workerToken, TokenType.worker, group);
                 }
             };

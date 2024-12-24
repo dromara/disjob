@@ -39,10 +39,10 @@ public class SchedGroupResponse extends ToJsonString implements Serializable {
     private String workerToken;
     private String userToken;
     private String ownUser;
-    private String alarmUsers;
+    private String alertUsers;
     private String devUsers;
     private String workerContextPath;
-    private String webHook;
+    private String webhook;
 
     private Integer version;
     private Date updatedAt;

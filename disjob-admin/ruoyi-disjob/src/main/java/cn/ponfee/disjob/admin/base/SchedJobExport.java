@@ -73,19 +73,19 @@ public class SchedJobExport {
     private String jobParam;
 
     /**
-     * 调度失败重试类型：0-不重试；1-只重试失败的Task；2-重试所有的Task；
+     * 实例失败的重试类型：0-不重试；1-只重试失败的Task；2-重试所有的Task；
      */
     @Excel(name = "重试类型")
     private Integer retryType;
 
     /**
-     * 调度失败可重试的最大次数
+     * 实例失败的最大重试次数
      */
     @Excel(name = "最大重试次数")
     private Integer retryCount;
 
     /**
-     * 调度失败重试间隔(毫秒)，阶梯递增(square of sched_instance.retried_count)
+     * 实例失败的重试间隔(毫秒)，阶梯递增(square of sched_instance.retried_count)
      */
     @Excel(name = "重试间隔(毫秒)")
     private Integer retryInterval;

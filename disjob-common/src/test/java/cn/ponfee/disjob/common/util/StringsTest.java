@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.util;
 
 import com.google.common.base.CaseFormat;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +37,13 @@ public class StringsTest {
         Assertions.assertTrue(Strings.isMatch("aa", "a*"));
         Assertions.assertTrue(Strings.isMatch("ab", "?*"));
         Assertions.assertFalse(Strings.isMatch("aab", "c*a*b"));
+
+        Assertions.assertFalse(StringUtils.containsWhitespace(null));
+        Assertions.assertFalse(StringUtils.containsWhitespace(""));
+        Assertions.assertTrue(StringUtils.containsWhitespace(" "));
+        Assertions.assertTrue(StringUtils.containsWhitespace("a b"));
+        Assertions.assertTrue(StringUtils.containsWhitespace("a\nb"));
+        Assertions.assertTrue(StringUtils.containsWhitespace("a\tb"));
     }
 
     @Test

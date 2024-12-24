@@ -18,6 +18,7 @@ package cn.ponfee.disjob.registry;
 
 import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.util.GenericUtils;
+import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
 import cn.ponfee.disjob.registry.discovery.ServerDiscovery;
@@ -166,10 +167,10 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     // -------------------------------------------------------------------------------------private method
 
     private static String prune(String namespace, char separator) {
-        if (StringUtils.isBlank(namespace)) {
+        if (StringUtils.isEmpty(namespace)) {
             return "";
         }
-        if (namespace.contains(String.valueOf(separator))) {
+        if (Strings.containsCharOrWhitespace(namespace, separator)) {
             throw new IllegalArgumentException("Namespace cannot contains separator symbol '" + separator + "'");
         }
         return namespace.trim() + separator;

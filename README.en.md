@@ -200,5 +200,5 @@ Scan the QR code to add WeChat friends, note `disjob`, and invite you to join th
 - [x] Admin console: accounting, authority, permission and task manage
 - [ ] Build a project document web site
 - [ ] Monitor real-time executing logs of tasks online
-- [ ] Alarm subscribe: Email, SMS, Voice, Lark, Ding Talk, WeChat
+- [ ] Alert subscribe: Email, SMS, Voice, Lark, Ding Talk, WeChat
 - [ ] Visual monitoring BI dashboard

@@ -16,17 +16,19 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
-import cn.ponfee.disjob.core.base.Supervisor;
+import cn.ponfee.disjob.core.base.GroupInfoService;
+
+import java.util.Set;
 
 import static cn.ponfee.disjob.supervisor.application.SchedGroupService.getGroup;
 
 /**
- * GroupInfo holder.
+ * Group info holder.
  * <p>当`group`还未配置时，会报错：“Not found worker group”
  *
  * @author Ponfee
  */
-public final class GroupInfoHolder implements Supervisor.GroupInfo {
+public final class GroupInfoHolder implements GroupInfoService {
 
     public static final GroupInfoHolder INSTANCE = new GroupInfoHolder();
 
@@ -50,6 +52,21 @@ public final class GroupInfoHolder implements Supervisor.GroupInfo {
     @Override
     public String getUserToken(String group) {
         return getGroup(group).getUserToken();
+    }
+
+    @Override
+    public String getWebhook(String group) {
+        return getGroup(group).getWebhook();
+    }
+
+    @Override
+    public String getOwnUser(String group) {
+        return getGroup(group).getOwnUser();
+    }
+
+    @Override
+    public Set<String> getAlertUsers(String group) {
+        return getGroup(group).getAlertUsers();
     }
 
 }
