@@ -14,40 +14,33 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.email.configuration;
+package cn.ponfee.disjob.alert.sms.configuration;
 
-import cn.ponfee.disjob.alert.email.EmailAlertSender;
 import cn.ponfee.disjob.alert.sender.AlertSenderProperties;
+import cn.ponfee.disjob.alert.sms.SmsAlertSender;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Email alert properties
+ * Sms alert properties
  *
- * @author Ponfee
+ * @author TJxiaobao
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = AlertSenderProperties.KEY_PREFIX + "." + EmailAlertSender.CHANNEL)
-public class EmailAlertSenderProperties extends AlertSenderProperties {
+@ConfigurationProperties(prefix = AlertSenderProperties.KEY_PREFIX + "." + SmsAlertSender.CHANNEL)
+public class SmsAlertSenderProperties extends AlertSenderProperties {
 
-    private static final long serialVersionUID = 2531779048449076379L;
+        private static final long serialVersionUID = 2531779048449076379L;
 
-    private String host;
+        private String accessKeyId;
 
-    private String protocol;
+        private String accessKeySecret;
 
-    private String username;
+        private String signaTure;
 
-    private String password;
+        private String templateId;
 
-    private String fromAddress;
-
-    private String port;
-
-    private boolean startTlsEnabled; // 是否启用 STARTTLS
-
-    private boolean sslEnabled;
-
+        private String supplier;
 }

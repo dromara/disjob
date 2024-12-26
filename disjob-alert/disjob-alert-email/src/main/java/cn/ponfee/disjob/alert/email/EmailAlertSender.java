@@ -75,6 +75,8 @@ public class EmailAlertSender extends AlertSender {
             try {
                 Message message = new MimeMessage(mailSession);
                 message.setFrom(new InternetAddress(emailConfig.getFromAddress())); // Sender
+                message.setSubject(buildSubject(alertEvent));
+                message.setContent(buildContent(alertEvent), "text/html; charset=utf-8");
                 message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail)); // Recipient
                 Transport.send(message);
 
@@ -85,4 +87,25 @@ public class EmailAlertSender extends AlertSender {
         }
     }
 
+    /**
+     * build the email alert subject
+     */
+    private String buildSubject(AlertEvent alertEvent) {
+        return "Alert: " + alertEvent.getAlertType() + " - " + alertEvent.buildTitle();
+    }
+
+    /**
+     * build the email alert content
+     */
+    private String buildContent(AlertEvent alertEvent) {
+        return String.format(
+            "Alert Notification\n\n" +
+                "Alert Type: %s\n" +
+                "Timestamp: %s\n\n" +
+                "Details:\n%s",
+            alertEvent.getAlertType(),
+            alertEvent.buildTitle(),
+            alertEvent.buildContent()
+        );
+    }
 }

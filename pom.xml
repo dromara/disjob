@@ -59,6 +59,7 @@
     <module>disjob-worker</module>
     <module>disjob-bom</module>
     <module>disjob-reports</module>
+      <module>disjob-alert/disjob-alert-sms</module>
   </modules>
 
   <properties>
