@@ -32,7 +32,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Alerter
@@ -46,6 +48,9 @@ public class Alerter {
     private final Map<AlertType, String[]> typeChannelMap;
     private final GroupInfoService groupInfoService;
     private final Executor executor;
+    private final ConcurrentHashMap<AlertType, SlidingWindow> rateLimiter = new ConcurrentHashMap<>();
+    private final Integer MaxRequests = 5; // 每分钟最多执行次数
+
 
     public Alerter(AlerterProperties config,
                    GroupInfoService groupInfoService,
@@ -54,6 +59,9 @@ public class Alerter {
         this.typeChannelMap = ObjectUtils.defaultIfNull(config.getTypeChannelMap(), Collections.emptyMap());
         this.groupInfoService = groupInfoService;
         this.executor = Objects.requireNonNull(executor);
+        for (AlertType alertType : typeChannelMap.keySet()) {
+            rateLimiter.put(alertType, new SlidingWindow(MaxRequests, 60000)); // 每分钟最多允许 5 次告警
+        }
     }
 
     public void alert(AlertEvent event) {
@@ -69,6 +77,12 @@ public class Alerter {
         }
 
         // TODO 限流：滑动窗口、漏斗算法、分布式集群限流
+        // 滑动窗口
+        SlidingWindow slidingWindow = rateLimiter.get(event.getAlertType());
+        if (slidingWindow != null && !slidingWindow.tryAcquire()) {
+            LOG.warn("Alert rate limited for event: {}", event);
+            return; // 如果限流器判定超出限制，则直接返回
+        }
 
         executor.execute(() -> {
             try {
@@ -83,4 +97,36 @@ public class Alerter {
         });
     }
 
+    /**
+     * Sliding window implementation class
+     */
+    private static class SlidingWindow {
+        private final int maxRequests; // maximum number of requests
+        private final long windowSizeInMillis; // Window size (milliseconds)
+        private final AtomicInteger requestCount; // Current request count
+        private volatile long windowStart; // window start time
+
+        public SlidingWindow(int maxRequests, long windowSizeInMillis) {
+            this.maxRequests = maxRequests;
+            this.windowSizeInMillis = windowSizeInMillis;
+            this.requestCount = new AtomicInteger(0);
+            this.windowStart = System.currentTimeMillis();
+        }
+
+        /**
+         * Try to obtain a request quota.
+         */
+        public synchronized boolean tryAcquire() {
+            long now = System.currentTimeMillis();
+            if (now - windowStart > windowSizeInMillis) {
+                windowStart = now;
+                requestCount.set(0);
+            }
+            if (requestCount.get() < maxRequests) {
+                requestCount.incrementAndGet();
+                return true;
+            }
+            return false;
+        }
+    }
 }

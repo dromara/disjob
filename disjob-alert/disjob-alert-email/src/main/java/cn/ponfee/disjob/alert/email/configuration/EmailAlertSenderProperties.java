@@ -38,5 +38,9 @@ public class EmailAlertSenderProperties extends AlertSenderProperties {
     private String protocol;
     private String username;
     private String password;
+    private String fromAddress;
+    private String port;
+    private boolean startTlsEnabled; // 是否启用 STARTTLS
+    private boolean sslEnabled;
 
 }
