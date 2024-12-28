@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.alert.configuration;
 
 import cn.ponfee.disjob.alert.Alerter;
-import cn.ponfee.disjob.alert.AlerterProperties;
 import cn.ponfee.disjob.alert.configuration.EnableAlerter.EnableAlerterConfiguration;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
@@ -51,7 +50,7 @@ public @interface EnableAlerter {
         EnableAlerterConfiguration(AlerterProperties config) {
             this.config = config;
 
-            AlerterProperties.TaskExecutionPool pool = config.getTaskExecutionPool();
+            AlerterProperties.SendThreadPool pool = config.getSendThreadPool();
             this.alertSendExecutor = ThreadPoolExecutors.builder()
                 .corePoolSize(pool.getCorePoolSize())
                 .maximumPoolSize(pool.getMaximumPoolSize())
@@ -70,7 +69,7 @@ public @interface EnableAlerter {
 
         @Override
         public void destroy() throws Exception {
-            int awaitTerminationSeconds = config.getTaskExecutionPool().getAwaitTerminationSeconds();
+            int awaitTerminationSeconds = config.getSendThreadPool().getAwaitTerminationSeconds();
             ThreadPoolExecutors.shutdown(alertSendExecutor, awaitTerminationSeconds);
         }
     }

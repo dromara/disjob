@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.alert.sender;
 
-import cn.ponfee.disjob.alert.AlerterProperties;
+import cn.ponfee.disjob.alert.configuration.AlerterProperties;
 import cn.ponfee.disjob.common.base.ToJsonString;
 
 import java.io.Serializable;

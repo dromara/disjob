@@ -16,6 +16,8 @@
 
 package cn.ponfee.disjob.alert;
 
+import cn.ponfee.disjob.alert.configuration.AlerterProperties;
+import cn.ponfee.disjob.alert.configuration.AlerterProperties.SendRateLimit;
 import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.alert.sender.AlertSender;
@@ -45,27 +47,41 @@ public class Alerter {
 
     private static final Logger LOG = LoggerFactory.getLogger(Alerter.class);
 
-    private final Map<AlertType, String[]> typeChannelMap;
-    private final GroupInfoService groupInfoService;
-    private final Executor executor;
-    private final ConcurrentHashMap<AlertType, SlidingWindow> rateLimiter = new ConcurrentHashMap<>();
-    private final Integer MaxRequests = 5; // 每分钟最多执行次数
+    /**
+     * 配置告警类型使用的渠道列表
+     */
+    private final Map<AlertType, String[]> typeChannelsMap;
 
+    /**
+     * 通过group获取告警接收人信息（alertUsers、webhook等）
+     */
+    private final GroupInfoService groupInfoService;
+
+    /**
+     * 告警发送执行器（异步执行线程池）
+     */
+    private final Executor executor;
+
+    /**
+     * 告警限流
+     */
+    private final ConcurrentHashMap<AlertType, SlidingWindow> rateLimiter = new ConcurrentHashMap<>();
 
     public Alerter(AlerterProperties config,
                    GroupInfoService groupInfoService,
                    Executor executor) {
         Assert.notNull(config, "Alerter config cannot be empty.");
-        this.typeChannelMap = ObjectUtils.defaultIfNull(config.getTypeChannelMap(), Collections.emptyMap());
+        this.typeChannelsMap = ObjectUtils.defaultIfNull(config.getTypeChannelsMap(), Collections.emptyMap());
         this.groupInfoService = groupInfoService;
         this.executor = Objects.requireNonNull(executor);
-        for (AlertType alertType : typeChannelMap.keySet()) {
-            rateLimiter.put(alertType, new SlidingWindow(MaxRequests, 60000)); // 每分钟最多允许 5 次告警
+        SendRateLimit limit = config.getSendRateLimit();
+        for (AlertType alertType : typeChannelsMap.keySet()) {
+            rateLimiter.put(alertType, new SlidingWindow(limit.getMaxRequests(), limit.getWindowSizeInMillis()));
         }
     }
 
     public void alert(AlertEvent event) {
-        String[] channels = typeChannelMap.get(event.getAlertType());
+        String[] channels = typeChannelsMap.get(event.getAlertType());
         if (channels == null || channels.length == 0) {
             return;
         }
@@ -85,17 +101,27 @@ public class Alerter {
             return; // 如果限流器判定超出限制，则直接返回
         }
 
+        try {
+            doAlert(channels, event, alertUsers, webhook);
+        } catch (Throwable t) {
+            // if RejectedExecutionException or other exception
+            LOG.warn("Do alert event failed: {}, {}", event, t.getMessage());
+            Threads.interruptIfNecessary(t);
+        }
+    }
+
+    private void doAlert(String[] channels, AlertEvent event, Set<String> alertUsers, String webhook) {
         executor.execute(() -> {
             try {
                 for (String channel : channels) {
-                    AlertSender sender = AlertSender.getAlertSender(channel);
+                    AlertSender sender = AlertSender.get(channel);
                     if (sender != null) {
                         sender.send(event, alertUsers, webhook);
                     }
                 }
             } catch (Throwable t) {
+                LOG.error("Send alert event error: " + event, t);
                 Threads.interruptIfNecessary(t);
-                LOG.error("Send alert event message occur error: " + event, t);
             }
         });
     }

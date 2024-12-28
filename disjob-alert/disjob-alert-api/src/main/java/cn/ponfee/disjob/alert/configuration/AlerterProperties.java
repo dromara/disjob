@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert;
+package cn.ponfee.disjob.alert.configuration;
 
 import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.common.base.ToJsonString;
@@ -44,25 +44,37 @@ public class AlerterProperties extends ToJsonString implements Serializable {
     public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".alert";
 
     /**
-     * Type channel mapping
+     * Type channels mapping
      * <p>Map<AlertType, channel[]>
      */
-    private Map<AlertType, String[]> typeChannelMap;
+    private Map<AlertType, String[]> typeChannelsMap;
 
     /**
-     * Task execution pool
+     * Send thread pool config
      */
-    private TaskExecutionPool taskExecutionPool = new TaskExecutionPool();
+    private SendThreadPool sendThreadPool = new SendThreadPool();
+
+    /**
+     * Send rate limit config
+     */
+    private SendRateLimit sendRateLimit = new SendRateLimit();
 
     @Getter
     @Setter
-    public static class TaskExecutionPool extends ToJsonString {
+    public static class SendThreadPool extends ToJsonString {
         private int corePoolSize = 2;
         private int maximumPoolSize = 8;
         private int queueCapacity = 1000;
         private int keepAliveTimeSeconds = 60;
         private int awaitTerminationSeconds = 3;
         private boolean allowCoreThreadTimeOut = true;
+    }
+
+    @Getter
+    @Setter
+    public static class SendRateLimit extends ToJsonString {
+        private int maxRequests = 5;
+        private int windowSizeInMillis = 60;
     }
 
 }

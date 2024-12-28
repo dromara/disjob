@@ -37,21 +37,32 @@ public abstract class AlertSender extends SingletonClassConstraint {
 
     private static final Map<String, AlertSender> ALERT_SENDERS = new HashMap<>();
 
+    /**
+     * 渠道类型
+     */
     private final String channel;
+
+    /**
+     * 渠道发送名称
+     */
     private final String name;
-    private final UserRecipientMapper mapper;
+
+    /**
+     * 把在页面中配置的alertUsers转为实际的渠道收件人（如邮箱地址、手机号、飞书账号等）
+     */
+    private final UserRecipientMapper userRecipientMapper;
 
     protected AlertSender(String channel, String name, UserRecipientMapper mapper) {
         Assert.hasText(channel, "Alert sender channel cannot be blank.");
         Assert.hasText(name, "Alert sender name cannot be blank.");
-        this.channel = channel;
-        this.name = name;
-        this.mapper = Objects.requireNonNull(mapper);
-        registerAlertSender(this);
+        this.channel = channel.trim();
+        this.name = name.trim();
+        this.userRecipientMapper = Objects.requireNonNull(mapper);
+        register(this);
     }
 
     public void send(AlertEvent alertEvent, Set<String> alertUsers, String webhook) {
-        Map<String, String> recipients = mapper.map(alertUsers);
+        Map<String, String> recipients = userRecipientMapper.map(alertUsers);
         if (MapUtils.isEmpty(recipients) || StringUtils.isBlank(webhook)) {
             return;
         }
@@ -62,7 +73,7 @@ public abstract class AlertSender extends SingletonClassConstraint {
         if (CollectionUtils.isEmpty(alertUsers)) {
             return;
         }
-        Map<String, String> alertRecipients = mapper.map(alertUsers);
+        Map<String, String> alertRecipients = userRecipientMapper.map(alertUsers);
         List<String> list = alertUsers.stream()
             .filter(e -> StringUtils.isBlank(alertRecipients.get(e)))
             .collect(Collectors.toList());
@@ -82,18 +93,18 @@ public abstract class AlertSender extends SingletonClassConstraint {
 
     // ------------------------------------------------------------------static methods
 
-    public static List<AlertSender> getAllAlertSenders() {
+    public static List<AlertSender> all() {
         return new ArrayList<>(ALERT_SENDERS.values());
     }
 
-    public static AlertSender getAlertSender(String channel) {
+    public static AlertSender get(String channel) {
         return ALERT_SENDERS.get(channel);
     }
 
-    private static synchronized void registerAlertSender(AlertSender alertSender) {
+    private static synchronized void register(AlertSender alertSender) {
         String channel = alertSender.channel;
         if (ALERT_SENDERS.containsKey(channel)) {
-            throw new Error("Channel '" + channel + "' already registered!");
+            throw new Error("Alert sender channel '" + channel + "' already registered!");
         }
         ALERT_SENDERS.put(channel, alertSender);
     }
