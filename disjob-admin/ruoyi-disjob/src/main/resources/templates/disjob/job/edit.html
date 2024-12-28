@@ -237,8 +237,11 @@
         photos: {
           title: "DAG",
           data: [{
-            alt: "DAG",
-            src: prefix + "/dag?expr=" + encodeURIComponent($("textarea[name='jobExecutor']").val())
+            alt: "original",
+            src: prefix + "/dag?thumb=false&expr=" + encodeURIComponent($("textarea[name='jobExecutor']").val())
+          },{
+            alt: "thumbnail",
+            src: prefix + "/dag?thumb=true&expr=" + encodeURIComponent($("textarea[name='jobExecutor']").val())
           }]
         },
         footer: false

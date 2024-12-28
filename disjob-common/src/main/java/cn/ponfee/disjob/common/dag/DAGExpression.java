@@ -33,10 +33,12 @@ import com.google.common.graph.ImmutableGraph;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,7 +49,7 @@ import java.util.stream.Stream;
  * <pre>
  * 解析：DAGExpression.parse( "A->((B->C->D),(A->F))->(G,H,X)->J; A->Y" );
  * 结果：
- *  "A->((B->C->D),(A->F))->(G,H,X)->J"
+ *  topology-1: "A->((B->C->D),(A->F))->(G,H,X)->J"
  *    <0:0:Start -> 1:1:A>
  *    <1:1:A -> 1:1:B>
  *    <1:1:A -> 1:2:A>
@@ -65,7 +67,7 @@ import java.util.stream.Stream;
  *    <1:1:X -> 1:1:J>
  *    <1:1:J -> 0:0:End>
  *
- *  "A->Y"
+ *  topology-2: "A->Y"
  *    <0:0:Start -> 2:3:A>
  *    <2:3:A -> 2:1:Y>
  *    <2:1:Y -> 0:0:End>
@@ -111,14 +113,27 @@ public class DAGExpression {
      */
     private static final Pattern JSON_ARRAY_PATTERN = Pattern.compile("(?s)^\\s*\\[\\s*\".+\"\\s*]\\s*$");
 
+    /**
+     * DAGNode pattern, for example `1:1:A`
+     */
     private static final Pattern JSON_ITEM_PATTERN = Pattern.compile("^\\d+:\\d+:(\\s*\\S+\\s*)+$");
 
+    /**
+     * Thumb split plain expression pattern
+     */
+    private static final Pattern THUMB_SPLIT_PATTERN = Pattern.compile("(->)|(,)|(\\()|(\\))|(;)");
+
+    private static final String SEP_TOPOLOGY = ";";
     private static final String SEP_STAGE = "->";
     private static final String SEP_UNION = ",";
-    private static final List<String> SEP_SYMBOLS = ImmutableList.of(SEP_STAGE, SEP_UNION);
-    private static final List<String> ALL_SYMBOLS = ImmutableList.of(SEP_STAGE, SEP_UNION, Str.OPEN, Str.CLOSE);
-    private static final char[] SINGLE_SYMBOLS = {Char.OPEN, Char.CLOSE, Char.COMMA};
+    private static final List<String> SEP_SYMBOLS   = ImmutableList.of(SEP_STAGE, SEP_UNION);
+    private static final List<String> ALL_SYMBOLS   = ImmutableList.of(SEP_STAGE, SEP_UNION, Str.OPEN, Str.CLOSE);
+    private static final List<String> THUMB_SYMBOLS = ImmutableList.of(SEP_STAGE, SEP_UNION, Str.OPEN, Str.CLOSE, SEP_TOPOLOGY);
+    private static final char[] SINGLE_SYMBOLS      = {Char.OPEN, Char.CLOSE, Char.COMMA};
 
+    /**
+     * Expression
+     */
     private final String expression;
 
     /**
@@ -136,21 +151,34 @@ public class DAGExpression {
      */
     private final Map<String, List<Tuple2<String, Integer>>> incrementer = new HashMap<>();
 
-    public static Graph<DAGNode> parse(String text) {
-        return new DAGExpression(text).parse();
+    public static Graph<DAGNode> parse(String expression) {
+        return new DAGExpression(expression).parse();
     }
 
-    private DAGExpression(String text) {
-        Assert.hasText(text, "Expression cannot be blank.");
-        this.expression = text.trim();
+    /**
+     * 缩略(压缩)表达式，便于美观及直观的展示：thumb("Extract -> Transform -> Load ; Extract -> Load")  =>  "A->B->C;A->C"
+     *
+     * @param expression the expression
+     * @return thumbnail expression
+     */
+    public static String thumb(String expression) {
+        List<DAGEdge> edges = DAGExpression.parseJsonArray(expression);
+        return edges != null ? thumbJsonExpr(edges) : thumbPlainExpr(expression);
+    }
+
+    // ------------------------------------------------------------------------------------private methods
+
+    private DAGExpression(String expression) {
+        Assert.hasText(expression, "Expression cannot be blank.");
+        this.expression = expression.trim();
     }
 
     private Graph<DAGNode> parse() {
         ImmutableGraph.Builder<DAGNode> graphBuilder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
 
-        List<DAGEdge> edges;
-        if (JSON_ARRAY_PATTERN.matcher(expression).matches() && (edges = parseJsonArray(expression)) != null) {
-            parseJsonGraph(graphBuilder, edges);
+        List<DAGEdge> edges = parseJsonArray(expression);
+        if (edges != null) {
+            parseJsonExpr(graphBuilder, edges);
         } else {
             parsePlainExpr(graphBuilder);
         }
@@ -159,7 +187,7 @@ public class DAGExpression {
         Assert.state(graph.nodes().size() > 2, () -> "Expression not any name: " + expression);
         Assert.state(graph.successors(DAGNode.START).stream().noneMatch(DAGNode::isEnd), () -> "Expression name cannot direct end: " + expression);
         Assert.state(graph.predecessors(DAGNode.END).stream().noneMatch(DAGNode::isStart), () -> "Expression name cannot direct start: " + expression);
-        Assert.state(!Graphs.hasCycle(graph), () -> "Expression name section has cycle: " + expression);
+        Assert.state(!Graphs.hasCycle(graph), () -> "Expression topology has cycle: " + expression);
         return graph;
     }
 
@@ -178,7 +206,7 @@ public class DAGExpression {
      * @param graphBuilder the graph builder
      * @param edges        the edges
      */
-    private void parseJsonGraph(ImmutableGraph.Builder<DAGNode> graphBuilder, List<DAGEdge> edges) {
+    private void parseJsonExpr(ImmutableGraph.Builder<DAGNode> graphBuilder, List<DAGEdge> edges) {
         Assert.notEmpty(edges, "Graph edges cannot be empty.");
         Set<DAGNode> allNode = new HashSet<>();
         Set<DAGNode> nonHead = new HashSet<>();
@@ -210,18 +238,21 @@ public class DAGExpression {
      */
     private void parsePlainExpr(ImmutableGraph.Builder<DAGNode> graphBuilder) {
         Assert.isTrue(checkParenthesis(expression), () -> "Invalid expression parenthesis: " + expression);
-        List<String> sections = Stream.of(expression.split(";")).filter(StringUtils::isNotBlank).map(String::trim).collect(Collectors.toList());
-        Assert.notEmpty(sections, () -> "Invalid split with ';' expression: " + expression);
+        List<String> topologies = Stream.of(expression.split(SEP_TOPOLOGY))
+            .filter(StringUtils::isNotBlank)
+            .map(String::trim)
+            .collect(Collectors.toList());
+        Assert.notEmpty(topologies, () -> "Invalid split with ';' expression: " + expression);
 
-        for (int i = 0, n = sections.size(); i < n; i++) {
-            String section = sections.get(i);
-            Assert.isTrue(checkParenthesis(section), () -> "Invalid expression parenthesis: " + section);
-            String expr = completeParenthesis(section);
+        for (int i = 0, n = topologies.size(); i < n; i++) {
+            String topology = topologies.get(i);
+            Assert.isTrue(checkParenthesis(topology), () -> "Invalid expression parenthesis: " + topology);
+            String expr = completeParenthesis(topology);
             buildGraph(i + 1, Collections.singletonList(expr), graphBuilder, DAGNode.START, DAGNode.END);
         }
     }
 
-    private void buildGraph(int section, List<String> expressions,
+    private void buildGraph(int topology, List<String> expressions,
                             ImmutableGraph.Builder<DAGNode> graphBuilder, DAGNode prev, DAGNode next) {
         // 划分第一个stage
         Tuple2<List<String>, List<String>> tuple = divideFirstStage(expressions);
@@ -235,15 +266,15 @@ public class DAGExpression {
             Assert.notEmpty(list, () -> "Invalid expression: " + String.join("", expressions));
             if (list.size() == 1) {
                 String name = list.get(0);
-                DAGNode node = DAGNode.of(section, incrementOrdinal(name), name);
+                DAGNode node = DAGNode.of(topology, incrementOrdinal(name), name);
                 graphBuilder.putEdge(prev, node);
                 if (remains == null) {
                     graphBuilder.putEdge(node, next);
                 } else {
-                    buildGraph(section, remains, graphBuilder, node, next);
+                    buildGraph(topology, remains, graphBuilder, node, next);
                 }
             } else {
-                buildGraph(section, concat(list, remains), graphBuilder, prev, next);
+                buildGraph(topology, concat(list, remains), graphBuilder, prev, next);
             }
         }
     }
@@ -310,9 +341,12 @@ public class DAGExpression {
         return tuple.b;
     }
 
-    // ------------------------------------------------------------------------------------static methods
+    // ------------------------------------------------------------------------------------private static methods
 
     private static List<DAGEdge> parseJsonArray(String json) {
+        if (!JSON_ARRAY_PATTERN.matcher(json).matches()) {
+            return null;
+        }
         try {
             List<String> list = Jsons.fromJson(json, Jsons.LIST_STRING);
             if (CollectionUtils.isEmpty(list)) {
@@ -323,18 +357,22 @@ public class DAGExpression {
             for (String item : list) {
                 String[] array = item.split(SEP_STAGE);
                 Assert.isTrue(array.length == 2, () -> "Invalid json graph item: " + item);
-                String source = processJsonItem(array[0].trim());
-                String target = processJsonItem(array[1].trim());
-                edges.add(DAGEdge.of(source, target));
+                DAGNode source = processJsonItem(array[0].trim());
+                DAGNode target = processJsonItem(array[1].trim());
+                edges.add(new DAGEdge(source, target));
             }
             return edges;
-        } catch (Exception ignored) {
+        } catch (Throwable ignored) {
             return null;
         }
     }
 
-    private static String processJsonItem(String item) {
-        return JSON_ITEM_PATTERN.matcher(item).matches() ? item : "1:1:" + item;
+    private static DAGNode processJsonItem(String item) {
+        Assert.hasText(item, "Json array item cannot be blank.");
+        if (!JSON_ITEM_PATTERN.matcher(item).matches()) {
+            item = "1:1:" + item;
+        }
+        return DAGNode.fromString(item);
     }
 
     private static Tuple2<List<String>, List<String>> divideFirstStage(List<String> list) {
@@ -389,6 +427,7 @@ public class DAGExpression {
         int open = -1;
         for (int i = start, n = groups.size(); i < n; i++) {
             if (groups.get(i).b < level) {
+                // exit the current method
                 return;
             }
             if (groups.get(i).b == level) {
@@ -508,14 +547,69 @@ public class DAGExpression {
                 --depth;
             }
         }
-        // assert: size % 2 = 0
-        Assert.isTrue((list.size() & 0x01) == 0, () -> "Expression not pair with '()': " + expr);
+        Assert.isTrue((list.size() % 2) == 0, () -> "Expression not pair with '()': " + expr);
         return list;
     }
 
     private static String wrap(String text) {
         return Str.OPEN + text + Str.CLOSE;
     }
+
+    // ------------------------------------------------------------------------------------private static thumb methods
+
+    private static String thumbJsonExpr(List<DAGEdge> edges) {
+        MutableInt begin = new MutableInt('A');
+        Map<String, String> map = new HashMap<>();
+        List<DAGEdge> list = new ArrayList<>();
+        for (DAGEdge edge : edges) {
+            DAGNode source = edge.getSource();
+            String sourceThumb = map.computeIfAbsent(source.getName(), k -> String.valueOf((char) begin.getAndIncrement()));
+
+            DAGNode target = edge.getTarget();
+            String targetThumb = map.computeIfAbsent(target.getName(), k -> String.valueOf((char) begin.getAndIncrement()));
+
+            list.add(new DAGEdge(
+                DAGNode.of(source.getTopology(), source.getOrdinal(), sourceThumb),
+                DAGNode.of(target.getTopology(), target.getOrdinal(), targetThumb)
+            ));
+        }
+        return Jsons.toJson(list.stream().map(e -> e.getSource() + " -> " + e.getTarget()).toArray());
+    }
+
+    private static String thumbPlainExpr(String expression) {
+        MutableInt begin = new MutableInt('A');
+        Map<String, String> map = new HashMap<>();
+        StringBuilder builder = new StringBuilder();
+        for (String str : splitPlainExpr(expression)) {
+            if (THUMB_SYMBOLS.contains(str)) {
+                builder.append(str);
+            } else {
+                builder.append(map.computeIfAbsent(str, k -> String.valueOf((char) begin.getAndIncrement())));
+            }
+        }
+        return builder.toString();
+    }
+
+    private static List<String> splitPlainExpr(String expression) {
+        Matcher matcher = THUMB_SPLIT_PATTERN.matcher(expression);
+        List<String> list = new ArrayList<>();
+        int start = 0;
+        while (matcher.find()) {
+            addIfNotBlank(list, expression.substring(start, matcher.start()));
+            addIfNotBlank(list, matcher.group());
+            start = matcher.end();
+        }
+        addIfNotBlank(list, expression.substring(start));
+        return list;
+    }
+
+    private static void addIfNotBlank(List<String> list, String str) {
+        if (StringUtils.isNotBlank(str)) {
+            list.add(str.trim());
+        }
+    }
+
+    // ------------------------------------------------------------------------------------private static classes
 
     private static final class TreeNodeId implements Serializable, Comparable<TreeNodeId> {
         private static final long serialVersionUID = -468548698179536500L;
@@ -537,8 +631,8 @@ public class DAGExpression {
         }
 
         private static TreeNodeId of(int open, int close) {
-            Assert.isTrue(open > -1, () -> "Tree node id open must be greater than -1: " + open);
-            Assert.isTrue(close > 0, () -> "Tree node id close must be greater than 0: " + close);
+            Assert.isTrue(open >= 0, () -> "Tree node id open must be >= 0: " + open);
+            Assert.isTrue(close > open, () -> "Tree node id close must be > open: " + close + ", " + open);
             return new TreeNodeId(open, close);
         }
 
@@ -579,8 +673,8 @@ public class DAGExpression {
 
         private PartitionIdentityKey(String expr, int open, int close) {
             Assert.hasText(expr, () -> "Partition expression cannot be blank: " + expr);
-            Assert.isTrue(open > -1, () -> "Partition key open must be greater than -1: " + open);
-            Assert.isTrue(close > 0, () -> "Partition key close must be greater than 0: " + close);
+            Assert.isTrue(open >= 0, () -> "Partition open must be >= 0: " + open);
+            Assert.isTrue(close >= open, () -> "Partition close must be >= open: " + close + ", " + open);
             this.expr = expr;
             this.open = open;
             this.close = close;

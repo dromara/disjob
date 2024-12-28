@@ -37,8 +37,12 @@ import java.io.OutputStream;
  */
 public class DAGUtils {
 
-    public static void drawPngImage(String expression, String name, int width, OutputStream output) throws IOException {
-        MutableGraph graph = Factory.mutGraph(name).setDirected(true);
+    public static void drawPngImage(String expression, boolean thumb, int width, OutputStream output) throws IOException {
+        if (thumb) {
+            expression = DAGExpression.thumb(expression);
+        }
+
+        MutableGraph graph = Factory.mutGraph().setDirected(true);
         graph.graphAttrs().add(Rank.dir(Rank.RankDir.LEFT_TO_RIGHT));
         graph.graphAttrs().add(GraphAttr.splines(GraphAttr.SplineMode.CURVED));
         for (EndpointPair<DAGNode> edge : DAGExpression.parse(expression).edges()) {

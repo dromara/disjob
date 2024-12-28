@@ -85,10 +85,10 @@ public class DisjobJobController extends BaseController {
 
     @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/dag")
-    public void dag(@RequestParam("expr") String expr, HttpServletResponse response) throws IOException {
+    public void dag(@RequestParam("expr") String expr, @RequestParam("thumb") boolean thumb, HttpServletResponse response) throws IOException {
         response.setContentType(MediaType.IMAGE_PNG_VALUE);
         try {
-            DAGUtils.drawPngImage(expr, "DAG", 2000, response.getOutputStream());
+            DAGUtils.drawPngImage(expr, thumb, 2000, response.getOutputStream());
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {

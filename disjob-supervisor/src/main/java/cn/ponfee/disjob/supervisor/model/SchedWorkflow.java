@@ -41,12 +41,12 @@ public class SchedWorkflow extends BaseEntity {
     private Long wnstanceId;
 
     /**
-     * 前置任务节点(section:ordinal:name)
+     * 前置任务节点(topology:ordinal:name)
      */
     private String preNode;
 
     /**
-     * 当前任务节点(section:ordinal:name)
+     * 当前任务节点(topology:ordinal:name)
      */
     private String curNode;
 
@@ -72,7 +72,7 @@ public class SchedWorkflow extends BaseEntity {
     }
 
     public DAGEdge toEdge() {
-        return DAGEdge.of(preNode, curNode);
+        return new DAGEdge(DAGNode.fromString(preNode), DAGNode.fromString(curNode));
     }
 
     public DAGNode parsePreNode() {

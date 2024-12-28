@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.common.dag;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import org.springframework.util.Assert;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -27,33 +27,16 @@ import java.util.Objects;
  *
  * @author Ponfee
  */
+@Getter
 public final class DAGEdge extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 2292231888365728538L;
 
     private final DAGNode source;
     private final DAGNode target;
 
-    private DAGEdge(DAGNode source, DAGNode target) {
+    public DAGEdge(DAGNode source, DAGNode target) {
         this.source = Objects.requireNonNull(source, "DAG source node cannot be null.");
         this.target = Objects.requireNonNull(target, "DAG target node cannot be null.");
-    }
-
-    public static DAGEdge of(DAGNode source, DAGNode target) {
-        return new DAGEdge(source, target);
-    }
-
-    public static DAGEdge of(String source, String target) {
-        Assert.hasText(source, "DAG source text cannot be blank.");
-        Assert.hasText(target, "DAG target text cannot be blank.");
-        return new DAGEdge(DAGNode.fromString(source.trim()), DAGNode.fromString(target.trim()));
-    }
-
-    public DAGNode getSource() {
-        return source;
-    }
-
-    public DAGNode getTarget() {
-        return target;
     }
 
     @Override
@@ -69,7 +52,6 @@ public final class DAGEdge extends ToJsonString implements Serializable {
         if (!(obj instanceof DAGEdge)) {
             return false;
         }
-
         DAGEdge that = (DAGEdge) obj;
         return this.source.equals(that.source)
             && this.target.equals(that.target);

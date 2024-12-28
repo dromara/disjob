@@ -69,7 +69,7 @@ public class WorkflowGraph {
     }
 
     public SchedWorkflow get(DAGNode source, DAGNode target) {
-        return map.get(DAGEdge.of(source, target));
+        return map.get(new DAGEdge(source, target));
     }
 
     public boolean allMatch(Predicate<Map.Entry<DAGEdge, SchedWorkflow>> predicate) {

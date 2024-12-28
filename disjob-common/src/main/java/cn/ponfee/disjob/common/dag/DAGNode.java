@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.dag;
 
+import lombok.Getter;
 import org.springframework.util.Assert;
 
 import java.beans.Transient;
@@ -29,6 +30,7 @@ import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
  *
  * @author Ponfee
  */
+@Getter
 public final class DAGNode implements Serializable {
     private static final long serialVersionUID = 7413110685194391605L;
 
@@ -37,13 +39,13 @@ public final class DAGNode implements Serializable {
 
     /**
      * <pre>
-     *  任务链的编号，用来区分不同的任务链，从1开始
-     *  如[A -> B; C -> D]，表达式用“;”分隔成两个不同的任务链
-     *  section=1： A -> B
-     *  section=2： C -> D
+     *  拓扑图(任务)的编号，用来区分不同的任务，从1开始
+     *  如[A -> B; C -> D]，表达式用“;”分隔成两个不同的任务
+     *  topology-1: A -> B
+     *  topology-2: C -> D
      * </pre>
      */
-    private final int section;
+    private final int topology;
 
     /**
      * 名称相同时通过顺序来区分，从1开始
@@ -56,29 +58,17 @@ public final class DAGNode implements Serializable {
      */
     private final String name;
 
-    private DAGNode(int section, int ordinal, String name) {
-        this.section = section;
+    private DAGNode(int topology, int ordinal, String name) {
+        this.topology = topology;
         this.ordinal = ordinal;
         this.name = name;
     }
 
-    public static DAGNode of(int section, int ordinal, String name) {
-        Assert.isTrue(section > 0, () -> "Graph node section must be greater than 0: " + section);
-        Assert.isTrue(ordinal > 0, () -> "Graph node ordinal must be greater than 0: " + ordinal);
-        Assert.hasText(name, () -> "Graph node name cannot be blank: " + name);
-        return new DAGNode(section, ordinal, name);
-    }
-
-    public int getSection() {
-        return section;
-    }
-
-    public int getOrdinal() {
-        return ordinal;
-    }
-
-    public String getName() {
-        return name;
+    public static DAGNode of(int topology, int ordinal, String name) {
+        Assert.isTrue(topology > 0, () -> "Topology must be greater than 0: " + topology);
+        Assert.isTrue(ordinal > 0, () -> "Ordinal must be greater than 0: " + ordinal);
+        Assert.hasText(name, () -> "Name cannot be blank: " + name);
+        return new DAGNode(topology, ordinal, name.trim());
     }
 
     @Transient
@@ -98,7 +88,7 @@ public final class DAGNode implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(section, ordinal, name);
+        return Objects.hash(topology, ordinal, name);
     }
 
     @Override
@@ -110,34 +100,35 @@ public final class DAGNode implements Serializable {
             return false;
         }
         DAGNode that = (DAGNode) obj;
-        return this.section == that.section
+        return this.topology == that.topology
             && this.ordinal == that.ordinal
             && this.name.equals(that.name);
     }
 
-    public boolean equals(int section, int ordinal, String name) {
-        return this.section == section
+    @Override
+    public String toString() {
+        return topology + COLON + ordinal + COLON + name;
+    }
+
+    public boolean equals(int topology, int ordinal, String name) {
+        return this.topology == topology
             && this.ordinal == ordinal
             && this.name.equals(name);
     }
 
-    @Override
-    public String toString() {
-        return section + COLON + ordinal + COLON + name;
-    }
-
     public static DAGNode fromString(String str) {
-        String[] array = str.split(COLON, 3);
-        int section = Integer.parseInt(array[0]);
+        Assert.hasText(str, "DAG node text cannot be blank.");
+        String[] array = str.trim().split(COLON, 3);
+        int topology = Integer.parseInt(array[0]);
         int ordinal = Integer.parseInt(array[1]);
-        String name = array[2];
-        if (START.equals(section, ordinal, name)) {
+        String name = array[2].trim();
+        if (START.equals(topology, ordinal, name)) {
             return START;
         }
-        if (END.equals(section, ordinal, name)) {
+        if (END.equals(topology, ordinal, name)) {
             return END;
         }
-        return DAGNode.of(section, ordinal, name);
+        return DAGNode.of(topology, ordinal, name);
     }
 
 }

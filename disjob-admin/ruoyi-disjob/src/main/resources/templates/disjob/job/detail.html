@@ -150,8 +150,11 @@
         photos: {
           title: "DAG",
           data: [{
-            alt: "DAG",
-            src: prefix + "/dag?expr=" + encodeURIComponent([[${job.jobExecutor}]])
+            alt: "original",
+            src: prefix + "/dag?thumb=false&expr=" + encodeURIComponent([[${job.jobExecutor}]])
+          },{
+            alt: "thumbnail",
+            src: prefix + "/dag?thumb=true&expr=" + encodeURIComponent([[${job.jobExecutor}]])
           }]
         },
         footer: false

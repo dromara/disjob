@@ -82,9 +82,9 @@ public class ConsistentHash<T> {
         };
 
         /**
-         * Sip hash
+         * Sip hash24
          */
-        HashFunction SIP_HASH = key -> Hashing.sipHash24().hashBytes(key.getBytes(UTF_8)).asInt();
+        HashFunction SIP_HASH24 = key -> Hashing.sipHash24().hashBytes(key.getBytes(UTF_8)).asInt();
 
         /**
          * Murmur3 hash
@@ -116,13 +116,13 @@ public class ConsistentHash<T> {
     private final HashFunction hashFunction;
 
     public ConsistentHash(Collection<T> pNodes, int vNodeCount) {
-        this(pNodes, vNodeCount, String::valueOf, HashFunction.SIP_HASH);
+        this(pNodes, vNodeCount, String::valueOf, HashFunction.MURMUR3_32);
     }
 
     public ConsistentHash(Collection<T> pNodes,
                           int vNodeCount,
                           Function<T, String> keyMapper) {
-        this(pNodes, vNodeCount, keyMapper, HashFunction.SIP_HASH);
+        this(pNodes, vNodeCount, keyMapper, HashFunction.MURMUR3_32);
     }
 
     /**

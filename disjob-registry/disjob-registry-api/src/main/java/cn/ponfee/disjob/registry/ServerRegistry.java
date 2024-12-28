@@ -173,7 +173,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         if (Strings.containsCharOrWhitespace(namespace, separator)) {
             throw new IllegalArgumentException("Namespace cannot contains separator symbol '" + separator + "'");
         }
-        return namespace.trim() + separator;
+        return namespace + separator;
     }
 
 }
