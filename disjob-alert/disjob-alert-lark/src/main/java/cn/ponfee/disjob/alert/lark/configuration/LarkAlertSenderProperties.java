@@ -34,4 +34,10 @@ public class LarkAlertSenderProperties extends AlertSenderProperties {
 
     private static final long serialVersionUID = 2531779048449076379L;
 
+    private String tokenId; // lark and dingtalk
+
+    private String sign; // lark and dingtalk
+
+    private String supplier;
+
 }

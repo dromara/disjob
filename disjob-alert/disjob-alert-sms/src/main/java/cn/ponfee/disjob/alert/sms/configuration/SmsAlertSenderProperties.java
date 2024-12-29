@@ -22,6 +22,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.HashMap;
+
 /**
  * Sms alert properties
  *
@@ -34,13 +36,5 @@ public class SmsAlertSenderProperties extends AlertSenderProperties {
 
         private static final long serialVersionUID = 2531779048449076379L;
 
-        private String accessKeyId;
-
-        private String accessKeySecret;
-
-        private String signaTure;
-
-        private String templateId;
-
-        private String supplier;
+        private HashMap<String, SmsBaseConfig> blends = new HashMap<>();
 }

@@ -84,6 +84,10 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-alert-lark</artifactId>
     </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-alert-sms</artifactId>
+    </dependency>
   </dependencies>
 
 </project>

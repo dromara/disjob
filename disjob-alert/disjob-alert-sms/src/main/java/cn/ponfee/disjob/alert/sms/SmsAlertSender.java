@@ -20,6 +20,10 @@ package cn.ponfee.disjob.alert.sms;
 import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.alert.sms.configuration.SmsAlertSenderProperties;
+import org.dromara.sms4j.api.SmsBlend;
+import org.dromara.sms4j.core.factory.SmsFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -32,14 +36,42 @@ public class SmsAlertSender extends AlertSender {
 
     public static final String CHANNEL = "sms";
 
+    public SmsAlertSenderProperties config;
+
+    private static final Logger LOG = LoggerFactory.getLogger(SmsAlertSender.class);
+
     public SmsAlertSender(SmsAlertSenderProperties config, SmsUserRecipientMapper mapper) {
         super(CHANNEL, "短信", mapper);
-
         // todo: init sms client by config
+        this.config = config;
     }
 
     @Override
     protected void doSend(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
+        SmsBlend smsBlend = SmsFactory.getSmsBlend();
+        if (alertRecipients == null || alertRecipients.isEmpty()) {
+            LOG.warn("No recipients found for alert event: {}", alertEvent);
+            return;
+        }
+        for (Map.Entry<String, String> entry : alertRecipients.entrySet()) {
+            String alertUser = entry.getKey();
+            String recipientPhoneNumber = entry.getValue();
+            try {
+                String message = buildMessage(alertEvent);
+                smsBlend.sendMessage(recipientPhoneNumber, message);
+                LOG.info("Alert sent to {} ({}) for event: {}", alertUser, recipientPhoneNumber, alertEvent);
+            } catch (Exception e) {
+                LOG.error("Failed to send alert to {} ({}) for event: {}", alertUser, recipientPhoneNumber, alertEvent, e);
+            }
+        }
+    }
 
+    private String buildMessage(AlertEvent alertEvent) {
+        return String.format(
+            "Alert Notification\n\nAlert Type: %s\nTimestamp: %s\n\nDetails:\n%s",
+            alertEvent.getAlertType(),
+            alertEvent.buildTitle(),
+            alertEvent.buildContent()
+        );
     }
 }

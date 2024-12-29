@@ -50,4 +50,6 @@ public class EmailAlertSenderProperties extends AlertSenderProperties {
 
     private boolean sslEnabled;
 
+    private String auth;
+
 }

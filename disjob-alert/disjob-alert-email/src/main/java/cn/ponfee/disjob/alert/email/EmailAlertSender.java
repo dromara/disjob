@@ -45,11 +45,13 @@ public class EmailAlertSender extends AlertSender {
         super(CHANNEL, "邮件", mapper);
         this.emailConfig = config;
         Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.auth", config.getAuth());
         props.put("mail.smtp.starttls.enable", config.isStartTlsEnabled());
         props.put("mail.smtp.host", config.getHost());
         props.put("mail.smtp.port", config.getPort());
         props.put("mail.smtp.ssl.enable", config.isSslEnabled());
+        props.put("mail.smtp.user", config.getUsername());
+        props.put("mail.smtp.password", config.getPassword());
 
         this.mailSession = Session.getInstance(props, new Authenticator() {
             @Override

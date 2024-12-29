@@ -21,6 +21,7 @@
     <module>disjob-alert-api</module>
     <module>disjob-alert-email</module>
     <module>disjob-alert-lark</module>
+    <module>disjob-alert-sms</module>
   </modules>
 
 </project>

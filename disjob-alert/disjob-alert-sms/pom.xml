@@ -22,6 +22,11 @@
       <artifactId>disjob-alert-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.dromara.sms4j</groupId>
+      <artifactId>sms4j-spring-boot-starter</artifactId>
+      <version>3.0.0</version>
+    </dependency>
   </dependencies>
 
 </project>
