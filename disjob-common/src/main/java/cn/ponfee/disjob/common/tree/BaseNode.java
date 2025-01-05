@@ -57,12 +57,10 @@ public abstract class BaseNode<T extends Serializable & Comparable<T>, A> implem
     protected int childrenCount;       // 子节点个数
     protected int siblingOrdinal;      // 兄弟节点按顺序排行（从1开始）
 
-    protected BaseNode(T nid, T pid, A attach) {
-        this(nid, pid, true, attach);
-    }
+    // -------------------------------------------------------------------Constructor
 
-    protected BaseNode(T nid, T pid, boolean enabled, A attach) {
-        this(nid, pid, enabled, enabled, attach);
+    protected BaseNode(T nid, T pid) {
+        this(nid, pid, true, true, null);
     }
 
     protected BaseNode(T nid, T pid, boolean enabled, boolean available, A attach) {

@@ -411,10 +411,10 @@ public class DAGExpression {
         buildTree(groups, TreeNodeId.ROOT_ID, 1, 0, nodes);
 
         // create a dummy root node
-        TreeNode<TreeNodeId, Object> dummyRoot = TreeNode.builder(TreeNodeId.ROOT_ID).build();
+        TreeNode<TreeNodeId, Object> dummyRoot = new TreeNode<>(TreeNodeId.ROOT_ID, null);
 
         // mount nodes
-        dummyRoot.mount(nodes, false);
+        dummyRoot.mount(nodes);
 
         // gets the actual root
         Assert.state(dummyRoot.getChildrenCount() == 1, "Build tree root node must be has a single child.");
@@ -436,7 +436,7 @@ public class DAGExpression {
                 } else {
                     // find "()" position
                     TreeNodeId nid = TreeNodeId.of(groups.get(open).a, groups.get(i).a);
-                    nodes.add(new PlainNode<>(nid, pid, null));
+                    nodes.add(new PlainNode<>(nid, pid));
                     buildTree(groups, nid, level + 1, open + 1, nodes);
                     open = -1;
                 }

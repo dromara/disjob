@@ -28,12 +28,8 @@ import java.io.Serializable;
 public final class PlainNode<T extends Serializable & Comparable<T>, A> extends BaseNode<T, A> {
     private static final long serialVersionUID = -2189191471047483877L;
 
-    public PlainNode(T nid, T pid, A attach) {
-        super(nid, pid, attach);
-    }
-
-    public PlainNode(T nid, T pid, boolean enabled, A attach) {
-        super(nid, pid, enabled, attach);
+    public PlainNode(T nid, T pid) {
+        super(nid, pid);
     }
 
     public PlainNode(T nid, T pid, boolean enabled, boolean available, A attach) {
