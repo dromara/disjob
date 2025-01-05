@@ -74,7 +74,7 @@ import java.util.stream.Stream;
  *
  * ---------------------------------------------------
  *
- * 无法用expression来表达的场景：[A->C, A->D, B->D, B->E]
+ * 无法用`plain expression`来表达的场景，如：[A->C, A->D, B->D, B->E]
  * ┌─────────────────────────────────┐
  * │               ┌─────>C──┐       │
  * │        ┌──>A──┤         │       │
@@ -84,7 +84,7 @@ import java.util.stream.Stream;
  * │        └──>B──┤         │       │
  * │               └─────>E──┘       │
  * └─────────────────────────────────┘
- * 但可通过json graph来表达：
+ * 此时可通过`json expression`来表达：
  *   [
  *     "1:1:A -> 1:1:C",
  *     "1:1:A -> 1:1:D",
@@ -387,7 +387,7 @@ public class DAGExpression {
             return Tuple2.of(list, null);
         }
 
-        List<String> head = new ArrayList<>();
+        List<String> head = new ArrayList<>(list.size());
         for (int i = 0, n = list.size() - 1; i <= n; ) {
             head.add(list.get(i++));
             if (i > n) {
@@ -414,7 +414,7 @@ public class DAGExpression {
         TreeNode<TreeNodeId, Object> dummyRoot = TreeNode.builder(TreeNodeId.ROOT_ID).build();
 
         // mount nodes
-        dummyRoot.mount(nodes);
+        dummyRoot.mount(nodes, false);
 
         // gets the actual root
         Assert.state(dummyRoot.getChildrenCount() == 1, "Build tree root node must be has a single child.");
@@ -560,7 +560,7 @@ public class DAGExpression {
     private static String thumbJsonExpr(List<DAGEdge> edges) {
         MutableInt begin = new MutableInt('A');
         Map<String, String> map = new HashMap<>();
-        List<DAGEdge> list = new ArrayList<>();
+        List<DAGEdge> list = new ArrayList<>(edges.size());
         for (DAGEdge edge : edges) {
             DAGNode source = edge.getSource();
             String sourceThumb = map.computeIfAbsent(source.getName(), k -> String.valueOf((char) begin.getAndIncrement()));

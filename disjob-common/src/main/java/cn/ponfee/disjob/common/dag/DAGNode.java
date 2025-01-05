@@ -39,8 +39,8 @@ public final class DAGNode implements Serializable {
 
     /**
      * <pre>
-     *  拓扑图(任务)的编号，用来区分不同的任务，从1开始
-     *  如[A -> B; C -> D]，表达式用“;”分隔成两个不同的任务
+     *  拓扑图的编号，用来区分不同的拓扑图，从1开始
+     *  如[A -> B; C -> D]，表达式用“;”分隔成两个不同的拓扑图
      *  topology-1: A -> B
      *  topology-2: C -> D
      * </pre>

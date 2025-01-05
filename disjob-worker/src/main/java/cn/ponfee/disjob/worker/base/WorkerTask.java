@@ -28,6 +28,7 @@ import cn.ponfee.disjob.worker.executor.JobExecutor;
 import lombok.AccessLevel;
 import lombok.Getter;
 
+import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -129,6 +130,7 @@ final class WorkerTask {
         target.setJobType(jobType);
         target.setWnstanceId(wnstanceId);
         target.setInstanceId(instanceId);
+        target.setTriggerTime(new Date(triggerTime));
 
         target.setTaskId(source.getTaskId());
         target.setTaskNo(source.getTaskNo());

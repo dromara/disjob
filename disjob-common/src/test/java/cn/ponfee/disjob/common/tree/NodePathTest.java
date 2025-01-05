@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.tree;
 
+import cn.ponfee.disjob.common.util.Comparators;
 import cn.ponfee.disjob.common.util.Jsons;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.*;
@@ -91,6 +92,30 @@ public class NodePathTest {
             super(parent);
             this.name = Objects.requireNonNull(name);
             this.orders = orders;
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * super.hashCode() + Objects.hashCode(name);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return super.equals(obj)
+                && Objects.equals(this.name, ((JsonId) obj).name);
+        }
+
+        @Override
+        public int compareTo(@Nonnull JsonId that) {
+            int compared = super.compareTo(that);
+            if (compared != 0) {
+                return compared;
+            }
+            compared = Integer.compare(this.orders, that.orders);
+            if (compared != 0) {
+                return compared;
+            }
+            return Comparators.compareNullsFirst(this.name, that.name);
         }
     }
 

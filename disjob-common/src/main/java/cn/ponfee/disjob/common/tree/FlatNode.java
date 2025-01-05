@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.tree;
 
+import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.io.Serializable;
@@ -28,6 +29,7 @@ import java.util.function.Function;
  * @param <A> the attachment biz object type
  * @author Ponfee
  */
+@Getter
 public final class FlatNode<T extends Serializable & Comparable<T>, A> extends BaseNode<T, A> {
     private static final long serialVersionUID = 5191371614061952661L;
 
@@ -40,9 +42,8 @@ public final class FlatNode<T extends Serializable & Comparable<T>, A> extends B
         super(n.nid, n.pid, n.enabled, n.available, n.attach);
 
         super.level  = n.level;
-        super.degree = n.degree;
         super.path   = n.path;
-
+        super.degree = n.degree;
         super.leftLeafCount = n.leftLeafCount;
 
         super.treeDepth      = n.treeDepth;
@@ -57,12 +58,6 @@ public final class FlatNode<T extends Serializable & Comparable<T>, A> extends B
 
     public <R> R convert(Function<FlatNode<T, A>, R> convertor) {
         return convertor.apply(this);
-    }
-
-    // ----------------------------------------------getter/setter
-
-    public boolean isLeaf() {
-        return leaf;
     }
 
 }

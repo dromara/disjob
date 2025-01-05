@@ -65,12 +65,6 @@
       <artifactId>jna-platform</artifactId>
       <version>${jna-platform.version}</version>
     </dependency>
-    <dependency>
-      <groupId>guru.nidi</groupId>
-      <artifactId>graphviz-java</artifactId>
-      <version>${graphviz-java.version}</version>
-      <optional>true</optional>
-    </dependency>
     <!-- spring dependencies -->
     <dependency>
       <groupId>org.springframework</groupId>
@@ -81,6 +75,13 @@
       <artifactId>spring-boot-starter-json</artifactId>
     </dependency>
 
+    <!-- optional dependencies -->
+    <dependency>
+      <groupId>guru.nidi</groupId>
+      <artifactId>graphviz-java</artifactId>
+      <version>${graphviz-java.version}</version>
+      <optional>true</optional>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>

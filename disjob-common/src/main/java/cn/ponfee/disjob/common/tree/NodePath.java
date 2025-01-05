@@ -47,9 +47,9 @@ public final class NodePath<T extends Serializable & Comparable<T>>
         super.addAll(path);
     }
 
-    public NodePath(NodePath<T> parent, T child) {
-        super(parent.size() + 1);
-        super.addAll(parent);
+    public NodePath(NodePath<T> parentPath, T child) {
+        super(parentPath.size() + 1);
+        super.addAll(parentPath);
         super.add(child);
     }
 

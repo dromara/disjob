@@ -39,7 +39,7 @@ public final class TreeNodeBuilder<T extends Serializable & Comparable<T>, A> {
     private boolean buildPath = true;
 
     TreeNodeBuilder(T nid) {
-        this.nid = Objects.requireNonNull(nid);
+        this.nid = nid;
     }
 
     public TreeNodeBuilder<T, A> pid(T pid) {
@@ -73,7 +73,7 @@ public final class TreeNodeBuilder<T extends Serializable & Comparable<T>, A> {
     }
 
     public TreeNode<T, A> build() {
-        return new TreeNode<>(nid, pid, enabled, available, attach, siblingNodesComparator, buildPath, true);
+        return new TreeNode<>(nid, pid, enabled, available, attach, siblingNodesComparator, buildPath);
     }
 
 }

@@ -36,8 +36,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Objects;
 
-import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_PREFIX;
-
 /**
  * Spring autoconfiguration for redis server registry
  *
@@ -56,11 +54,6 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
     }
 
     /**
-     * Redis registry StringRedisTemplate spring bean name
-     */
-    public static final String SPRING_BEAN_NAME_STRING_REDIS_TEMPLATE_WRAPPER = SPRING_BEAN_NAME_PREFIX + ".registry.redis.string-redis-template-wrapper";
-
-    /**
      * <pre>
      * RedisAutoConfiguration has auto-configured two redis template objects.
      *   1) RedisTemplate<Object, Object> redisTemplate
@@ -70,8 +63,8 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      * @param stringRedisTemplate the auto-configured redis template by spring container
      * @return MutableObject
      */
-    @ConditionalOnMissingBean(name = SPRING_BEAN_NAME_STRING_REDIS_TEMPLATE_WRAPPER)
-    @Bean(SPRING_BEAN_NAME_STRING_REDIS_TEMPLATE_WRAPPER)
+    @ConditionalOnMissingBean
+    @Bean
     public StringRedisTemplateWrapper stringRedisTemplateWrapper(StringRedisTemplate stringRedisTemplate) {
         return new StringRedisTemplateWrapper(stringRedisTemplate);
     }
@@ -90,7 +83,7 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
     @Bean
     public SupervisorRegistry supervisorRegistry(RedisRegistryProperties config,
                                                  @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                                 @Qualifier(SPRING_BEAN_NAME_STRING_REDIS_TEMPLATE_WRAPPER) StringRedisTemplateWrapper wrapper) {
+                                                 StringRedisTemplateWrapper wrapper) {
         return new RedisSupervisorRegistry(config, restTemplate, wrapper.stringRedisTemplate);
     }
 
@@ -101,7 +94,7 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
     @Bean
     public WorkerRegistry workerRegistry(RedisRegistryProperties config,
                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                         @Qualifier(SPRING_BEAN_NAME_STRING_REDIS_TEMPLATE_WRAPPER) StringRedisTemplateWrapper wrapper) {
+                                         StringRedisTemplateWrapper wrapper) {
         return new RedisWorkerRegistry(config, restTemplate, wrapper.stringRedisTemplate);
     }
 

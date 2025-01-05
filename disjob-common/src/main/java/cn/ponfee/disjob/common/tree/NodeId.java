@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.tree;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.common.util.Comparators;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -43,6 +44,11 @@ public abstract class NodeId<T extends NodeId<T>>
         this.parent = parent;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(parent);
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public boolean equals(Object obj) {
@@ -57,16 +63,7 @@ public abstract class NodeId<T extends NodeId<T>>
 
     @Override
     public int compareTo(@Nonnull T that) {
-        if (this.parent == null) {
-            // null parent first (root node should be first)
-            return that.parent == null ? 0 : -1;
-        }
-        return that.parent == null ? 1 : this.parent.compareTo(that.parent);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(parent);
+        return Comparators.compareNullsFirst(this.parent, that.parent);
     }
 
     public final T getParent() {

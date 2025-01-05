@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * The execution task
@@ -54,6 +55,12 @@ public class ExecutionTask extends ToJsonString implements Serializable {
      * <p>当前是第几次重试，如果当前非重试执行，则为0
      */
     private int retriedCount;
+
+    /**
+     * sched_instance.trigger_time
+     * <p>如果是暂停后再恢复执行，此时的trigger_time可能与当前时间早很多
+     */
+    private Date triggerTime;
 
     /**
      * 是否广播任务

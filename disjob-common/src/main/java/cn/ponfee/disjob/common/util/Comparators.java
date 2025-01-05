@@ -75,4 +75,12 @@ public final class Comparators {
         return res != Comparators.EQ ? res : Integer.compare(System.identityHashCode(a), System.identityHashCode(b));
     }
 
+    public static <T extends Comparable<? super T>> int compareNullsFirst(T a, T b) {
+        if (a == null) {
+            // null first
+            return b == null ? 0 : -1;
+        }
+        return b == null ? 1 : a.compareTo(b);
+    }
+
 }
