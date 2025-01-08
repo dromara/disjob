@@ -49,6 +49,18 @@ public class Collects {
         return list;
     }
 
+    public static <E> ArrayDeque<E> newArrayDeque(E element) {
+        ArrayDeque<E> list = new ArrayDeque<>();
+        list.add(element);
+        return list;
+    }
+
+    public static <E> ArrayList<E> newArrayList(int initialCapacity, E element) {
+        ArrayList<E> list = new ArrayList<>(initialCapacity);
+        list.add(element);
+        return list;
+    }
+
     public static <T> Set<T> truncate(Set<T> set, int length) {
         if (CollectionUtils.isEmpty(set) || length <= 0 || set.size() <= length) {
             return set;

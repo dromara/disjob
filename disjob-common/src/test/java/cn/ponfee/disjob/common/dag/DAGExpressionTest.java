@@ -33,7 +33,7 @@ public class DAGExpressionTest {
 
     /*
     private static final MultiwayTreePrinter<TreeNode<DAGExpression.TreeNodeId, Object>> TREE_PRINTER =
-        new MultiwayTreePrinter<>(System.out, e -> e.getNid().toString(), TreeNode::getChildren);
+        new MultiwayTreePrinter<>(System.out, e -> e.getId().toString(), TreeNode::getChildren);
 
     @Test
     public void testProcess() {

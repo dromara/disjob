@@ -30,7 +30,7 @@ import java.util.function.Function;
  * @author Ponfee
  */
 @Getter
-public final class FlatNode<T extends Serializable & Comparable<T>, A> extends BaseNode<T, A> {
+public final class FlatNode<T extends Serializable & Comparable<T>, A> extends BaseTree<T, A> {
     private static final long serialVersionUID = 5191371614061952661L;
 
     /**
@@ -39,18 +39,17 @@ public final class FlatNode<T extends Serializable & Comparable<T>, A> extends B
     private final boolean leaf;
 
     FlatNode(TreeNode<T, A> n) {
-        super(n.nid, n.pid, n.enabled, n.available, n.attach);
+        super(n.id, n.parentId, n.enabled, n.available, n.attach);
 
-        super.level  = n.level;
-        super.path   = n.path;
-        super.degree = n.degree;
-        super.leftLeafCount = n.leftLeafCount;
+        super.level          = n.level;
+        super.path           = n.path;
+        super.leftLeafCount  = n.leftLeafCount;
 
-        super.treeDepth      = n.treeDepth;
+        super.nodeDegree     = n.nodeDegree;
+        super.treeDegree     = n.treeDegree;
+        super.treeHeight     = n.treeHeight;
         super.treeNodeCount  = n.treeNodeCount;
-        super.treeMaxDegree  = n.treeMaxDegree;
         super.treeLeafCount  = n.treeLeafCount;
-        super.childrenCount  = n.childrenCount;
         super.siblingOrdinal = n.siblingOrdinal;
 
         this.leaf = CollectionUtils.isEmpty(n.getChildren());

@@ -246,7 +246,7 @@ public final class ClassUtils {
         if (supClass == null || subClass == null || !supClass.isAssignableFrom(subClass)) {
             return null;
         }
-        Deque<Class<?>> stack = Collects.newLinkedList(subClass);
+        Deque<Class<?>> stack = Collects.newArrayDeque(subClass);
         while (!stack.isEmpty()) {
             subClass = stack.pop();
             if (subClass.isAnnotationPresent(annClass)) {

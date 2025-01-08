@@ -19,7 +19,6 @@ package cn.ponfee.disjob.common.dag;
 import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.common.tree.BaseNode;
 import cn.ponfee.disjob.common.tree.PlainNode;
 import cn.ponfee.disjob.common.tree.TreeNode;
 import cn.ponfee.disjob.common.tuple.Tuple2;
@@ -307,13 +306,13 @@ public class DAGExpression {
         }
 
         TreeNode<TreeNodeId, Object> root = buildTree(groups);
-        List<Integer> list = new ArrayList<>(root.getChildrenCount() * 2 + 2);
-        list.add(root.getNid().open);
+        List<Integer> list = new ArrayList<>(root.getNodeDegree() * 2 + 2);
+        list.add(root.getId().open);
         root.forEachChild(child -> {
-            list.add(child.getNid().open);
-            list.add(child.getNid().close);
+            list.add(child.getId().open);
+            list.add(child.getId().close);
         });
-        list.add(root.getNid().close);
+        list.add(root.getId().close);
         return partition(expr, list);
     }
 
@@ -407,23 +406,21 @@ public class DAGExpression {
     }
 
     private static TreeNode<TreeNodeId, Object> buildTree(List<Tuple2<Integer, Integer>> groups) {
-        List<BaseNode<TreeNodeId, Object>> nodes = new ArrayList<>(groups.size() + 1);
-        buildTree(groups, TreeNodeId.ROOT_ID, 1, 0, nodes);
-
-        // create a dummy root node
-        TreeNode<TreeNodeId, Object> dummyRoot = new TreeNode<>(TreeNodeId.ROOT_ID, null);
-
+        // create a dummy root node, root id is null
+        TreeNode<TreeNodeId, Object> dummyRoot = TreeNode.root(null);
+        // build children nodes
+        List<PlainNode<TreeNodeId, Object>> nodes = new ArrayList<>(groups.size() + 1);
+        buildTreeNodes(groups, dummyRoot.getId(), 1, 0, nodes);
         // mount nodes
         dummyRoot.mount(nodes);
-
         // gets the actual root
-        Assert.state(dummyRoot.getChildrenCount() == 1, "Build tree root node must be has a single child.");
+        Assert.state(dummyRoot.getNodeDegree() == 1, "Build tree root node must be has a single child.");
         return dummyRoot.getChildren().get(0);
     }
 
-    private static void buildTree(List<Tuple2<Integer, Integer>> groups,
-                                  TreeNodeId pid, int level, int start,
-                                  List<BaseNode<TreeNodeId, Object>> nodes) {
+    private static void buildTreeNodes(List<Tuple2<Integer, Integer>> groups,
+                                       TreeNodeId pid, int level, int start,
+                                       List<PlainNode<TreeNodeId, Object>> nodes) {
         int open = -1;
         for (int i = start, n = groups.size(); i < n; i++) {
             if (groups.get(i).b < level) {
@@ -435,9 +432,9 @@ public class DAGExpression {
                     open = i;
                 } else {
                     // find "()" position
-                    TreeNodeId nid = TreeNodeId.of(groups.get(open).a, groups.get(i).a);
+                    TreeNodeId nid = new TreeNodeId(groups.get(open).a, groups.get(i).a);
                     nodes.add(new PlainNode<>(nid, pid));
-                    buildTree(groups, nid, level + 1, open + 1, nodes);
+                    buildTreeNodes(groups, nid, level + 1, open + 1, nodes);
                     open = -1;
                 }
             }
@@ -613,7 +610,6 @@ public class DAGExpression {
 
     private static final class TreeNodeId implements Serializable, Comparable<TreeNodeId> {
         private static final long serialVersionUID = -468548698179536500L;
-        private static final TreeNodeId ROOT_ID = new TreeNodeId(-1, -1);
 
         /**
          * position of "("
@@ -626,14 +622,10 @@ public class DAGExpression {
         private final int close;
 
         private TreeNodeId(int open, int close) {
-            this.open = open;
-            this.close = close;
-        }
-
-        private static TreeNodeId of(int open, int close) {
             Assert.isTrue(open >= 0, () -> "Tree node id open must be >= 0: " + open);
             Assert.isTrue(close > open, () -> "Tree node id close must be > open: " + close + ", " + open);
-            return new TreeNodeId(open, close);
+            this.open = open;
+            this.close = close;
         }
 
         @Override

@@ -54,14 +54,8 @@ public final class NodePath<T extends Serializable & Comparable<T>>
     }
 
     @Override
-    public int compareTo(NodePath<T> that) {
-        int compared;
-        for (Iterator<T> a = this.iterator(), b = that.iterator(); a.hasNext() && b.hasNext(); ) {
-            if ((compared = a.next().compareTo(b.next())) != 0) {
-                return compared;
-            }
-        }
-        return this.size() - that.size();
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override
@@ -73,11 +67,16 @@ public final class NodePath<T extends Serializable & Comparable<T>>
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
+    public int compareTo(NodePath<T> that) {
+        int compared;
+        for (Iterator<T> a = this.iterator(), b = that.iterator(); a.hasNext() && b.hasNext(); ) {
+            if ((compared = a.next().compareTo(b.next())) != 0) {
+                return compared;
+            }
+        }
+        return this.size() - that.size();
     }
 
-    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public NodePath<T> clone() {
         return new NodePath<>(this);

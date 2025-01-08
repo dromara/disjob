@@ -76,7 +76,7 @@ public final class MultiwayTreePrinter<T> {
     */
 
     public void print(T root) throws IOException {
-        Deque<Tuple4<String, String, String, T>> stack = Collects.newLinkedList(Tuple4.of("", "", "", root));
+        Deque<Tuple4<String, String, String, T>> stack = Collects.newArrayDeque(Tuple4.of("", "", "", root));
         while (!stack.isEmpty()) {
             Tuple4<String, String, String, T> tuple = stack.pop();
             output.append(tuple.a).append(tuple.c).append(nodeLabel.apply(tuple.d)).append('\n');

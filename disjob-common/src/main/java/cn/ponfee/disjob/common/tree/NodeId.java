@@ -18,6 +18,7 @@ package cn.ponfee.disjob.common.tree;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.util.Comparators;
+import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -31,8 +32,8 @@ import java.util.function.Function;
  * @param <T> the NodeId implementation subclass
  * @author Ponfee
  */
-public abstract class NodeId<T extends NodeId<T>>
-    extends ToJsonString implements Comparable<T>, Serializable {
+@Getter
+public abstract class NodeId<T extends NodeId<T>> extends ToJsonString implements Comparable<T>, Serializable {
     private static final long serialVersionUID = -9004940918491918780L;
 
     /**
@@ -55,7 +56,7 @@ public abstract class NodeId<T extends NodeId<T>>
         if (this == obj) {
             return true;
         }
-        if (obj == null || !this.getClass().equals(obj.getClass())) {
+        if (obj == null || this.getClass() != obj.getClass()) {
             return false;
         }
         return Objects.equals(this.parent, ((T) obj).parent);
@@ -64,10 +65,6 @@ public abstract class NodeId<T extends NodeId<T>>
     @Override
     public int compareTo(@Nonnull T that) {
         return Comparators.compareNullsFirst(this.parent, that.parent);
-    }
-
-    public final T getParent() {
-        return parent;
     }
 
     @SuppressWarnings("unchecked")

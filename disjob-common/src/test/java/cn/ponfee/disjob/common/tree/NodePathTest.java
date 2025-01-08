@@ -34,8 +34,7 @@ import java.util.Objects;
  */
 public class NodePathTest {
 
-    static TypeReference<NodePath<JsonId>> LIST_STRING = new TypeReference<NodePath<JsonId>>() {
-    };
+    static TypeReference<NodePath<JsonId>> LIST_STRING = new TypeReference<NodePath<JsonId>>() { };
 
     @Test
     public void testJson() {
