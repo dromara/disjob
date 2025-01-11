@@ -19,10 +19,10 @@ package cn.ponfee.disjob.common.spring;
 import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.collect.TypedMap;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.common.util.Strings;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 
@@ -53,7 +53,7 @@ public class YamlProperties extends Properties implements TypedMap<Object, Objec
         loadYaml(new ByteArrayInputStream(content));
     }
 
-    public <T> T extract(Class<T> beanType, String prefix) {
+    public <T> T extract(Class<T> beanType, String prefix) throws IllegalAccessException {
         List<Field> fields = ClassUtils.listFields(beanType);
         if (CollectionUtils.isEmpty(fields)) {
             return null;
@@ -67,7 +67,7 @@ public class YamlProperties extends Properties implements TypedMap<Object, Objec
             for (char separator : separators) {
                 String name = prefix + Strings.toSeparatedFormat(field.getName(), separator);
                 if (super.containsKey(name)) {
-                    Fields.put(bean, field, ObjectUtils.cast(get(name), field.getType()));
+                    FieldUtils.writeField(field, bean, ObjectUtils.cast(get(name), field.getType()), true);
                     break;
                 }
             }

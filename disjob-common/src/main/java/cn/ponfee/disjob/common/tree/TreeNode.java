@@ -152,6 +152,12 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         count(buildPath);
     }
 
+    /**
+     * Gets node by node id
+     *
+     * @param id the node id
+     * @return node
+     */
     public TreeNode<T, A> getNode(T id) {
         Deque<TreeNode<T, A>> stack = Collects.newArrayDeque(this);
         while (!stack.isEmpty()) {
@@ -164,13 +170,19 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         return null;
     }
 
+    /**
+     * Remove node form tree
+     *
+     * @param id the node id
+     * @return removed node
+     */
     public TreeNode<T, A> removeNode(T id) {
         TreeNode<T, A> removed = removeNode0(id);
         if (removed != null && removed != this) {
             boolean buildPath = (super.path != null);
             // re-count root node tree
             this.count(buildPath);
-            // re-count removed node true
+            // re-count removed node tree
             removed.count(buildPath);
         }
         return removed;
@@ -340,18 +352,18 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
 
     @SuppressWarnings("unchecked")
     private static <T extends Serializable & Comparable<T>, A, E extends PlainNode<T, A>> E findRootNode(List<E> list) {
-        // 1、collect children node id
-        Set<T> children = new HashSet<>(list.size() * 2);
+        // 1、collect child node ids
+        Set<T> childIds = new HashSet<>(list.size() * 2);
         for (E node : list) {
-            Assert.state(!children.contains(node.id), () -> "Found duplicated node id: " + node.id);
-            children.add(node.id);
+            Assert.state(!childIds.contains(node.id), () -> "Found duplicated node id: " + node.id);
+            childIds.add(node.id);
         }
 
-        // 2、select root node id
+        // 2、select root nodes
         Set<E> roots = new HashSet<>();
         for (E node : list) {
-            // 如果`id为null`(由PlainNode构造函数的校验可知parentId也必为null)，此时children包含null，这种特殊情况应加入roots中
-            if (node.id == null || !children.contains(node.parentId)) {
+            // 如果`id为null`(由PlainNode构造函数中的校验可知parentId也必为null)，此时children包含null，这种特殊情况应加入roots中
+            if (node.id == null || !childIds.contains(node.parentId)) {
                 roots.add(node);
             }
         }
@@ -365,9 +377,9 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
             return roots.iterator().next();
         } else {
             // root node node exists, must be dummy
-            List<T> parentIds = roots.stream().map(e -> e.parentId).distinct().collect(Collectors.toList());
-            Assert.state(parentIds.size() == 1, () -> "Found many root node id: " + parentIds);
-            return (E) new PlainNode<>(parentIds.get(0), null);
+            List<T> rootIds = roots.stream().map(e -> e.parentId).distinct().collect(Collectors.toList());
+            Assert.state(rootIds.size() == 1, () -> "Found many root node id: " + rootIds);
+            return (E) new PlainNode<>(rootIds.get(0), null);
         }
     }
 
@@ -423,7 +435,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         }
         if (graph.containsKey(id)) {
             T parentId = graph.get(id);
-            // 如果`id为null`(由PlainNode构造函数的校验可知parentId也必为null)，则视为是特殊的根节点，无需校验
+            // 如果`id为null`(由PlainNode构造函数中的校验可知parentId也必为null)，则视为是特殊的根节点，无需校验
             if (id != null && hasCycle(parentId, set, graph)) {
                 return true;
             }
@@ -436,11 +448,10 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         // find child nodes for the current node
         for (Iterator<E> iter = nodes.iterator(); iter.hasNext(); ) {
             E node = iter.next();
-            if (equalsId(node.parentId)) {
+            if (this.equalsId(node.parentId)) {
                 // recompute the child node is available
                 boolean childAvailable = node.enabled && node.available && super.available;
-                TreeNode<T, A> child = new TreeNode<>(node.id, node.parentId, node.enabled, childAvailable, node.attach);
-                this.children.add(child);
+                this.children.add(new TreeNode<>(node.id, node.parentId, node.enabled, childAvailable, node.attach));
                 // remove the found child node
                 iter.remove();
             }
@@ -459,7 +470,6 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         count0(buildPath, new NodePath<>());
     }
 
-    @SuppressWarnings("UnclearExpression")
     private void count0(boolean buildPath, NodePath<T> parentPath) {
         // 节点的度为该节点的子节点个数
         super.nodeDegree = this.children.size();
@@ -526,8 +536,8 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
     }
 
     private TreeNode<T, A> removeNode0(T id) {
-        if (equalsId(id)) {
-            // the id is root node id
+        if (this.equalsId(id)) {
+            // is the root node id
             return this;
         }
         Deque<TreeNode<T, A>> stack = Collects.newArrayDeque(this);
@@ -542,7 +552,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
                 stack.push(child);
             }
         }
-        // not exists node id
+        // node id not exists
         return null;
     }
 

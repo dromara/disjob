@@ -17,11 +17,11 @@
 package cn.ponfee.disjob.samples.worker.util;
 
 import cn.ponfee.disjob.common.spring.ResourceScanner;
-import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.worker.executor.JobExecutor;
 import cn.ponfee.disjob.worker.executor.JobExecutorUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,15 +100,15 @@ public class JobExecutorParser {
      * @param param     object
      * @param fieldName field name
      */
-    public static void parse(Object param, String fieldName) {
-        String jobExecutor = (String) Fields.get(param, fieldName);
+    public static void parse(Object param, String fieldName) throws IllegalAccessException {
+        String jobExecutor = (String) FieldUtils.readField(param, fieldName, true);
         try {
             JobExecutorUtils.loadJobExecutor(jobExecutor);
         } catch (Exception ex) {
             Class<? extends JobExecutor> executorClass = JOB_EXECUTOR_MAP.get(jobExecutor);
             if (executorClass != null) {
                 // maybe spring bean name
-                Fields.put(param, fieldName, executorClass.getName());
+                FieldUtils.writeField(param, fieldName, executorClass.getName(), true);
                 LOG.info("Parse jobExecutor: [{}] -> [{}]", jobExecutor, executorClass.getName());
             } else {
                 LOG.error("Parse jobExecutor error: {}, {}", param, fieldName);

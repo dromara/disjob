@@ -24,6 +24,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,14 +101,13 @@ public final class ProcessUtils {
         try {
             if (SystemUtils.IS_OS_WINDOWS) {
                 // Windows Process class：java.lang.Win32Process || java.lang.ProcessImpl
-                long handlePointer = (Long) Fields.get(process, "handle");
+                long handlePointer = ((Number) FieldUtils.readField(process, "handle", true)).longValue();
                 WinNT.HANDLE handle = new WinNT.HANDLE();
                 handle.setPointer(Pointer.createConstant(handlePointer));
                 return (long) Kernel32.INSTANCE.GetProcessId(handle);
             } else if (SystemUtils.IS_OS_UNIX) {
                 // Unix Process class：java.lang.UNIXProcess
-                Integer pid = (Integer) Fields.get(process, "pid");
-                return pid.longValue();
+                return ((Number) FieldUtils.readField(process, "pid", true)).longValue();
             } else {
                 LOG.error("Get process id unknown os name: {}, {}", SystemUtils.OS_NAME, process.getClass().getName());
                 return INVALID_PID;

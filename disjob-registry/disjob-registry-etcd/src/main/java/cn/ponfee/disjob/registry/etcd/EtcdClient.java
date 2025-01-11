@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.registry.ConnectionStateListener;
 import cn.ponfee.disjob.registry.etcd.configuration.EtcdRegistryProperties;
 import com.google.common.collect.ImmutableList;
@@ -39,6 +38,7 @@ import io.etcd.jetcd.watch.WatchEvent;
 import io.etcd.jetcd.watch.WatchResponse;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -247,7 +247,7 @@ public class EtcdClient implements Closeable {
 
     public boolean isConnected() {
         try {
-            Object connectionManager = Fields.get(client, "connectionManager");
+            Object connectionManager = FieldUtils.readField(client, "connectionManager", true);
             ManagedChannel managedChannel = ClassUtils.invoke(connectionManager, "getChannel");
             ConnectivityState state = managedChannel.getState(false);
             return CONNECTED_STATUS_LIST.contains(state);

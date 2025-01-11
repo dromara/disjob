@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.lang.reflect.Array;
 import java.text.ParseException;
@@ -92,7 +93,11 @@ public final class ObjectUtils {
         } else if (obj instanceof Dictionary) {
             return ((Dictionary<?, ?>) obj).get(name);
         } else {
-            return Fields.get(obj, name);
+            try {
+                return FieldUtils.readField(obj, name, true);
+            } catch (IllegalAccessException e) {
+                return ExceptionUtils.rethrow(e);
+            }
         }
     }
 

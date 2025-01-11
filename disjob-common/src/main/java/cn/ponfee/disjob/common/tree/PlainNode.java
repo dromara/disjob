@@ -38,9 +38,9 @@ public class PlainNode<T extends Serializable & Comparable<T>, A> implements Ser
 
     protected final T id;              // current node id
     protected final T parentId;        // parent node id
-    protected final boolean enabled;   // 状态（业务相关）：false无效；true有效；
-    protected final boolean available; // 是否可用（parent.available && this.available && this.enabled）
-    protected final A attach;          // 附加信息（与业务相关）
+    protected final boolean enabled;   // 业务状态：true-有效；false-无效；
+    protected final boolean available; // 是否可用：this.enabled && this.available && parent.available
+    protected final A attach;          // 业务相关的附加信息
 
     // -------------------------------------------------------------------Constructor
 
@@ -80,7 +80,7 @@ public class PlainNode<T extends Serializable & Comparable<T>, A> implements Ser
         if (obj == null || this.getClass() != obj.getClass()) {
             return false;
         }
-        return Objects.equals(this.id, ((PlainNode<T, A>) obj).id);
+        return equalsId(((PlainNode<T, A>) obj).id);
     }
 
     /**

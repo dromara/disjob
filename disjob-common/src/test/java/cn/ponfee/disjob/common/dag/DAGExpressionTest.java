@@ -200,6 +200,7 @@ public class DAGExpressionTest {
     public void testThumb() {
         Assertions.assertEquals("A->B->C", DAGExpression.thumb("Extract->Transform->Load"));
         Assertions.assertEquals("A->B->C;A->C", DAGExpression.thumb("Extract -> Transform -> Load ; Extract -> Load"));
+        Assertions.assertEquals("A->B->C;A->C", DAGExpression.thumb("Extract->Transform->Load;Extract->Load"));
         Assertions.assertEquals("[\"1:1:A -> 1:1:B\",\"1:1:A -> 1:1:C\",\"1:1:D -> 1:1:C\",\"1:1:D -> 1:1:E\",\"2:1:A -> 2:1:B\"]", DAGExpression.thumb("[\"1:1:AJobExecutor -> 1:1:CJobExecutor\",\"1:1:AJobExecutor -> 1:1:DJobExecutor\",\"1:1:BJobExecutor -> 1:1:DJobExecutor\",\"1:1:BJobExecutor -> 1:1:EJobExecutor\",\"2:1:AJobExecutor -> 2:1:CJobExecutor\"]"));
         Assertions.assertEquals("A->(B->C->D),(E->C)->F,G,H->I;J->K", DAGExpression.thumb("\"ALoader -> (BMap->CMap->DMap),(AMap->CMap) -> GShuffle,HShuffle,XShuffle -> JReduce ; A->Y\""));
     }

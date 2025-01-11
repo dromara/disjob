@@ -17,6 +17,8 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.util.Map;
 import java.util.Set;
@@ -53,14 +55,14 @@ public enum PrimitiveTypes {
     private final int size;
 
     PrimitiveTypes(Class<?> wrapper, byte value, byte castable) {
-        this(wrapper, value, castable, (int) Fields.get(wrapper, "SIZE"));
+        this(wrapper, value, castable, (int) readStaticField(wrapper, "SIZE"));
     }
 
     PrimitiveTypes(Class<?> wrapper, byte value, byte castable, int size) {
         this.wrapper = wrapper;
         this.value = value;
         this.castable = castable;
-        this.primitive = (Class<?>) Fields.get(wrapper, "TYPE");
+        this.primitive = (Class<?>) readStaticField(wrapper, "TYPE");
         this.size = size;
     }
 
@@ -118,6 +120,16 @@ public enum PrimitiveTypes {
     public static <T> Class<T> unwrap(Class<T> type) {
         PrimitiveTypes pt = ofPrimitiveOrWrapper(type);
         return pt == null ? type : (Class<T>) pt.primitive;
+    }
+
+    // -------------------------------------------------------private methods
+
+    private static <T> T readStaticField(Class<?> cls, String fieldName) {
+        try {
+            return (T) FieldUtils.readStaticField(cls, fieldName, true);
+        } catch (IllegalAccessException e) {
+            return ExceptionUtils.rethrow(e);
+        }
     }
 
     private static final class Const {

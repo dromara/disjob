@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.AdvisedSupport;
 import org.springframework.aop.support.AopUtils;
@@ -81,16 +82,16 @@ public final class ProxyUtils {
             return ((Advised) object).getTargetSource().getTarget();
         }
         if (AopUtils.isJdkDynamicProxy(object)) {
-            return getProxyTargetObject(Fields.get(object, "h"));
+            return getProxyTargetObject(FieldUtils.readField(object, "h", true));
         }
         if (AopUtils.isCglibProxy(object)) {
-            return getProxyTargetObject(Fields.get(object, "CGLIB$CALLBACK_0"));
+            return getProxyTargetObject(FieldUtils.readField(object, "CGLIB$CALLBACK_0", true));
         }
         return object;
     }
 
     private static Object getProxyTargetObject(Object proxy) throws Exception {
-        AdvisedSupport advisedSupport = (AdvisedSupport) Fields.get(proxy, "advised");
+        AdvisedSupport advisedSupport = (AdvisedSupport) FieldUtils.readField(proxy, "advised", true);
         return advisedSupport.getTargetSource().getTarget();
     }
 

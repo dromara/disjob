@@ -174,6 +174,14 @@ public class TreeNodeTest {
         root.mount(Arrays.asList(new PlainNode<>(310, 300), new PlainNode<>(320, 300), new PlainNode<>(311, 310)), false, true, Comparator.comparing(TreeNode::getId));
         System.out.println("print tree: \n" + root);
 
+        MapTreeTrait<Integer, Object> mapTreeTrait = root.convert(e -> {
+            MapTreeTrait<Integer, Object> treeTrait = new MapTreeTrait<>();
+            treeTrait.put("parentId", e.getParentId());
+            treeTrait.put("id", e.getId());
+            return treeTrait;
+        }, true);
+        Assertions.assertThat(Jsons.toJson(mapTreeTrait)).isEqualTo("{\"parentId\":-1,\"id\":0,\"children\":[{\"parentId\":0,\"id\":100,\"children\":[{\"parentId\":100,\"id\":110,\"children\":[{\"parentId\":110,\"id\":111,\"children\":[]},{\"parentId\":110,\"id\":112,\"children\":[]},{\"parentId\":110,\"id\":113,\"children\":[]},{\"parentId\":110,\"id\":114,\"children\":[]}]},{\"parentId\":100,\"id\":120,\"children\":[{\"parentId\":120,\"id\":121,\"children\":[]}]}]},{\"parentId\":0,\"id\":200,\"children\":[{\"parentId\":200,\"id\":210,\"children\":[]},{\"parentId\":200,\"id\":220,\"children\":[{\"parentId\":220,\"id\":221,\"children\":[]}]}]},{\"parentId\":0,\"id\":300,\"children\":[{\"parentId\":300,\"id\":310,\"children\":[{\"parentId\":310,\"id\":311,\"children\":[]}]},{\"parentId\":300,\"id\":320,\"children\":[]}]}]}");
+
         TreeNode<Integer, Object> removed200 = root.removeNode(200);
         System.out.println("print root: \n" + root);
         System.out.println("print remove200: \n" + removed200);

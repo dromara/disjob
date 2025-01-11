@@ -58,7 +58,7 @@ public class ExecutionTask extends ToJsonString implements Serializable {
 
     /**
      * sched_instance.trigger_time
-     * <p>如果是暂停后再恢复执行，此时的trigger_time可能与当前时间早很多
+     * <p>如果是暂停后再恢复执行，此时的trigger_time可能会比当前时间早很多
      */
     private Date triggerTime;
 

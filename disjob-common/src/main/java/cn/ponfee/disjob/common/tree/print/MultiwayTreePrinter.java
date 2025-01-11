@@ -28,6 +28,15 @@ import java.util.function.Function;
 /**
  * Print multiway tree
  *
+ * <pre>{@code
+ *   MultiwayTreePrinter<File> printer = new MultiwayTreePrinter<>(
+ *       System.out,
+ *       File::getName,
+ *       f -> Optional.ofNullable(f.listFiles()).map(Arrays::asList).orElse(Collections.emptyList())
+ *   );
+ *   printer.print(new File("/path/dir"));
+ * }</pre>
+ *
  * @author Ponfee
  */
 public final class MultiwayTreePrinter<T> {
@@ -47,50 +56,50 @@ public final class MultiwayTreePrinter<T> {
     /*
     // DFS递归方式
     public void print(T root) throws IOException {
-        print("", "", "", root);
+        print(root, null, true);
     }
 
-    private void print(String prefix, String middle, String suffix, T node) throws IOException {
-        output.append(prefix).append(suffix).append(nodeLabel.apply(node)).append('\n');
+    private void print(T node, String indent, boolean isLast) throws IOException {
+        if (indent == null) {
+            indent = "";
+        } else {
+            output.append(indent);
+            if (isLast) {
+                output.append("└── ");
+                indent += "    ";
+            } else {
+                output.append("├── ");
+                indent += "│   ";
+            }
+        }
+        output.append(nodeLabel.apply(node)).append('\n');
 
         // print children
         List<T> children = nodeChildren.apply(node);
-        if (children == null || children.isEmpty()) {
-            return;
-        }
-
-        if (middle.length() > 0) {
-            prefix += middle;
-        }
-
-        int index = children.size();
-        for (T child : children) {
-            if (--index > 0) {
-                print(prefix, "│   ", "├── ", child);
-            } else {
-                // last child of parent, space: (char) 0xa0
-                print(prefix, "    ", "└── ", child);
+        if (children != null) {
+            for (int i = 0, n = children.size() - 1; i <= n; i++) {
+                print(children.get(i), indent, i == n);
             }
         }
     }
     */
 
     public void print(T root) throws IOException {
-        Deque<Tuple4<String, String, String, T>> stack = Collects.newArrayDeque(Tuple4.of("", "", "", root));
+        Deque<Tuple4<T, String, String, String>> stack = Collects.newArrayDeque(Tuple4.of(root, "", null, ""));
         while (!stack.isEmpty()) {
-            Tuple4<String, String, String, T> tuple = stack.pop();
-            output.append(tuple.a).append(tuple.c).append(nodeLabel.apply(tuple.d)).append('\n');
+            Tuple4<T, String, String, String> tuple = stack.pop();
+            output.append(tuple.b).append(tuple.d).append(nodeLabel.apply(tuple.a)).append('\n');
 
-            List<T> children = nodeChildren.apply(tuple.d);
+            List<T> children = nodeChildren.apply(tuple.a);
             if (children != null && !children.isEmpty()) {
-                String a = tuple.b.isEmpty() ? tuple.a : tuple.a + tuple.b;
+                String indent = (tuple.c == null) ? tuple.b : tuple.b + tuple.c;
                 int index = 0;
                 for (T child : Lists.reverse(children)) {
                     if (index++ == 0) {
-                        // last child of parent, space: (char) 0xa0
-                        stack.push(Tuple4.of(a, "    ", "└── ", child));
+                        // last child of parent
+                        stack.push(Tuple4.of(child, indent, "    ", "└── "));
                     } else {
-                        stack.push(Tuple4.of(a, "│   ", "├── ", child));
+                        stack.push(Tuple4.of(child, indent, "│   ", "├── "));
                     }
                 }
             }

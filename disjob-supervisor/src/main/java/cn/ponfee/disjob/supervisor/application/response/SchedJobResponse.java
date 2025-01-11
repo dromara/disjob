@@ -65,10 +65,11 @@ public class SchedJobResponse extends ToJsonString implements Serializable {
     private Integer misfireStrategy;
     private Integer routeStrategy;
     private Integer shutdownStrategy;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long lastTriggerTime;
 
+    /**
+     * 因为`FIXED_RATE、FIXED_DELAY`类型会设置为Long.MAX_VALUE，所以这里需要转String解决丢失精度问题
+     */
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long nextTriggerTime;
 
