@@ -102,6 +102,8 @@ public @interface MybatisDataSourceConfigurer {
 
     boolean mapUnderscoreToCamelCase() default true;
 
+    String typeAliasesPackage() default "";
+
     int defaultFetchSize() default 100;
 
     int defaultStatementTimeout() default 25;
@@ -170,6 +172,7 @@ public @interface MybatisDataSourceConfigurer {
             sqlSessionFactoryBeanBdb.addPropertyReference("dataSource", dataSourceName + DATA_SOURCE_NAME_SUFFIX);
             sqlSessionFactoryBeanBdb.addPropertyValue("configuration", createMybatisConfiguration(config));
             sqlSessionFactoryBeanBdb.addPropertyValue("mapperLocations", resolveMapperLocations(config, basePackages));
+            sqlSessionFactoryBeanBdb.addPropertyValue("typeAliasesPackage", StringUtils.defaultIfBlank(config.typeAliasesPackage(), null));
             registry.registerBeanDefinition(dataSourceName + SQL_SESSION_FACTORY_NAME_SUFFIX, sqlSessionFactoryBeanBdb.getBeanDefinition());
 
             // SqlSessionTemplate bean definition

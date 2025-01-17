@@ -51,7 +51,7 @@ public class YamlPropertySourceFactory extends DefaultPropertySourceFactory {
     @SuppressWarnings({"SingleStatementInBlock", "ConstantConditions"})
     @Override
     public PropertySource<?> createPropertySource(String name, EncodedResource resource) throws IOException {
-        String sourceName = name != null ? name : resource.getResource().getFilename();
+        String sourceName = StringUtils.isNotBlank(name) ? name : resource.getResource().getFilename();
         if (!resource.getResource().exists()) {
             return new PropertiesPropertySource(sourceName, new Properties());
         } else if (StringUtils.endsWithAny(sourceName, ".yml", ".yaml")) {

@@ -23,7 +23,6 @@ import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Bytes;
-import cn.ponfee.disjob.common.util.Predicates;
 import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
@@ -262,7 +261,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             .collect(Collectors.toSet());
         List<Integer> usableWorkerIds = IntStream.range(0, workerIdMaxCount)
             .boxed()
-            .filter(Predicates.not(usedWorkIds::contains))
+            .filter(e -> !usedWorkIds.contains(e))
             .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(usableWorkerIds)) {
             throw new IllegalStateException("Not found usable zk worker id.");

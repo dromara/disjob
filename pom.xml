@@ -75,11 +75,11 @@
 
     <spring-boot.version>2.7.18</spring-boot.version>
     <mapstruct.version>1.6.3</mapstruct.version>
-    <guava.version>33.3.1-jre</guava.version>
+    <guava.version>33.4.0-jre</guava.version>
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-io.version>2.18.0</commons-io.version>
     <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
-    <jna-platform.version>5.15.0</jna-platform.version>
+    <jna-platform.version>5.16.0</jna-platform.version>
     <curator-recipes.version>5.7.1</curator-recipes.version>
     <graphviz-java.version>0.18.1</graphviz-java.version>
 

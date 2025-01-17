@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.collect.Collects;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -58,6 +59,7 @@ public class PageRequest extends ToJsonString implements Serializable {
      */
     private String sort;
 
+    @Transient
     public long getOffset() {
         return (long) (pageNumber - 1) * pageSize;
     }

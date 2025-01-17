@@ -41,8 +41,9 @@ public final class FlatNode<T extends Serializable & Comparable<T>, A> extends B
     FlatNode(TreeNode<T, A> n) {
         super(n.id, n.parentId, n.enabled, n.available, n.attach);
 
-        super.level          = n.level;
         super.path           = n.path;
+        super.level          = n.level;
+        super.siblingOrdinal = n.siblingOrdinal;
         super.leftLeafCount  = n.leftLeafCount;
 
         super.nodeDegree     = n.nodeDegree;
@@ -50,7 +51,6 @@ public final class FlatNode<T extends Serializable & Comparable<T>, A> extends B
         super.treeHeight     = n.treeHeight;
         super.treeNodeCount  = n.treeNodeCount;
         super.treeLeafCount  = n.treeLeafCount;
-        super.siblingOrdinal = n.siblingOrdinal;
 
         this.leaf = CollectionUtils.isEmpty(n.getChildren());
     }

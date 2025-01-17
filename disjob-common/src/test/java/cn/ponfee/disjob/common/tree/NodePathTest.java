@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
@@ -35,6 +36,16 @@ import java.util.Objects;
 public class NodePathTest {
 
     static TypeReference<NodePath<JsonId>> LIST_STRING = new TypeReference<NodePath<JsonId>>() { };
+
+    @Test
+    public void testNew() {
+        Assertions.assertEquals("[]", new NodePath<>().toString());
+        Assertions.assertEquals("[1]", new NodePath<>(1).toString());
+        Assertions.assertEquals("[1, 2, 3]", new NodePath<>(1, 2, 3).toString());
+        Assertions.assertEquals("[1, 2, 3]", new NodePath<>(Arrays.asList(1, 2, 3)).toString());
+        Assertions.assertEquals("[1]", new NodePath<>(new NodePath<>(), 1).toString());
+        Assertions.assertEquals("[0, 1, 2]", new NodePath<>(new NodePath<>(0, 1), 2).toString());
+    }
 
     @Test
     public void testJson() {

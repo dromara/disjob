@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.lock.LockTemplate;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -95,6 +96,7 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
         triggeringJobScanner.start();
         ThrowingRunnable.doCaught(supervisorRegistry::discoverServers);
         supervisorRegistry.register(localSupervisor);
+        printBanner();
         LOG.info("Supervisor start end: {}", localSupervisor);
     }
 
@@ -119,6 +121,22 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
 
     public boolean isRunning() {
         return state.isRunning();
+    }
+
+    @SuppressWarnings("all")
+    private static void printBanner() {
+        String bannerSupervisor = "\n\n" +
+            "==============================================================================================================================\n" +
+            "	________   .__.             __        ___.        _________                                     .__.\n" +
+            "	\\_____  \\  |__|  ______    |__|  ____ \\_ |__     /   _____/ __ __ ______    ____ _______ ___  __|__|  ______ ____ _______\n" +
+            "	 \\    \\  \\ |  | /  ___/    |  | /  _ \\ | __ \\    \\_____  \\ |  |  \\\\____ \\ _/ __ \\\\_  __ \\\\  \\/ /|  | /  ___//  _ \\\\_  __ \\\n" +
+            "	 /____/   \\|  | \\___ \\     |  |(  <_> )| \\_\\ \\   /----/   \\|  |  /|  |_> >\\  ___/ |  | \\/ \\   / |  | \\___ \\(  <_> )|  | \\/\n" +
+            "	/_______  /|__|/____  >/\\__|  | \\____/ |___  /  /_______  /|____/ |   __/  \\___  >|__|     \\_/  |__|/____  >\\____/ |__|\n" +
+            "	        \\/          \\/ \\______|            \\/           \\/        |__|         \\/                        \\/\n\n" +
+            "	Supervisor: " + Supervisor.local() + "\n" +
+            "	Version   : " + JobConstants.VERSION + "\n" +
+            "==============================================================================================================================\n";
+        LOG.info(bannerSupervisor);
     }
 
 }

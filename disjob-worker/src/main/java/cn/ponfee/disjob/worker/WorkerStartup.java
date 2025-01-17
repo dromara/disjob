@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.Worker;
@@ -104,6 +105,7 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
         taskReceiver.start();
         ThrowingRunnable.doCaught(workerRegistry::discoverServers);
         workerRegistry.register(localWorker);
+        printBanner();
         LOG.info("Worker start end: {}", localWorker);
     }
 
@@ -124,6 +126,22 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
 
     public boolean isRunning() {
         return state.isRunning();
+    }
+
+    @SuppressWarnings("all")
+    private static void printBanner() {
+        String bannerWorker = "\n\n" +
+            "====================================================================================================\n" +
+            "	________   .__.             __        ___.       __      __                __\n" +
+            "	\\_____  \\  |__|  ______    |__|  ____ \\_ |__    /  \\    /  \\ ____ _______ |  | __  ____ _______\n" +
+            "	 \\    \\  \\ |  | /  ___/    |  | /  _ \\ | __ \\   \\   \\/\\/   //  _ \\\\_  __ \\|  |/ /_/ __ \\\\_  __ \\\n" +
+            "	 /____/   \\|  | \\___ \\     |  |(  <_> )| \\_\\ \\   \\        /(  <_> )|  | \\/|    < \\  ___/ |  | \\/\n" +
+            "	/_______  /|__|/____  >/\\__|  | \\____/ |___  /    \\__/\\  /  \\____/ |__|   |__|_ \\ \\___  >|__|\n" +
+            "	        \\/          \\/ \\______|            \\/          \\/                      \\/     \\/\n\n" +
+            "	Worker : " + Worker.local() + "\n" +
+            "	Version: " + JobConstants.VERSION + "\n" +
+            "====================================================================================================\n";
+        LOG.info(bannerWorker);
     }
 
 }

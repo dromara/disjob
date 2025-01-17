@@ -23,7 +23,6 @@ import cn.ponfee.disjob.common.tree.PlainNode;
 import cn.ponfee.disjob.common.tree.TreeNode;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.common.util.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
@@ -183,7 +182,7 @@ public class DAGExpression {
         }
 
         ImmutableGraph<DAGNode> graph = graphBuilder.build();
-        Assert.state(graph.nodes().size() > 2, () -> "Expression not any name: " + expression);
+        Assert.state(graph.nodes().size() > 2, () -> "Expression not has node: " + expression);
         Assert.state(graph.successors(DAGNode.START).stream().noneMatch(DAGNode::isEnd), () -> "Expression name cannot direct end: " + expression);
         Assert.state(graph.predecessors(DAGNode.END).stream().noneMatch(DAGNode::isStart), () -> "Expression name cannot direct start: " + expression);
         Assert.state(!Graphs.hasCycle(graph), () -> "Expression topology has cycle: " + expression);
@@ -222,8 +221,8 @@ public class DAGExpression {
             nonHead.add(target);
             nonTail.add(source);
         }
-        allNode.stream().filter(Predicates.not(nonHead::contains)).forEach(e -> graphBuilder.putEdge(DAGNode.START, e));
-        allNode.stream().filter(Predicates.not(nonTail::contains)).forEach(e -> graphBuilder.putEdge(e, DAGNode.END));
+        allNode.stream().filter(e -> !nonHead.contains(e)).forEach(e -> graphBuilder.putEdge(DAGNode.START, e));
+        allNode.stream().filter(e -> !nonTail.contains(e)).forEach(e -> graphBuilder.putEdge(e, DAGNode.END));
     }
 
     /**
@@ -236,7 +235,7 @@ public class DAGExpression {
      * @param graphBuilder the graph builder
      */
     private void parsePlainExpr(ImmutableGraph.Builder<DAGNode> graphBuilder) {
-        Assert.isTrue(checkParenthesis(expression), () -> "Invalid expression parenthesis: " + expression);
+        Assert.isTrue(checkParenthesis(expression), () -> "Invalid expression parenthesis parse: " + expression);
         List<String> topologies = Stream.of(expression.split(SEP_TOPOLOGY))
             .filter(StringUtils::isNotBlank)
             .map(String::trim)
@@ -245,7 +244,7 @@ public class DAGExpression {
 
         for (int i = 0, n = topologies.size(); i < n; i++) {
             String topology = topologies.get(i);
-            Assert.isTrue(checkParenthesis(topology), () -> "Invalid expression parenthesis: " + topology);
+            Assert.isTrue(checkParenthesis(topology), () -> "Invalid expression parenthesis topology: " + topology);
             String expr = completeParenthesis(topology);
             buildGraph(i + 1, Collections.singletonList(expr), graphBuilder, DAGNode.START, DAGNode.END);
         }
@@ -262,7 +261,7 @@ public class DAGExpression {
         List<String> first = tuple.a, remains = tuple.b;
         for (int i = 0, n = first.size() - 1; i <= n; i++) {
             List<String> list = resolve(first.get(i));
-            Assert.notEmpty(list, () -> "Invalid expression: " + String.join("", expressions));
+            Assert.notEmpty(list, () -> "Invalid expression build graph: " + String.join("", expressions));
             if (list.size() == 1) {
                 String name = list.get(0);
                 DAGNode node = DAGNode.of(topology, incrementOrdinal(name), name);
@@ -302,7 +301,7 @@ public class DAGExpression {
             //   2）“(B->C->D),(A->F)”  =>    “((B->C->D),(A->F))”
             return resolve(wrappedCache.computeIfAbsent(expr, DAGExpression::wrap));
         } else {
-            throw new IllegalArgumentException("Invalid expression: " + expr);
+            throw new IllegalArgumentException("Invalid expression outermost size: " + expr + ", " + outermost.size());
         }
 
         TreeNode<TreeNodeId, Object> root = buildTree(groups);
@@ -378,9 +377,9 @@ public class DAGExpression {
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
-
-        Assert.isTrue(!SEP_SYMBOLS.contains(Collects.getFirst(list)), () -> "Invalid expression: " + String.join("", list));
-        Assert.isTrue(!SEP_SYMBOLS.contains(Collects.getLast(list)), () -> "Invalid expression: " + String.join("", list));
+        if (SEP_SYMBOLS.contains(Collects.getFirst(list)) || SEP_SYMBOLS.contains(Collects.getLast(list))) {
+            throw new IllegalArgumentException("Invalid expression divide stage: " + String.join("", list));
+        }
 
         if (list.size() == 1) {
             return Tuple2.of(list, null);
@@ -399,28 +398,21 @@ public class DAGExpression {
                     // skip “,”
                     break;
                 default:
-                    throw new IllegalArgumentException("Invalid expression: " + String.join("", list));
+                    throw new IllegalArgumentException("Invalid expression separator: " + String.join("", list));
             }
         }
         return Tuple2.of(head, null);
     }
 
     private static TreeNode<TreeNodeId, Object> buildTree(List<Tuple2<Integer, Integer>> groups) {
-        // create a dummy root node, root id is null
-        TreeNode<TreeNodeId, Object> dummyRoot = TreeNode.root(null);
-        // build children nodes
         List<PlainNode<TreeNodeId, Object>> nodes = new ArrayList<>(groups.size() + 1);
-        buildTreeNodes(groups, dummyRoot.getId(), 1, 0, nodes);
-        // mount nodes
-        dummyRoot.mount(nodes);
-        // gets the actual root
-        Assert.state(dummyRoot.getNodeDegree() == 1, "Build tree root node must be has a single child.");
-        return dummyRoot.getChildren().get(0);
+        buildNodes(nodes, groups, null, 1, 0);
+        return TreeNode.build(nodes);
     }
 
-    private static void buildTreeNodes(List<Tuple2<Integer, Integer>> groups,
-                                       TreeNodeId pid, int level, int start,
-                                       List<PlainNode<TreeNodeId, Object>> nodes) {
+    private static void buildNodes(List<PlainNode<TreeNodeId, Object>> nodes,
+                                   List<Tuple2<Integer, Integer>> groups,
+                                   TreeNodeId parentId, int level, int start) {
         int open = -1;
         for (int i = start, n = groups.size(); i < n; i++) {
             if (groups.get(i).b < level) {
@@ -432,9 +424,9 @@ public class DAGExpression {
                     open = i;
                 } else {
                     // find "()" position
-                    TreeNodeId nid = new TreeNodeId(groups.get(open).a, groups.get(i).a);
-                    nodes.add(new PlainNode<>(nid, pid));
-                    buildTreeNodes(groups, nid, level + 1, open + 1, nodes);
+                    TreeNodeId id = new TreeNodeId(groups.get(open).a, groups.get(i).a);
+                    nodes.add(new PlainNode<>(id, parentId));
+                    buildNodes(nodes, groups, id, level + 1, open + 1);
                     open = -1;
                 }
             }
@@ -526,7 +518,7 @@ public class DAGExpression {
      * @return groups of "()"
      */
     private static List<Tuple2<Integer, Integer>> group(String expr) {
-        Assert.isTrue(checkParenthesis(expr), () -> "Invalid expression parenthesis: " + expr);
+        Assert.isTrue(checkParenthesis(expr), () -> "Invalid expression parenthesis group: " + expr);
         int depth = 0;
         // Tuple2<position, level>
         List<Tuple2<Integer, Integer>> list = new ArrayList<>();

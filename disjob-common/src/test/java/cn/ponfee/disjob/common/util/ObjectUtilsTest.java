@@ -31,6 +31,7 @@ public class ObjectUtilsTest {
     public void testGetValue() {
         Assertions.assertEquals(ObjectUtils.getValue(DAGNode.START, "topology"), 0);
         Assertions.assertEquals(ObjectUtils.getValue(DAGNode.START, "name"), "Start");
+        Assertions.assertNotEquals(System.identityHashCode(new String("abc")), System.identityHashCode(new String("abc")));
     }
 
 }

@@ -33,8 +33,9 @@ abstract class BaseTree<T extends Serializable & Comparable<T>, A> extends Plain
 
     // -------------------------------------------------------------------整棵树的视角
 
-    protected int level;          // 节点层级：根节点为0开始往下逐级加1，与`depth(从根到该节点路径上边的个数)`的含义有些区别但值相同
     protected NodePath<T> path;   // 节点路径`NodePath<id>`：[rootId, ..., parentId, nodeId]
+    protected int level;          // 节点层级：根节点为0开始往下逐级加1，与`depth(从根到该节点路径上边的个数)`的含义有些区别但值相同
+    protected int siblingOrdinal; // 兄弟节点按顺序排行，由左到右从0开始
     protected int leftLeafCount;  // 左叶子节点数量：在其左边的所有叶子节点数量，`值=相邻左兄弟节点的左叶子节点个数+该兄弟节点的子节点个数`
 
     // -------------------------------------------------------------------当前节点视角
@@ -44,7 +45,6 @@ abstract class BaseTree<T extends Serializable & Comparable<T>, A> extends Plain
     protected int treeHeight;     // 以当前节点为根的树高度：从该节点到其最远叶子节点路径上的边数，叶子节点的树高度为0
     protected int treeNodeCount;  // 以当前节点为根的树中的节点数量
     protected int treeLeafCount;  // 以当前节点为根的树中的叶子节点数量，当前是叶子节点时此值为1
-    protected int siblingOrdinal; // 兄弟节点按顺序排行，由左到右从0开始
 
     // -------------------------------------------------------------------Constructor
 
