@@ -19,7 +19,6 @@ package cn.ponfee.disjob.samples.worker;
 import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.spring.YamlProperties;
@@ -40,7 +39,6 @@ import cn.ponfee.disjob.worker.WorkerStartup;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -53,7 +51,6 @@ import java.util.Optional;
 
 import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_BOUND_SERVER_HOST;
 import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_KEY_PREFIX;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Job worker configuration.
@@ -66,7 +63,6 @@ public class WorkerFramelessMain {
     static {
         // for log4j2 log file name
         System.setProperty("app.name", "frameless-worker");
-        printBanner();
         JobExecutorParser.init();
     }
 
@@ -142,12 +138,6 @@ public class WorkerFramelessMain {
     private static void close(WorkerStartup workerStartup, VertxWebServer vertxWebServer) {
         ThrowingRunnable.doCaught(workerStartup::close);
         ThrowingRunnable.doCaught(vertxWebServer::close);
-    }
-
-    private static void printBanner() {
-        ClassLoader classLoader = WorkerStartup.class.getClassLoader();
-        String banner = ThrowingSupplier.doChecked(() -> IOUtils.resourceToString("banner.txt", UTF_8, classLoader));
-        System.out.println(banner);
     }
 
     private static YamlProperties loadConfig(String[] args) throws IOException {
