@@ -57,6 +57,11 @@ import static org.mockito.Mockito.reset;
  *   Given/Will: given(yourMethod()).willThrow(OutOfMemoryException.class);
  *   Will/Given/Do: willReturn(any()).given(yourMethod()).doNothing();
  *   Verify/Do: verify(yourMethod()).doThrow(SomeException.class);
+ *
+ * 6、MockedStatic<A> mockedStatic = Mockito.mockStatic(A.class)
+ *    when...thenReturn后调用静态方法返回mock结果
+ *    reset()后调用静态方法都返回null，会重置verify上下文
+ *    close()后调用静态方法返回正常且不能再使用`mockedStatic`对象
  * </pre>
  *
  * @author Ponfee
@@ -112,6 +117,7 @@ public abstract class MockitoTestBase {
                     throw new RuntimeException("Mocked object cannot null: " + field.toGenericString());
                 } else if (mockedObj instanceof MockedStatic) {
                     ((MockedStatic<?>) mockedObj).close();
+                    //((MockedStatic<?>) mockedObj).reset();
                 } else {
                     reset(mockedObj);
                 }
