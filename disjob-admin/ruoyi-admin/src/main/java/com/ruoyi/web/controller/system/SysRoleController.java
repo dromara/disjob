@@ -74,6 +74,7 @@ public class SysRoleController extends BaseController
     /**
      * 新增角色
      */
+    @RequiresPermissions("system:role:add")
     @GetMapping("/add")
     public String add()
     {
@@ -272,6 +273,7 @@ public class SysRoleController extends BaseController
     /**
      * 选择用户
      */
+    @RequiresPermissions("system:role:list")
     @GetMapping("/authUser/selectUser/{roleId}")
     public String selectUser(@PathVariable("roleId") Long roleId, ModelMap mmap)
     {

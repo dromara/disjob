@@ -149,6 +149,12 @@ public class DAGExpression {
      */
     private final Map<String, List<Tuple2<String, Integer>>> incrementer = new HashMap<>();
 
+    /**
+     * Parse the text expression to graph
+     *
+     * @param expression the text expression
+     * @return graph
+     */
     public static Graph<DAGNode> parse(String expression) {
         return new DAGExpression(expression).parse();
     }
@@ -156,7 +162,7 @@ public class DAGExpression {
     /**
      * 缩略(压缩)表达式，便于美观及直观的展示：thumb("Extract -> Transform -> Load ; Extract -> Load")  =>  "A->B->C;A->C"
      *
-     * @param expression the expression
+     * @param expression the text expression
      * @return thumbnail expression
      */
     public static String thumb(String expression) {
@@ -187,42 +193,6 @@ public class DAGExpression {
         Assert.state(graph.predecessors(DAGNode.END).stream().noneMatch(DAGNode::isStart), () -> "Expression name cannot direct start: " + expression);
         Assert.state(!Graphs.hasCycle(graph), () -> "Expression topology has cycle: " + expression);
         return graph;
-    }
-
-    /**
-     * Parse graph from json array
-     *
-     * <pre>
-     * [
-     *   "1:1:A -> 1:1:C",
-     *   "1:1:A -> 1:1:D",
-     *   "1:1:B -> 1:1:D",
-     *   "1:1:B -> 1:1:E"
-     * ]
-     * </pre>
-     *
-     * @param graphBuilder the graph builder
-     * @param edges        the edges
-     */
-    private void parseJsonExpr(ImmutableGraph.Builder<DAGNode> graphBuilder, List<DAGEdge> edges) {
-        Assert.notEmpty(edges, "Graph edges cannot be empty.");
-        Set<DAGNode> allNode = new HashSet<>();
-        Set<DAGNode> nonHead = new HashSet<>();
-        Set<DAGNode> nonTail = new HashSet<>();
-        for (DAGEdge edge : edges) {
-            DAGNode source = edge.getSource();
-            DAGNode target = edge.getTarget();
-            Assert.isTrue(!source.isStartOrEnd(), () -> "Graph edge cannot be start or end: " + source);
-            Assert.isTrue(!target.isStartOrEnd(), () -> "Graph edge cannot be start or end: " + target);
-
-            graphBuilder.putEdge(source, target);
-            allNode.add(source);
-            allNode.add(target);
-            nonHead.add(target);
-            nonTail.add(source);
-        }
-        allNode.stream().filter(e -> !nonHead.contains(e)).forEach(e -> graphBuilder.putEdge(DAGNode.START, e));
-        allNode.stream().filter(e -> !nonTail.contains(e)).forEach(e -> graphBuilder.putEdge(e, DAGNode.END));
     }
 
     /**
@@ -371,6 +341,42 @@ public class DAGExpression {
             item = "1:1:" + item;
         }
         return DAGNode.fromString(item);
+    }
+
+    /**
+     * Parse graph from json array
+     *
+     * <pre>
+     * [
+     *   "1:1:A -> 1:1:C",
+     *   "1:1:A -> 1:1:D",
+     *   "1:1:B -> 1:1:D",
+     *   "1:1:B -> 1:1:E"
+     * ]
+     * </pre>
+     *
+     * @param graphBuilder the graph builder
+     * @param edges        the edges
+     */
+    private static void parseJsonExpr(ImmutableGraph.Builder<DAGNode> graphBuilder, List<DAGEdge> edges) {
+        Assert.notEmpty(edges, "Graph edges cannot be empty.");
+        Set<DAGNode> allNode = new HashSet<>();
+        Set<DAGNode> nonHead = new HashSet<>();
+        Set<DAGNode> nonTail = new HashSet<>();
+        for (DAGEdge edge : edges) {
+            DAGNode source = edge.getSource();
+            DAGNode target = edge.getTarget();
+            Assert.isTrue(!source.isStartOrEnd(), () -> "Graph edge cannot be start or end: " + source);
+            Assert.isTrue(!target.isStartOrEnd(), () -> "Graph edge cannot be start or end: " + target);
+
+            graphBuilder.putEdge(source, target);
+            allNode.add(source);
+            allNode.add(target);
+            nonHead.add(target);
+            nonTail.add(source);
+        }
+        allNode.stream().filter(e -> !nonHead.contains(e)).forEach(e -> graphBuilder.putEdge(DAGNode.START, e));
+        allNode.stream().filter(e -> !nonTail.contains(e)).forEach(e -> graphBuilder.putEdge(e, DAGNode.END));
     }
 
     private static Tuple2<List<String>, List<String>> divideFirstStage(List<String> list) {

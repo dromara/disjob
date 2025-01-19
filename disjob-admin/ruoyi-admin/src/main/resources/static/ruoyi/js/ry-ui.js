@@ -268,7 +268,6 @@ var table = {
                             type: 1,
                             closeBtn: 1,
                             shadeClose: true,
-                            area: ['auto', 'auto'],
                             content: "<img src='" + src + "' height='" + height + "' width='" + width + "'/>"
                         });
                     } else if ($.common.equals("blank", target)) {

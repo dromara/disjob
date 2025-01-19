@@ -64,6 +64,7 @@ public class SysDictTypeController extends BaseController
     /**
      * 新增字典类型
      */
+    @RequiresPermissions("system:dict:add")
     @GetMapping("/add")
     public String add()
     {

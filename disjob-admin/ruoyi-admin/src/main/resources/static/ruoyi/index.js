@@ -72,7 +72,7 @@ function openToCurrentTab(obj) {
     if (isScrollToTop) {
         $(obj).show().siblings('.RuoYi_iframe').hide();
     } else {
-        $(obj).css({"visibility": "visible", "position": "static"}).siblings('.RuoYi_iframe').css({"visibility": "hidden", "position": "absolute"});
+        $(obj).css({"visibility": "visible", "position": "static"}).siblings('.RuoYi_iframe').css({"visibility": "hidden", "position": "absolute", "left": "0", "top": "0"});
     }
 }
 
@@ -313,11 +313,12 @@ $(function() {
             // 添加选项卡对应的iframe
             var str1 = '<iframe class="RuoYi_iframe" name="iframe' + dataIndex + '" width="100%" height="100%" src="' + dataUrl + '" frameborder="0" data-id="' + dataUrl + '" data-refresh="' + isRefresh + '" seamless></iframe>';
             if (isScrollToTop) {
-                $('.mainContent').find('iframe.RuoYi_iframe').hide().parents('.mainContent').append(str1);
+                $('.mainContent').find('iframe.RuoYi_iframe').hide();
             } else {
-                $('.mainContent').find('iframe.RuoYi_iframe').css({"visibility": "hidden", "position": "absolute"}).parents('.mainContent').append(str1);
+                $('.mainContent').find('iframe.RuoYi_iframe').css({"visibility": "hidden", "position": "absolute", "left": "0", "top": "0"});
             }
-            
+            $('.mainContent').append(str1);
+
             $.modal.loading("数据加载中，请稍候...");
 
             $('.mainContent iframe:visible').on('load', function() {

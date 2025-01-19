@@ -53,6 +53,7 @@ public class SysNoticeController extends BaseController
     /**
      * 新增公告
      */
+    @RequiresPermissions("system:notice:add")
     @GetMapping("/add")
     public String add()
     {

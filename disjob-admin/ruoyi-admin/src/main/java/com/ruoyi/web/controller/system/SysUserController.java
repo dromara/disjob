@@ -110,6 +110,7 @@ public class SysUserController extends BaseController
     /**
      * 新增用户
      */
+    @RequiresPermissions("system:user:add")
     @GetMapping("/add")
     public String add(ModelMap mmap)
     {
@@ -240,6 +241,7 @@ public class SysUserController extends BaseController
     /**
      * 进入授权角色页
      */
+    @RequiresPermissions("system:user:edit")
     @GetMapping("/authRole/{userId}")
     public String authRole(@PathVariable("userId") Long userId, ModelMap mmap)
     {
