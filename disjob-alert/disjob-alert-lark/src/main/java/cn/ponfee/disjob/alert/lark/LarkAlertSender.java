@@ -19,29 +19,37 @@ package cn.ponfee.disjob.alert.lark;
 import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.alert.lark.configuration.LarkAlertSenderProperties;
 import cn.ponfee.disjob.alert.sender.AlertSender;
-
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Map;
-
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.springframework.core.NestedExceptionUtils.buildMessage;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 
 /**
  * Lark alert sender
  *
  * @author Ponfee
  */
+@Slf4j
 public class LarkAlertSender extends AlertSender {
 
     public static final String CHANNEL = "lark";
 
     private static final Logger LOG = LoggerFactory.getLogger(LarkAlertSender.class);
 
-    private  LarkAlertSenderProperties config;
+    private final LarkAlertSenderProperties config;
 
     public LarkAlertSender(LarkAlertSenderProperties config, LarkUserRecipientMapper mapper) {
         super(CHANNEL, "飞书", mapper);
@@ -57,19 +65,23 @@ public class LarkAlertSender extends AlertSender {
             return;
         }
 
+        String title = alertEvent.buildTitle();
+        String message = alertEvent.buildContent();
+        if (message == null || message.trim().isEmpty()) {
+            LOG.warn("Empty message content for alert event: {}", alertEvent);
+            return;
+        }
+
+        // 对消息内容进行转义，避免JSON格式问题
+        message = message.replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n");
+
         for (Map.Entry<String, String> entry : alertRecipients.entrySet()) {
             String alertUser = entry.getKey();
             String recipient = entry.getValue();
             try {
-                String message = buildMessage(alertEvent);
-                if ("we_talk".equals(config.getSupplier())) {
-                    // 企业微信不需要 sign
-                    webhook = String.format("%s?token=%s", webhook, config.getTokenId());
-                } else {
-                    // lark and dingtalk
-                    webhook = String.format("%s?token=%s&sign=%s", webhook, config.getTokenId(), config.getSign());
-                }
-                sendHttpPostRequest(webhook, message, config.getSupplier());
+                sendHttpPostRequest(webhook, title, message, config.getSupplier());
                 LOG.info("Alert sent to {} ({}) for event: {}", alertUser, recipient, alertEvent);
             } catch (Exception e) {
                 LOG.error("Failed to send alert to {} ({}) for event: {}", alertUser, recipient, alertEvent, e);
@@ -77,29 +89,51 @@ public class LarkAlertSender extends AlertSender {
         }
     }
 
-    private void sendHttpPostRequest(String webhookUrl, String message, String supplier) throws Exception {
+    private static String genLarkSign(String secret, int timestamp) throws NoSuchAlgorithmException, InvalidKeyException {
+        //把timestamp+"\n"+密钥当做签名字符串
+        String stringToSign = timestamp + "\n" + secret;
+
+        //使用HmacSHA256算法计算签名
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(new SecretKeySpec(stringToSign.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+        byte[] signData = mac.doFinal(new byte[]{});
+        return new String(Base64.encodeBase64(signData));
+    }
+
+    private void sendHttpPostRequest(String webhookUrl, String title, String message, String supplier) throws Exception {
         URL url = new URL(webhookUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
-
-        String jsonPayload = createJsonPayload(message, supplier);
-
+        String jsonPayload = createJsonPayload(title, message, supplier);
+        log.info("Sending request - URL: {}, Supplier: {}, Payload: {}", webhookUrl, supplier, jsonPayload);
         try (OutputStream os = connection.getOutputStream()) {
-            byte[] input = jsonPayload.getBytes("utf-8");
+            byte[] input = jsonPayload.getBytes(StandardCharsets.UTF_8);
             os.write(input, 0, input.length);
         }
-
         int responseCode = connection.getResponseCode();
+        String responseBody;
+        // 根据响应码选择正确的流
+        try (InputStream inputStream = responseCode >= 400
+            ? connection.getErrorStream()
+            : connection.getInputStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            responseBody = response.toString();
+        }
         if (responseCode == HttpURLConnection.HTTP_OK) {
-            System.out.println("Message sent successfully!");
+            log.info("Message sent successfully! Response: {}", responseBody);
         } else {
-            System.out.println("Failed to send message. Response code: " + responseCode);
+            log.error("Failed to send message. Response code: {}, Response body: {}", responseCode, responseBody);
         }
     }
 
-    private String createJsonPayload(String message, String supplier) {
+    private String createJsonPayload(String title, String message, String supplier) {
         // 根据不同的OA来生成 JSON 负载
         switch (supplier) {
             case "ding_talk":
@@ -107,19 +141,32 @@ public class LarkAlertSender extends AlertSender {
             case "we_talk":
                 return "{\"text\": {\"content\": \"" + message + "\"}}";
             case "lark":
-                return "{\"msg_type\": \"text\", \"content\": {\"text\": \"" + message + "\"}}";
+                int currentTimeMillis = (int) (System.currentTimeMillis() / 1000);
+                try {
+                    return createLarkJsonPayload(currentTimeMillis, genLarkSign(config.getSign(), currentTimeMillis), title, message);
+                } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+                    throw new RuntimeException(e);
+                }
             default:
                 throw new IllegalArgumentException("Unsupported supplier: " + supplier);
         }
     }
 
-    private String buildMessage(AlertEvent alertEvent) {
-    return String.format(
-        "Alert Notification\n\nAlert Type: %s\nTimestamp: %s\n\nDetails:\n%s",
-        alertEvent.getAlertType(),
-        alertEvent.buildTitle(),
-        alertEvent.buildContent()
-    );
+    private String createLarkJsonPayload(long timestamp, String sign, String title, String message) {
+        return String.format(
+            "{\"timestamp\": %d," +
+                "\"sign\": \"%s\"," +
+                "\"msg_type\": \"post\"," +
+                "\"content\": {" +
+                "\"post\": {" +
+                "\"zh_cn\": {" +
+                "\"title\": \"%s\"," +
+                "\"content\": [[{\"tag\":\"text\",\"text\":\"%s\"}]]" +
+                "}" +
+                "}" +
+                "}}",
+            timestamp, sign, title, message
+        );
     }
 
 }

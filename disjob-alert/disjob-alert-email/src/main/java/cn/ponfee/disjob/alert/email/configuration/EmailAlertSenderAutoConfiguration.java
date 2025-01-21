@@ -51,11 +51,11 @@ public class EmailAlertSenderAutoConfiguration {
         public EmailUserRecipientMapper emailUserRecipientMapper() {
             return new EmailUserRecipientMapper();
         }
-    }
 
-    @Bean
-    public EmailAlertSender emailAlertSender(EmailAlertSenderProperties config, EmailUserRecipientMapper mapper) {
-        return new EmailAlertSender(config, mapper);
+        @Bean
+        public EmailAlertSender emailAlertSender(EmailAlertSenderProperties config, EmailUserRecipientMapper mapper) {
+            return new EmailAlertSender(config, mapper);
+        }
     }
 
 }

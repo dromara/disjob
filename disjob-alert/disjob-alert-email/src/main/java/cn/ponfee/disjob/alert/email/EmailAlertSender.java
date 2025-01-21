@@ -62,7 +62,6 @@ public class EmailAlertSender extends AlertSender {
 
         LOG.info("EmailAlertSender initialized with host: {}, port: {}, startTLS: {}, SSL: {}",
             config.getHost(), config.getPort(), config.isStartTlsEnabled(), config.isSslEnabled());
-
     }
 
     @Override

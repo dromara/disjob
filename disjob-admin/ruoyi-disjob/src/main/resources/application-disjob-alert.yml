@@ -1,30 +1,35 @@
 disjob.alert:
   sender:
     email:
-      host: host1
-      protocol: protocol2
-      username: username3
-      password: password4
-      properties:
+      host: xxx
+      protocol: SMTP
+      username: xxx@xxx.com
+      password: xxx
+      fromAddress: xxx@xxx.com
+      port: 465
+      start-tls-enabled: true
+      ssl-enabled: true
+      auth: true
     lark:
-      urlKey: xxx
-      secret: xxx
+      tokenId: xxx
+      sign: c9oV8sSo9bG3uxD03EXv7b
+      supplier: lark
     sms:
       blends:
         # 自定义的标识，也就是configId这里可以是任意值（最好不要是中文）
-        tx1:
+        aliyun:
           #厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
           supplier: tencent
           #您的accessKey
-          access-key-id: 您的accessKey
+          access-key-id: test
           #您的accessKeySecret
-          access-key-secret: 您的accessKeySecret
+          access-key-secret: test
           #您的短信签名
-          signature: 您的短信签名
+          signature: disjob测试
           #模板ID 非必须配置，如果使用sendMessage的快速发送需此配置
           template-id: xxxxxxxx
           #您的sdkAppId
-          sdk-app-id: 您的sdkAppId
+          #sdk-app-id: 您的sdkAppId
           # 自定义的标识，也就是configId这里可以是任意值（最好不要是中文）
         tx2:
           #厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
@@ -41,9 +46,9 @@ disjob.alert:
           sdk-app-id: 您的sdkAppId
 
   alerter:
-    type-channel-map:
+    type-channels-map:
       ALARM: [lark, email]
-      NOTICE: [email]
+      NOTICE: [lark,sms]
     task-execution-pool:
       core-pool-size: 2
       maximum-pool-size: 8
