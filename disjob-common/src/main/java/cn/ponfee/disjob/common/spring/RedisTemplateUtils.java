@@ -65,6 +65,8 @@ public class RedisTemplateUtils {
      * 1、所有key都应该由KEYS数组来传递，脚本中执行命令`redis.call/pcall`的参数必须是KEYS[i]，不能使用本地变量（如`local key1 = KEY[i]; redis.call('get', key1)`）
      * 2、所有key必须在一个slot上，否则报错：ERR eval/evalsha command keys must be in same slot
      * 3、调用必须要带有key，否则报错：ERR for redis cluster, eval/evalsha number of keys can't be negative or zero
+     *
+     * redis hash tag: {commonTag}:1
      * </pre>
      *
      * @param redisTemplate the redis template

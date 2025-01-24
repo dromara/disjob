@@ -55,7 +55,7 @@ public class BinaryTreePrinter<T> {
     private final Branch branch;
 
     /**
-     * 只有一个子节点时，是否区分左右
+     * 是否区分左右方向：当`branch=RECTANGLE`且只有一个子节点时生效
      */
     private final boolean directed;
 

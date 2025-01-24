@@ -14,7 +14,7 @@
     version, updated_by, created_by, updated_at, created_at
   </sql>
 
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.supervisor.model.SchedGroup" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       `group`,
       own_user,
@@ -60,7 +60,7 @@
       AND is_deleted = 0
   </update>
 
-  <update id="softDelete" parameterType="string">
+  <update id="softDelete">
     UPDATE <include refid="Table_Name" />
     SET is_deleted = id,
         updated_by = #{updatedBy,jdbcType=VARCHAR},
@@ -91,7 +91,7 @@
   |    LIMIT 1
   |  ) t
   |-->
-  <select id="exists" parameterType="string" resultType="_boolean">
+  <select id="exists" resultType="_boolean">
     SELECT EXISTS (
       SELECT 1
       FROM <include refid="Table_Name" />
@@ -99,7 +99,7 @@
     )
   </select>
 
-  <select id="searchGroup" parameterType="string" resultType="string">
+  <select id="searchGroup" resultType="string">
     SELECT `group`
     FROM <include refid="Table_Name" />
     WHERE is_deleted = 0

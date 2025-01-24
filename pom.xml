@@ -271,6 +271,7 @@
 
     <plugins>
       <plugin>
+        <!-- https://www.mojohaus.org/flatten-maven-plugin/flatten-mojo.html -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
         <version>${flatten-maven-plugin.version}</version>

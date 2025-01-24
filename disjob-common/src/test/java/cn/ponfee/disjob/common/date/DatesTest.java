@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -254,6 +255,54 @@ public class DatesTest {
 
         // 正常
         Assertions.assertEquals("2023-07-19 21:14:25", Dates.format(Dates.toDate(LocalDateTime.parse(source, dateTimeFormatter))));
+    }
+
+    @Test
+    public void testFormatDuration() {
+        Assertions.assertEquals("0.000s", formatDuration(0));
+        Assertions.assertEquals("0.001s", formatDuration(1));
+        Assertions.assertEquals("0.999s", formatDuration(999));
+        Assertions.assertEquals("1.000s", formatDuration(1_000));
+        Assertions.assertEquals("9.999s", formatDuration(10_000 - 1));
+        Assertions.assertEquals("10.00s", formatDuration(10_000));
+        Assertions.assertEquals("100.0s", formatDuration(100_000));
+        Assertions.assertEquals("999.9s", formatDuration(1_000_000 - 1));
+
+        Assertions.assertEquals("16.66m", formatDuration(1_000_000));
+        Assertions.assertEquals("16.66m", formatDuration(1_000_001));
+        Assertions.assertEquals("100.0m", formatDuration(6_000_000));
+        Assertions.assertEquals("150.0m", formatDuration(9_000_001));
+        Assertions.assertEquals("333.3m", formatDuration(20_000_001));
+        Assertions.assertEquals("666.6m", formatDuration(40_000_001));
+        Assertions.assertEquals("833.3m", formatDuration(50_000_001));
+        Assertions.assertEquals("999.9m", formatDuration(60_000_000 - 1));
+
+        Assertions.assertEquals("16.66h", formatDuration(60_000_000));
+        Assertions.assertEquals("16.66h", formatDuration(60_000_001));
+        Assertions.assertEquals("25.00h", formatDuration(90_000_001));
+        Assertions.assertEquals("100.0h", formatDuration(360_000_000));
+        Assertions.assertEquals("277.7h", formatDuration(999_999_999));
+        Assertions.assertEquals("444.4h", formatDuration(1_599_999_999));
+        Assertions.assertEquals("722.2h", formatDuration(2_599_999_999L));
+        Assertions.assertEquals("999.9h", formatDuration(3_600_000_000L - 1));
+
+        Assertions.assertEquals("41.66d", formatDuration(3_600_000_000L));
+        Assertions.assertEquals("41.66d", formatDuration(3_600_000_001L));
+        Assertions.assertEquals("64.81d", formatDuration(5_600_000_000L));
+        Assertions.assertEquals("100.0d", formatDuration(8_640_000_000L));
+        Assertions.assertEquals("999.9d", formatDuration(86_400_000_000L - 1));
+
+        Assertions.assertEquals("1000d", formatDuration(86_400_000_000L));
+        Assertions.assertEquals("10000d", formatDuration(864_000_000_000L));
+        Assertions.assertEquals("100000d", formatDuration(8_640_000_000_000L));
+
+        Assertions.assertEquals("00:00:00.000", DurationFormatUtils.formatDurationHMS(0L));
+        Assertions.assertEquals("01:40:00.000", DurationFormatUtils.formatDurationHMS(6_000_000L));
+        Assertions.assertEquals("25:00:00.000", DurationFormatUtils.formatDurationHMS(90_000_000L));
+        Assertions.assertEquals("99:59:59.999", DurationFormatUtils.formatDurationHMS(360_000_000L - 1));
+        Assertions.assertEquals("100:00:00.000", DurationFormatUtils.formatDurationHMS(360_000_000L));
+        Assertions.assertEquals("1000:00:00.000", DurationFormatUtils.formatDurationHMS(3_600_000_000L));
+        Assertions.assertEquals("P0Y0M41DT16H0M0.000S", DurationFormatUtils.formatDurationISO(3_600_000_000L));
     }
 
     @Setter

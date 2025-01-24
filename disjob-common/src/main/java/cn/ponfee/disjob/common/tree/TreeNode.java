@@ -106,17 +106,32 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
     public static <T extends Serializable & Comparable<T>, A, E extends PlainNode<T, A>> TreeNode<T, A> build(
         List<E> list, boolean buildPath, Comparator<? super TreeNode<T, A>> siblingNodesComparator) {
         Assert.notEmpty(list, "Build list cannot be empty.");
-        // find root node
+
+        // 1、find roots
         @SuppressWarnings("unchecked")
-        PlainNode<T, A> rn = findRootNode((List<PlainNode<T, A>>) list);
+        Set<PlainNode<T, A>> roots = findRoots((List<PlainNode<T, A>>) list);
 
-        // if found the root node, should remove it
-        List<E> nodes = list.stream().filter(e -> !e.equals(rn)).collect(Collectors.toList());
+        // 2、check roots
+        TreeNode<T, A> root;
+        if (roots.isEmpty()) {
+            // 当`id==parentId && id!=null`时才会出现，但因在`PlainNode`的构造函数中已校验id不能等于parentId，所以不会存在这种情况
+            throw new IllegalArgumentException("Not found root node.");
+        } else if (roots.size() == 1) {
+            // found the root node
+            PlainNode<T, A> fd = roots.iterator().next();
+            root = (fd instanceof TreeNode)
+                ? (TreeNode<T, A>) fd : new TreeNode<>(fd.id, fd.parentId, fd.enabled, fd.available, fd.attach);
+            // remove the found root node
+            list = list.stream().filter(e -> !e.equals(fd)).collect(Collectors.toList());
+        } else {
+            // dummy a root node
+            List<T> rootIds = roots.stream().map(e -> e.parentId).distinct().collect(Collectors.toList());
+            Assert.state(rootIds.size() == 1, () -> "Found many root node id: " + rootIds);
+            root = new TreeNode<>(rootIds.get(0), null, true, true, null);
+        }
 
-        // do mount
-        TreeNode<T, A> root = (rn instanceof TreeNode) ?
-            (TreeNode<T, A>) rn : new TreeNode<>(rn.id, rn.parentId, rn.enabled, rn.available, rn.attach);
-        root.mount(nodes, false, buildPath, siblingNodesComparator);
+        // 3、mount tree
+        root.mount(list, false, buildPath, siblingNodesComparator);
         return root;
     }
 
@@ -127,7 +142,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
     }
 
     /**
-     * Mount these nodes to this tree node
+     * Mount these nodes append to this tree
      *
      * @param list                   节点列表
      * @param ignoreIsolated         是否忽略孤立的节点
@@ -309,7 +324,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
      * Traverses the tree, use BFS
      * <pre>{@code
      *   Traverser.<File>forTree(f -> f.isDirectory() ? Arrays.asList(f.listFiles()) : Collections.emptyList())
-     *       .depthFirstPostOrder(new File("/xxx/path"))
+     *       .breadthFirst(new File("/xxx/path"))
      *       .forEach(f -> System.out.println(f.getName()));
      * }</pre>
      *
@@ -354,9 +369,9 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
 
     // -----------------------------------------------------------private methods
 
-    private static <T extends Serializable & Comparable<T>, A> PlainNode<T, A> findRootNode(List<PlainNode<T, A>> list) {
-        // 1、flatten
-        List<PlainNode<T, A>> nodes = flatten(list, list.size());
+    private static <T extends Serializable & Comparable<T>, A> Set<PlainNode<T, A>> findRoots(List<PlainNode<T, A>> list) {
+        // 1、flatten nodes
+        List<PlainNode<T, A>> nodes = flatten(list);
 
         // 2、collect child node ids
         Set<T> childIds = new HashSet<>(nodes.size() * 2);
@@ -373,24 +388,11 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
                 roots.add(node);
             }
         }
-
-        // 4、check selected root id result
-        if (roots.isEmpty()) {
-            // id==parentId 且不为 null，但在`PlainNode`的构造函数中已校验`id不能等于parentId`，所以不会存在这种情况
-            throw new IllegalArgumentException("Not found root node.");
-        } else if (roots.size() == 1) {
-            // found the root node
-            return roots.iterator().next();
-        } else {
-            // root node node exists, must be dummy
-            List<T> rootIds = roots.stream().map(e -> e.parentId).distinct().collect(Collectors.toList());
-            Assert.state(rootIds.size() == 1, () -> "Found many root node id: " + rootIds);
-            return new PlainNode<>(rootIds.get(0), null);
-        }
+        return roots;
     }
 
-    private static <T extends Serializable & Comparable<T>, A> List<PlainNode<T, A>> flatten(List<PlainNode<T, A>> list, int size) {
-        List<PlainNode<T, A>> nodes = new ArrayList<>(size);
+    private static <T extends Serializable & Comparable<T>, A> List<PlainNode<T, A>> flatten(List<PlainNode<T, A>> list) {
+        List<PlainNode<T, A>> nodes = new LinkedList<>();
         if (CollectionUtils.isNotEmpty(list)) {
             for (PlainNode<T, A> node : list) {
                 if (node instanceof TreeNode) {
@@ -405,7 +407,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
     }
 
     private List<PlainNode<T, A>> prepare(List<PlainNode<T, A>> list) {
-        List<PlainNode<T, A>> nodes = flatten(list, (list == null ? 0 : list.size()) + this.children.size());
+        List<PlainNode<T, A>> nodes = flatten(list);
 
         // flatten the root node children
         this.forEachChild(child -> child.traverse(nodes::add));
@@ -498,10 +500,10 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
 
             for (int i = 0, n = this.children.size(); i < n; i++) {
                 TreeNode<T, A> child = this.children.get(i);
-                child.level = super.level + 1;
-                child.siblingOrdinal = i;
 
                 // 1、统计当前子节点数据
+                child.level = super.level + 1;
+                child.siblingOrdinal = i;
                 if (i == 0) {
                     // 为最左子节点：左叶子节点个数=父节点的左叶子节点个数
                     child.leftLeafCount = super.leftLeafCount;
@@ -511,7 +513,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
                     child.leftLeafCount = prevSibling.leftLeafCount + prevSibling.treeLeafCount;
                 }
 
-                // 2、递归
+                // 2、递归统计
                 child.count(buildPath, super.path);
 
                 // 3、统计所有子节点数据

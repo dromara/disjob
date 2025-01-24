@@ -198,14 +198,10 @@
     },
     {
       field: 'runDuration',
-      title: '运行时长(秒)',
+      title: '运行时长',
       width: '90',
       formatter: function (value, row, index) {
-        if (value === 0) {
-          return "0";
-        }
-        let scale = value < 10000 ? 3 : (value < 100000 ? 2 : 1);
-        return value ? (value / 1000).toFixed(scale) : "-";
+        return $.common.formatDuration(value);
       }
     },
     {

@@ -166,7 +166,7 @@ public class DAGExpression {
      * @return thumbnail expression
      */
     public static String thumb(String expression) {
-        List<DAGEdge> edges = DAGExpression.parseJsonArray(expression);
+        List<DAGEdge> edges = parseJsonArray(expression);
         return edges != null ? thumbJsonExpr(edges) : thumbPlainExpr(expression);
     }
 
@@ -197,7 +197,7 @@ public class DAGExpression {
 
     /**
      * <pre>
-     * Parse graph from plain text
+     * Parse plain text expression graph
      *
      * A->((B->C->D),(A->F))->(G,H,X)->J; A->Y
      * </pre>
@@ -344,7 +344,7 @@ public class DAGExpression {
     }
 
     /**
-     * Parse graph from json array
+     * Parse json array expression graph
      *
      * <pre>
      * [
@@ -439,15 +439,15 @@ public class DAGExpression {
         }
     }
 
-    private static List<String> concat(List<String> left, List<String> right) {
-        if (CollectionUtils.isEmpty(right)) {
-            return left;
+    private static List<String> concat(List<String> sources, List<String> targets) {
+        if (CollectionUtils.isEmpty(targets)) {
+            return sources;
         }
 
-        List<String> result = new ArrayList<>(left.size() + 1 + right.size());
-        result.addAll(left);
+        List<String> result = new ArrayList<>(sources.size() + 1 + targets.size());
+        result.addAll(sources);
         result.add(SEP_STAGE);
-        result.addAll(right);
+        result.addAll(targets);
         return result;
     }
 

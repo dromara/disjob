@@ -19,7 +19,7 @@
       AND is_deleted = 0
   </select>
 
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.supervisor.model.SchedJob" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       job_id,
       `group`,
@@ -71,7 +71,7 @@
     )
   </insert>
 
-  <update id="update" parameterType="cn.ponfee.disjob.supervisor.model.SchedJob">
+  <update id="update">
     UPDATE <include refid="Table_Name" />
     SET job_name = #{jobName,jdbcType=VARCHAR},
 
@@ -144,7 +144,7 @@
     LIMIT #{size}
   </select>
 
-  <update id="updateNextScanTime" parameterType="cn.ponfee.disjob.supervisor.model.SchedJob">
+  <update id="updateNextScanTime">
     UPDATE <include refid="Table_Name" />
     SET next_scan_time = #{nextScanTime,jdbcType=TIMESTAMP},
         scan_failed_count = #{scanFailedCount,jdbcType=INTEGER},
@@ -154,7 +154,7 @@
       AND is_deleted = 0
   </update>
 
-  <update id="disable" parameterType="cn.ponfee.disjob.supervisor.model.SchedJob">
+  <update id="disable">
     UPDATE <include refid="Table_Name" />
     SET job_state = 0,
         next_trigger_time = null,
@@ -166,7 +166,7 @@
       AND is_deleted = 0
   </update>
 
-  <update id="updateNextTriggerTime" parameterType="cn.ponfee.disjob.supervisor.model.SchedJob">
+  <update id="updateNextTriggerTime">
     UPDATE <include refid="Table_Name" />
     SET job_state = #{jobState,jdbcType=TINYINT},
         last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT},

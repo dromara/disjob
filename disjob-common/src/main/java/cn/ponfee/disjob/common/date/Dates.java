@@ -21,6 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -207,6 +209,25 @@ public class Dates {
      */
     public static String format(long timeMillis, String pattern) {
         return format(new Date(timeMillis), pattern);
+    }
+
+    public static String formatDuration(long durationMillis) {
+        if (durationMillis < 1_000_000L) {
+            // 范围：[0.000s ~ 999.9s]
+            return formatDouble(durationMillis / 1_000.0D) + "s";
+        } else if (durationMillis < 60_000_000L) {
+            // 范围：[16.66m ~ 999.9m]
+            return formatDouble(durationMillis / 60_000.0D) + "m";
+        } else if (durationMillis < 3_600_000_000L) {
+            // 范围：[16.66h ~ 999.9h]
+            return formatDouble(durationMillis / 3_600_000.0D) + "h";
+        } else if (durationMillis < 86_400_000_000L) {
+            // 范围：[41.66d ~ 999.9d]
+            return formatDouble(durationMillis / 86_400_000.0D) + "d";
+        } else {
+            // 其它：[1000d ~ xxxxxd]
+            return (durationMillis / 86_400_000L) + "d";
+        }
     }
 
     // ----------------------------------------------------------------plus
@@ -693,6 +714,10 @@ public class Dates {
     }
 
     // -------------------------------------------------------------private methods
+
+    private static String formatDouble(double value) {
+        return BigDecimal.valueOf(value).setScale(3, RoundingMode.DOWN).toString().substring(0, 5);
+    }
 
     private static LocalDateTime startOfDay0(Date date) {
         return startOfDay(toLocalDateTime(date));

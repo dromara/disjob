@@ -1696,6 +1696,70 @@ var table = {
                     return dict[arguments[0]];
                 });
             },
+            formatDuration: function (durationMillis) {
+                if (durationMillis === null || isNaN(durationMillis)) {
+                    return "-";
+                }
+                let len = 5, fixed = 9;
+                if (durationMillis < 1_000_000) {
+                    // 范围：[0.000s ~ 999.9s]
+                    return (durationMillis / 1_000.0).toFixed(fixed).substring(0, len) + "s";
+                } else if (durationMillis < 60_000_000) {
+                    // 范围：[16.66m ~ 999.9m]
+                    return (durationMillis / 60_000.0).toFixed(fixed).substring(0, len) + "m";
+                } else if (durationMillis < 3_600_000_000) {
+                    // 范围：[16.66h ~ 999.9h]
+                    return (durationMillis / 3_600_000.0).toFixed(fixed).substring(0, len) + "h";
+                } else if (durationMillis < 86_400_000_000) {
+                    // 范围：[41.66d ~ 999.9d]
+                    return (durationMillis / 86_400_000.0).toFixed(fixed).substring(0, len) + "d";
+                } else {
+                    // 其它：[1000d ~ xxxxxd]
+                    return (durationMillis / 86_400_000) + "d";
+                }
+                /*
+                assert("0.000s", formatDuration(0));
+                assert("0.001s", formatDuration(1));
+                assert("0.999s", formatDuration(999));
+                assert("1.000s", formatDuration(1000));
+                assert("10.00s", formatDuration(10_000));
+                assert("100.0s", formatDuration(100_000));
+                assert("999.9s", formatDuration(1000_000 - 1));
+
+                assert("16.66m", formatDuration(1_000_000));
+                assert("16.66m", formatDuration(1_000_001));
+                assert("100.0m", formatDuration(6_000_000));
+                assert("150.0m", formatDuration(9_000_001));
+                assert("333.3m", formatDuration(20_000_001));
+                assert("666.6m", formatDuration(40_000_001));
+                assert("833.3m", formatDuration(50_000_001));
+                assert("999.9m", formatDuration(60_000_000 - 1));
+
+                assert("16.66h", formatDuration(60_000_000));
+                assert("16.66h", formatDuration(60_000_001));
+                assert("25.00h", formatDuration(90_000_001));
+                assert("100.0h", formatDuration(360_000_000));
+                assert("277.7h", formatDuration(999_999_999));
+                assert("444.4h", formatDuration(1_599_999_999));
+                assert("722.2h", formatDuration(2_599_999_999));
+                assert("999.9h", formatDuration(3_600_000_000 - 1));
+
+                assert("41.66d", formatDuration(3_600_000_000));
+                assert("41.66d", formatDuration(3_600_000_001));
+                assert("64.81d", formatDuration(5_600_000_000));
+                assert("100.0d", formatDuration(8_640_000_000));
+                assert("999.9d", formatDuration(86_400_000_000 - 1));
+
+                assert("1000d", formatDuration(86_400_000_000));
+                assert("10000d", formatDuration(864_000_000_000));
+                assert("100000d", formatDuration(8_640_000_000_000));
+                */
+            },
+            assert: function (expected, actual) {
+                if (expected !== actual) {
+                    throw new Error("Not equals: " + expected + " != " + actual);
+                }
+            },
             // 获取节点数据，支持多层级访问
             getItemField: function (item, field) {
                 var value = item;

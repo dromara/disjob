@@ -11,7 +11,7 @@
     workflow_cur_node, version
   </sql>
 
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.supervisor.model.SchedInstance" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       instance_id,
       rnstance_id,

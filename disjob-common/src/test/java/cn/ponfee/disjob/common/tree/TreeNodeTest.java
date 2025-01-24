@@ -291,19 +291,29 @@ public class TreeNodeTest {
             new PlainNode<>(120, 100),
             new PlainNode<>(111, 110)
         );
-        TreeNode<Integer, Object> root = TreeNode.build(plainNodes);
-        Assertions.assertThat(Jsons.toJson(root)).isEqualTo("{\"id\":100,\"enabled\":true,\"available\":true,\"level\":0,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":2,\"treeDegree\":2,\"treeHeight\":2,\"treeNodeCount\":4,\"treeLeafCount\":2,\"children\":[{\"id\":110,\"parentId\":100,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":1,\"treeDegree\":1,\"treeHeight\":1,\"treeNodeCount\":2,\"treeLeafCount\":1,\"children\":[{\"id\":111,\"parentId\":110,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]},{\"id\":120,\"parentId\":100,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":1,\"leftLeafCount\":1,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]}");
-        System.out.println(root);
+        TreeNode<Integer, Object> root1 = TreeNode.build(plainNodes);
+        Assertions.assertThat(Jsons.toJson(root1)).isEqualTo("{\"id\":100,\"enabled\":true,\"available\":true,\"level\":0,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":2,\"treeDegree\":2,\"treeHeight\":2,\"treeNodeCount\":4,\"treeLeafCount\":2,\"children\":[{\"id\":110,\"parentId\":100,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":1,\"treeDegree\":1,\"treeHeight\":1,\"treeNodeCount\":2,\"treeLeafCount\":1,\"children\":[{\"id\":111,\"parentId\":110,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]},{\"id\":120,\"parentId\":100,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":1,\"leftLeafCount\":1,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]}");
+        System.out.println("root1:\n" + root1);
 
 
         List<PlainNode<Integer, Object>> plainNodes2 = Arrays.asList(
-            root,
             new PlainNode<>(121, 120),
-            new PlainNode<>(112, 110)
+            new PlainNode<>(131, 121),
+            new PlainNode<>(132, 121)
         );
         TreeNode<Integer, Object> root2 = TreeNode.build(plainNodes2);
-        Assertions.assertThat(Jsons.toJson(root2)).isEqualTo("{\"id\":100,\"enabled\":true,\"available\":true,\"level\":0,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":2,\"treeDegree\":2,\"treeHeight\":2,\"treeNodeCount\":6,\"treeLeafCount\":3,\"children\":[{\"id\":110,\"parentId\":100,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":2,\"treeDegree\":2,\"treeHeight\":1,\"treeNodeCount\":3,\"treeLeafCount\":2,\"children\":[{\"id\":111,\"parentId\":110,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]},{\"id\":112,\"parentId\":110,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":1,\"leftLeafCount\":1,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]},{\"id\":120,\"parentId\":100,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":1,\"leftLeafCount\":2,\"nodeDegree\":1,\"treeDegree\":1,\"treeHeight\":1,\"treeNodeCount\":2,\"treeLeafCount\":1,\"children\":[{\"id\":121,\"parentId\":120,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":0,\"leftLeafCount\":2,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]}]}");
-        System.out.println(root2);
+        Assertions.assertThat(Jsons.toJson(root2)).isEqualTo("{\"id\":121,\"parentId\":120,\"enabled\":true,\"available\":true,\"level\":0,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":2,\"treeDegree\":2,\"treeHeight\":1,\"treeNodeCount\":3,\"treeLeafCount\":2,\"children\":[{\"id\":131,\"parentId\":121,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]},{\"id\":132,\"parentId\":121,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":1,\"leftLeafCount\":1,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]}");
+        System.out.println("root2:\n" + root2);
+
+
+        List<PlainNode<Integer, Object>> plainNodes3 = Arrays.asList(
+            root1,
+            root2,
+            new PlainNode<>(112, 110)
+        );
+        TreeNode<Integer, Object> root3 = TreeNode.build(plainNodes3);
+        Assertions.assertThat(Jsons.toJson(root3)).isEqualTo("{\"id\":100,\"enabled\":true,\"available\":true,\"level\":0,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":2,\"treeDegree\":2,\"treeHeight\":3,\"treeNodeCount\":8,\"treeLeafCount\":4,\"children\":[{\"id\":110,\"parentId\":100,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":2,\"treeDegree\":2,\"treeHeight\":1,\"treeNodeCount\":3,\"treeLeafCount\":2,\"children\":[{\"id\":111,\"parentId\":110,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]},{\"id\":112,\"parentId\":110,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":1,\"leftLeafCount\":1,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]},{\"id\":120,\"parentId\":100,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":1,\"leftLeafCount\":2,\"nodeDegree\":1,\"treeDegree\":2,\"treeHeight\":2,\"treeNodeCount\":4,\"treeLeafCount\":2,\"children\":[{\"id\":121,\"parentId\":120,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":0,\"leftLeafCount\":2,\"nodeDegree\":2,\"treeDegree\":2,\"treeHeight\":1,\"treeNodeCount\":3,\"treeLeafCount\":2,\"children\":[{\"id\":131,\"parentId\":121,\"enabled\":true,\"available\":true,\"level\":3,\"siblingOrdinal\":0,\"leftLeafCount\":2,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]},{\"id\":132,\"parentId\":121,\"enabled\":true,\"available\":true,\"level\":3,\"siblingOrdinal\":1,\"leftLeafCount\":3,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]}]}]}");
+        System.out.println("root3:\n" + root3);
     }
 
     @Test
@@ -346,6 +356,38 @@ public class TreeNodeTest {
         Assertions.assertThatThrownBy(() -> TreeNode.build(plainNodes))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Found many root node id: [200, null]");
+    }
+
+    @Test
+    public void testBuild6() {
+        List<PlainNode<Integer, Object>> plainNodes = Arrays.asList(
+            new PlainNode<>(100, null),
+            new PlainNode<>(110, 100),
+            new PlainNode<>(111, 110)
+        );
+        TreeNode<Integer, Object> root1 = TreeNode.build(plainNodes);
+        Assertions.assertThat(Jsons.toJson(root1)).isEqualTo("{\"id\":100,\"enabled\":true,\"available\":true,\"level\":0,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":1,\"treeDegree\":1,\"treeHeight\":2,\"treeNodeCount\":3,\"treeLeafCount\":1,\"children\":[{\"id\":110,\"parentId\":100,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":1,\"treeDegree\":1,\"treeHeight\":1,\"treeNodeCount\":2,\"treeLeafCount\":1,\"children\":[{\"id\":111,\"parentId\":110,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]}]}");
+        System.out.println("root1:\n" + root1);
+
+
+        List<PlainNode<Integer, Object>> plainNodes2 = Arrays.asList(
+            new PlainNode<>(121, 120),
+            new PlainNode<>(122, 120),
+            new PlainNode<>(123, 120)
+        );
+        TreeNode<Integer, Object> root2 = TreeNode.build(plainNodes2);
+        Assertions.assertThat(Jsons.toJson(root2)).isEqualTo("{\"id\":120,\"enabled\":true,\"available\":true,\"level\":0,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":3,\"treeDegree\":3,\"treeHeight\":1,\"treeNodeCount\":4,\"treeLeafCount\":3,\"children\":[{\"id\":121,\"parentId\":120,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]},{\"id\":122,\"parentId\":120,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":1,\"leftLeafCount\":1,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]},{\"id\":123,\"parentId\":120,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":2,\"leftLeafCount\":2,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]}");
+        System.out.println("root2:\n" + root2);
+
+
+        List<PlainNode<Integer, Object>> plainNodes3 = Arrays.asList(
+            root1,
+            root2,
+            new PlainNode<>(112, 110)
+        );
+        TreeNode<Integer, Object> root3 = TreeNode.build(plainNodes3);
+        Assertions.assertThat(Jsons.toJson(root3)).isEqualTo("{\"enabled\":true,\"available\":true,\"level\":0,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":2,\"treeDegree\":3,\"treeHeight\":3,\"treeNodeCount\":9,\"treeLeafCount\":5,\"children\":[{\"id\":100,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":1,\"treeDegree\":2,\"treeHeight\":2,\"treeNodeCount\":4,\"treeLeafCount\":2,\"children\":[{\"id\":110,\"parentId\":100,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":2,\"treeDegree\":2,\"treeHeight\":1,\"treeNodeCount\":3,\"treeLeafCount\":2,\"children\":[{\"id\":111,\"parentId\":110,\"enabled\":true,\"available\":true,\"level\":3,\"siblingOrdinal\":0,\"leftLeafCount\":0,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]},{\"id\":112,\"parentId\":110,\"enabled\":true,\"available\":true,\"level\":3,\"siblingOrdinal\":1,\"leftLeafCount\":1,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]}]},{\"id\":120,\"enabled\":true,\"available\":true,\"level\":1,\"siblingOrdinal\":1,\"leftLeafCount\":2,\"nodeDegree\":3,\"treeDegree\":3,\"treeHeight\":1,\"treeNodeCount\":4,\"treeLeafCount\":3,\"children\":[{\"id\":121,\"parentId\":120,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":0,\"leftLeafCount\":2,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]},{\"id\":122,\"parentId\":120,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":1,\"leftLeafCount\":3,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]},{\"id\":123,\"parentId\":120,\"enabled\":true,\"available\":true,\"level\":2,\"siblingOrdinal\":2,\"leftLeafCount\":4,\"nodeDegree\":0,\"treeDegree\":0,\"treeHeight\":0,\"treeNodeCount\":1,\"treeLeafCount\":1,\"children\":[]}]}]}");
+        System.out.println("root3:\n" + root3);
     }
 
     @Test

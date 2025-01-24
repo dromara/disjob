@@ -33,3 +33,41 @@ https://patorjk.com/software/taag/#p=display&f=Slant&t=Disjob%20Worker
   Supervisor: 192.168.1.103:80
   Version   : 2.1.7-SNAPSHOT
 ==================================================================================
+
+
+
+==================================================================================
+https://asciiart.club/
+
+  ,,,,,,,,,,,,___
+  0BBBBBBBBBBBBBBBBWw_
+  0BB"         `'"RBBBBw
+  0BB  |BBBBBBBBBB@w`TBBBp
+  0BB  [BBRMMMMMMMMRRW TBB@
+  0BB  [BBE             TBB@ @_
+  0BB  [BBE              0BBL[BW
+  0BB  [BBE              [BBB BB@
+  0BB  [BBE              [BBR TBBm
+  0BB  [BBE              0BB   BBB
+  0BB  [BBE            _0BBE   BBB
+  0BB  [BBE           #BBB"   |BBB
+  0BB  [BBE       _,@BBBM    ,BBB
+  0BBWL[BBE ##@@BBBBBR"     /BBB"
+  RRRRL[BBE'RRRRR^"      _aBBBR
+       [BBE_________,,w@BBBBM
+       [BBBBBBBBBBBBBBBBR^`
+        ````````````
+
+
+  mmmmmmmw,_
+  EE wwww]ZNBw
+  EE BR````` 0W.
+  EE BL       BHB_
+  EE BL      |B [B
+  EE BL     ,BM [B
+  E@ BL,,wmBM  ,BL
+  "" BL""` __w0R
+     RRRRRRM^`
+
+
+==================================================================================
