@@ -80,9 +80,9 @@ public @interface DbSnowflakeIdGenerator {
         /**
          * Local supervisor spring bean name
          *
-         * @see cn.ponfee.disjob.core.base.JobConstants#SPRING_BEAN_NAME_LOCAL_SUPERVISOR
+         * @see cn.ponfee.disjob.supervisor.configuration.EnableSupervisor.EnableSupervisorConfiguration#localSupervisor
          */
-        protected static final String SPRING_BEAN_NAME_LOCAL_SUPERVISOR = "disjob.bean.local-supervisor";
+        static final String LOCAL_SUPERVISOR = "localSupervisor";
 
         /**
          * String of Supervisor.Local serialization
@@ -104,7 +104,7 @@ public @interface DbSnowflakeIdGenerator {
     class AnnotatedDbSnowflake extends BasicDbSnowflake {
 
         AnnotatedDbSnowflake(@Autowired JdbcTemplate jdbcTemplate, // use @Primary JdbcTemplate bean
-                             @Autowired @Qualifier(SPRING_BEAN_NAME_LOCAL_SUPERVISOR) Object supervisor,
+                             @Autowired @Qualifier(LOCAL_SUPERVISOR) Object supervisor,
                              String bizTag,
                              int sequenceBitLength,
                              int workerIdBitLength) {
@@ -130,7 +130,7 @@ public @interface DbSnowflakeIdGenerator {
                 bd = new GenericBeanDefinition();
                 bd.setBeanClass(BasicDbSnowflake.class);
                 bd.getConstructorArgumentValues().addIndexedArgumentValue(0, new RuntimeBeanReference(jdbcTemplateRef));
-                bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicDbSnowflake.SPRING_BEAN_NAME_LOCAL_SUPERVISOR));
+                bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicDbSnowflake.LOCAL_SUPERVISOR));
             }
 
             bd.getConstructorArgumentValues().addIndexedArgumentValue(2, config.bizTag());

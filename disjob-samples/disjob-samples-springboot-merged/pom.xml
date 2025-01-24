@@ -17,21 +17,6 @@
   <dependencies>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-samples-springboot-common</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-samples-conf-supervisor</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-samples-conf-worker</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
       <artifactId>disjob-id</artifactId>
     </dependency>
     <dependency>
@@ -43,15 +28,66 @@
       <artifactId>disjob-worker</artifactId>
     </dependency>
 
-    <!--<dependency>
+    <!-- spring boot web -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <!-- apache log4j2 for log implementation -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-log4j2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+    </dependency>
+
+
+    <!-- 解决启动中的ERROR日志：DnsServerAddressStreamProviders >>>> Unable to load io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'. Use DEBUG level to see the full stack: java.lang.UnsatisfiedLinkError: failed to load the required native library -->
+    <!--
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-resolver-dns-native-macos</artifactId>
+      <classifier>osx-aarch_64</classifier>
+    </dependency>
+    <dependency>
       <groupId>de.codecentric</groupId>
       <artifactId>spring-boot-admin-starter-server</artifactId>
-      <version>${spring-boot-admin.version}</version>
-    </dependency>-->
+      <version>2.7.16</version>
+    </dependency>
+    -->
   </dependencies>
 
   <build>
     <finalName>${project.artifactId}</finalName>
+
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+      <resource>
+        <directory>../disjob-samples-conf</directory>
+        <includes>
+          <include>log4j2.xml</include>
+          <include>application-redis.yml</include>
+          <include>application-mysql.yml</include>
+          <include>application-worker.yml</include>
+          <include>application-supervisor.yml</include>
+          <include>application-web.yml</include>
+        </includes>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
 
     <plugins>
       <plugin>

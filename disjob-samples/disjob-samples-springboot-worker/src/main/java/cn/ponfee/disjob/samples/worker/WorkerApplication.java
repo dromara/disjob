@@ -16,17 +16,20 @@
 
 package cn.ponfee.disjob.samples.worker;
 
-import cn.ponfee.disjob.samples.common.AbstractSamplesApplication;
+import cn.ponfee.disjob.test.executor.SamplesJobExecutorPackage;
 import cn.ponfee.disjob.worker.configuration.EnableWorker;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
  * Worker application based spring boot
  *
  * @author Ponfee
  */
+@SpringBootApplication(exclude = DataSourceAutoConfiguration.class, scanBasePackageClasses = SamplesJobExecutorPackage.class)
 @EnableWorker
-public class WorkerApplication extends AbstractSamplesApplication {
+public class WorkerApplication {
 
     static {
         // for log4j2 log file name

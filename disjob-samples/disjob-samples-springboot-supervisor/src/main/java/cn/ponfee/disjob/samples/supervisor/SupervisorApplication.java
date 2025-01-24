@@ -17,9 +17,11 @@
 package cn.ponfee.disjob.samples.supervisor;
 
 import cn.ponfee.disjob.id.snowflake.db.DbSnowflakeIdGenerator;
-import cn.ponfee.disjob.samples.common.AbstractSamplesApplication;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
+import cn.ponfee.disjob.test.executor.SamplesJobExecutorPackage;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_JDBC_TEMPLATE;
 
@@ -28,9 +30,10 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  *
  * @author Ponfee
  */
+@SpringBootApplication(exclude = DataSourceAutoConfiguration.class, scanBasePackageClasses = SamplesJobExecutorPackage.class)
 @DbSnowflakeIdGenerator(jdbcTemplateRef = SPRING_BEAN_NAME_JDBC_TEMPLATE)
 @EnableSupervisor
-public class SupervisorApplication extends AbstractSamplesApplication {
+public class SupervisorApplication {
 
     static {
         // for log4j2 log file name

@@ -14,41 +14,41 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.common.spring;
+package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
-import cn.ponfee.disjob.common.spring.JacksonDateConfigurer.JacksonDateConfiguration;
 import cn.ponfee.disjob.common.util.Jsons;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import org.springframework.context.annotation.Import;
-import org.springframework.lang.Nullable;
 
-import java.lang.annotation.*;
+import java.util.List;
 
 /**
- * Configure jackson date
+ * Jackson date configurer
+ * <p>解决`json`参数反序列化时Date的解析问题，如果是`form-data`等形式的参数则需要使用`BaseController`
  *
  * @author Ponfee
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Documented
-@Import(JacksonDateConfiguration.class)
-public @interface JacksonDateConfigurer {
+class JacksonDateConfigurer {
 
-    class JacksonDateConfiguration {
-        public JacksonDateConfiguration(@Nullable ObjectMapper objectMapper) {
-            if (objectMapper == null) {
-                return;
+    static class Primary {
+        Primary(ObjectMapper objectMapper) {
+            configurer(objectMapper);
+        }
+    }
+
+    static class Multiple {
+        Multiple(List<ObjectMapper> list) {
+            if (list != null) {
+                list.forEach(JacksonDateConfigurer::configurer);
             }
+        }
+    }
 
-            objectMapper.enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
+    private static void configurer(ObjectMapper objectMapper) {
+        if (objectMapper != null) {
             objectMapper.setDateFormat(JavaUtilDateFormat.DEFAULT);
             Jsons.registerSimpleModule(objectMapper);
             Jsons.registerJavaTimeModule(objectMapper);
-            objectMapper.registerModule(new Jdk8Module());
         }
     }
 

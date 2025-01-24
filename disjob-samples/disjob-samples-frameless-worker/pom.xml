@@ -19,11 +19,6 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-worker</artifactId>
     </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-samples-conf-common</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
 
     <!-- log4j2 -->
     <dependency>
@@ -64,6 +59,20 @@
 
   <build>
     <finalName>${project.artifactId}</finalName>
+
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+      <resource>
+        <directory>../disjob-samples-conf</directory>
+        <includes>
+          <include>log4j2.xml</include>
+        </includes>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
 
     <plugins>
       <!-- https://maven.apache.org/plugins/maven-shade-plugin/examples/executable-jar.html -->

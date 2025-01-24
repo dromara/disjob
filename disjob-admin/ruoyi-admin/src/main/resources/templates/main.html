@@ -93,8 +93,8 @@
 │   └── disjob-registry-zookeeper             # Server注册中心：Zookeeper实现
 ├── disjob-reports                            # 聚合各个模块的测试覆盖率报告
 ├── disjob-samples                            # Samples项目③
+│   ├── disjob-samples-conf                   # Samples使用到的配置文件
 │   ├── disjob-samples-frameless-worker       # Worker单独部署的范例（普通Java-main应用）
-│   ├── disjob-samples-springboot-common      # Samples Spring-boot公共模块
 │   ├── disjob-samples-springboot-merged      # Supervisor与Worker合并部署的范例（Spring-boot应用）
 │   ├── disjob-samples-springboot-supervisor  # Supervisor单独部署的范例（Spring-boot应用）
 │   └── disjob-samples-springboot-worker      # Worker单独部署的范例（Spring-boot应用）
@@ -122,8 +122,8 @@
 │   └── disjob-registry-zookeeper             # Server注册中心：Zookeeper实现
 ├── disjob-reports                            # 聚合各个模块的测试覆盖率报告
 ├── disjob-samples                            # Samples项目③
+│   ├── disjob-samples-conf                   # Samples使用到的配置文件
 │   ├── disjob-samples-frameless-worker       # Worker单独部署的范例（普通Java-main应用）
-│   ├── disjob-samples-springboot-common      # Samples Spring-boot公共模块
 │   ├── disjob-samples-springboot-merged      # Supervisor与Worker合并部署的范例（Spring-boot应用）
 │   ├── disjob-samples-springboot-supervisor  # Supervisor单独部署的范例（Spring-boot应用）
 │   └── disjob-samples-springboot-worker      # Worker单独部署的范例（Spring-boot应用）
@@ -335,11 +335,11 @@
       <li>Samples项目配置文件【disjob-samples】</li>
     </ol>
     <ul dir="auto">
-      <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf-supervisor/src/main/resources/application-mysql.yml">Supervisor角色Mysql配置</a></li>
-      <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf-supervisor/src/main/resources/application-supervisor.yml">Supervisor角色核心配置</a></li>
-      <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf-worker/src/main/resources/application-worker.yml">Worker角色核心配置</a>（Spring-boot应用）</li>
-      <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-springboot-common/src/main/resources/application-redis.yml">Redis配置</a>（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）</li>
-      <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-springboot-common/src/main/resources/application-web.yml">Spring-boot Web相关配置</a>（Worker与Supervisor共用）</li>
+      <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf/application-mysql.yml">Supervisor角色Mysql配置</a></li>
+      <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf/application-supervisor.yml">Supervisor角色核心配置</a></li>
+      <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf/application-worker.yml">Worker角色核心配置</a>（Spring-boot应用）</li>
+      <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf/application-redis.yml">Redis配置</a>（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）</li>
+      <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf/application-web.yml">Spring-boot Web相关配置</a>（Worker与Supervisor共用）</li>
       <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-frameless-worker/src/main/resources/worker-conf.yml">Worker角色普通Java-main应用配置</a></li>
     </ul>
     <ol start="4" dir="auto">

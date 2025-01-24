@@ -52,11 +52,8 @@ disjob                                        # Main project①pom.xml
 │   └── disjob-registry-zookeeper             # Server registry center: Zookeeper implementation
 ├── disjob-reports                            # Aggregate test coverage reports of various modules
 ├── disjob-samples                            # Samples project③pom.xml
-│   ├── disjob-samples-conf-common            # Samples common config (log4j2.xml)
-│   ├── disjob-samples-conf-supervisor        # Samples Supervisor config
-│   ├── disjob-samples-conf-worker            # Samples Worker config
+│   ├── disjob-samples-conf                   # Samples configuration file
 │   ├── disjob-samples-frameless-worker       # Example of Worker deployed separately (ordinary Java-main application)
-│   ├── disjob-samples-springboot-common      # Samples Spring-boot common module
 │   ├── disjob-samples-springboot-merged      # Example of Supervisor and Worker deployed together (Spring-boot application)
 │   ├── disjob-samples-springboot-supervisor  # Example of Supervisor deployed separately (Spring-boot application)
 │   └── disjob-samples-springboot-worker      # Example of Worker deployed separately (Spring-boot application)
@@ -144,11 +141,11 @@ disjob                                        # Main project①pom.xml
 
 3. Samples project configuration files
 
-- [Supervisor role Mysql configuration](disjob-samples/disjob-samples-conf-supervisor/src/main/resources/application-mysql.yml)
-- [Supervisor role core configuration](disjob-samples/disjob-samples-conf-supervisor/src/main/resources/application-supervisor.yml)
-- [Worker role core configuration](disjob-samples/disjob-samples-conf-worker/src/main/resources/application-worker.yml)
-- [Redis configuration](disjob-samples/disjob-samples-springboot-common/src/main/resources/application-redis.yml)
-- [Spring-boot Web configuration](disjob-samples/disjob-samples-springboot-common/src/main/resources/application-web.yml)
+- [Supervisor role Mysql configuration](disjob-samples/disjob-samples-conf/application-mysql.yml)
+- [Supervisor role core configuration](disjob-samples/disjob-samples-conf/application-supervisor.yml)
+- [Worker role core configuration](disjob-samples/disjob-samples-conf/application-worker.yml)
+- [Redis configuration](disjob-samples/disjob-samples-conf/application-redis.yml)
+- [Spring-boot Web configuration](disjob-samples/disjob-samples-conf/application-web.yml)
 - [Worker Java-main application configuration](disjob-samples/disjob-samples-frameless-worker/src/main/resources/worker-conf.yml)
 
 4. Admin project configuration files

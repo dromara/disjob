@@ -32,8 +32,6 @@ import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
 
-import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_LOCAL_SUPERVISOR;
-
 /**
  * Enable supervisor role
  * <p>必须注解到具有@Component的类上且该类能被spring扫描到
@@ -70,7 +68,7 @@ public @interface EnableSupervisor {
     @ComponentScan(basePackageClasses = SupervisorStartup.class)
     class EnableSupervisorConfiguration {
 
-        @Bean(SPRING_BEAN_NAME_LOCAL_SUPERVISOR)
+        @Bean
         public Supervisor.Local localSupervisor(WebServerApplicationContext webServerApplicationContext) {
             int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
             Object[] args = {CoreUtils.getLocalHost(), port, GroupInfoHolder.INSTANCE};

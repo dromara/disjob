@@ -119,15 +119,15 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         } else if (roots.size() == 1) {
             // found the root node
             PlainNode<T, A> fd = roots.iterator().next();
-            root = (fd instanceof TreeNode)
-                ? (TreeNode<T, A>) fd : new TreeNode<>(fd.id, fd.parentId, fd.enabled, fd.available, fd.attach);
+            root = (fd instanceof TreeNode) ?
+                (TreeNode<T, A>) fd : new TreeNode<>(fd.id, fd.parentId, fd.enabled, fd.available, fd.attach);
             // remove the found root node
             list = list.stream().filter(e -> !e.equals(fd)).collect(Collectors.toList());
         } else {
-            // dummy a root node
             List<T> rootIds = roots.stream().map(e -> e.parentId).distinct().collect(Collectors.toList());
             Assert.state(rootIds.size() == 1, () -> "Found many root node id: " + rootIds);
-            root = new TreeNode<>(rootIds.get(0), null, true, true, null);
+            // dummy a root node
+            root = root(rootIds.get(0));
         }
 
         // 3、mount tree

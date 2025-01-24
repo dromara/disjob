@@ -17,23 +17,26 @@
 package cn.ponfee.disjob.samples.merged;
 
 import cn.ponfee.disjob.id.snowflake.db.DbSnowflakeIdGenerator;
-import cn.ponfee.disjob.samples.common.AbstractSamplesApplication;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
+import cn.ponfee.disjob.test.executor.SamplesJobExecutorPackage;
 import cn.ponfee.disjob.worker.configuration.EnableWorker;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_JDBC_TEMPLATE;
 
 /**
- * Disjob application based spring boot
+ * Merged Supervisor and Worker application based spring boot
  *
  * @author Ponfee
  */
+@SpringBootApplication(exclude = DataSourceAutoConfiguration.class, scanBasePackageClasses = SamplesJobExecutorPackage.class)
 @DbSnowflakeIdGenerator(jdbcTemplateRef = SPRING_BEAN_NAME_JDBC_TEMPLATE)
 @EnableSupervisor
 @EnableWorker
 //@de.codecentric.boot.admin.server.config.EnableAdminServer
-public class MergedApplication extends AbstractSamplesApplication {
+public class MergedApplication {
 
     static {
         // for log4j2 log file name

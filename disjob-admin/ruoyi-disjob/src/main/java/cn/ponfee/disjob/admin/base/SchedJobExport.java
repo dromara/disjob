@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.admin.base;
 
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ruoyi.common.annotation.Excel;
 import org.springframework.beans.BeanUtils;
 
@@ -93,15 +93,13 @@ public class SchedJobExport {
     /**
      * Job有效起始时间(为空不限制)
      */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "Job起始时间", width = 30, dateFormat = "yyyy-MM-dd")
+    @Excel(name = "Job起始时间", width = 30, dateFormat = Dates.DATETIME_PATTERN)
     private Date startTime;
 
     /**
      * Job有效终止时间(为空不限制)
      */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "Job结束时间", width = 30, dateFormat = "yyyy-MM-dd")
+    @Excel(name = "Job结束时间", width = 30, dateFormat = Dates.DATETIME_PATTERN)
     private Date endTime;
 
     /**

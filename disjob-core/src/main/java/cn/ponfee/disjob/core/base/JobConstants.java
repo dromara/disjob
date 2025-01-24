@@ -56,21 +56,6 @@ public final class JobConstants {
     public static final String SPRING_BEAN_NAME_PREFIX = DISJOB_KEY_PREFIX + ".bean";
 
     /**
-     * Local supervisor spring bean name
-     */
-    public static final String SPRING_BEAN_NAME_LOCAL_SUPERVISOR = SPRING_BEAN_NAME_PREFIX + ".local-supervisor";
-
-    /**
-     * Timing wheel spring bean name
-     */
-    public static final String SPRING_BEAN_NAME_TIMING_WHEEL = SPRING_BEAN_NAME_PREFIX + ".timing-wheel";
-
-    /**
-     * Local worker spring bean name
-     */
-    public static final String SPRING_BEAN_NAME_LOCAL_WORKER = SPRING_BEAN_NAME_PREFIX + ".local-worker";
-
-    /**
      * Rest template spring bean name
      */
     public static final String SPRING_BEAN_NAME_REST_TEMPLATE = SPRING_BEAN_NAME_PREFIX + ".rest-template";

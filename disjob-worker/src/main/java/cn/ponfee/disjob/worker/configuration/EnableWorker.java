@@ -19,9 +19,11 @@ package cn.ponfee.disjob.worker.configuration;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.core.base.*;
+import cn.ponfee.disjob.core.base.BasicDeferredImportSelector;
+import cn.ponfee.disjob.core.base.CoreUtils;
+import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.registry.WorkerRegistry;
-import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.EnableWorker.EnableWorkerConfiguration;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -43,6 +45,7 @@ import java.lang.annotation.*;
 @Import({
     EnableWorkerConfiguration.class,
     BasicDeferredImportSelector.class,
+    WorkerDeferredImportSelector.class,
     WorkerLifecycle.class,
 })
 public @interface EnableWorker {
@@ -50,7 +53,7 @@ public @interface EnableWorker {
     @EnableConfigurationProperties(WorkerProperties.class)
     class EnableWorkerConfiguration {
 
-        @Bean(JobConstants.SPRING_BEAN_NAME_LOCAL_WORKER)
+        @Bean
         public Worker.Local localWorker(WebServerApplicationContext webServerApplicationContext, WorkerProperties config) {
             config.check();
             String host = CoreUtils.getLocalHost();
@@ -67,11 +70,6 @@ public @interface EnableWorker {
                 // cannot happen
                 throw new Error("Creates Worker.Local instance occur error.", e);
             }
-        }
-
-        @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
-        public TaskTimingWheel timingWheel(WorkerProperties config) {
-            return new TaskTimingWheel(config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
         }
 
         @Bean

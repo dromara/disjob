@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.samples.common.configuration;
+package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.exception.BaseException;
 import cn.ponfee.disjob.common.exception.BaseRuntimeException;
-import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.model.Result;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.core.base.JobConstants;
+import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletResponse;
@@ -39,16 +37,16 @@ import java.io.PrintWriter;
 import java.util.List;
 
 /**
- * Global spring web mvc exception handler
+ * Rpc controller ExceptionHandler
  *
  * @author Ponfee
  */
-@ControllerAdvice(/*annotations = cn.ponfee.disjob.common.spring.RpcController.class*/)
-public class SpringWebExceptionHandler {
+@RestControllerAdvice(annotations = RpcController.class)
+class RpcControllerExceptionHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SpringWebExceptionHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RpcControllerExceptionHandler.class);
 
-    private static final List<Class<? extends Exception>> BAD_REQUEST_EXCEPTIONS = ImmutableList.of(
+    private static final List<Class<? extends Exception>> BIZ_EXCEPTIONS = ImmutableList.of(
         IllegalArgumentException.class,
         IllegalStateException.class,
         UnsupportedOperationException.class,
@@ -58,12 +56,11 @@ public class SpringWebExceptionHandler {
 
     @ExceptionHandler(Throwable.class)
     public void execute(HandlerMethod handlerMethod, HttpServletResponse response, Throwable t) throws IOException {
-        boolean isBadRequest = BAD_REQUEST_EXCEPTIONS.stream().anyMatch(e -> e.isInstance(t));
-        String errorMsg = Throwables.getRootCauseMessage(t);
-        if (!isBadRequest || StringUtils.isEmpty(errorMsg)) {
-            LOG.error("Handle server exception", t);
+        String errorMsg = ExceptionUtils.getRootCauseMessage(t);
+        if (BIZ_EXCEPTIONS.stream().anyMatch(e -> e.isInstance(t))) {
+            LOG.error("Handle biz exception {}: {}", t.getClass().getName(), errorMsg);
         } else {
-            LOG.error("Handle biz exception: {}", errorMsg);
+            LOG.error("Handle server exception", t);
         }
 
         response.setCharacterEncoding(JobConstants.UTF_8);
@@ -73,17 +70,22 @@ public class SpringWebExceptionHandler {
             errorMsg = Result.failure(JobCodeMsg.SERVER_ERROR.getCode(), errorMsg).toString();
         } else {
             response.setContentType(JobConstants.TEXT_PLAIN_UTF8);
-            response.setStatus(obtainHttpStatus(t, isBadRequest).value());
+            response.setStatus(obtainHttpStatus(t).value());
         }
         out.write(errorMsg);
         out.flush();
     }
 
-    private HttpStatus obtainHttpStatus(Throwable t, boolean isBadRequest) {
+    // ------------------------------------------------------------------private methods
+
+    private HttpStatus obtainHttpStatus(Throwable t) {
         if (t instanceof AuthenticationException) {
             return HttpStatus.UNAUTHORIZED;
         }
-        return isBadRequest ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;
+        if (t instanceof IllegalArgumentException) {
+            return HttpStatus.BAD_REQUEST;
+        }
+        return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
     private static boolean isMethodReturnResultType(HandlerMethod handlerMethod) {

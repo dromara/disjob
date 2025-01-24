@@ -52,11 +52,8 @@ disjob                                        # 主项目①pom.xml
 │   └── disjob-registry-zookeeper             # Server注册中心：Zookeeper实现
 ├── disjob-reports                            # 聚合各个模块的测试覆盖率报告
 ├── disjob-samples                            # Samples项目③pom.xml
-│   ├── disjob-samples-conf-common            # Samples公共配置（log4j2.xml）
-│   ├── disjob-samples-conf-supervisor        # Samples Supervisor配置
-│   ├── disjob-samples-conf-worker            # Samples Worker配置
+│   ├── disjob-samples-conf                   # Samples使用到的配置文件
 │   ├── disjob-samples-frameless-worker       # Worker单独部署的范例（普通Java-main应用）
-│   ├── disjob-samples-springboot-common      # Samples Spring-boot公共模块
 │   ├── disjob-samples-springboot-merged      # Supervisor与Worker合并部署的范例（Spring-boot应用）
 │   ├── disjob-samples-springboot-supervisor  # Supervisor单独部署的范例（Spring-boot应用）
 │   └── disjob-samples-springboot-worker      # Worker单独部署的范例（Spring-boot应用）
@@ -165,11 +162,11 @@ disjob                                        # 主项目①pom.xml
 
 3. Samples项目配置文件【disjob-samples】
 
-- [Supervisor角色Mysql配置](disjob-samples/disjob-samples-conf-supervisor/src/main/resources/application-mysql.yml)
-- [Supervisor角色核心配置](disjob-samples/disjob-samples-conf-supervisor/src/main/resources/application-supervisor.yml)
-- [Worker角色核心配置](disjob-samples/disjob-samples-conf-worker/src/main/resources/application-worker.yml)（Spring-boot应用）
-- [Redis配置](disjob-samples/disjob-samples-springboot-common/src/main/resources/application-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
-- [Spring-boot Web相关配置](disjob-samples/disjob-samples-springboot-common/src/main/resources/application-web.yml)（Worker与Supervisor共用）
+- [Supervisor角色Mysql配置](disjob-samples/disjob-samples-conf/application-mysql.yml)
+- [Supervisor角色核心配置](disjob-samples/disjob-samples-conf/application-supervisor.yml)
+- [Worker角色核心配置](disjob-samples/disjob-samples-conf/application-worker.yml)（Spring-boot应用）
+- [Redis配置](disjob-samples/disjob-samples-conf/application-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
+- [Spring-boot Web相关配置](disjob-samples/disjob-samples-conf/application-web.yml)（Worker与Supervisor共用）
 - [Worker角色普通Java-main应用配置](disjob-samples/disjob-samples-frameless-worker/src/main/resources/worker-conf.yml)
 
 4. Admin项目配置文件【disjob-admin】

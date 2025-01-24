@@ -21,11 +21,15 @@ import cn.ponfee.disjob.common.spring.RpcControllerConfigurer;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DeferredImportSelector;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 /**
  * Basic DeferredImportSelector
@@ -46,7 +50,10 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
     private static class BasicDeferredConfiguration {
 
         /**
-         * 如果@ConditionalOnMissingBean注解没有指定参数，则默认以方法的返回类型判断，即容器中不存在类型为`SpringContextHolder`的实例才创建
+         * <pre>
+         * 1、如果@ConditionalOnMissingBean注解没有指定参数，则默认以方法的返回类型判断，即容器中不存在类型为`SpringContextHolder`的实例才创建
+         * 2、如果@Bean不指定参数`name`，则默认使用方法名称做为`spring bean name`
+         * </pre>
          *
          * @return SpringContextHolder
          */
@@ -79,6 +86,25 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
         @Bean
         public RpcControllerConfigurer rpcControllerConfigurer() {
             return new RpcControllerConfigurer();
+        }
+
+        @ConditionalOnProperty(prefix = "disjob.jackson.date-configurer", name = "mode", havingValue = "multiple")
+        @Bean
+        public JacksonDateConfigurer.Multiple multipleJacksonDateConfigurer(List<ObjectMapper> list) {
+            return new JacksonDateConfigurer.Multiple(list);
+        }
+
+        @ConditionalOnProperty(prefix = "disjob.jackson.date-configurer", name = "mode", havingValue = "primary", matchIfMissing = true)
+        @Bean
+        public JacksonDateConfigurer.Primary primaryJacksonDateConfigurer(@Nullable ObjectMapper objectMapper) {
+            return new JacksonDateConfigurer.Primary(objectMapper);
+        }
+
+        @ConditionalOnProperty(prefix = "disjob.rpc.exception-handler", name = "enabled", havingValue = "true", matchIfMissing = true)
+        @Order(0)
+        @Bean
+        public RpcControllerExceptionHandler rpcControllerExceptionHandler() {
+            return new RpcControllerExceptionHandler();
         }
     }
 
