@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
  *
  * @author Ponfee
  */
+// scan cn.ponfee.disjob.test.executor package
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class, scanBasePackageClasses = SamplesJobExecutorPackage.class)
 @EnableWorker
 public class WorkerApplication {

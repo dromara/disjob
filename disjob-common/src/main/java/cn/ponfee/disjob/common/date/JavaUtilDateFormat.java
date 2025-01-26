@@ -29,9 +29,11 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Convert to {@code java.util.Date}, none zone offset.
- * <p>unix timestamp只支持对10位(秒)和13位(毫秒)做解析
- * <p>线程安全
+ * <pre>
+ * Convert to {@code java.util.Date}, none zone offset, Thread safe.
+ * unix timestamp只支持对10位(秒)和13位(毫秒)做解析
+ * yyyy-MM-dd'T'HH:mm:ss.SSS'Z'：ISO 8601标准中的一种日期格式(UTC)，T表示日期和时间的分隔符，Z表示零时区(即UTC+0)
+ * </pre>
  *
  * @author Ponfee
  */
@@ -148,7 +150,7 @@ public class JavaUtilDateFormat extends DateFormat {
         int length = source.length();
         if (length >= 20 && source.endsWith("Z")) {
             if (length < 24) {
-                source = padding(source) + "Z";
+                source = complete(source);
             }
             if (isTSeparator(source)) {
                 return (isCrossbar(source) ? PATTERN_63 : PATTERN_64).parse(source);
@@ -265,24 +267,24 @@ public class JavaUtilDateFormat extends DateFormat {
 
     // ------------------------------------------------------------------------deprecated methods
 
-    @Override
     @Deprecated
+    @Override
     public void setCalendar(Calendar newCalendar) {
         if (!Objects.equals(newCalendar, super.getCalendar())) {
             throw new UnsupportedOperationException();
         }
     }
 
-    @Override
     @Deprecated
+    @Override
     public void setNumberFormat(NumberFormat newNumberFormat) {
         if (!Objects.equals(newNumberFormat, super.getNumberFormat())) {
             throw new UnsupportedOperationException();
         }
     }
 
-    @Override
     @Deprecated
+    @Override
     public void setTimeZone(TimeZone zone) {
         if (zone == null && super.getTimeZone() == null) {
             return;
@@ -295,8 +297,8 @@ public class JavaUtilDateFormat extends DateFormat {
         }
     }
 
-    @Override
     @Deprecated
+    @Override
     public void setLenient(boolean lenient) {
         if (lenient != super.isLenient()) {
             throw new UnsupportedOperationException();
@@ -317,10 +319,10 @@ public class JavaUtilDateFormat extends DateFormat {
         return TOSTRING_PATTERN.matcher(str).matches();
     }
 
-    static String padding(String source) {
+    static String complete(String source) {
         // example: 2022/07/18T15:11:11Z, 2022/07/18T15:11:11.Z, 2022/07/18T15:11:11.1Z, 2022/07/18T15:11:11.13Z
         String[] array = source.split("[.Z]");
-        return array[0] + "." + (array.length == 1 ? "000" : Strings.padEnd(array[1], 3, '0'));
+        return array[0] + "." + (array.length == 1 ? "000" : Strings.padEnd(array[1], 3, '0')) + "Z";
     }
 
 }

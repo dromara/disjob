@@ -19,12 +19,12 @@ package cn.ponfee.disjob.core.base;
 import cn.ponfee.disjob.common.exception.BaseException;
 import cn.ponfee.disjob.common.exception.BaseRuntimeException;
 import cn.ponfee.disjob.common.model.Result;
-import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -37,14 +37,16 @@ import java.io.PrintWriter;
 import java.util.List;
 
 /**
- * Rpc controller ExceptionHandler
+ * Controller exception handler
+ * <p>annotations与basePackages同时使用：只要匹配其一就会被处理
  *
  * @author Ponfee
  */
-@RestControllerAdvice(annotations = RpcController.class)
-class RpcControllerExceptionHandler {
+@ConditionalOnMissingClass("cn.ponfee.disjob.core.base.ControllerExceptionHandler") // 禁止以扫描包的方式创建Bean
+@RestControllerAdvice(basePackages = {"cn.ponfee.disjob.supervisor", "cn.ponfee.disjob.worker"})
+class ControllerExceptionHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RpcControllerExceptionHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ControllerExceptionHandler.class);
 
     private static final List<Class<? extends Exception>> BIZ_EXCEPTIONS = ImmutableList.of(
         IllegalArgumentException.class,
@@ -67,7 +69,7 @@ class RpcControllerExceptionHandler {
         PrintWriter out = response.getWriter();
         if (isMethodReturnResultType(handlerMethod)) {
             response.setContentType(JobConstants.APPLICATION_JSON_UTF8);
-            errorMsg = Result.failure(JobCodeMsg.SERVER_ERROR.getCode(), errorMsg).toString();
+            errorMsg = Result.failure(JobCodeMsg.SERVER_ERROR.getCode(), errorMsg).toJson();
         } else {
             response.setContentType(JobConstants.TEXT_PLAIN_UTF8);
             response.setStatus(obtainHttpStatus(t).value());

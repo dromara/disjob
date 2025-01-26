@@ -218,6 +218,9 @@ public class LocalDateTimeFormatTest {
         assertEquals("2022-07-18T15:11:11.130", format.parse("2022/07/18T15:11:11.13Z").toString());
         assertEquals("2022-07-18T15:11:11.133", format.parse("2022/07/18T15:11:11.133Z").toString());
 
+        assertEquals("2022-07-18T15:11:11.133", format.parse("2022/07/18 15:11:11.133Z").toString());
+        assertEquals("2022-07-18T15:11:11.133", format.parse("2022-07-18 15:11:11.133Z").toString());
+
         assertThrows(Exception.class, () -> format.parse("2022-07-18T1:1:1Z"));
 
     }
@@ -235,19 +238,14 @@ public class LocalDateTimeFormatTest {
 
         date = LocalDateTime.ofInstant(Instant.parse(dateString), ZoneOffset.ofHours(8));
         assertEquals(date.toString(), "2022-07-18T23:11:11.133");
-
-        assertThrows(
-            DateTimeParseException.class,
-            () -> LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
-        );
+        System.out.println(LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")));
     }
 
     @Test
-    public void test4() {
+    public void test4() throws ParseException {
         String text = "2022/07/18T15:11:11.133Z";
-        //System.out.println(JavaTimeDateFormat.DEFAULT.parse(text));
-        //LocalDateTime.parse(text, DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSSZ"));
-        //LocalDateTime.ofInstant(DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSSZ").parse(text, Instant::from), ZoneOffset.UTC);
+        System.out.println(JavaUtilDateFormat.DEFAULT.parse(text));
+        System.out.println(LocalDateTime.parse(text, DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSS'Z'")));
 
         /*
         DateTimeFormatter dateTimeFormatter = new DateTimeFormatterBuilder()

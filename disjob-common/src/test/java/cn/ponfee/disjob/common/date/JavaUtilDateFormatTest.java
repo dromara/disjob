@@ -94,7 +94,9 @@ public class JavaUtilDateFormatTest {
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_63.parse("2022-01-02T03:04:05.678Z").toString());
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_64.parse("2022/01/02T03:04:05.678Z").toString());
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_73.parse("2022-01-02T03:04:05.678+08").toString());
+        assertEquals("Sun Jan 02 11:04:05 CST 2022", JavaUtilDateFormat.PATTERN_73.parse("2022-01-02T03:04:05.678+00").toString());
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_74.parse("2022/01/02T03:04:05.678+08").toString());
+        assertEquals("Sun Jan 02 11:04:05 CST 2022", JavaUtilDateFormat.PATTERN_74.parse("2022/01/02T03:04:05.678+00").toString());
 
         assertEquals("Sat Jan 01 00:00:00 CST 2022", JavaUtilDateFormat.DEFAULT.parse("202201").toString());
         assertEquals("Sat Jan 01 00:00:00 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022-01").toString());
@@ -301,6 +303,15 @@ public class JavaUtilDateFormatTest {
         System.out.println("-------");
         System.out.println(FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSX", TimeZone.getTimeZone(ZoneOffset.UTC)).parse("2022-12-15T11:50:29.855+08"));
         System.out.println(FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSX", TimeZone.getTimeZone("GMT+8")).parse("2022-12-15T11:50:29.855+08"));
+    }
+
+    @Test
+    public void test4() {
+        System.out.println(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").format(LocalDateTime.now()));
+        System.out.println(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS").format(LocalDateTime.now()));
+
+        System.out.println(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS'Z'").format(LocalDateTime.now()));
+        System.out.println(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(LocalDateTime.now()));
     }
 
 }

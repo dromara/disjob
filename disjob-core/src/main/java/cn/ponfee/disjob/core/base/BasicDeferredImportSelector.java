@@ -22,6 +22,7 @@ import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DeferredImportSelector;
 import org.springframework.core.annotation.Order;
@@ -47,6 +48,7 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
     /**
      * 推迟实例化，以支持用户使用自定义的Bean替代
      */
+    @EnableConfigurationProperties({HttpProperties.class, RetryProperties.class})
     private static class BasicDeferredConfiguration {
 
         /**
@@ -61,18 +63,6 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
         @Bean
         public SpringContextHolder springContextHolder() {
             return new SpringContextHolder();
-        }
-
-        @ConditionalOnMissingBean
-        @Bean
-        public RetryProperties retryProperties() {
-            return new RetryProperties();
-        }
-
-        @ConditionalOnMissingBean
-        @Bean
-        public HttpProperties httpProperties() {
-            return new HttpProperties();
         }
 
         @ConditionalOnMissingBean(name = JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
@@ -103,8 +93,8 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
         @ConditionalOnProperty(prefix = "disjob.rpc.exception-handler", name = "enabled", havingValue = "true", matchIfMissing = true)
         @Order(0)
         @Bean
-        public RpcControllerExceptionHandler rpcControllerExceptionHandler() {
-            return new RpcControllerExceptionHandler();
+        public ControllerExceptionHandler controllerExceptionHandler() {
+            return new ControllerExceptionHandler();
         }
     }
 

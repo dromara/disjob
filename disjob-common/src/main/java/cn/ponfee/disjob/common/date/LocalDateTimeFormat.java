@@ -19,13 +19,9 @@ package cn.ponfee.disjob.common.date;
 import cn.ponfee.disjob.common.base.Symbol.Char;
 
 import javax.annotation.concurrent.ThreadSafe;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-
-import static cn.ponfee.disjob.common.date.JavaUtilDateFormat.*;
 
 /**
  * Convert to {@code java.time.LocalDateTime}, none zone offset.
@@ -50,6 +46,11 @@ public class LocalDateTimeFormat {
     static final DateTimeFormatter PATTERN_22 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
     static final DateTimeFormatter PATTERN_23 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
     static final DateTimeFormatter PATTERN_24 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSS");
+
+    static final DateTimeFormatter PATTERN_31 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS'Z'");
+    static final DateTimeFormatter PATTERN_32 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS'Z'");
+    static final DateTimeFormatter PATTERN_33 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    static final DateTimeFormatter PATTERN_34 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSS'Z'");
 
     /**
      * The default date format with yyyy-MM-dd HH:mm:ss
@@ -77,15 +78,26 @@ public class LocalDateTimeFormat {
         }
 
         int length = source.length();
-        if (length >= 20 && isTSeparator(source) && source.endsWith("Z")) {
-            if (isCrossbar(source)) {
+        /*
+        if (length >= 20 && JavaUtilDateFormat.isTSeparator(source) && source.endsWith("Z")) {
+            if (JavaUtilDateFormat.isCrossbar(source)) {
                 // example: 2022-07-18T15:11:11Z, 2022-07-18T15:11:11.Z, 2022-07-18T15:11:11.1Z, 2022-07-18T15:11:11.13Z, 2022-07-18T15:11:11.133Z
-                // 解析会报错：DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
                 return LocalDateTime.ofInstant(Instant.parse(source), ZoneOffset.UTC);
             } else {
                 // example: 2022/07/18T15:11:11Z, 2022/07/18T15:11:11.Z, 2022/07/18T15:11:11.1Z, 2022/07/18T15:11:11.13Z, 2022/07/18T15:11:11.133Z
-                source = length < 24 ? padding(source) : source.substring(0, source.length() - 1);
+                source = length < 24 ? JavaUtilDateFormat.complete(source) : source.substring(0, source.length() - 1);
                 return LocalDateTime.parse(source, PATTERN_24);
+            }
+        }
+        */
+        if (length >= 20 && source.endsWith("Z")) {
+            if (length < 24) {
+                source = JavaUtilDateFormat.complete(source);
+            }
+            if (JavaUtilDateFormat.isTSeparator(source)) {
+                return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_33 : PATTERN_34);
+            } else {
+                return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_31 : PATTERN_32);
             }
         }
 
@@ -115,16 +127,16 @@ public class LocalDateTimeFormat {
             case 14:
                 return LocalDateTime.parse(source, PATTERN_01);
             case 19:
-                if (isTSeparator(source)) {
-                    return LocalDateTime.parse(source, isCrossbar(source) ? PATTERN_13 : PATTERN_14);
+                if (JavaUtilDateFormat.isTSeparator(source)) {
+                    return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_13 : PATTERN_14);
                 } else {
-                    return LocalDateTime.parse(source, isCrossbar(source) ? PATTERN_11 : PATTERN_12);
+                    return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_11 : PATTERN_12);
                 }
             case 23:
-                if (isTSeparator(source)) {
-                    return LocalDateTime.parse(source, isCrossbar(source) ? PATTERN_23 : PATTERN_24);
+                if (JavaUtilDateFormat.isTSeparator(source)) {
+                    return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_23 : PATTERN_24);
                 } else {
-                    return LocalDateTime.parse(source, isCrossbar(source) ? PATTERN_21 : PATTERN_22);
+                    return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_21 : PATTERN_22);
                 }
             default:
                 break;
