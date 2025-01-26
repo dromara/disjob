@@ -90,7 +90,7 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
             return new JacksonDateConfigurer.Primary(objectMapper);
         }
 
-        @ConditionalOnProperty(prefix = "disjob.rpc.exception-handler", name = "enabled", havingValue = "true", matchIfMissing = true)
+        @ConditionalOnProperty(prefix = "disjob.controller.exception-handler", name = "enabled", havingValue = "true", matchIfMissing = true)
         @Order(0)
         @Bean
         public ControllerExceptionHandler controllerExceptionHandler() {
