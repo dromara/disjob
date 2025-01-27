@@ -51,6 +51,9 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
     @EnableConfigurationProperties({HttpProperties.class, RetryProperties.class})
     private static class BasicDeferredConfiguration {
 
+        private static final String DATE_CONFIGURER_PREFIX = "disjob.jackson.date-configurer";
+        private static final String DATE_CONFIGURER_NAME = "mode";
+
         /**
          * <pre>
          * 1、如果@ConditionalOnMissingBean注解没有指定参数，则默认以方法的返回类型判断，即容器中不存在类型为`SpringContextHolder`的实例才创建
@@ -78,13 +81,13 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
             return new RpcControllerConfigurer();
         }
 
-        @ConditionalOnProperty(prefix = "disjob.jackson.date-configurer", name = "mode", havingValue = "multiple")
+        @ConditionalOnProperty(prefix = DATE_CONFIGURER_PREFIX, name = DATE_CONFIGURER_NAME, havingValue = "multiple")
         @Bean
         public JacksonDateConfigurer.Multiple multipleJacksonDateConfigurer(List<ObjectMapper> list) {
             return new JacksonDateConfigurer.Multiple(list);
         }
 
-        @ConditionalOnProperty(prefix = "disjob.jackson.date-configurer", name = "mode", havingValue = "primary", matchIfMissing = true)
+        @ConditionalOnProperty(prefix = DATE_CONFIGURER_PREFIX, name = DATE_CONFIGURER_NAME, havingValue = "primary", matchIfMissing = true)
         @Bean
         public JacksonDateConfigurer.Primary primaryJacksonDateConfigurer(@Nullable ObjectMapper objectMapper) {
             return new JacksonDateConfigurer.Primary(objectMapper);

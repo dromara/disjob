@@ -18,7 +18,7 @@ package cn.ponfee.disjob.registry;
 
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
-import com.google.common.collect.ImmutableList;
+import cn.ponfee.disjob.registry.discovery.ServerDiscovery;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collections;
@@ -39,13 +39,8 @@ public interface WorkerRegistry extends Registry<Worker>, Discovery<Supervisor> 
      */
     default List<Worker> getRegisteredWorkers(String group) {
         List<Worker> workers = getRegisteredServers();
-        if (CollectionUtils.isEmpty(workers)) {
-            return Collections.emptyList();
-        }
-        return workers.stream()
-            .filter(e -> e.getGroup().equals(group))
-            .sorted()
-            .collect(ImmutableList.toImmutableList());
+        return CollectionUtils.isEmpty(workers) ? Collections.emptyList() :
+            ServerDiscovery.toSortedImmutableList(workers.stream().filter(e -> e.getGroup().equals(group)));
     }
 
 }

@@ -67,7 +67,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
             int processedCount = 0;
             while (state.isRunning()) {
                 if (super.isInterrupted()) {
-                    log.error("Thread exit by interrupted.");
+                    log.error("Heartbeat interrupted state.");
                     break;
                 }
 
@@ -77,6 +77,9 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
                 try {
                     // true is busy loop
                     isBusyLoop = heartbeat();
+                } catch (InterruptedException e) {
+                    log.error("Heartbeat interrupted exception.", e);
+                    break;
                 } catch (Throwable t) {
                     isBusyLoop = true;
                     log.error("Heartbeat occur error: state=" + state, t);
@@ -100,7 +103,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
                 }
             }
         } catch (InterruptedException e) {
-            log.warn("Sleep occur error in loop: state={}, error={}", state, e.getMessage());
+            log.warn("Heartbeat sleep interrupted: state={}, error={}", state, e.getMessage());
             Thread.currentThread().interrupt();
         }
 
@@ -145,7 +148,8 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
      * Provide custom implementation for subclass.
      *
      * @return {@code true} if busy loop, need sleep period time.
+     * @throws Exception if occur exception
      */
-    protected abstract boolean heartbeat();
+    protected abstract boolean heartbeat() throws Exception;
 
 }

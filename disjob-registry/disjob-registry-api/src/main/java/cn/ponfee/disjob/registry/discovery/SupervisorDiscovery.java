@@ -106,11 +106,6 @@ public final class SupervisorDiscovery extends ServerDiscovery<Supervisor, Worke
 
     @Override
     void notifyServer(Supervisor supervisor, RegistryEventType eventType, Worker worker) {
-        /*
-        if (supervisor.equals(Supervisor.local())) {
-            return;
-        }
-        */
         try {
             supervisorRpcClient.invoke(supervisor, client -> client.subscribeWorkerEvent(eventType, worker));
         } catch (Throwable t) {

@@ -120,11 +120,6 @@ public final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
 
     @Override
     void notifyServer(Worker worker, RegistryEventType eventType, Supervisor supervisor) {
-        /*
-        if (worker.matches(Worker.local())) {
-            return;
-        }
-        */
         try {
             String authToken = Supervisor.local().createSupervisorAuthenticationToken(worker.getGroup());
             SupervisorEventParam param = SupervisorEventParam.of(authToken, eventType, supervisor);

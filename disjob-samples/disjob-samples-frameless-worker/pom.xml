@@ -33,7 +33,6 @@
       <groupId>org.slf4j</groupId>
       <artifactId>jul-to-slf4j</artifactId>
     </dependency>
-
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-pool2</artifactId>
@@ -48,7 +47,6 @@
       <artifactId>lombok</artifactId>
       <scope>provided</scope>
     </dependency>
-
     <!-- 解决启动中的WARN日志：DnsServerAddressStreamProviders >>>> Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos' -->
     <dependency>
       <groupId>io.netty</groupId>

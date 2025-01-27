@@ -28,10 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
+import java.util.stream.Stream;
 
 /**
  * Server discovery.
@@ -86,23 +86,23 @@ public abstract class ServerDiscovery<D extends Server, R extends Server> {
      * @return sorted ImmutableList
      */
     final ImmutableList<D> toSortedImmutableList(List<D> servers) {
-        if (CollectionUtils.isEmpty(servers)) {
-            return ImmutableList.of();
-        }
-        return servers.stream().sorted().collect(ImmutableList.toImmutableList());
+        return CollectionUtils.isEmpty(servers) ? ImmutableList.of() : toSortedImmutableList(servers.stream());
     }
 
     final ImmutableList<D> mergeServers(ImmutableList<D> servers, RegistryEventType eventType, D server) {
-        List<D> list;
+        Stream<D> stream;
         if (eventType.isRegister()) {
-            list = new ArrayList<>(servers.size() + 1);
-            list.addAll(servers);
-            list.add(server);
+            stream = Stream.concat(servers.stream(), Stream.of(server));
         } else {
-            list = new ArrayList<>(servers.size());
-            servers.stream().filter(e -> !e.equals(server)).forEach(list::add);
+            stream = servers.stream().filter(e -> !e.equals(server));
         }
-        return toSortedImmutableList(list);
+        return toSortedImmutableList(stream);
+    }
+
+    // -------------------------------------------------------------static methods
+
+    public static <D extends Server> ImmutableList<D> toSortedImmutableList(Stream<D> stream) {
+        return stream.sorted().collect(ImmutableList.toImmutableList());
     }
 
     @SuppressWarnings("unchecked")
