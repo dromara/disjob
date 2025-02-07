@@ -60,7 +60,7 @@ public class DAGPrinter {
         File file = new File(MavenProjects.getProjectBaseDir() + "/target/dag/" + fileName);
         FileUtils.deleteQuietly(file);
         Files.mkdirIfNotExists(file.getParentFile());
-        DAGUtils.drawPngImage(expr, false, 2000, new FileOutputStream(file));
+        DAGUtils.drawImage(expr, false, 2000, new FileOutputStream(file));
     }
 
 }

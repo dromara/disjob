@@ -49,9 +49,9 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
     private final Supervisor.Local localSupervisor;
     private final SupervisorRegistry supervisorRegistry;
     private final TaskDispatcher taskDispatcher;
-    private final TriggeringJobScanner triggeringJobScanner;
     private final WaitingInstanceScanner waitingInstanceScanner;
     private final RunningInstanceScanner runningInstanceScanner;
+    private final TriggeringJobScanner triggeringJobScanner;
     private final TripState state = TripState.create();
 
     public SupervisorStartup(Supervisor.Local localSupervisor,
@@ -61,9 +61,9 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
                              JobManager jobManager,
                              JobQuerier jobQuerier,
                              TaskDispatcher taskDispatcher,
-                             LockTemplate scanTriggeringJobLocker,
                              LockTemplate scanWaitingInstanceLocker,
-                             LockTemplate scanRunningInstanceLocker) {
+                             LockTemplate scanRunningInstanceLocker,
+                             LockTemplate scanTriggeringJobLocker) {
         Objects.requireNonNull(localSupervisor, "Local supervisor cannot null.");
         Objects.requireNonNull(supervisorConf, "Supervisor config cannot null.").check();
         Objects.requireNonNull(supervisorRegistry, "Supervisor registry cannot null.");
@@ -71,22 +71,22 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
         Objects.requireNonNull(jobManager, "Job manager cannot null.");
         Objects.requireNonNull(jobQuerier, "Job querier cannot null.");
         Objects.requireNonNull(taskDispatcher, "Task dispatcher cannot null.");
-        Objects.requireNonNull(scanTriggeringJobLocker, "Scan triggering job locker cannot null.");
         Objects.requireNonNull(scanWaitingInstanceLocker, "Scan waiting instance locker cannot null.");
         Objects.requireNonNull(scanRunningInstanceLocker, "Scan running instance locker cannot null.");
+        Objects.requireNonNull(scanTriggeringJobLocker, "Scan triggering job locker cannot null.");
 
         this.localSupervisor = localSupervisor;
         this.supervisorRegistry = supervisorRegistry;
         this.taskDispatcher = taskDispatcher;
-        this.triggeringJobScanner = new TriggeringJobScanner(supervisorConf, scanTriggeringJobLocker, workerClient, jobManager, jobQuerier);
-        this.waitingInstanceScanner = new WaitingInstanceScanner(supervisorConf, scanWaitingInstanceLocker, workerClient, jobManager, jobQuerier);
-        this.runningInstanceScanner = new RunningInstanceScanner(supervisorConf, scanRunningInstanceLocker, workerClient, jobManager, jobQuerier);
+        this.waitingInstanceScanner = new WaitingInstanceScanner(supervisorConf, jobManager, jobQuerier, workerClient, scanWaitingInstanceLocker);
+        this.runningInstanceScanner = new RunningInstanceScanner(supervisorConf, jobManager, jobQuerier, workerClient, scanRunningInstanceLocker);
+        this.triggeringJobScanner   = new TriggeringJobScanner  (supervisorConf, jobManager, jobQuerier, workerClient, scanTriggeringJobLocker);
     }
 
     @Override
     public void start() {
         if (!state.start()) {
-            LOG.warn("Supervisor startup already started.");
+            LOG.warn("Supervisor already started.");
             return;
         }
 
@@ -103,7 +103,7 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
     @Override
     public void stop() {
         if (!state.stop()) {
-            LOG.warn("Supervisor startup already Stopped.");
+            LOG.warn("Supervisor already Stopped.");
             return;
         }
 

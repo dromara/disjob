@@ -26,9 +26,12 @@ import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.Factory;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.Node;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DAG utilities
@@ -37,22 +40,33 @@ import java.io.OutputStream;
  */
 public class DAGUtils {
 
-    public static void drawPngImage(String expression, boolean thumb, int width, OutputStream output) throws IOException {
-        if (thumb) {
-            expression = DAGExpression.thumb(expression);
-        }
+    public static void drawImage(String expression, boolean thumb, int width, OutputStream output) throws IOException {
+        drawImage(expression, thumb, "PNG", width, output);
+    }
 
+    public static void drawImage(String expression, boolean thumb, String format, int width, OutputStream output) throws IOException {
         MutableGraph graph = Factory.mutGraph().setDirected(true);
         graph.graphAttrs().add(Rank.dir(Rank.RankDir.LEFT_TO_RIGHT));
         graph.graphAttrs().add(GraphAttr.splines(GraphAttr.SplineMode.CURVED));
+        MutableInt begin = new MutableInt('A');
+        Map<String, String> map = new HashMap<>();
         for (EndpointPair<DAGNode> edge : DAGExpression.parse(expression).edges()) {
             DAGNode s = edge.source(), t = edge.target();
-            Node source = Factory.node(s.toString()).with(s.isStart() ? Shape.M_DIAMOND : Shape.RECTANGLE, Label.of(s.getName()));
-            Node target = Factory.node(t.toString()).with(t.isEnd() ? Shape.M_SQUARE : Shape.RECTANGLE, Label.of(t.getName()));
+            String ls = s.getName(), lt = t.getName();
+            if (thumb) {
+                if (!s.isStartOrEnd()) {
+                    ls = map.computeIfAbsent(ls, k -> String.valueOf((char) begin.getAndIncrement()));
+                }
+                if (!t.isStartOrEnd()) {
+                    lt = map.computeIfAbsent(lt, k -> String.valueOf((char) begin.getAndIncrement()));
+                }
+            }
+            Node source = Factory.node(s.toString()).with(s.isStart() ? Shape.M_DIAMOND : Shape.RECTANGLE, Label.of(ls));
+            Node target = Factory.node(t.toString()).with(t.isEnd() ? Shape.M_SQUARE : Shape.RECTANGLE, Label.of(lt));
             graph.add(source.link(target));
         }
 
-        Graphviz.fromGraph(graph).width(width).render(Format.PNG).toOutputStream(output);
+        Graphviz.fromGraph(graph).width(width).render(Format.valueOf(format)).toOutputStream(output);
     }
 
 }

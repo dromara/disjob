@@ -88,7 +88,7 @@ public class DisjobJobController extends BaseController {
     public void dag(@RequestParam("expr") String expr, @RequestParam("thumb") boolean thumb, HttpServletResponse response) throws IOException {
         response.setContentType(MediaType.IMAGE_PNG_VALUE);
         try {
-            DAGUtils.drawPngImage(expr, thumb, 2000, response.getOutputStream());
+            DAGUtils.drawImage(expr, thumb, 2000, response.getOutputStream());
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {

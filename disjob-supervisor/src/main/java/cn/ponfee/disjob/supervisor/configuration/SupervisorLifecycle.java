@@ -47,9 +47,9 @@ public class SupervisorLifecycle implements SmartLifecycle {
                                JobManager jobManager,
                                JobQuerier jobQuerier,
                                TaskDispatcher taskDispatcher,
-                               @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) LockTemplate scanTriggeringJobLocker,
                                @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER) LockTemplate scanWaitingInstanceLocker,
-                               @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) LockTemplate scanRunningInstanceLocker) {
+                               @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) LockTemplate scanRunningInstanceLocker,
+                               @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) LockTemplate scanTriggeringJobLocker) {
         this.supervisorStartup = new SupervisorStartup(
             localSupervisor,
             supervisorConf,
@@ -58,9 +58,9 @@ public class SupervisorLifecycle implements SmartLifecycle {
             jobManager,
             jobQuerier,
             taskDispatcher,
-            scanTriggeringJobLocker,
             scanWaitingInstanceLocker,
-            scanRunningInstanceLocker
+            scanRunningInstanceLocker,
+            scanTriggeringJobLocker
         );
     }
 

@@ -52,28 +52,28 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private final int scanBatchSize;
     private final int jobScanFailedCountThreshold;
-    private final LockTemplate lockTemplate;
-    private final WorkerClient workerClient;
     private final JobManager jobManager;
     private final JobQuerier jobQuerier;
+    private final WorkerClient workerClient;
+    private final LockTemplate lockTemplate;
     private final long afterMilliseconds;
     private final ExecutorService processJobExecutor;
     private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> log.warn("Not discovered any worker."));
 
     public TriggeringJobScanner(SupervisorProperties conf,
-                                LockTemplate lockTemplate,
-                                WorkerClient workerClient,
                                 JobManager jobManager,
-                                JobQuerier jobQuerier) {
+                                JobQuerier jobQuerier,
+                                WorkerClient workerClient,
+                                LockTemplate lockTemplate) {
         super(conf.getScanTriggeringJobPeriodMs());
         SingletonClassConstraint.constrain(this);
 
         this.scanBatchSize = conf.getScanBatchSize();
         this.jobScanFailedCountThreshold = conf.getJobScanFailedCountThreshold();
-        this.lockTemplate = lockTemplate;
-        this.workerClient = workerClient;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
+        this.workerClient = workerClient;
+        this.lockTemplate = lockTemplate;
         // heartbeat period duration: 2s * 3 = 6s
         this.afterMilliseconds = (heartbeatPeriodMs * 3);
         this.processJobExecutor = ThreadPoolExecutors.builder()

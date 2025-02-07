@@ -95,7 +95,7 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
     @Override
     public void start() {
         if (!state.start()) {
-            LOG.warn("Worker startup already started.");
+            LOG.warn("Worker already started.");
             return;
         }
 
@@ -112,7 +112,7 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
     @Override
     public void stop() {
         if (!state.stop()) {
-            LOG.warn("Worker startup already stopped.");
+            LOG.warn("Worker already stopped.");
             return;
         }
 

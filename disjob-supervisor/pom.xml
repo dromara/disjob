@@ -60,12 +60,6 @@
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-id</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
       <artifactId>disjob-test</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>

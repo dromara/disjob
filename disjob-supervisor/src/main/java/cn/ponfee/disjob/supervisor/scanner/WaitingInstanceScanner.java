@@ -41,26 +41,26 @@ import java.util.List;
 public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
     private final int scanBatchSize;
-    private final LockTemplate lockTemplate;
-    private final WorkerClient workerClient;
     private final JobManager jobManager;
     private final JobQuerier jobQuerier;
+    private final WorkerClient workerClient;
+    private final LockTemplate lockTemplate;
     private final long beforeMilliseconds;
     private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> log.warn("Not discovered any worker."));
 
     public WaitingInstanceScanner(SupervisorProperties conf,
-                                  LockTemplate lockTemplate,
-                                  WorkerClient workerClient,
                                   JobManager jobManager,
-                                  JobQuerier jobQuerier) {
+                                  JobQuerier jobQuerier,
+                                  WorkerClient workerClient,
+                                  LockTemplate lockTemplate) {
         super(conf.getScanWaitingInstancePeriodMs());
         SingletonClassConstraint.constrain(this);
 
         this.scanBatchSize = conf.getScanBatchSize();
-        this.lockTemplate = lockTemplate;
-        this.workerClient = workerClient;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
+        this.workerClient = workerClient;
+        this.lockTemplate = lockTemplate;
         // heartbeat period duration: 10s * 12 = 120s
         this.beforeMilliseconds = (heartbeatPeriodMs * 12);
     }

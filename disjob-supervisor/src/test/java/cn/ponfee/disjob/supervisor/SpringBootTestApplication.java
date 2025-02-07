@@ -16,22 +16,22 @@
 
 package cn.ponfee.disjob.supervisor;
 
+import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.id.snowflake.db.DbSnowflakeIdGenerator;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.disjob.test.EmbeddedMysqlAndRedisServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_JDBC_TEMPLATE;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * SpringBootTestApplication
  *
  * @author Ponfee
  */
-@DbSnowflakeIdGenerator(jdbcTemplateRef = SPRING_BEAN_NAME_JDBC_TEMPLATE)
 @EnableSupervisor
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 public class SpringBootTestApplication {
@@ -47,6 +47,18 @@ public class SpringBootTestApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SpringBootTestApplication.class, args);
+    }
+
+    @Bean
+    IdGenerator idGenerator() {
+        return new IdGenerator() {
+            final AtomicLong counter = new AtomicLong(0);
+
+            @Override
+            public long generateId() {
+                return counter.incrementAndGet();
+            }
+        };
     }
 
 }

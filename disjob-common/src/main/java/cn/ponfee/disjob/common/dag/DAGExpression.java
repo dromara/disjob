@@ -83,12 +83,7 @@ import java.util.stream.Stream;
  * │               └─────>E──┘       │
  * └─────────────────────────────────┘
  * 此时可通过`json expression`来表达：
- *   [
- *     "1:1:A -> 1:1:C",
- *     "1:1:A -> 1:1:D",
- *     "1:1:B -> 1:1:D",
- *     "1:1:B -> 1:1:E"
- *   ]
+ * ["A->C", "A->D", "B->D", "B->E"] or ["1:1:A->1:1:C", "1:1:A->1:1:D", "1:1:B->1:1:D", "1:1:B->1:1:E"]
  * </pre>
  *
  * @author Ponfee
@@ -103,7 +98,7 @@ public class DAGExpression {
      * 4、(?m) 开启多行匹配模式，“.”不匹配空白字符
      * 5、(?d) 单行模式，“.”不匹配空白字符
      *
-     * Match json array: [ "..." ]
+     * Match json string array: [ "..." ]
      * 有两种方式：
      *   1、(?s)^\s*\[\s*".+"\s*]\s*$
      *   2、(?m)^\s*\[\s*"(\s*\S+\s*)+"\s*]\s*$
@@ -290,10 +285,7 @@ public class DAGExpression {
         for (int i = 0, n = groups.size() - 1; i < n; i++) {
             PartitionIdentityKey key = new PartitionIdentityKey(expr, groups.get(i) + 1, groups.get(i + 1));
             // if twice open “((”，then str is empty content
-            String str = partitionCache.computeIfAbsent(key, PartitionIdentityKey::partition);
-            if (StringUtils.isNotBlank(str)) {
-                result.add(str);
-            }
+            addIfNotBlank(result, partitionCache.computeIfAbsent(key, PartitionIdentityKey::partition));
         }
         return result;
     }
@@ -344,16 +336,8 @@ public class DAGExpression {
     }
 
     /**
-     * Parse json array expression graph
-     *
-     * <pre>
-     * [
-     *   "1:1:A -> 1:1:C",
-     *   "1:1:A -> 1:1:D",
-     *   "1:1:B -> 1:1:D",
-     *   "1:1:B -> 1:1:E"
-     * ]
-     * </pre>
+     * Parse json array expression graph:
+     * ["A->C", "A->D", "B->D", "B->E"] or ["1:1:A->1:1:C", "1:1:A->1:1:D", "1:1:B->1:1:D", "1:1:B->1:1:E"]
      *
      * @param graphBuilder the graph builder
      * @param edges        the edges
@@ -550,6 +534,12 @@ public class DAGExpression {
         return Str.OPEN + text + Str.CLOSE;
     }
 
+    private static void addIfNotBlank(List<String> list, String str) {
+        if (StringUtils.isNotBlank(str)) {
+            list.add(str.trim());
+        }
+    }
+
     // ------------------------------------------------------------------------------------private static thumb methods
 
     private static String thumbJsonExpr(List<DAGEdge> edges) {
@@ -596,12 +586,6 @@ public class DAGExpression {
         }
         addIfNotBlank(list, expression.substring(start));
         return list;
-    }
-
-    private static void addIfNotBlank(List<String> list, String str) {
-        if (StringUtils.isNotBlank(str)) {
-            list.add(str.trim());
-        }
     }
 
     // ------------------------------------------------------------------------------------private static classes

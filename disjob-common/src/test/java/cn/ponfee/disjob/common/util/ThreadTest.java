@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.common.util;
 
-import cn.ponfee.disjob.common.concurrent.LoggedUncaughtExceptionHandler;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
@@ -36,50 +35,12 @@ import java.util.concurrent.SynchronousQueue;
 class ThreadTest {
     private static final Logger log = LoggerFactory.getLogger(ThreadTest.class);
 
-    @Test
-    void testThreadDeath() throws InterruptedException {
-        Thread t = new Thread(() -> {
-            for (int i = 0; ; i++) {
-                System.out.print(i + " ");
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    System.out.println("\n\nInterruptedException\n");
-                } catch (ThreadDeath e) {
-                    System.out.println("\n\nThreadDeath: " + i + "\n");
-                    if (i > 10) {
-                        System.out.println("i > 10");
-                        throw e;
-                        //break;
-                    }
-                }
-            }
-        });
-
-        t.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(log));
-
-        Assertions.assertFalse(t.isAlive());
-        t.start();
-        Assertions.assertTrue(t.isAlive());
-        Thread.sleep(500);
-        Assertions.assertTrue(t.isAlive());
-        t.stop();
-        Assertions.assertTrue(t.isAlive());
-        Thread.sleep(1000);
-        Assertions.assertTrue(t.isAlive());
-        t.stop();
-        Thread.sleep(500);
-        Assertions.assertFalse(t.isAlive());
-        t.join();
-        Assertions.assertFalse(t.isAlive());
-    }
-
+    @SuppressWarnings("ConstantConditions")
     @Test
     void testGetStackFrame() {
-        System.out.println(Threads.getStackFrame(0));
-        System.out.println(Threads.getStackFrame(1));
-        System.out.println(Threads.getStackFrame(2));
-        System.out.println(Threads.getStackFrame(3));
+        Assertions.assertTrue(Threads.getStackFrame(0).startsWith("java.lang.Thread.getStackTrace("));
+        Assertions.assertTrue(Threads.getStackFrame(1).startsWith("cn.ponfee.disjob.common.concurrent.Threads.getStackFrame("));
+        Assertions.assertTrue(Threads.getStackFrame(2).startsWith("cn.ponfee.disjob.common.util.ThreadTest.testGetStackFrame("));
     }
 
     @Test
