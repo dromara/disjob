@@ -18,11 +18,21 @@ nbbuild/
 nbdist/
 **/.nb-gradle/
 
+# STS(Spring tool suite)
+/**/.apt_generated
+/**/.factorypath
+/**/.springBeans
+
+# VS Code
+.vscode/
+
 # Mac
 /**/.DS_Store
 
 # Maven
 /**/target/
+/**/dependency-reduced-pom.xml
+.mvn/wrapper/*.jar
 
 # Gradle
 /**/.gradle/
@@ -39,13 +49,13 @@ project/plugins/project/
 .cache
 .lib/
 
-# STS(Spring tool suite)
-/**/.apt_generated
-/**/.factorypath
-/**/.springBeans
-
 # Webapp
 /**/src/main/webapp/WEB-INF/classes/
+
+# rebel.xml
+/**/rebel.xml
+/**/.cache-main
+/**/.cache-tests
 
 # Others
 /**/.svn/
@@ -58,9 +68,3 @@ build/
 bin/
 logs/
 dist/
-
-# rebel.xml
-/**/rebel.xml
-/**/.cache-main
-/**/.cache-tests
-/**/dependency-reduced-pom.xml

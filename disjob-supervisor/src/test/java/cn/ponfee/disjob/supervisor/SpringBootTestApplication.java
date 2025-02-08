@@ -49,6 +49,7 @@ public class SpringBootTestApplication {
         SpringApplication.run(SpringBootTestApplication.class, args);
     }
 
+    // 因测试用例为单机模式，可代替`@DbSnowflakeIdGenerator(jdbcTemplateRef = SPRING_BEAN_NAME_JDBC_TEMPLATE)`
     @Bean
     IdGenerator idGenerator() {
         return new IdGenerator() {

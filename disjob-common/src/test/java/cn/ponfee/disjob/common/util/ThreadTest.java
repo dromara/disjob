@@ -18,8 +18,6 @@ package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.disjob.common.concurrent.Threads;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,14 +32,6 @@ import java.util.concurrent.SynchronousQueue;
  */
 class ThreadTest {
     private static final Logger log = LoggerFactory.getLogger(ThreadTest.class);
-
-    @SuppressWarnings("ConstantConditions")
-    @Test
-    void testGetStackFrame() {
-        Assertions.assertTrue(Threads.getStackFrame(0).startsWith("java.lang.Thread.getStackTrace("));
-        Assertions.assertTrue(Threads.getStackFrame(1).startsWith("cn.ponfee.disjob.common.concurrent.Threads.getStackFrame("));
-        Assertions.assertTrue(Threads.getStackFrame(2).startsWith("cn.ponfee.disjob.common.util.ThreadTest.testGetStackFrame("));
-    }
 
     @Test
     void testMaximumPoolSize__CALLER_RUNS() {

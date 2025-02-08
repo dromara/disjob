@@ -96,7 +96,7 @@
       SELECT 1
       FROM <include refid="Table_Name" />
       WHERE `group` = #{group,jdbcType=VARCHAR} AND is_deleted = 0
-    )
+    ) e
   </select>
 
   <select id="searchGroup" resultType="string">

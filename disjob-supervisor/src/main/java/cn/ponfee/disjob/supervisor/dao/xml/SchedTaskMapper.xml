@@ -88,7 +88,7 @@
         AND execute_state = 20
         AND worker = #{worker,jdbcType=VARCHAR}
         AND start_request_id = #{startRequestId,jdbcType=VARCHAR}
-    )
+    ) e
   </select>
 
   <update id="terminate">
