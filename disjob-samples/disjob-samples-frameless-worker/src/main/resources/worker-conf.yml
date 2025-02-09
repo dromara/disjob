@@ -5,17 +5,17 @@ server.port: 8084
 # Disjob configuration
 disjob:
 
-  # disjob http configuration
+  # http config
   http:
     connect-timeout: 3000
     read-timeout: 10000
 
-  # disjob retry configuration
+  # retry config
   retry:
     max-count: 3
     backoff-period: 3000
 
-  # disjob worker configuration
+  # worker config
   worker:
     group: app-test
     timing-wheel-tick-ms: 100
@@ -26,14 +26,14 @@ disjob:
     worker-token: 358678bfe34648f68b607036a27c6854
     supervisor-token: 20bb8b7f1cb94dc894b45546a7c2982f
 
-  # disjob redis registry configuration
+  # registry config
   registry:
     redis:
-      # registry config
+      # redis registry config
       namespace: disjob_registry
       session-timeout-ms: 60000
 
-      # -------- db config start --------
+      # -------- redis db config start --------
       database: 0
       connect-timeout: 3000
       timeout: 5000
@@ -57,4 +57,4 @@ disjob:
       #  nodes: 112.74.170.75:16379,112.74.170.75:16380
       #  #password: 123456            # redis sentinel auth password
       #  #username: sentinel_auth     # redis sentinel auth username(redis 6.x ACL)
-      # -------- db config end --------
+      # -------- redis db config end --------

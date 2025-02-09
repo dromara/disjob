@@ -72,7 +72,7 @@
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-dispatch-redis</artifactId>
+      <artifactId>disjob-dispatch-http</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
