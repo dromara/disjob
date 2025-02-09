@@ -16,19 +16,13 @@
 
 package cn.ponfee.disjob.common.spring;
 
-import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.collect.TypedMap;
-import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.ObjectUtils;
-import cn.ponfee.disjob.common.util.Strings;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -38,6 +32,8 @@ import java.util.Properties;
  */
 public class YamlProperties extends Properties implements TypedMap<Object, Object> {
     private static final long serialVersionUID = -1599483902442715272L;
+
+    private Binder binder;
 
     public YamlProperties(File file) throws IOException {
         try (InputStream inputStream = new FileInputStream(file)) {
@@ -53,26 +49,11 @@ public class YamlProperties extends Properties implements TypedMap<Object, Objec
         loadYaml(new ByteArrayInputStream(content));
     }
 
-    public <T> T extract(Class<T> beanType, String prefix) throws IllegalAccessException {
-        List<Field> fields = ClassUtils.listFields(beanType);
-        if (CollectionUtils.isEmpty(fields)) {
-            return null;
+    public <T> T bind(String name, Class<T> beanType) {
+        if (binder == null) {
+            binder = new Binder(new MapConfigurationPropertySource(this));
         }
-
-        prefix = Strings.withSuffix(prefix, ".");
-
-        T bean = ClassUtils.newInstance(beanType);
-        char[] separators = {Char.HYPHEN, Char.DOT};
-        for (Field field : fields) {
-            for (char separator : separators) {
-                String name = prefix + Strings.toSeparatedFormat(field.getName(), separator);
-                if (super.containsKey(name)) {
-                    FieldUtils.writeField(field, bean, ObjectUtils.cast(get(name), field.getType()), true);
-                    break;
-                }
-            }
-        }
-        return bean;
+        return binder.bind(name, beanType).get();
     }
 
     private void loadYaml(InputStream inputStream) {

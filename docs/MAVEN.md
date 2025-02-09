@@ -4,8 +4,8 @@
 [personal group id](https://central.sonatype.org/publish/requirements/#supported-code-hosting-services-for-personal-groupid)
 
 ## Maven wrapper
-> install: mvn wrapper:wrapper -Dmaven=3.9.9    # -Dtype=bin
-> upgrade: ./mvnw wrapper:wrapper -Dmaven=3.9.9 # -Dtype=bin
+- install: `mvn wrapper:wrapper -Dmaven=3.9.9    # -Dtype=bin`
+- upgrade: `./mvnw wrapper:wrapper -Dmaven=3.9.9 # -Dtype=bin`
 
 ## Deploy to maven central
 > maven phase: `clean -> validate -> compile -> test -> package -> integration -> verify -> install -> deploy`
