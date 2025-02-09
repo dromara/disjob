@@ -24,10 +24,19 @@ nbdist/
 /**/.springBeans
 
 # VS Code
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.history/
+*.vsix
 
-# Mac
+# MacOS
 /**/.DS_Store
+/**/.AppleDouble
+/**/.LSOverride
 
 # Maven
 /**/target/
@@ -37,8 +46,7 @@ nbdist/
 # Gradle
 /**/.gradle/
 
-# SBT(Simple Build Tool For Scala)
-# http://www.scala-sbt.org/release/docs/Getting-Started/Directories.html#configuring-version-control
+# SBT(Simple Build Tool For Scala): http://www.scala-sbt.org/release/docs/Getting-Started/Directories.html#configuring-version-control
 dist/*
 target/
 lib_managed/
