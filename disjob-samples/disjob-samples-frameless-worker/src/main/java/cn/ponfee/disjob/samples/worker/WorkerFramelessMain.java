@@ -18,6 +18,7 @@ package cn.ponfee.disjob.samples.worker;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.spring.RedisTemplateFactory;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.spring.YamlProperties;
@@ -31,15 +32,13 @@ import cn.ponfee.disjob.dispatch.http.HttpTaskReceiver;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
-import cn.ponfee.disjob.samples.worker.redis.AbstractRedisTemplateCreator;
-import cn.ponfee.disjob.samples.worker.util.JobExecutorParser;
-import cn.ponfee.disjob.samples.worker.vertx.VertxWebServer;
 import cn.ponfee.disjob.worker.WorkerStartup;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.client.RestTemplate;
 
@@ -119,7 +118,8 @@ public class WorkerFramelessMain {
 
     private static WorkerRegistry createWorkerRegistry(YamlProperties config, RestTemplate restTemplate) {
         RedisRegistryProperties redisRegistryProps = config.bind(RedisRegistryProperties.KEY_PREFIX, RedisRegistryProperties.class);
-        StringRedisTemplate stringRedisTemplate = AbstractRedisTemplateCreator.create(RedisRegistryProperties.KEY_PREFIX, config).getStringRedisTemplate();
+        RedisProperties redisProps = config.bind(RedisRegistryProperties.KEY_PREFIX, RedisProperties.class);
+        StringRedisTemplate stringRedisTemplate = new RedisTemplateFactory(redisProps).getStringRedisTemplate();
         return new RedisWorkerRegistry(redisRegistryProps, restTemplate, stringRedisTemplate);
     }
 

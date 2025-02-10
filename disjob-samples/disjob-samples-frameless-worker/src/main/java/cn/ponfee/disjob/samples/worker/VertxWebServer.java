@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.samples.worker.vertx;
+package cn.ponfee.disjob.samples.worker;
 
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables;
@@ -27,7 +27,6 @@ import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dto.worker.*;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
-import cn.ponfee.disjob.samples.worker.util.JobExecutorParser;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
@@ -104,8 +103,8 @@ public class VertxWebServer extends AbstractVerticle {
         Router router = Router.router(super.vertx);
         router.route().handler(BodyHandler.create());
 
+        // ------------------------------------------------------add http api route start
         //String[] args = ctx.body().asPojo(String[].class);
-
         router.post(prefixPath + "/supervisor/event/subscribe").handler(ctx -> handle(() -> {
             SupervisorEventParam param = parseBodyArg(ctx, SupervisorEventParam.class);
             workerRpcService.subscribeSupervisorEvent(param);
@@ -137,18 +136,16 @@ public class VertxWebServer extends AbstractVerticle {
             workerRpcService.configureWorker(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
-        if (taskReceiver != null) {
-            router.post(prefixPath + "/task/receive").handler(ctx -> handle(() -> {
-                ExecuteTaskParam param = parseBodyArg(ctx, ExecuteTaskParam.class);
-                JobExecutorParser.parse(param, "jobExecutor");
-                return taskReceiver.receive(param);
-            }, ctx, INTERNAL_SERVER_ERROR));
-        }
+        router.post(prefixPath + "/task/receive").handler(ctx -> handle(() -> {
+            ExecuteTaskParam param = parseBodyArg(ctx, ExecuteTaskParam.class);
+            JobExecutorParser.parse(param, "jobExecutor");
+            return taskReceiver.receive(param);
+        }, ctx, INTERNAL_SERVER_ERROR));
+        // ------------------------------------------------------add http api route end
 
         HttpServerOptions options = new HttpServerOptions()
             .setIdleTimeout(120)
             .setIdleTimeoutUnit(TimeUnit.SECONDS);
-
         super.vertx
             .createHttpServer(options)
             .requestHandler(router)

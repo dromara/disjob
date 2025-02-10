@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.samples.worker.util;
+package cn.ponfee.disjob.samples.worker;
 
 import cn.ponfee.disjob.common.spring.ResourceScanner;
 import cn.ponfee.disjob.common.util.Files;

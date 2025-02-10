@@ -63,9 +63,10 @@ public class JobExecutorUtils {
                 jobExecutors = Collections.singleton(param.getJobExecutor());
             }
 
+            VerifyParam verifyParam = new VerifyParam(param.getRouteStrategy().isBroadcast(), param.getJobParam());
             for (String jobExecutorStr : jobExecutors) {
                 JobExecutor jobExecutor = loadJobExecutor(jobExecutorStr);
-                boolean result = jobExecutor.verify(convert(param));
+                boolean result = jobExecutor.verify(verifyParam);
                 Assert.isTrue(result, () -> "Verify job failed: " + param);
             }
         } catch (JobException | JobRuntimeException e) {
@@ -167,13 +168,6 @@ public class JobExecutorUtils {
             throw new JobException(JobCodeMsg.LOAD_JOB_EXECUTOR_ERROR, "Invalid job executor '" + type + "': " + text);
         }
         return type;
-    }
-
-    private static VerifyParam convert(VerifyJobParam param) {
-        VerifyParam verifyParam = new VerifyParam();
-        verifyParam.setBroadcast(param.getRouteStrategy().isBroadcast());
-        verifyParam.setJobParam(param.getJobParam());
-        return verifyParam;
     }
 
     private static SplitParam convert(SplitJobParam param) {

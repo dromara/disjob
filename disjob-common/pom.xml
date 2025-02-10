@@ -77,6 +77,11 @@
 
     <!-- optional dependencies -->
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-pool2</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>guru.nidi</groupId>
       <artifactId>graphviz-java</artifactId>
       <version>${graphviz-java.version}</version>

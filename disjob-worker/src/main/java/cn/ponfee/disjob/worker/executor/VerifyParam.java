@@ -18,7 +18,6 @@ package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Verify param
@@ -26,18 +25,22 @@ import lombok.Setter;
  * @author Ponfee
  */
 @Getter
-@Setter
 public class VerifyParam extends ToJsonString implements java.io.Serializable {
     private static final long serialVersionUID = -3729803336650393095L;
 
     /**
      * 是否广播任务
      */
-    private boolean broadcast;
+    private final boolean broadcast;
 
     /**
      * Job参数
      */
-    private String jobParam;
+    private final String jobParam;
+
+    public VerifyParam(boolean broadcast, String jobParam) {
+        this.broadcast = broadcast;
+        this.jobParam = jobParam;
+    }
 
 }
