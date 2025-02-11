@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.samples.worker;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
 import cn.ponfee.disjob.common.spring.RedisTemplateFactory;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringUtils;
@@ -39,7 +39,6 @@ import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.FileInputStream;
@@ -60,7 +59,7 @@ public class WorkerFramelessMain {
     static {
         // for log4j2 log file name
         System.setProperty("app.name", "frameless-worker");
-        JobExecutorParser.init();
+        JobExecutorMapping.init();
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerFramelessMain.class);
@@ -74,9 +73,9 @@ public class WorkerFramelessMain {
         retryProps.check();
         WorkerProperties workerProps = config.bind(WorkerProperties.KEY_PREFIX, WorkerProperties.class);
         workerProps.check();
-        RestTemplate restTemplate = RestTemplateUtils.create(httpProps.getConnectTimeout(), httpProps.getReadTimeout(), null);
 
         // 2、create component
+        RestTemplate restTemplate = RestTemplateUtils.create(httpProps.getConnectTimeout(), httpProps.getReadTimeout(), null);
         Worker.Local localWorker = createLocalWorker(config, workerProps);
         TaskReceiver taskReceiver = createTaskReceiver(workerProps, localWorker);
         WorkerRegistry workerRegistry = createWorkerRegistry(config, restTemplate);
@@ -114,13 +113,25 @@ public class WorkerFramelessMain {
     private static TaskReceiver createTaskReceiver(WorkerProperties props, Worker.Local localWorker) {
         TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(props.getTimingWheelTickMs(), props.getTimingWheelRingSize());
         return new HttpTaskReceiver(localWorker, timingWheel);
+
+        /* 不建议使用`RedisTaskReceiver`，后续版本会废弃`disjob-dispatch-redis`
+        return new RedisTaskReceiver(localWorker, timingWheel, redisTemplate) {
+            @Override
+            public boolean receive(ExecuteTaskParam param) {
+                JobExecutorMapping.correctParamJobExecutor(param, "jobExecutor");
+                return super.receive(param);
+            }
+        };
+        */
     }
 
     private static WorkerRegistry createWorkerRegistry(YamlProperties config, RestTemplate restTemplate) {
-        RedisRegistryProperties redisRegistryProps = config.bind(RedisRegistryProperties.KEY_PREFIX, RedisRegistryProperties.class);
+        RedisRegistryProperties registryProps = config.bind(RedisRegistryProperties.KEY_PREFIX, RedisRegistryProperties.class);
         RedisProperties redisProps = config.bind(RedisRegistryProperties.KEY_PREFIX, RedisProperties.class);
-        StringRedisTemplate stringRedisTemplate = new RedisTemplateFactory(redisProps).getStringRedisTemplate();
-        return new RedisWorkerRegistry(redisRegistryProps, restTemplate, stringRedisTemplate);
+        @SuppressWarnings("all")
+        RedisTemplateFactory redisTemplateFactory = new RedisTemplateFactory(redisProps);
+        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, redisTemplateFactory::close);
+        return new RedisWorkerRegistry(registryProps, restTemplate, redisTemplateFactory.getStringRedisTemplate());
     }
 
     private static VertxWebServer createVertxWebServer(YamlProperties config, Worker.Local localWorker, TaskReceiver taskReceiver, WorkerRegistry workerRegistry) {
@@ -130,10 +141,8 @@ public class WorkerFramelessMain {
     }
 
     private static void start(VertxWebServer vertxWebServer, WorkerStartup workerStartup) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            ThrowingRunnable.doCaught(workerStartup::close);
-            ThrowingRunnable.doCaught(vertxWebServer::close);
-        }));
+        ShutdownHookManager.addShutdownHook(0, workerStartup::close);
+        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, vertxWebServer::close);
         vertxWebServer.deploy();
         workerStartup.start();
     }

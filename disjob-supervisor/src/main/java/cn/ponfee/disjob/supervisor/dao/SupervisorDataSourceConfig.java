@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
  * Supervisor datasource configuration
  *
  * <pre>
- *  # 前面的`disjob.datasource`为固定前缀，后面的`disjob`为数据源名
+ *  # 前面的`disjob.datasource`为固定前缀，后面的`disjob`为数据源名称
  *  disjob.datasource:
  *    disjob:
  *      driver-class-name: com.mysql.cj.jdbc.Driver

@@ -117,7 +117,7 @@ public class VertxWebServer extends AbstractVerticle {
 
         router.post(prefixPath + "/job/split").handler(ctx -> handle(() -> {
             SplitJobParam param = parseBodyArg(ctx, SplitJobParam.class);
-            JobExecutorParser.parse(param, "jobExecutor");
+            JobExecutorMapping.correctParamJobExecutor(param, "jobExecutor");
             return workerRpcService.splitJob(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
@@ -138,7 +138,7 @@ public class VertxWebServer extends AbstractVerticle {
 
         router.post(prefixPath + "/task/receive").handler(ctx -> handle(() -> {
             ExecuteTaskParam param = parseBodyArg(ctx, ExecuteTaskParam.class);
-            JobExecutorParser.parse(param, "jobExecutor");
+            JobExecutorMapping.correctParamJobExecutor(param, "jobExecutor");
             return taskReceiver.receive(param);
         }, ctx, INTERNAL_SERVER_ERROR));
         // ------------------------------------------------------add http api route end

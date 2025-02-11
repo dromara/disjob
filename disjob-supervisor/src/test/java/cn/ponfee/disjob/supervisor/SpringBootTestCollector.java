@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor;
 
+import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Set;
@@ -33,7 +34,7 @@ public class SpringBootTestCollector {
     private static final ConcurrentMap<ApplicationContext, Set<Class<?>>> TEST_CLASSES_MAP = new ConcurrentHashMap<>();
 
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        ShutdownHookManager.addShutdownHook(0, () -> {
             StringBuilder printer = new StringBuilder();
             printer.append("\n\n");
             printer.append("/*=================================Spring container & Test case=================================*\\");
@@ -46,7 +47,7 @@ public class SpringBootTestCollector {
             printer.append("\\*=================================Spring container & Test case=================================*/");
             printer.append("\n\n");
             System.out.println(printer);
-        }));
+        });
     }
 
     public static void collect(ApplicationContext applicationContext, Class<?> testClasses) {

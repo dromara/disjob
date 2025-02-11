@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.test.db;
 
+import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.MavenProjects;
@@ -55,7 +56,7 @@ public class EmbeddedH2DatabaseServer {
         //new org.h2.server.web.JakartaDbStarter(); // error: need dependency servlet-api
         //new org.h2.server.web.DbStarter(); // error: need dependency servlet-api
         TcpServer tcpServer = new TcpServer();
-        Runtime.getRuntime().addShutdownHook(new Thread(tcpServer::stop));
+        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, tcpServer::stop);
         tcpServer.start();
         //new org.h2.server.web.WebServer().start();
         //new org.h2.server.pg.PgServer().start();

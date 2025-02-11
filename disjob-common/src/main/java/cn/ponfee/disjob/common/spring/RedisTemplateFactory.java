@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
@@ -39,15 +40,15 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.StringUtils;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
- * RedisTemplate factory
+ * RedisTemplate factory based lettuce
  *
  * @author Ponfee
  */
@@ -70,8 +71,8 @@ public class RedisTemplateFactory implements Closeable {
             throw new IllegalArgumentException("Unsupported redis client type: " + properties.getClientType());
         }
 
-        this.properties = properties;
-        this.clientResources = clientResources;
+        this.properties = Objects.requireNonNull(properties);
+        this.clientResources = Objects.requireNonNull(clientResources);
         this.redisConnectionFactory = createConnectionFactory(builderCustomizers);
         this.redisTemplate = createRedisTemplate(redisConnectionFactory);
         this.stringRedisTemplate = new StringRedisTemplate(redisConnectionFactory);
@@ -90,8 +91,10 @@ public class RedisTemplateFactory implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
-        clientResources.shutdown();
+    public void close() {
+        ThrowingRunnable.doCaught(() -> Thread.sleep(3000));
+        ThrowingRunnable.doCaught(redisConnectionFactory::destroy);
+        ThrowingRunnable.doCaught(clientResources::shutdown);
     }
 
     // --------------------------------------------------------------------private methods
@@ -155,6 +158,7 @@ public class RedisTemplateFactory implements Closeable {
             builder.clientName(properties.getClientName());
         }
 
+        // apply ssl from url
         String url = properties.getUrl();
         if (StringUtils.hasText(url) && parseUrl(url).isUseSsl()) {
             builder.useSsl();
@@ -228,11 +232,11 @@ public class RedisTemplateFactory implements Closeable {
     private RedisStandaloneConfiguration getStandaloneConfiguration() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         if (StringUtils.hasText(properties.getUrl())) {
-            ConnectionInfo connectionInfo = parseUrl(properties.getUrl());
-            config.setHostName(connectionInfo.getHostName());
-            config.setPort(connectionInfo.getPort());
-            config.setUsername(connectionInfo.getUsername());
-            config.setPassword(RedisPassword.of(connectionInfo.getPassword()));
+            UrlInfo urlInfo = parseUrl(properties.getUrl());
+            config.setHostName(urlInfo.getHostName());
+            config.setPort(urlInfo.getPort());
+            config.setUsername(urlInfo.getUsername());
+            config.setPassword(RedisPassword.of(urlInfo.getPassword()));
         } else {
             config.setHostName(properties.getHost());
             config.setPort(properties.getPort());
@@ -252,7 +256,7 @@ public class RedisTemplateFactory implements Closeable {
         return redisTemplate;
     }
 
-    private static ConnectionInfo parseUrl(String url) {
+    private static UrlInfo parseUrl(String url) {
         String[] schemes = {"redis", "rediss"};
         try {
             URI uri = new URI(url);
@@ -273,7 +277,7 @@ public class RedisTemplateFactory implements Closeable {
                     password = candidate;
                 }
             }
-            return new ConnectionInfo(uri, useSsl, username, password);
+            return new UrlInfo(uri, useSsl, username, password);
         } catch (URISyntaxException ex) {
             throw new UnsupportedOperationException(url, ex);
         }
@@ -292,13 +296,13 @@ public class RedisTemplateFactory implements Closeable {
     }
 
     @Getter
-    static class ConnectionInfo {
+    private static class UrlInfo {
         private final URI uri;
         private final boolean useSsl;
         private final String username;
         private final String password;
 
-        ConnectionInfo(URI uri, boolean useSsl, String username, String password) {
+        UrlInfo(URI uri, boolean useSsl, String username, String password) {
             this.uri = uri;
             this.useSsl = useSsl;
             this.username = username;
@@ -306,11 +310,11 @@ public class RedisTemplateFactory implements Closeable {
         }
 
         String getHostName() {
-            return this.uri.getHost();
+            return uri.getHost();
         }
 
         int getPort() {
-            return this.uri.getPort();
+            return uri.getPort();
         }
     }
 

@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.registry.zookeeper;
 
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.curator.test.TestingServer;
@@ -35,7 +35,7 @@ public final class EmbeddedZookeeperServer {
         System.out.println("Embedded zookeeper server starting...");
 
         TestingServer testingServer = new TestingServer(2181, createTempDir());
-        Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.toCaught(testingServer::close)));
+        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, testingServer::close);
 
         System.out.println("Embedded zookeeper server started!");
     }

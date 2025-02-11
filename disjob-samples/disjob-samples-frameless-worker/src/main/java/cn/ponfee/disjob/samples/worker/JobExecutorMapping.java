@@ -35,14 +35,15 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 /**
- * Job executor parser
+ * JobExecutor mapping
  *
  * @author Ponfee
  */
-public class JobExecutorParser {
-    private static final Logger LOG = LoggerFactory.getLogger(JobExecutorParser.class);
+public class JobExecutorMapping {
+    private static final Logger LOG = LoggerFactory.getLogger(JobExecutorMapping.class);
     private static final Map<String, Class<? extends JobExecutor>> JOB_EXECUTOR_MAP;
 
     static {
@@ -70,18 +71,20 @@ public class JobExecutorParser {
         JOB_EXECUTOR_MAP = map;
     }
 
-    public static void init() {
+    static void init() {
+        Function<Class<?>, String> classToString = c -> "class@" + c.getName();
         String newLine = Files.SYSTEM_LINE_SEPARATOR;
         int lMaxLen = JOB_EXECUTOR_MAP.keySet().stream().mapToInt(String::length).max().getAsInt();
-        int rMaxLen = JOB_EXECUTOR_MAP.values().stream().mapToInt(e -> e.getName().length()).max().getAsInt();
+        int rMaxLen = JOB_EXECUTOR_MAP.values().stream().mapToInt(e -> classToString.apply(e).length()).max().getAsInt();
         int contentLen = lMaxLen + rMaxLen + 9;
 
         StringBuilder builder = new StringBuilder(newLine);
         builder.append(StringUtils.rightPad("/", contentLen, "-")).append("\\").append(newLine);
-        builder.append(StringUtils.rightPad("| Job executor mapping:", contentLen, " ")).append("|").append(newLine);
+        builder.append(StringUtils.rightPad("| JobExecutor mapping (name -> class):", contentLen, " ")).append("|").append(newLine);
+        builder.append(StringUtils.rightPad("| ", contentLen, " ")).append("|").append(newLine);
         JOB_EXECUTOR_MAP.entrySet()
             .stream()
-            .map(e -> Pair.of(e.getKey(), e.getValue().getName()))
+            .map(e -> Pair.of(e.getKey(), classToString.apply(e.getValue())))
             .sorted(Comparator.<Entry<String, String>>nullsLast(Entry.comparingByValue()).thenComparing(Entry.comparingByKey()))
             .forEach(e -> builder
                 .append("|   ").append(StringUtils.rightPad(e.getKey(), lMaxLen, " "))
@@ -95,12 +98,12 @@ public class JobExecutorParser {
     }
 
     /**
-     * 仅限测试环境使用
+     * 由于是在非Spring环境，jobExecutor可能设置的是beanName，因此需要校正为真实的jobExecutor
      *
-     * @param param     object
+     * @param param     param object
      * @param fieldName field name
      */
-    public static void parse(Object param, String fieldName) throws IllegalAccessException {
+    public static void correctParamJobExecutor(Object param, String fieldName) throws IllegalAccessException {
         String jobExecutor = (String) FieldUtils.readField(param, fieldName, true);
         try {
             JobExecutorUtils.loadJobExecutor(jobExecutor);

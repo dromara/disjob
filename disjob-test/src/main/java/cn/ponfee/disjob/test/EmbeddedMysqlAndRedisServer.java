@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.test;
 
 import ch.vorburger.mariadb4j.DB;
+import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.test.db.EmbeddedMysqlServerMariaDB;
@@ -58,7 +59,7 @@ public final class EmbeddedMysqlAndRedisServer {
         this.redisServer = EmbeddedRedisServerKstyrc.start(redisMasterPort, redisSlavePort);
         System.out.println("\\*============================================================*/");
 
-        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, this::stop);
     }
 
     public synchronized void stop() {

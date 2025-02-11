@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.test.redis;
 
+import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
 import redis.embedded.RedisServer;
 
 /**
@@ -54,7 +55,7 @@ public final class EmbeddedRedisServerKstyrc {
             .build();
 
         System.out.println("Embedded kstyrc redis server starting...");
-        Runtime.getRuntime().addShutdownHook(new Thread(redisServer::stop));
+        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, redisServer::stop);
         redisServer.start();
         System.out.println("Embedded kstyrc redis server started!");
 

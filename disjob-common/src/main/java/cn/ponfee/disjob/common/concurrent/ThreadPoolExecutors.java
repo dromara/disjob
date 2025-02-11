@@ -324,7 +324,7 @@ public final class ThreadPoolExecutors {
             .threadFactory(NamedThreadFactory.builder().prefix("disjob-common-thread-pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build())
             .build();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(threadPool::shutdown));
+        ShutdownHookManager.addShutdownHook(0, threadPool::shutdown);
         return threadPool;
     }
 
@@ -335,7 +335,7 @@ public final class ThreadPoolExecutors {
             CALLER_RUNS
         );
         scheduledPool.setRemoveOnCancelPolicy(true);
-        Runtime.getRuntime().addShutdownHook(new Thread(scheduledPool::shutdown));
+        ShutdownHookManager.addShutdownHook(0, scheduledPool::shutdown);
         return scheduledPool;
     }
 

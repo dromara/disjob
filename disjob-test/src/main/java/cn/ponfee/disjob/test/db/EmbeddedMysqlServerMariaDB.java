@@ -19,7 +19,7 @@ package cn.ponfee.disjob.test.db;
 import ch.vorburger.mariadb4j.DB;
 import ch.vorburger.mariadb4j.DBConfiguration;
 import ch.vorburger.mariadb4j.DBConfigurationBuilder;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.commons.io.IOUtils;
@@ -76,7 +76,7 @@ public class EmbeddedMysqlServerMariaDB {
 
         DB db = DB.newEmbeddedDB(configuration);
         System.out.println("Embedded maria db starting...");
-        Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.toCaught(db::stop)));
+        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, db::stop);
         db.start();
 
         db.source(IOUtils.toInputStream(loadScript(DISJOB_ADMIN_SCRIPT_CLASSPATH), StandardCharsets.UTF_8));

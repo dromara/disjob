@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.registry.consul;
 
+import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import com.pszymczyk.consul.ConsulProcess;
@@ -42,7 +43,7 @@ public final class EmbeddedConsulServerPszymczyk {
             .withConsulBinaryDownloadDirectory(createConsulBinaryDownloadDirectory())
             .withHttpPort(8500)
             .buildAndStart();
-        Runtime.getRuntime().addShutdownHook(new Thread(consul::close));
+        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, consul::close);
         System.out.println("------------ http://127.0.0.1:8500 ------------");
 
         System.out.println("Embedded pszymczyk consul server started!");
