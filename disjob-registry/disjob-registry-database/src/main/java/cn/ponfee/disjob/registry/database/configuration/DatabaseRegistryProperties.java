@@ -54,12 +54,14 @@ public class DatabaseRegistryProperties extends AbstractRegistryProperties {
         private String jdbcUrl;
         private String username;
         private String password;
-        private boolean autoCommit = true;
+        private Boolean autoCommit;
+        private Boolean readOnly;
+
+        private long connectionTimeout = 3000;
         private int minimumIdle = 1;
         private long idleTimeout = 600000;
         private int maximumPoolSize = 20;
         private long maxLifetime = 1800000;
-        private long connectionTimeout = 3000;
         private String connectionTestQuery;
         private String poolName = "disjob_registry_database";
     }

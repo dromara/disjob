@@ -39,6 +39,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_PREFIX;
@@ -74,13 +75,21 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
         cfg.setJdbcUrl(p.getJdbcUrl());
         cfg.setUsername(p.getUsername());
         cfg.setPassword(p.getPassword());
-        cfg.setAutoCommit(p.isAutoCommit());
+        if (p.getAutoCommit() != null) {
+            cfg.setAutoCommit(p.getAutoCommit());
+        }
+        if (p.getReadOnly() != null) {
+            cfg.setReadOnly(p.getReadOnly());
+        }
+
+        cfg.setConnectionTimeout(p.getConnectionTimeout());
         cfg.setMinimumIdle(p.getMinimumIdle());
         cfg.setIdleTimeout(p.getIdleTimeout());
         cfg.setMaximumPoolSize(p.getMaximumPoolSize());
         cfg.setMaxLifetime(p.getMaxLifetime());
-        cfg.setConnectionTimeout(p.getConnectionTimeout());
-        cfg.setConnectionTestQuery(p.getConnectionTestQuery());
+        if (StringUtils.hasText(p.getConnectionTestQuery())) {
+            cfg.setConnectionTestQuery(p.getConnectionTestQuery());
+        }
         cfg.setPoolName(p.getPoolName());
         HikariDataSource dataSource = new HikariDataSource(cfg);
         dataSourceHolder.setValue(dataSource);

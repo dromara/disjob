@@ -53,8 +53,8 @@ public class PlainNode<T extends Serializable & Comparable<T>, A> implements Ser
      *
      * @param id        the current node id
      * @param parentId  the parent node id
-     * @param enabled   the node is enabled
-     * @param available the current node is available(parent.available && this.available && this.enabled)
+     * @param enabled   the node whether is enabled
+     * @param available the current node whether is available
      * @param attach    the attachment of biz object
      */
     public PlainNode(T id, T parentId, boolean enabled, boolean available, A attach) {

@@ -460,9 +460,9 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         for (Iterator<E> iter = nodes.iterator(); iter.hasNext(); ) {
             E node = iter.next();
             if (this.equalsId(node.parentId)) {
-                // recompute the child node is available
-                boolean childAvailable = node.enabled && node.available && super.available;
-                this.children.add(new TreeNode<>(node.id, node.parentId, node.enabled, childAvailable, node.attach));
+                // recompute the child node available: `available && parent.available`
+                boolean nodeAvailable = node.available && this.available;
+                this.children.add(new TreeNode<>(node.id, node.parentId, node.enabled, nodeAvailable, node.attach));
                 // remove the found child node
                 iter.remove();
             }
