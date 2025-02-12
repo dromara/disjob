@@ -39,7 +39,7 @@ spring:
   profiles:
     # include的属性会覆盖默认属性，active的属性会覆盖include和默认属性
     # The following profiles are active: "druid", "disjob-mysql", "disjob-worker", ...
-    include: druid,disjob-mysql,disjob-redis,disjob-worker
+    include: druid,disjob-mysql,disjob-worker,registry-redis
   # 模板引擎
   thymeleaf:
     mode: HTML

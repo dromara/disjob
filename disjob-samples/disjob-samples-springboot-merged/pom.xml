@@ -79,10 +79,10 @@
         <directory>../disjob-samples-conf</directory>
         <includes>
           <include>log4j2.xml</include>
-          <include>application-redis.yml</include>
           <include>application-mysql.yml</include>
           <include>application-worker.yml</include>
           <include>application-supervisor.yml</include>
+          <include>application-registry-redis.yml</include>
           <include>application-web.yml</include>
         </includes>
         <filtering>false</filtering>

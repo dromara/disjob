@@ -1,4 +1,4 @@
-# redis configuration
+# springboot redis configuration
 spring.redis:
   database: 0
   connect-timeout: 3000
@@ -24,6 +24,8 @@ spring.redis:
   #  nodes: 112.74.170.75:16379,112.74.170.75:16380
   #  #password: 123456            # redis sentinel auth password
   #  #username: sentinel_auth     # redis sentinel auth username(redis 6.x ACL)
+
+
 
 
 # 使用redis做注册中心
