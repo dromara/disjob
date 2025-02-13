@@ -102,15 +102,15 @@
           title: '已完成任务数'
         },
         {
+          field: 'jvmThreadActiveCount',
+          title: 'JVM活跃线程数'
+        },
+        {
           field: 'closed',
           title: '线程池是否已关闭',
           formatter: function(value, row, index) {
             return value ? '<span class="badge badge-success">是</span>' : '<span class="badge badge-info">否</span>';
           }
-        },
-        {
-          field: 'jvmThreadActiveCount',
-          title: 'JVM活跃线程数'
         },
         {
           field: 'alsoSupervisor',

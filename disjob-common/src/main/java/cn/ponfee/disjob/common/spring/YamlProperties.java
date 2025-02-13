@@ -51,7 +51,7 @@ public class YamlProperties extends Properties implements TypedMap<Object, Objec
 
     public <T> T bind(String name, Class<T> beanType) {
         if (binder == null) {
-            binder = new Binder(new MapConfigurationPropertySource(this));
+            this.binder = new Binder(new MapConfigurationPropertySource(this));
         }
         return binder.bind(name, beanType).get();
     }

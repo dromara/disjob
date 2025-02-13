@@ -22,7 +22,6 @@ import cn.ponfee.disjob.test.executor.SamplesJobExecutorPackage;
 import cn.ponfee.disjob.worker.configuration.EnableWorker;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_JDBC_TEMPLATE;
 
@@ -32,7 +31,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  * @author Ponfee
  */
 // scan cn.ponfee.disjob.test.executor package
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class, scanBasePackageClasses = SamplesJobExecutorPackage.class)
+@SpringBootApplication(scanBasePackageClasses = SamplesJobExecutorPackage.class)
 @DbSnowflakeIdGenerator(jdbcTemplateRef = SPRING_BEAN_NAME_JDBC_TEMPLATE)
 @EnableSupervisor
 @EnableWorker

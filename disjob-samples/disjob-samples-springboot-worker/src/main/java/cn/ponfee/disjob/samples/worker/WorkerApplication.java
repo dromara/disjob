@@ -20,7 +20,6 @@ import cn.ponfee.disjob.test.executor.SamplesJobExecutorPackage;
 import cn.ponfee.disjob.worker.configuration.EnableWorker;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
  * Worker application based spring boot
@@ -28,7 +27,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
  * @author Ponfee
  */
 // scan cn.ponfee.disjob.test.executor package
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class, scanBasePackageClasses = SamplesJobExecutorPackage.class)
+@SpringBootApplication(scanBasePackageClasses = SamplesJobExecutorPackage.class)
 @EnableWorker
 public class WorkerApplication {
 

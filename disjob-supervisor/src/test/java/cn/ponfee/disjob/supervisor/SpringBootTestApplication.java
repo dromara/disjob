@@ -22,7 +22,6 @@ import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.disjob.test.EmbeddedMysqlAndRedisServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -33,7 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Ponfee
  */
 @EnableSupervisor
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+@SpringBootApplication
 public class SpringBootTestApplication {
 
     static {

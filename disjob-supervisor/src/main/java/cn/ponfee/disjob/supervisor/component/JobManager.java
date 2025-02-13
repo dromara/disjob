@@ -189,7 +189,7 @@ public class JobManager {
         Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
     }
 
-    // ------------------------------------------------------------------database operation within spring @transactional
+    // ------------------------------------------------------------------database operation within spring @Transactional
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public Long addJob(SchedJob job) throws JobException {
