@@ -54,9 +54,16 @@ public class DatabaseRegistryProperties extends AbstractRegistryProperties {
         private String url;
         private String username;
         private String password;
+        private Hikari hikari;
+    }
+
+    @Getter
+    @Setter
+    public static class Hikari implements Serializable {
+        private static final long serialVersionUID = 1279806263872566062L;
+
         private Boolean autoCommit;
         private Boolean readOnly;
-
         private long connectionTimeout = 3000;
         private int minimumIdle = 1;
         private long idleTimeout = 600000;

@@ -75,22 +75,26 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
         cfg.setJdbcUrl(p.getUrl());
         cfg.setUsername(p.getUsername());
         cfg.setPassword(p.getPassword());
-        if (p.getAutoCommit() != null) {
-            cfg.setAutoCommit(p.getAutoCommit());
-        }
-        if (p.getReadOnly() != null) {
-            cfg.setReadOnly(p.getReadOnly());
-        }
 
-        cfg.setConnectionTimeout(p.getConnectionTimeout());
-        cfg.setMinimumIdle(p.getMinimumIdle());
-        cfg.setIdleTimeout(p.getIdleTimeout());
-        cfg.setMaximumPoolSize(p.getMaximumPoolSize());
-        cfg.setMaxLifetime(p.getMaxLifetime());
-        if (StringUtils.hasText(p.getConnectionTestQuery())) {
-            cfg.setConnectionTestQuery(p.getConnectionTestQuery());
+        // apply hikari config
+        DatabaseRegistryProperties.Hikari hikari = p.getHikari();
+        if (hikari.getAutoCommit() != null) {
+            cfg.setAutoCommit(hikari.getAutoCommit());
         }
-        cfg.setPoolName(p.getPoolName());
+        if (hikari.getReadOnly() != null) {
+            cfg.setReadOnly(hikari.getReadOnly());
+        }
+        cfg.setConnectionTimeout(hikari.getConnectionTimeout());
+        cfg.setMinimumIdle(hikari.getMinimumIdle());
+        cfg.setIdleTimeout(hikari.getIdleTimeout());
+        cfg.setMaximumPoolSize(hikari.getMaximumPoolSize());
+        cfg.setMaxLifetime(hikari.getMaxLifetime());
+        if (StringUtils.hasText(hikari.getConnectionTestQuery())) {
+            cfg.setConnectionTestQuery(hikari.getConnectionTestQuery());
+        }
+        cfg.setPoolName(hikari.getPoolName());
+
+        // create hikari DataSource
         HikariDataSource dataSource = new HikariDataSource(cfg);
         dataSourceHolder.setValue(dataSource);
         return JdbcTemplateWrapper.of(new JdbcTemplate(dataSource));
