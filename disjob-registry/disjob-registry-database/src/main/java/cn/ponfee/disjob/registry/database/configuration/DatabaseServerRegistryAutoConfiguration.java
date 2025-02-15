@@ -72,7 +72,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
         DatabaseRegistryProperties.DataSourceProperties p = props.getDatasource();
         HikariConfig cfg = new HikariConfig();
         cfg.setDriverClassName(p.getDriverClassName());
-        cfg.setJdbcUrl(p.getJdbcUrl());
+        cfg.setJdbcUrl(p.getUrl());
         cfg.setUsername(p.getUsername());
         cfg.setPassword(p.getPassword());
         if (p.getAutoCommit() != null) {

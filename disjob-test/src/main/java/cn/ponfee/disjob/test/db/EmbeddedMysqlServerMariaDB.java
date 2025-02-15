@@ -45,13 +45,13 @@ import static cn.ponfee.disjob.test.db.DBUtils.*;
  *
  * mysql:
  *  Maven GAV    -> com.mysql:mysql-connector-j:8.0.33
- *  jdbc-url     -> jdbc:mysql://localhost:3306/disjob
- *  driver-class -> com.mysql.cj.jdbc.Driver
+ *  jdbc url     -> jdbc:mysql://localhost:3306/disjob
+ *  driver class -> com.mysql.cj.jdbc.Driver
  *
  * MariaDB:
  *  Maven GAV    -> org.mariadb.jdbc:mariadb-java-client:3.1.4
- *  jdbc-url     -> jdbc:mariadb://localhost:3306/disjob
- *  driver-class -> org.mariadb.jdbc.Driver
+ *  jdbc url     -> jdbc:mariadb://localhost:3306/disjob
+ *  driver class -> org.mariadb.jdbc.Driver
  * </pre>
  *
  * @author Ponfee

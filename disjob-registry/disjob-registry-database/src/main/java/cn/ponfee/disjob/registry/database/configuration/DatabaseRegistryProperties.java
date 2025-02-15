@@ -51,7 +51,7 @@ public class DatabaseRegistryProperties extends AbstractRegistryProperties {
         private static final long serialVersionUID = 6995495113012945438L;
 
         private String driverClassName = "com.mysql.cj.jdbc.Driver";
-        private String jdbcUrl;
+        private String url;
         private String username;
         private String password;
         private Boolean autoCommit;

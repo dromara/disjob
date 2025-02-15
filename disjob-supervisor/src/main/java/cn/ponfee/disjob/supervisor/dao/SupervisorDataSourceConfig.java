@@ -27,12 +27,13 @@ import org.springframework.context.annotation.Configuration;
  *  disjob.datasource:
  *    disjob:
  *      driver-class-name: com.mysql.cj.jdbc.Driver
- *      jdbc-url: jdbc:mysql://localhost:3306/disjob?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
+ *      url: jdbc:mysql://localhost:3306/disjob?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
  *      username: disjob
  *      password:
- *      minimum-idle: 10
- *      maximum-pool-size: 100
- *      connection-timeout: 2000
+ *      hikari:
+ *        minimum-idle: 10
+ *        maximum-pool-size: 100
+ *        connection-timeout: 2000
  * </pre>
  *
  * @author Ponfee

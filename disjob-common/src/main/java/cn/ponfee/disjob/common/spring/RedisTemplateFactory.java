@@ -284,7 +284,7 @@ public class RedisTemplateFactory implements Closeable {
     }
 
     private static List<RedisNode> createSentinels(RedisProperties.Sentinel sentinel) {
-        List<RedisNode> nodes = new ArrayList<>();
+        List<RedisNode> nodes = new ArrayList<>(sentinel.getNodes().size());
         for (String node : sentinel.getNodes()) {
             try {
                 nodes.add(RedisNode.fromString(node));

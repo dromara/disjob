@@ -34,8 +34,8 @@ import java.util.Properties;
  * <pre>{@code
  * @PropertySource(value = "classpath:xxx.yml", factory = YamlPropertySourceFactory.class)
  * public class DruidConfig {
- *   @Value("${datasource.jdbc-url}")
- *   private String jdbcUrl;
+ *   @Value("${datasource.url}")
+ *   private String url;
  *
  *   @Value("${datasource.username}")
  *   private String username;

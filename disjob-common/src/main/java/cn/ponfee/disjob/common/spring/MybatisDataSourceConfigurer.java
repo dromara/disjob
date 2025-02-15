@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.spring.MybatisDataSourceConfigurer.MybatisDataSou
 import cn.ponfee.disjob.common.util.Strings;
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.ImmutableList;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,9 +39,9 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
@@ -133,41 +134,51 @@ public @interface MybatisDataSourceConfigurer {
             List<String> basePackages = resolveBasePackages(config, importingClassMetadata);
             Assert.notEmpty(basePackages, "Base package is empty.");
 
-            String dataSourceName = config.dataSourceName();
-            if (StringUtils.isBlank(dataSourceName)) {
-                dataSourceName = resolvePackageDatasourceName(basePackages.get(0));
-            }
+            String dataSourceName = StringUtils.getIfBlank(config.dataSourceName(), () -> resolvePackageDatasourceName(basePackages.get(0)));
             Assert.hasText(dataSourceName, "DataSource name cannot be empty.");
-
             String dataSourceConfigPrefixKey = KEY_PREFIX + dataSourceName;
-            String jdbcUrl = environment.getProperty(dataSourceConfigPrefixKey + ".jdbc-url");
-            if (StringUtils.isBlank(jdbcUrl)) {
-                LOG.warn("Datasource '{}' not configured jdbc-url value.", dataSourceName);
-                return;
-            }
-
-            SpringUtils.addPropertyIfAbsent(environment, dataSourceConfigPrefixKey + ".pool-name", dataSourceName);
+            Class<HikariDataSource> dataSourceType = HikariDataSource.class;
             boolean primary = config.primary();
 
-            // MapperScannerConfigurer bean definition
+            String url = environment.getProperty(dataSourceConfigPrefixKey + ".url");
+            if (StringUtils.isBlank(url)) {
+                LOG.warn("Datasource '{}' not configured url value.", dataSourceName);
+                return;
+            }
+            String type = environment.getProperty(dataSourceConfigPrefixKey + ".type");
+            if (StringUtils.isNotBlank(type) && !type.equals(dataSourceType.getName())) {
+                throw new UnsupportedOperationException("Not supported datasource: " + type);
+            }
+            String name = environment.getProperty(dataSourceConfigPrefixKey + ".name");
+            if (StringUtils.isNotBlank(name) && !name.equals(dataSourceName)) {
+                throw new UnsupportedOperationException("Datasource name must be '" + dataSourceName + "', but actual '" + name + "'");
+            }
+
+            // 1、MapperScannerConfigurer bean definition
             BeanDefinitionBuilder mapperScannerConfigurerBdb = newBeanDefinitionBuilder(MapperScannerConfigurer.class, primary);
             mapperScannerConfigurerBdb.addPropertyValue("processPropertyPlaceHolders", true);
             mapperScannerConfigurerBdb.addPropertyValue("basePackage", String.join(",", basePackages));
             mapperScannerConfigurerBdb.addPropertyValue("sqlSessionTemplateBeanName", dataSourceName + SQL_SESSION_TEMPLATE_NAME_SUFFIX);
             registry.registerBeanDefinition(dataSourceName + MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX, mapperScannerConfigurerBdb.getBeanDefinition());
 
-            // DataSource bean definition
+            // 2、DataSource bean definition
             BeanDefinitionBuilder dataSourceBdb = newBeanDefinitionBuilder(DataSource.class, primary);
             AbstractBeanDefinition dataSourceBd = dataSourceBdb.getBeanDefinition();
             dataSourceBd.setInstanceSupplier(() -> {
                 Binder binder = Binder.get(environment);
+                /*
                 DataSource dataSource = DataSourceBuilder.create().build();
                 binder.bind(dataSourceConfigPrefixKey, Bindable.ofInstance(dataSource));
+                */
+                DataSourceProperties properties = binder.bind(dataSourceConfigPrefixKey, DataSourceProperties.class).get();
+                HikariDataSource dataSource = properties.initializeDataSourceBuilder().type(dataSourceType).build();
+                dataSource.setPoolName(dataSourceName);
+                binder.bind(dataSourceConfigPrefixKey + ".hikari", Bindable.ofInstance(dataSource));
                 return dataSource;
             });
             registry.registerBeanDefinition(dataSourceName + DATA_SOURCE_NAME_SUFFIX, dataSourceBd);
 
-            // SqlSessionFactoryBean bean definition
+            // 3、SqlSessionFactoryBean bean definition
             BeanDefinitionBuilder sqlSessionFactoryBeanBdb = newBeanDefinitionBuilder(SqlSessionFactoryBean.class, primary);
             sqlSessionFactoryBeanBdb.addPropertyReference("dataSource", dataSourceName + DATA_SOURCE_NAME_SUFFIX);
             sqlSessionFactoryBeanBdb.addPropertyValue("configuration", createMybatisConfiguration(config));
@@ -175,22 +186,22 @@ public @interface MybatisDataSourceConfigurer {
             sqlSessionFactoryBeanBdb.addPropertyValue("typeAliasesPackage", StringUtils.defaultIfBlank(config.typeAliasesPackage(), null));
             registry.registerBeanDefinition(dataSourceName + SQL_SESSION_FACTORY_NAME_SUFFIX, sqlSessionFactoryBeanBdb.getBeanDefinition());
 
-            // SqlSessionTemplate bean definition
+            // 4、SqlSessionTemplate bean definition
             BeanDefinitionBuilder sqlSessionTemplateBdb = newBeanDefinitionBuilder(SqlSessionTemplate.class, primary);
             sqlSessionTemplateBdb.addConstructorArgReference(dataSourceName + SQL_SESSION_FACTORY_NAME_SUFFIX);
             registry.registerBeanDefinition(dataSourceName + SQL_SESSION_TEMPLATE_NAME_SUFFIX, sqlSessionTemplateBdb.getBeanDefinition());
 
-            // JdbcTemplate bean definition
+            // 5、JdbcTemplate bean definition
             BeanDefinitionBuilder jdbcTemplateBdb = newBeanDefinitionBuilder(JdbcTemplate.class, primary);
             jdbcTemplateBdb.addConstructorArgReference(dataSourceName + DATA_SOURCE_NAME_SUFFIX);
             registry.registerBeanDefinition(dataSourceName + JDBC_TEMPLATE_NAME_SUFFIX, jdbcTemplateBdb.getBeanDefinition());
 
-            // DataSourceTransactionManager bean definition
+            // 6、DataSourceTransactionManager bean definition
             BeanDefinitionBuilder dataSourceTransactionManagerBdb = newBeanDefinitionBuilder(DataSourceTransactionManager.class, primary);
             dataSourceTransactionManagerBdb.addConstructorArgReference(dataSourceName + DATA_SOURCE_NAME_SUFFIX);
             registry.registerBeanDefinition(dataSourceName + TX_MANAGER_NAME_SUFFIX, dataSourceTransactionManagerBdb.getBeanDefinition());
 
-            // TransactionTemplate bean definition
+            // 7、TransactionTemplate bean definition
             BeanDefinitionBuilder transactionTemplateBdb = newBeanDefinitionBuilder(TransactionTemplate.class, primary);
             transactionTemplateBdb.addConstructorArgReference(dataSourceName + TX_MANAGER_NAME_SUFFIX);
             registry.registerBeanDefinition(dataSourceName + TX_TEMPLATE_NAME_SUFFIX, transactionTemplateBdb.getBeanDefinition());
