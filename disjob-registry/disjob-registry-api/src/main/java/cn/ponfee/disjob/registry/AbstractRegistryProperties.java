@@ -36,7 +36,7 @@ public abstract class AbstractRegistryProperties extends ToJsonString implements
     /**
      * Disjob server registry key prefix
      */
-    public static final String DISJOB_REGISTRY_KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".registry";
+    protected static final String DISJOB_REGISTRY_KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".registry";
 
     /**
      * Registry namespace

@@ -23,6 +23,7 @@ import cn.ponfee.disjob.common.tree.PlainNode;
 import cn.ponfee.disjob.common.tree.TreeNode;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.common.util.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
@@ -285,7 +286,7 @@ public class DAGExpression {
         for (int i = 0, n = groups.size() - 1; i < n; i++) {
             PartitionIdentityKey key = new PartitionIdentityKey(expr, groups.get(i) + 1, groups.get(i + 1));
             // if twice open “((”，then str is empty content
-            addIfNotBlank(result, partitionCache.computeIfAbsent(key, PartitionIdentityKey::partition));
+            Strings.applyIfNotBlank(partitionCache.computeIfAbsent(key, PartitionIdentityKey::partition), result::add);
         }
         return result;
     }
@@ -534,12 +535,6 @@ public class DAGExpression {
         return Str.OPEN + text + Str.CLOSE;
     }
 
-    private static void addIfNotBlank(List<String> list, String str) {
-        if (StringUtils.isNotBlank(str)) {
-            list.add(str.trim());
-        }
-    }
-
     // ------------------------------------------------------------------------------------private static thumb methods
 
     private static String thumbJsonExpr(List<DAGEdge> edges) {
@@ -580,11 +575,11 @@ public class DAGExpression {
         List<String> list = new ArrayList<>();
         int start = 0;
         while (matcher.find()) {
-            addIfNotBlank(list, expression.substring(start, matcher.start()));
-            addIfNotBlank(list, matcher.group());
+            Strings.applyIfNotBlank(expression.substring(start, matcher.start()), list::add);
+            Strings.applyIfNotBlank(matcher.group(), list::add);
             start = matcher.end();
         }
-        addIfNotBlank(list, expression.substring(start));
+        Strings.applyIfNotBlank(expression.substring(start), list::add);
         return list;
     }
 

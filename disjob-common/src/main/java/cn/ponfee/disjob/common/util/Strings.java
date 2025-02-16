@@ -24,6 +24,7 @@ import org.springframework.util.Assert;
 
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * String utilities
@@ -272,6 +273,12 @@ public final class Strings {
             }
         }
         return false;
+    }
+
+    public static void applyIfNotBlank(String str, Consumer<String> consumer) {
+        if (StringUtils.isNotBlank(str)) {
+            consumer.accept(str.trim());
+        }
     }
 
 }

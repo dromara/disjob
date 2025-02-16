@@ -19,6 +19,7 @@ package cn.ponfee.disjob.worker.executor.impl;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
@@ -96,12 +97,8 @@ public class HttpJobExecutor extends JobExecutor {
                 responseEntity = REST_TEMPLATE.execute(uri, method, requestCallback, responseExtractor);
             } else {
                 RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
-                if (req.connectionTimeout != null) {
-                    requestConfigBuilder.setConnectTimeout(req.connectionTimeout);
-                }
-                if (req.readTimeout != null) {
-                    requestConfigBuilder.setSocketTimeout(req.readTimeout);
-                }
+                ObjectUtils.applyIfNotNull(req.connectionTimeout, requestConfigBuilder::setConnectTimeout);
+                ObjectUtils.applyIfNotNull(req.readTimeout, requestConfigBuilder::setSocketTimeout);
                 RestTemplateUtils.HttpContextHolder.bind(requestConfigBuilder.build());
                 try {
                     responseEntity = REST_TEMPLATE.execute(uri, method, requestCallback, responseExtractor);

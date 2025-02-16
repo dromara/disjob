@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.util.ObjectUtils;
 import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -50,12 +51,8 @@ public class NamedThreadFactory implements ThreadFactory {
     public Thread newThread(@Nonnull Runnable runnable) {
         Thread thread = new Thread(runnable, prefix + threadNo.getAndIncrement());
         thread.setDaemon(daemon != null ? daemon : Thread.currentThread().isDaemon());
-        if (priority != null) {
-            thread.setPriority(priority);
-        }
-        if (uncaughtExceptionHandler != null) {
-            thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
-        }
+        ObjectUtils.applyIfNotNull(priority, thread::setPriority);
+        ObjectUtils.applyIfNotNull(uncaughtExceptionHandler, thread::setUncaughtExceptionHandler);
         return thread;
     }
 

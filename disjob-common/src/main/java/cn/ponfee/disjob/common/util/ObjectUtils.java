@@ -27,6 +27,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 /**
@@ -170,6 +171,12 @@ public final class ObjectUtils {
             return (T) ClassUtils.newInstance(wrapper, new Class<?>[]{String.class}, new Object[]{"0"});
         } else {
             return ClassUtils.newInstance(type);
+        }
+    }
+
+    public static <T> void applyIfNotNull(T obj, Consumer<T> consumer) {
+        if (obj != null) {
+            consumer.accept(obj);
         }
     }
 

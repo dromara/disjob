@@ -54,7 +54,7 @@ public class DatabaseRegistryProperties extends AbstractRegistryProperties {
         private String url;
         private String username;
         private String password;
-        private Hikari hikari;
+        private Hikari hikari = new Hikari();
     }
 
     @Getter
@@ -62,15 +62,28 @@ public class DatabaseRegistryProperties extends AbstractRegistryProperties {
     public static class Hikari implements Serializable {
         private static final long serialVersionUID = 1279806263872566062L;
 
+        private int minimumIdle = 1;
+        private int maximumPoolSize = 20;
+        private long connectionTimeout = 3000;
+        private long idleTimeout = 600000;
+        private long maxLifetime = 1800000;
+
+        private String poolName = "disjob_registry_database";
+        private String catalog;
+        private String schema;
+        private String connectionTestQuery;
+        private String connectionInitSql;
+        private String transactionIsolation;
+        private String exceptionOverrideClassName;
+        private Long validationTimeout;
+        private Long leakDetectionThreshold;
+        private Long initializationFailTimeout;
+        private Long keepaliveTime;
         private Boolean autoCommit;
         private Boolean readOnly;
-        private long connectionTimeout = 3000;
-        private int minimumIdle = 1;
-        private long idleTimeout = 600000;
-        private int maximumPoolSize = 20;
-        private long maxLifetime = 1800000;
-        private String connectionTestQuery;
-        private String poolName = "disjob_registry_database";
+        private Boolean isolateInternalQueries;
+        private Boolean registerMbeans;
+        private Boolean allowPoolSuspension;
     }
 
 }

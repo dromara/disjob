@@ -18,6 +18,8 @@ package cn.ponfee.disjob.registry.database.configuration;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
+import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
@@ -39,7 +41,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_PREFIX;
@@ -78,21 +79,27 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
 
         // apply hikari config
         DatabaseRegistryProperties.Hikari hikari = p.getHikari();
-        if (hikari.getAutoCommit() != null) {
-            cfg.setAutoCommit(hikari.getAutoCommit());
-        }
-        if (hikari.getReadOnly() != null) {
-            cfg.setReadOnly(hikari.getReadOnly());
-        }
-        cfg.setConnectionTimeout(hikari.getConnectionTimeout());
         cfg.setMinimumIdle(hikari.getMinimumIdle());
-        cfg.setIdleTimeout(hikari.getIdleTimeout());
         cfg.setMaximumPoolSize(hikari.getMaximumPoolSize());
+        cfg.setConnectionTimeout(hikari.getConnectionTimeout());
+        cfg.setIdleTimeout(hikari.getIdleTimeout());
         cfg.setMaxLifetime(hikari.getMaxLifetime());
-        if (StringUtils.hasText(hikari.getConnectionTestQuery())) {
-            cfg.setConnectionTestQuery(hikari.getConnectionTestQuery());
-        }
-        cfg.setPoolName(hikari.getPoolName());
+        Strings.applyIfNotBlank(hikari.getPoolName(), cfg::setPoolName);
+        Strings.applyIfNotBlank(hikari.getCatalog(), cfg::setCatalog);
+        Strings.applyIfNotBlank(hikari.getSchema(), cfg::setSchema);
+        Strings.applyIfNotBlank(hikari.getConnectionTestQuery(), cfg::setConnectionTestQuery);
+        Strings.applyIfNotBlank(hikari.getConnectionInitSql(), cfg::setConnectionInitSql);
+        Strings.applyIfNotBlank(hikari.getTransactionIsolation(), cfg::setTransactionIsolation);
+        Strings.applyIfNotBlank(hikari.getExceptionOverrideClassName(), cfg::setExceptionOverrideClassName);
+        ObjectUtils.applyIfNotNull(hikari.getValidationTimeout(), cfg::setValidationTimeout);
+        ObjectUtils.applyIfNotNull(hikari.getLeakDetectionThreshold(), cfg::setLeakDetectionThreshold);
+        ObjectUtils.applyIfNotNull(hikari.getInitializationFailTimeout(), cfg::setInitializationFailTimeout);
+        ObjectUtils.applyIfNotNull(hikari.getKeepaliveTime(), cfg::setKeepaliveTime);
+        ObjectUtils.applyIfNotNull(hikari.getAutoCommit(), cfg::setAutoCommit);
+        ObjectUtils.applyIfNotNull(hikari.getReadOnly(), cfg::setReadOnly);
+        ObjectUtils.applyIfNotNull(hikari.getIsolateInternalQueries(), cfg::setIsolateInternalQueries);
+        ObjectUtils.applyIfNotNull(hikari.getRegisterMbeans(), cfg::setRegisterMbeans);
+        ObjectUtils.applyIfNotNull(hikari.getAllowPoolSuspension(), cfg::setAllowPoolSuspension);
 
         // create hikari DataSource
         HikariDataSource dataSource = new HikariDataSource(cfg);

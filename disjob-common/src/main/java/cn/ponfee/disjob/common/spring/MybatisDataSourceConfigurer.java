@@ -147,7 +147,7 @@ public @interface MybatisDataSourceConfigurer {
             }
             String type = environment.getProperty(dataSourceConfigPrefixKey + ".type");
             if (StringUtils.isNotBlank(type) && !type.equals(dataSourceType.getName())) {
-                throw new UnsupportedOperationException("Not supported datasource: " + type);
+                throw new UnsupportedOperationException("Not supported datasource type: " + type);
             }
             String name = environment.getProperty(dataSourceConfigPrefixKey + ".name");
             if (StringUtils.isNotBlank(name) && !name.equals(dataSourceName)) {
@@ -166,10 +166,6 @@ public @interface MybatisDataSourceConfigurer {
             AbstractBeanDefinition dataSourceBd = dataSourceBdb.getBeanDefinition();
             dataSourceBd.setInstanceSupplier(() -> {
                 Binder binder = Binder.get(environment);
-                /*
-                DataSource dataSource = DataSourceBuilder.create().build();
-                binder.bind(dataSourceConfigPrefixKey, Bindable.ofInstance(dataSource));
-                */
                 DataSourceProperties properties = binder.bind(dataSourceConfigPrefixKey, DataSourceProperties.class).get();
                 HikariDataSource dataSource = properties.initializeDataSourceBuilder().type(dataSourceType).build();
                 dataSource.setPoolName(dataSourceName);
