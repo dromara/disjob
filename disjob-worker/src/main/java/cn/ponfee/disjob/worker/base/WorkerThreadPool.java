@@ -693,6 +693,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 try {
                     result = futureTask.get(workerTask.getExecuteTimeout(), TimeUnit.MILLISECONDS);
                 } finally {
+                    ThrowingRunnable.doCaught(() -> futureTask.cancel(true));
                     Threads.stopThread(futureTaskThread, 0);
                 }
             } else {

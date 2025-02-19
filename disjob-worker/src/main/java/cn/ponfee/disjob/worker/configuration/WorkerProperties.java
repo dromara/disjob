@@ -18,6 +18,7 @@ package cn.ponfee.disjob.worker.configuration;
 
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.core.base.JobConstants;
 import lombok.Getter;
 import lombok.Setter;
@@ -87,7 +88,7 @@ public class WorkerProperties extends ToJsonString implements Serializable {
         Assert.hasText(group, "Group cannot be blank.");
         Assert.isTrue(timingWheelTickMs > 0, "Timing wheel tick ms must be greater than 0.");
         Assert.isTrue(timingWheelRingSize > 0, "Timing wheel ring size must be greater than 0.");
-        Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be greater 0.");
+        Assert.isTrue(0 < maximumPoolSize && maximumPoolSize <= ThreadPoolExecutors.MAX_CAP, "Maximum pool size must be range [1, 32767].");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be greater 0.");
         Assert.isTrue(processThreadPoolSize > 0, "Process thread pool size must be greater than 0.");
         Assert.isTrue(supervisorContextPath.startsWith(Str.SLASH), () -> "Supervisor context-path must start with '/': " + supervisorContextPath);

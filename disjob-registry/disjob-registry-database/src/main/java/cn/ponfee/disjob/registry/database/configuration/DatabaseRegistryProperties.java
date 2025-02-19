@@ -43,14 +43,14 @@ public class DatabaseRegistryProperties extends AbstractRegistryProperties {
     /**
      * Datasource configuration.
      */
-    private DataSourceProperties datasource;
+    private DataSourceConfig datasource;
 
     @Getter
     @Setter
-    public static class DataSourceProperties implements Serializable {
+    public static class DataSourceConfig implements Serializable {
         private static final long serialVersionUID = 6995495113012945438L;
 
-        private String driverClassName = "com.mysql.cj.jdbc.Driver";
+        private String driverClassName;
         private String url;
         private String username;
         private String password;

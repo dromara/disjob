@@ -236,7 +236,7 @@ public final class ThreadPoolExecutors {
         }
 
         public ThreadPoolExecutor build() {
-            Assert.isTrue(corePoolSize > 0, () -> String.format("Core pool size %d must greater than 0.", corePoolSize));
+            Assert.isTrue(corePoolSize >= 0, () -> String.format("Core pool size %d cannot less than 0.", corePoolSize));
             Assert.isTrue(corePoolSize <= maximumPoolSize, () -> String.format("Core pool size %d cannot greater than maximum pool size %d.", corePoolSize, maximumPoolSize));
             Assert.isTrue(maximumPoolSize <= MAX_CAP, () -> String.format("Maximum pool size %d cannot greater than %d.", maximumPoolSize, MAX_CAP));
             Assert.notNull(workQueue, "Worker queue cannot be null.");
@@ -321,7 +321,7 @@ public final class ThreadPoolExecutors {
             .workQueue(new ArrayBlockingQueue<>(poolSize * 20))
             .keepAliveTimeSeconds(600)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
-            .threadFactory(NamedThreadFactory.builder().prefix("disjob-common-thread-pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build())
+            .threadFactory(NamedThreadFactory.builder().prefix("disjob_common_thread_pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build())
             .build();
 
         ShutdownHookManager.addShutdownHook(0, threadPool::shutdown);
@@ -331,7 +331,7 @@ public final class ThreadPoolExecutors {
     private static ScheduledThreadPoolExecutor makeCommonScheduledThreadPoolExecutor() {
         ScheduledThreadPoolExecutor scheduledPool = new ScheduledThreadPoolExecutor(
             1,
-            NamedThreadFactory.builder().prefix("disjob-common-scheduled-pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build(),
+            NamedThreadFactory.builder().prefix("disjob_common_scheduled_pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build(),
             CALLER_RUNS
         );
         scheduledPool.setRemoveOnCancelPolicy(true);

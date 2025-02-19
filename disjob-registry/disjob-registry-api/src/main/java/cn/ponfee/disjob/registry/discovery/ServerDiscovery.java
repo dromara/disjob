@@ -67,6 +67,7 @@ public abstract class ServerDiscovery<D extends Server, R extends Server> {
             .maximumPoolSize(Math.min(size - 1, 100))
             .workQueue(new SynchronousQueue<>())
             .keepAliveTimeSeconds(60)
+            .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
             .threadFactory(NamedThreadFactory.builder().prefix("notify_server").uncaughtExceptionHandler(log).build())
             .build();
         MultithreadExecutors.run(servers, dServer -> notifyServer(dServer, eventType, rServer), threadPool);

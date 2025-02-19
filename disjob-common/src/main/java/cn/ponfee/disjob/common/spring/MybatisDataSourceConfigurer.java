@@ -132,7 +132,7 @@ public @interface MybatisDataSourceConfigurer {
             }
 
             List<String> basePackages = resolveBasePackages(config, importingClassMetadata);
-            Assert.notEmpty(basePackages, "Base package is empty.");
+            Assert.notEmpty(basePackages, "Base package cannot be empty.");
 
             String dataSourceName = StringUtils.getIfBlank(config.dataSourceName(), () -> resolvePackageDatasourceName(basePackages.get(0)));
             Assert.hasText(dataSourceName, "DataSource name cannot be empty.");

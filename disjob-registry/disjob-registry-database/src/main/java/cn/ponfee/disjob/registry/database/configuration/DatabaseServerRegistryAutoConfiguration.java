@@ -30,6 +30,7 @@ import cn.ponfee.disjob.registry.database.DatabaseSupervisorRegistry;
 import cn.ponfee.disjob.registry.database.DatabaseWorkerRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.DisposableBean;
@@ -37,7 +38,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -66,13 +69,16 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
 
     /**
      * Configuration database registry datasource.
+     *
+     * 当`havingValue=""`时，只要`属性有值&&不为false`则生效。
      */
+    @ConditionalOnProperty(name = DatabaseRegistryProperties.KEY_PREFIX + ".datasource.url")
     @ConditionalOnMissingBean(name = SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER)
     @Bean(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER)
     public JdbcTemplateWrapper databaseRegistryJdbcTemplateWrapper(DatabaseRegistryProperties props) {
-        DatabaseRegistryProperties.DataSourceProperties p = props.getDatasource();
+        DatabaseRegistryProperties.DataSourceConfig p = props.getDatasource();
         HikariConfig cfg = new HikariConfig();
-        cfg.setDriverClassName(p.getDriverClassName());
+        cfg.setDriverClassName(StringUtils.getIfBlank(p.getDriverClassName(), () -> DatabaseDriver.fromJdbcUrl(p.getUrl()).getDriverClassName()));
         cfg.setJdbcUrl(p.getUrl());
         cfg.setUsername(p.getUsername());
         cfg.setPassword(p.getPassword());
