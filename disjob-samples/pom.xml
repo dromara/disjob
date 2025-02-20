@@ -58,6 +58,20 @@
   </dependencyManagement>
 
   <dependencies>
+    <!-- apache log4j2 for log implementation -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-log4j2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+    </dependency>
+
     <!-- 引入`disjob-test`模块中的一些内置`JobExecutor`用于测试，实际开发中建议去除此依赖 -->
     <dependency>
       <groupId>cn.ponfee</groupId>
@@ -96,9 +110,11 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
+          <encoding>${file.encoding}</encoding>
           <source>${java.version}</source>
           <target>${java.version}</target>
-          <encoding>${project.build.sourceEncoding}</encoding>
+          <compilerVersion>${java.version}</compilerVersion>
+          <compilerArgument>-parameters</compilerArgument>
         </configuration>
       </plugin>
 

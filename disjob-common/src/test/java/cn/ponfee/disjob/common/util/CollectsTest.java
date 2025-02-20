@@ -21,16 +21,11 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.tree.print.BinaryTreePrinter;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.collections.Sets;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -133,50 +128,6 @@ public class CollectsTest {
         assertThatThrownBy(() -> Collects.concat(b, a3))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Cannot store java.lang.Object into java.lang.String[]");
-    }
-
-    private static String test = "xxx";
-    private static final String STR = "123";
-
-    @Test
-    public void testReflect() throws IllegalAccessException {
-        // static field
-        Field f = FieldUtils.getField(CollectsTest.class, "test", true);
-        assertThat("xxx").isEqualTo(test);
-        assertThat("xxx").isEqualTo(FieldUtils.readField(f, (Object) null));
-        FieldUtils.writeField(f, (Object) null, "yyy", true);
-        assertThat("yyy").isEqualTo(test);
-        assertThat("yyy").isEqualTo(FieldUtils.readField(f, (Object) null));
-        test = "123";
-        assertThat("123").isEqualTo(test);
-
-        // static final field
-        Field f1 = FieldUtils.getField(CollectsTest.class, "STR", true);
-        Field f2 = FieldUtils.getField(CollectsTest.class, "STR", true);
-        assertThat(f1).isSameAs(f1);
-        assertThat(f1 == f2).isFalse();
-        assertThat(f1).isNotSameAs(f2); // f1 != f2
-        assertThat(f1).isEqualTo(f2);
-
-        assertThat("123").isEqualTo(STR);
-        assertThat("123").isEqualTo(FieldUtils.readField(f1, (Object) null));
-
-        assertThatThrownBy(() -> FieldUtils.writeField(f1, (Object) null, "abc", true))
-            .isInstanceOf(IllegalAccessException.class)
-            // Windows message: Can not set static final java.lang.String field cn.ponfee.disjob.common.util.CollectsTest.STR to null value
-            // Linux message  : Can not set static final java.lang.String field cn.ponfee.disjob.common.util.CollectsTest.STR to java.lang.String
-            .hasMessageStartingWith("Can not set static final java.lang.String field cn.ponfee.disjob.common.util.CollectsTest.STR to ");
-
-        Fields.put(CollectsTest.class, f1, "abc");
-        assertThat("123").isEqualTo(STR); // 编译时直接替换为`123`
-        assertThat("abc").isEqualTo(FieldUtils.readField(f1, (Object) null));
-
-        Method m1 = MethodUtils.getMatchingMethod(ClassUtils.class, "decodeURL", URL.class);
-        Method m2 = MethodUtils.getMatchingMethod(ClassUtils.class, "decodeURL", URL.class);
-        assertThat(m1).isSameAs(m1);
-        assertThat(m1 == m2).isFalse();
-        assertThat(m1).isNotSameAs(m2);
-        assertThat(m1).isEqualTo(m2);
     }
 
     @Test

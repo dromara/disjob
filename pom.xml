@@ -71,6 +71,7 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
     <basicArgLine>-Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true</basicArgLine>
+    <jacocoArgLine />
     <moduleExportsArgLine />
 
     <spring-boot.version>2.7.18</spring-boot.version>
@@ -302,12 +303,13 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
+          <encoding>${file.encoding}</encoding>
           <source>${java.version}</source>
           <target>${java.version}</target>
           <compilerVersion>${java.version}</compilerVersion>
-          <encoding>${file.encoding}</encoding>
+          <compilerArgument>-parameters</compilerArgument>
           <compilerArgs>
-            <arg>${moduleExportsArgLine}</arg>
+            <!--<arg>${moduleExportsArgLine}</arg>-->
             <arg>-Xlint:unchecked,deprecation</arg>
           </compilerArgs>
         </configuration>
@@ -344,7 +346,8 @@
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <forkCount>1</forkCount>
           <reuseForks>true</reuseForks>
-          <argLine>${moduleExportsArgLine} ${basicArgLine} ${jacocoArgLine}</argLine>
+          <!--<argLine>${moduleExportsArgLine} ${basicArgLine} ${jacocoArgLine}</argLine>-->
+          <argLine>${basicArgLine} ${jacocoArgLine}</argLine>
         </configuration>
       </plugin>
     </plugins>

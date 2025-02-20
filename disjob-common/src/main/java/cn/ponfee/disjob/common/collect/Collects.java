@@ -351,7 +351,7 @@ public class Collects {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T[] newArray(Class<? extends T[]> arrayType, int length) {
+    public static <T> T[] newArray(Class<?> arrayType, int length) {
         return arrayType.equals(Object[].class)
             ? (T[]) new Object[length]
             : (T[]) Array.newInstance(arrayType.getComponentType(), length);

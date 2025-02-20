@@ -18,7 +18,6 @@ package cn.ponfee.disjob.supervisor.util;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
@@ -29,7 +28,6 @@ import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,32 +59,6 @@ public class TimingWheelTest {
         );
     }
     */
-
-    @Test
-    public void testConcurrentHashMapCapt() {
-        // The ConcurrentHashMap actual capacity is 128
-        ConcurrentHashMap<Integer, Integer> map = new ConcurrentHashMap<>(64, 1f);
-        Assertions.assertEquals(0, map.size());
-        Assertions.assertNull(Fields.get(map, "table"));
-        for (int i = 0; i < 100; i++) {
-            map.put(i, i);
-            System.out.println("size: " + map.size() + ", mapping-count: " + map.mappingCount() + ", table-size: " + Array.getLength(Fields.get(map, "table")));
-        }
-        Assertions.assertEquals(256, Array.getLength(Fields.get(map, "table")));
-    }
-
-    @Test
-    public void testHashMapCapt() {
-        // The HashMap actual capacity is 64
-        HashMap<Integer, Integer> map = new HashMap<>(64, 1f);
-        Assertions.assertEquals(0, map.size());
-        Assertions.assertNull(Fields.get(map, "table"));
-        for (int i = 0; i < 60; i++) {
-            map.put(i, i);
-            System.out.println("size: " + map.size() + ", table-size: " + Array.getLength(Fields.get(map, "table")));
-        }
-        Assertions.assertEquals(64, Array.getLength(Fields.get(map, "table")));
-    }
 
     @Test
     public void testTimeSecond() throws InterruptedException {

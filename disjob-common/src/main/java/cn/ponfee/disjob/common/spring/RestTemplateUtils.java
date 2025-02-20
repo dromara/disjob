@@ -84,6 +84,11 @@ public class RestTemplateUtils {
      */
     public static final Set<HttpMethod> QUERY_PARAM_METHODS = ImmutableSet.of(GET, HEAD, OPTIONS, TRACE);
 
+    /**
+     * Thread local for request config
+     */
+    private static final ThreadLocal<RequestConfig> REQUEST_CONFIG_THREAD_LOCAL = new NamedThreadLocal<>("request-config");
+
     public static final Type RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {}.getType();
     public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
     public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
@@ -184,7 +189,7 @@ public class RestTemplateUtils {
 
         URI uri;
         if (QUERY_PARAM_METHODS.contains(httpMethod)) {
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
             if (ArrayUtils.isNotEmpty(arguments)) {
                 builder.queryParams(RpcControllerUtils.buildQueryParameters(arguments));
             }
@@ -203,21 +208,17 @@ public class RestTemplateUtils {
         return Objects.requireNonNull(responseEntity).getBody();
     }
 
-    // -----------------------------------------------------------------------public static class
-
-    public static class HttpContextHolder {
-        private static final ThreadLocal<RequestConfig> THREAD_LOCAL = new NamedThreadLocal<>("request-config");
-
-        public static void bind(RequestConfig requestConfig) {
-            THREAD_LOCAL.set(requestConfig);
+    public static <T> T invoke(RequestConfig requestConfig, RestTemplate restTemplate, URI uri,
+                               HttpMethod method, RequestCallback requestCallback, ResponseExtractor<T> responseExtractor) {
+        if (requestConfig == null) {
+            return restTemplate.execute(uri, method, requestCallback, responseExtractor);
         }
 
-        private static RequestConfig get() {
-            return THREAD_LOCAL.get();
-        }
-
-        public static void unbind() {
-            THREAD_LOCAL.remove();
+        REQUEST_CONFIG_THREAD_LOCAL.set(requestConfig);
+        try {
+            return restTemplate.execute(uri, method, requestCallback, responseExtractor);
+        } finally {
+            REQUEST_CONFIG_THREAD_LOCAL.remove();
         }
     }
 
@@ -255,12 +256,12 @@ public class RestTemplateUtils {
     private static class HttpContextFactory implements BiFunction<HttpMethod, URI, HttpContext> {
         @Override
         public HttpContext apply(HttpMethod httpMethod, URI uri) {
-            RequestConfig requestConfig = HttpContextHolder.get();
+            RequestConfig requestConfig = REQUEST_CONFIG_THREAD_LOCAL.get();
             if (requestConfig == null) {
                 return null;
             }
-            HttpContext context = HttpClientContext.create();
-            context.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfig);
+            HttpClientContext context = HttpClientContext.create();
+            context.setRequestConfig(requestConfig);
             return context;
         }
     }

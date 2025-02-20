@@ -33,15 +33,13 @@
     <!--Shiro核心框架 -->
     <dependency>
       <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-      <version>${shiro-core.version}</version>
+      <artifactId>shiro-spring</artifactId>
+      <version>${shiro.version}</version>
     </dependency>
-
-    <!-- Shiro使用EhCache缓存框架 -->
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-ehcache</artifactId>
-      <version>${shiro-core.version}</version>
+      <version>${shiro.version}</version>
     </dependency>
 
     <!-- pagehelper 分页插件 -->

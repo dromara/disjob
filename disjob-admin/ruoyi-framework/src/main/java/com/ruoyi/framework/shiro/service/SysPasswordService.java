@@ -8,9 +8,9 @@ import com.ruoyi.common.exception.user.UserPasswordRetryLimitExceedException;
 import com.ruoyi.common.utils.MessageUtils;
 import com.ruoyi.framework.manager.AsyncManager;
 import com.ruoyi.framework.manager.factory.AsyncFactory;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheManager;
-import org.apache.shiro.crypto.hash.Md5Hash;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -81,6 +81,6 @@ public class SysPasswordService
 
     public String encryptPassword(String loginName, String password, String salt)
     {
-        return new Md5Hash(loginName + password + salt).toHex();
+        return DigestUtils.md5Hex(loginName + password + salt);
     }
 }

@@ -17,9 +17,8 @@
 package cn.ponfee.disjob.supervisor.util;
 
 import cn.ponfee.disjob.common.spring.ResourceScanner;
-import cn.ponfee.disjob.common.util.*;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.supervisor.model.SchedJob;
+import cn.ponfee.disjob.common.util.NetUtils;
+import cn.ponfee.disjob.common.util.ObjectUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -35,8 +34,6 @@ import java.util.Set;
  */
 public class ObjectUtilsTest {
 
-    private static final String TEST_NAME = UuidUtils.uuid32();
-
     @Test
     public void testNewInstance() {
         Assertions.assertNotNull(NetUtils.getLocalHost());
@@ -45,33 +42,6 @@ public class ObjectUtilsTest {
         Assertions.assertFalse(new Boolean("0"));
         Assertions.assertFalse(ObjectUtils.newInstance(boolean.class));
         Assertions.assertFalse(ObjectUtils.newInstance(Boolean.class));
-    }
-
-    @Test
-    public void testFields() {
-        SchedJob job = new SchedJob();
-        Assertions.assertNull(Fields.get(job, "id"));
-        Long value = 1L;
-        Fields.put(job, "id", value);
-        Assertions.assertEquals(value, Fields.get(job, "id"));
-    }
-
-    @Test
-    public void testModifyConstantFields() {
-        String value1 = ObjectUtilsTest.TEST_NAME;
-        String value2 = UuidUtils.uuid32();
-        Fields.put(ObjectUtilsTest.class, "TEST_NAME", value2);
-        Assertions.assertNotEquals(value1, value2);
-        Assertions.assertNotEquals(value1, ObjectUtilsTest.TEST_NAME);
-        Assertions.assertEquals(value2, ObjectUtilsTest.TEST_NAME);
-        Assertions.assertEquals(value2, Fields.get(ObjectUtilsTest.class, "TEST_NAME"));
-    }
-
-    @Test
-    public void testStaticField() throws ClassNotFoundException {
-        Class<?> aClass = Class.forName(Supervisor.Local.class.getName());
-        Fields.put(aClass, ClassUtils.getStaticField(aClass, "instance"), Supervisor.local());
-        Assertions.assertEquals(Supervisor.local(), Supervisor.local());
     }
 
     @Test

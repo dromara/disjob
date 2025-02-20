@@ -19,7 +19,6 @@ package cn.ponfee.disjob.worker.executor.impl;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
@@ -91,22 +90,20 @@ public class HttpJobExecutor extends JobExecutor {
         RequestCallback requestCallback = REST_TEMPLATE.httpEntityCallback(requestEntity, responseType);
         ResponseExtractor<ResponseEntity<String>> responseExtractor = REST_TEMPLATE.responseEntityExtractor(responseType);
 
-        try {
-            ResponseEntity<String> responseEntity;
-            if (equals(req.connectionTimeout, DEFAULT_CONNECT_TIMEOUT) && equals(req.readTimeout, DEFAULT_READ_TIMEOUT)) {
-                responseEntity = REST_TEMPLATE.execute(uri, method, requestCallback, responseExtractor);
-            } else {
-                RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
-                ObjectUtils.applyIfNotNull(req.connectionTimeout, requestConfigBuilder::setConnectTimeout);
-                ObjectUtils.applyIfNotNull(req.readTimeout, requestConfigBuilder::setSocketTimeout);
-                RestTemplateUtils.HttpContextHolder.bind(requestConfigBuilder.build());
-                try {
-                    responseEntity = REST_TEMPLATE.execute(uri, method, requestCallback, responseExtractor);
-                } finally {
-                    RestTemplateUtils.HttpContextHolder.unbind();
-                }
+        RequestConfig requestConfig = null;
+        if (!(equals(req.connectionTimeout, DEFAULT_CONNECT_TIMEOUT) && equals(req.readTimeout, DEFAULT_READ_TIMEOUT))) {
+            RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+            if (req.connectionTimeout != null) {
+                requestConfigBuilder.setConnectTimeout(req.connectionTimeout);
             }
-
+            if (req.readTimeout != null) {
+                requestConfigBuilder.setSocketTimeout(req.readTimeout);
+            }
+            requestConfig = requestConfigBuilder.build();
+        }
+        try {
+            ResponseEntity<String> responseEntity = RestTemplateUtils.invoke(
+                requestConfig, REST_TEMPLATE, uri, method, requestCallback, responseExtractor);
             if (responseEntity != null && responseEntity.getStatusCode().is2xxSuccessful()) {
                 return ExecutionResult.success(responseEntity.getBody());
             } else {

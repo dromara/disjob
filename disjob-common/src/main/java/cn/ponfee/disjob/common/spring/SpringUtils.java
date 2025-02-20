@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import cn.ponfee.disjob.common.base.AnnotationProxy;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.web.context.WebServerApplicationContext;
@@ -30,13 +31,15 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-import sun.reflect.annotation.AnnotationParser;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Spring utils
@@ -106,9 +109,9 @@ public final class SpringUtils {
         return parseAnnotation(type, attributes);
     }
 
-    @SuppressWarnings("unchecked")
     public static <T extends Annotation> T parseAnnotation(Class<T> type, Map<String, Object> attributes) {
-        return (T) AnnotationParser.annotationForMap(type, attributes == null ? Collections.emptyMap() : attributes);
+        //return (T) AnnotationParser.annotationForMap(type, attributes == null ? Collections.emptyMap() : attributes);
+        return AnnotationProxy.create(type, attributes);
     }
 
     public static void addPropertyIfAbsent(Environment environment, String key, String value) {

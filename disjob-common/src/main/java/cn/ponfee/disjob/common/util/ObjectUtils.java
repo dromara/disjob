@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -123,6 +124,12 @@ public final class ObjectUtils {
 
         if (value == null) {
             return null;
+        }
+
+        if (type.isArray() && type != value.getClass()) {
+            Object[] array = Collects.newArray(type, 1);
+            array[0] = cast(value, type.getComponentType());
+            return (T) array;
         }
 
         if (type.isEnum()) {

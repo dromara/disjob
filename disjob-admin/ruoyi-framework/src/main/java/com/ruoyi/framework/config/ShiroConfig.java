@@ -20,7 +20,6 @@ import com.ruoyi.framework.shiro.web.session.OnlineWebSessionManager;
 import com.ruoyi.framework.shiro.web.session.SpringSessionValidationScheduler;
 import org.apache.commons.io.IOUtils;
 import org.apache.shiro.cache.ehcache.EhCacheManager;
-import org.apache.shiro.codec.Base64;
 import org.apache.shiro.config.ConfigurationException;
 import org.apache.shiro.io.ResourceUtils;
 import org.apache.shiro.mgt.SecurityManager;
@@ -41,10 +40,7 @@ import javax.servlet.Filter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 权限配置加载
@@ -382,7 +378,7 @@ public class ShiroConfig
         cookieRememberMeManager.setCookie(rememberMeCookie());
         if (StringUtils.isNotEmpty(cipherKey))
         {
-            cookieRememberMeManager.setCipherKey(Base64.decode(cipherKey));
+            cookieRememberMeManager.setCipherKey(Base64.getUrlDecoder().decode(cipherKey));
         }
         else
         {
