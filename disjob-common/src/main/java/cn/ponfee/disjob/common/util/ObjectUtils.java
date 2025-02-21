@@ -174,7 +174,7 @@ public final class ObjectUtils {
             return (T) new Hashtable<>();
         } else if (type.isPrimitive() || PrimitiveTypes.isWrapperType(type)) {
             Class<?> wrapper = PrimitiveTypes.ofPrimitiveOrWrapper(type).wrapper();
-            // new Boolean("0") -> false
+            // Boolean.parseBoolean("0") -> false
             return (T) ClassUtils.newInstance(wrapper, new Class<?>[]{String.class}, new Object[]{"0"});
         } else {
             return ClassUtils.newInstance(type);

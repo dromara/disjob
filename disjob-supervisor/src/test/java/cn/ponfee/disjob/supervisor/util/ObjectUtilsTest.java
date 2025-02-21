@@ -37,9 +37,9 @@ public class ObjectUtilsTest {
     @Test
     public void testNewInstance() {
         Assertions.assertNotNull(NetUtils.getLocalHost());
-        Assertions.assertTrue(new Boolean("True"));
-        Assertions.assertFalse(new Boolean("1"));
-        Assertions.assertFalse(new Boolean("0"));
+        Assertions.assertTrue(Boolean.parseBoolean("True"));
+        Assertions.assertFalse(Boolean.parseBoolean("1"));
+        Assertions.assertFalse(Boolean.parseBoolean("0"));
         Assertions.assertFalse(ObjectUtils.newInstance(boolean.class));
         Assertions.assertFalse(ObjectUtils.newInstance(Boolean.class));
     }

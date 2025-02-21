@@ -69,9 +69,7 @@
     <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
     <basicArgLine>-Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true</basicArgLine>
-    <jacocoArgLine />
     <moduleExportsArgLine />
 
     <spring-boot.version>2.7.18</spring-boot.version>
@@ -195,7 +193,7 @@
         <jdk>[9,)</jdk>
       </activation>
       <properties>
-        <!-- https://zhuanlan.zhihu.com/p/640217638 -->
+        <!-- 多个add-exports需要拆为多个compiler arg: https://zhuanlan.zhihu.com/p/640217638 -->
         <moduleExportsArgLine>--add-exports=java.base/sun.reflect.annotation=ALL-UNNAMED</moduleExportsArgLine>
       </properties>
     </profile>
@@ -306,11 +304,9 @@
           <encoding>${file.encoding}</encoding>
           <source>${java.version}</source>
           <target>${java.version}</target>
-          <compilerVersion>${java.version}</compilerVersion>
-          <compilerArgument>-parameters</compilerArgument>
           <compilerArgs>
-            <!--<arg>${moduleExportsArgLine}</arg>-->
-            <arg>-Xlint:unchecked,deprecation</arg>
+            <arg>-parameters</arg>
+            <arg>${moduleExportsArgLine}</arg>
           </compilerArgs>
         </configuration>
       </plugin>
@@ -339,15 +335,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <!-- 若jacoco覆盖率显示为0，则可能是surefire版本问题 -->
         <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <printSummary>true</printSummary>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <forkCount>1</forkCount>
           <reuseForks>true</reuseForks>
-          <!--<argLine>${moduleExportsArgLine} ${basicArgLine} ${jacocoArgLine}</argLine>-->
-          <argLine>${basicArgLine} ${jacocoArgLine}</argLine>
+          <argLine>${basicArgLine} ${moduleExportsArgLine} ${jacocoArgLine}</argLine>
         </configuration>
       </plugin>
     </plugins>

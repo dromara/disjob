@@ -55,7 +55,7 @@ public class ConfigureWorkerParam extends AuthenticationParam {
             @SuppressWarnings("unchecked")
             @Override
             public <T> T parse(String data) {
-                return (T) new Integer(data);
+                return (T) (Integer) Integer.parseInt(data);
             }
         },
 

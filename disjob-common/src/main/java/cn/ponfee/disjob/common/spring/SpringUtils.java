@@ -110,6 +110,7 @@ public final class SpringUtils {
     }
 
     public static <T extends Annotation> T parseAnnotation(Class<T> type, Map<String, Object> attributes) {
+        // `sun.reflect.annotation`包不可见，需要`add-exports`，因此用`AnnotationProxy`替换
         //return (T) AnnotationParser.annotationForMap(type, attributes == null ? Collections.emptyMap() : attributes);
         return AnnotationProxy.create(type, attributes);
     }

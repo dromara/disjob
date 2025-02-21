@@ -30,7 +30,6 @@
     <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
 
     <spring-boot.version>2.7.18</spring-boot.version>
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
@@ -113,7 +112,6 @@
           <encoding>${file.encoding}</encoding>
           <source>${java.version}</source>
           <target>${java.version}</target>
-          <compilerVersion>${java.version}</compilerVersion>
           <compilerArgument>-parameters</compilerArgument>
         </configuration>
       </plugin>
