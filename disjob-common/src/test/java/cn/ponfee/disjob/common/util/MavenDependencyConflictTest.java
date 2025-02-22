@@ -19,6 +19,7 @@ package cn.ponfee.disjob.common.util;
 import cn.ponfee.disjob.common.tuple.Tuple4;
 import com.google.common.base.Stopwatch;
 import org.apache.commons.exec.*;
+import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.jupiter.api.Disabled;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -113,8 +115,33 @@ public class MavenDependencyConflictTest {
         Executor executor = new DefaultExecutor();
         executor.setStreamHandler(new PumpStreamHandler(out));
         executor.setWatchdog(new ExecuteWatchdog(120000L));
-        executor.execute(CommandLine.parse(command));
+
+        Map<String, String> env = EnvironmentUtils.getProcEnvironment();
+        //env.put("JAVA_HOME", "/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home");
+        //env.put("PATH", env.get("PATH") + ":$JAVA_HOME/bin");
+
+        executor.execute(CommandLine.parse(command), env);
         return out.toString(StandardCharsets.UTF_8.name());
     }
+
+    /*
+    private static void execute(Map<String, String> env, String... args) throws Exception {
+        //execute(null, "bash", "-c", "java -version");
+        ProcessBuilder builder = new ProcessBuilder();
+        if (MapUtils.isNotEmpty(env)) {
+            Map<String, String> environment = builder.environment();
+            environment.putAll(env);
+        }
+        builder.command(args);
+        Process process = builder.start();
+        int exitCode = ProcessUtils.progress(
+            process,
+            StandardCharsets.UTF_8,
+            info -> System.out.println("[INFO] " + info),
+            error -> System.err.println("[ERROR] " + error)
+        );
+        System.out.println("Exit code: " + exitCode);
+    }
+    */
 
 }
