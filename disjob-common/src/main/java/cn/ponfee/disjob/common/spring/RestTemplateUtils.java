@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -102,16 +103,7 @@ public class RestTemplateUtils {
     }
 
     public static RestTemplate create(int connectTimeout, int readTimeout, MappingJackson2HttpMessageConverter messageConverter, Charset charset) {
-        SSLContext sslContext;
-        try {
-            sslContext = SSLContexts.custom().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
-
-            //sslContext = SSLContext.getInstance("TLS");
-            //sslContext.init(null, new TrustManager[]{new SkipX509TrustManager()}, new SecureRandom());
-        } catch (Exception e) {
-            throw new SecurityException(e);
-        }
-
+        SSLContext sslContext = ThrowingSupplier.doChecked(() -> SSLContexts.custom().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build());
         CloseableHttpClient httpClient = HttpClients.custom()
             .setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE))
             .build();
@@ -265,19 +257,5 @@ public class RestTemplateUtils {
             return context;
         }
     }
-
-    /*
-    private static class SkipX509TrustManager implements X509TrustManager {
-        private static final X509Certificate[] EMPTY = new X509Certificate[0];
-        @Override
-        public X509Certificate[] getAcceptedIssuers() { return EMPTY; }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) { }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) { }
-    }
-    */
 
 }

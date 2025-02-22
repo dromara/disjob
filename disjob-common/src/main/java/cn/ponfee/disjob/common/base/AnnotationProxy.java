@@ -50,9 +50,8 @@ public class AnnotationProxy {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             String methodName = method.getName();
-            return (attributes != null && attributes.containsKey(methodName))
-                ? ObjectUtils.cast(attributes.get(methodName), method.getReturnType())
-                : method.getDefaultValue();
+            Object value = attributes == null ? null : attributes.get(methodName);
+            return value == null ? method.getDefaultValue() : ObjectUtils.cast(value, method.getReturnType());
         }
     }
 

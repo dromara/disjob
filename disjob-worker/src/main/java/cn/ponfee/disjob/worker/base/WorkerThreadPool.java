@@ -49,6 +49,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
+import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonScheduledPool;
+import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonThreadPool;
 import static cn.ponfee.disjob.core.enums.ExecuteState.*;
 
 /**
@@ -61,7 +63,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(WorkerThreadPool.class);
     private static final int ERROR_MSG_MAX_LENGTH = 2048;
     private static final AtomicInteger NAMED_SEQ = new AtomicInteger(1);
-    private static final AtomicInteger FUTURE_TASK_NAMED_SEQ = new AtomicInteger(1);
 
     /**
      * Supervisor rpc client
@@ -137,7 +138,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         if (task.getOperation().isTrigger()) {
             return taskQueue.offerLast(task);
         } else {
-            ThreadPoolExecutors.commonThreadPool().execute(ThrowingRunnable.toCaught(() -> stopTask(task)));
+            commonThreadPool().execute(ThrowingRunnable.toCaught(() -> stopTask(task)));
             return true;
         }
     }
@@ -235,18 +236,21 @@ public class WorkerThreadPool extends Thread implements Closeable {
             return;
         }
 
-        Pair<WorkerThread, WorkerTask> pair = activePool.takeThread(taskId, ops);
+        Pair<WorkerThread, WorkerTask> pair = activePool.takeThread(taskId, null, ops);
         if (pair == null) {
             LOG.warn("Not found executing task: {}, {}", taskId, ops);
             // 支持某些异常场景时手动结束任务（如断网数据库连接不上，任务执行结束后状态无法更新，一直停留在EXECUTING）：EXECUTING -> (PAUSED|CANCELED)
             // 但要注意可能存在的操作流程上的`ABA`问题：EXECUTING -> PAUSED -> WAITING -> EXECUTING -> (PAUSED|CANCELED)
             stopTask(stopParam, ops, ops.name() + " aborted EXECUTING state task");
-            return;
+        } else {
+            stopTask(pair, ops);
         }
+    }
 
+    private void stopTask(Pair<WorkerThread, WorkerTask> pair, Operation ops) {
         WorkerThread workerThread = pair.getLeft();
         WorkerTask task = pair.getRight();
-        LOG.info("Stop task: {}, {}, {}", taskId, ops, workerThread.getName());
+        LOG.info("Stop task: {}, {}, {}", task.getTaskId(), ops, workerThread.getName());
         try {
             workerThread.doStop();
         } finally {
@@ -396,11 +400,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
             });
         }
 
-        private Pair<WorkerThread, WorkerTask> takeThread(long taskId, Operation ops) {
+        private Pair<WorkerThread, WorkerTask> takeThread(long taskId, WorkerTask held, Operation ops) {
             return process(taskId, map -> {
                 WorkerThread wt = map.get(taskId);
                 WorkerTask task;
-                if (wt == null || (task = wt.getCurrentTask()) == null) {
+                if (wt == null || (task = wt.getCurrentTask()) == null || (held != null && task != held)) {
                     return null;
                 }
                 if (!task.updateOperation(Operation.TRIGGER, ops)) {
@@ -655,9 +659,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
             try {
                 execute(workerTask, taskExecutor, executionTask);
-            } catch (TimeoutException e) {
-                LOG.error("Execute task timeout: " + workerTask, e);
-                stopTask(workerTask, Operation.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
             } catch (OperationTaskException e) {
                 LOG.error("Operation task exception: {}, {}, {}", e.operation(), workerTask, e.getMessage());
                 stopInstance(workerTask, e.operation(), toErrorMsg(e));
@@ -683,23 +684,20 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private void execute(WorkerTask workerTask, JobExecutor taskExecutor, ExecutionTask executionTask) throws Exception {
-            ExecutionResult result;
-            Savepoint savepoint = new TaskSavepoint(workerTask.getTaskId(), workerTask.getWorker().serialize());
             if (workerTask.getExecuteTimeout() > 0) {
-                FutureTask<ExecutionResult> futureTask = new FutureTask<>(() -> taskExecutor.execute(executionTask, savepoint));
-                String threadName = "WorkerThread#FutureTaskThread-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement();
-                Thread futureTaskThread = Threads.newThread(threadName, true, Thread.NORM_PRIORITY, futureTask, LOG);
-                futureTaskThread.start();
-                try {
-                    result = futureTask.get(workerTask.getExecuteTimeout(), TimeUnit.MILLISECONDS);
-                } finally {
-                    ThrowingRunnable.doCaught(() -> futureTask.cancel(true));
-                    Threads.stopThread(futureTaskThread, 0);
-                }
-            } else {
-                result = taskExecutor.execute(executionTask, savepoint);
+                Runnable stopTimeoutTask = () -> {
+                    Operation ops = Operation.TIMEOUT_CANCEL;
+                    Pair<WorkerThread, WorkerTask> pair = activePool.takeThread(workerTask.getTaskId(), workerTask, ops);
+                    if (pair != null) {
+                        LOG.error("Stop execute timeout task: {}", workerTask);
+                        stopTask(pair, ops);
+                    }
+                };
+                commonScheduledPool().schedule(stopTimeoutTask, workerTask.getExecuteTimeout(), TimeUnit.MILLISECONDS);
             }
 
+            Savepoint savepoint = new TaskSavepoint(workerTask.getTaskId(), workerTask.getWorker().serialize());
+            ExecutionResult result = taskExecutor.execute(executionTask, savepoint);
             if (result != null && result.isSuccess()) {
                 Operation ops = workerTask.getOperation();
                 LOG.info("Execute task success: {}, {}, {}", workerTask.getTaskId(), ops, result.getMsg());

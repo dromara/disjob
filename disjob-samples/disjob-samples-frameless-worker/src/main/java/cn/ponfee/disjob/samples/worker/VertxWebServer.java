@@ -27,6 +27,7 @@ import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dto.worker.*;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
+import cn.ponfee.disjob.worker.executor.JobExecutorUtils;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
@@ -112,7 +113,12 @@ public class VertxWebServer extends AbstractVerticle {
 
         router.post(prefixPath + "/job/verify").handler(ctx -> handle(() -> {
             VerifyJobParam param = parseBodyArg(ctx, VerifyJobParam.class);
-            workerRpcService.verifyJob(param);
+            for (String jobExecutor : JobExecutorUtils.parseJobExecutor(param)) {
+                // set actual jobExecutor
+                param.setJobExecutor(jobExecutor);
+                JobExecutorMapping.correctParamJobExecutor(param, "jobExecutor");
+                workerRpcService.verifyJob(param);
+            }
         }, ctx, BAD_REQUEST));
 
         router.post(prefixPath + "/job/split").handler(ctx -> handle(() -> {

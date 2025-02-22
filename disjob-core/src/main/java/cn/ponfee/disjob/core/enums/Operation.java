@@ -56,6 +56,11 @@ public enum Operation {
     SHUTDOWN_PAUSE(EXECUTING, PAUSED),
 
     /**
+     * Manual cancel from EXECUTING to EXECUTE_TIMEOUT
+     */
+    TIMEOUT_CANCEL(EXECUTING, EXECUTE_TIMEOUT),
+
+    /**
      * Shutdown cancel from EXECUTING to SHUTDOWN_CANCELED
      */
     SHUTDOWN_CANCEL(EXECUTING, SHUTDOWN_CANCELED),

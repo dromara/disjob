@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.common.util;
+package cn.ponfee.disjob.common.concurrent;
 
-import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

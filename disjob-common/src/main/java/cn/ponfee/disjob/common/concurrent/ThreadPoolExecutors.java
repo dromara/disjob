@@ -31,11 +31,12 @@ import java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy;
 import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
 
 /**
+ * <pre>
  * Thread pool executor utility
- *
- * 1）maximumPoolSize + CALLER_RUNS：线程池中的线程执行完后，需要等待当前线程执行完后再提交任务
- * 2）keepAliveTimeSeconds：为0则表示线程立即终止
- * 3）allowCoreThreadTimeOut：设置为true时，keepAliveTimeSeconds必须大于0
+ *   1）maximumPoolSize + CALLER_RUNS：线程池中的线程执行完后，需要等待当前线程执行完后再提交任务
+ *   2）keepAliveTimeSeconds：为0则表示线程立即终止
+ *   3）allowCoreThreadTimeOut：设置为true时，keepAliveTimeSeconds必须大于0
+ * </pre>
  *
  * @author Ponfee
  */
@@ -43,7 +44,8 @@ public final class ThreadPoolExecutors {
 
     private static final Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutors.class);
 
-    public static final String DISJOB_COMMON_POOL_SIZE = "disjob.common.thread.pool.size";
+    public static final String DISJOB_COMMON_THREAD_POOL_SIZE    = "disjob.common.thread.pool.size";
+    public static final String DISJOB_COMMON_SCHEDULED_POOL_SIZE = "disjob.common.scheduled.pool.size";
 
     private static volatile ThreadPoolExecutor commonThreadPool;
     private static volatile ScheduledThreadPoolExecutor commonScheduledPool;
@@ -121,7 +123,7 @@ public final class ThreadPoolExecutors {
         if (commonThreadPool == null) {
             synchronized (ThreadPoolExecutors.class) {
                 if (commonThreadPool == null) {
-                    commonThreadPool = makeThreadPoolExecutor();
+                    commonThreadPool = makeCommonThreadPoolExecutor();
                 }
             }
         }
@@ -137,7 +139,7 @@ public final class ThreadPoolExecutors {
         if (commonScheduledPool == null) {
             synchronized (ThreadPoolExecutors.class) {
                 if (commonScheduledPool == null) {
-                    commonScheduledPool = makeCommonScheduledThreadPoolExecutor();
+                    commonScheduledPool = makeCommonScheduledPoolExecutor();
                 }
             }
         }
@@ -308,13 +310,8 @@ public final class ThreadPoolExecutors {
         return isSafeTerminated;
     }
 
-    private static ThreadPoolExecutor makeThreadPoolExecutor() {
-        int poolSize = Numbers.toInt(SystemUtils.getConfig(DISJOB_COMMON_POOL_SIZE), Runtime.getRuntime().availableProcessors() * 8);
-        if (poolSize < 0 || poolSize > MAX_CAP) {
-            LOG.warn("Invalid disjob common pool size config value: {}", poolSize);
-            poolSize = Numbers.bound(poolSize, 1, MAX_CAP);
-        }
-
+    private static ThreadPoolExecutor makeCommonThreadPoolExecutor() {
+        int poolSize = getCommonPoolSize(DISJOB_COMMON_THREAD_POOL_SIZE, 8);
         final ThreadPoolExecutor threadPool = ThreadPoolExecutors.builder()
             .corePoolSize(poolSize)
             .maximumPoolSize(poolSize)
@@ -328,15 +325,25 @@ public final class ThreadPoolExecutors {
         return threadPool;
     }
 
-    private static ScheduledThreadPoolExecutor makeCommonScheduledThreadPoolExecutor() {
+    private static ScheduledThreadPoolExecutor makeCommonScheduledPoolExecutor() {
+        int poolSize = getCommonPoolSize(DISJOB_COMMON_SCHEDULED_POOL_SIZE, 16);
         ScheduledThreadPoolExecutor scheduledPool = new ScheduledThreadPoolExecutor(
-            1,
+            poolSize,   // 是一个固定大小的线程池使用`corePoolSize`线程个数和无界队列，内部的`maximumPoolSize`设置实际无作用
             NamedThreadFactory.builder().prefix("disjob_common_scheduled_pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build(),
-            CALLER_RUNS
+            CALLER_RUNS // 由于使用的是无界的任务队列`DelayedWorkQueue`，这意味着任务队列理论上不会满，因此拒绝策略通常不会触发
         );
         scheduledPool.setRemoveOnCancelPolicy(true);
         ShutdownHookManager.addShutdownHook(0, scheduledPool::shutdown);
         return scheduledPool;
+    }
+
+    private static int getCommonPoolSize(String configKey, int minimumSize) {
+        int poolSize = Numbers.toInt(SystemUtils.getConfig(configKey), Runtime.getRuntime().availableProcessors() * 2);
+        if (poolSize < minimumSize || poolSize > MAX_CAP) {
+            LOG.warn("Invalid configured disjob common pool size: {}", poolSize);
+            poolSize = Numbers.bound(poolSize, minimumSize, MAX_CAP);
+        }
+        return poolSize;
     }
 
 }

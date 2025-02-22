@@ -126,7 +126,7 @@ public final class ObjectUtils {
             return null;
         }
 
-        if (type.isArray() && type != value.getClass()) {
+        if (type.isArray()) {
             Object[] array = Collects.newArray(type, 1);
             array[0] = cast(value, type.getComponentType());
             return (T) array;

@@ -50,19 +50,7 @@ public class JobExecutorUtils {
 
     public static void verify(VerifyJobParam param) throws JobException {
         try {
-            Set<String> jobExecutors;
-            if (param.getJobType().isWorkflow()) {
-                jobExecutors = DAGExpression.parse(param.getJobExecutor())
-                    .nodes()
-                    .stream()
-                    .filter(e -> !e.isStartOrEnd())
-                    .map(DAGNode::getName)
-                    .collect(Collectors.toSet());
-                Assert.notEmpty(jobExecutors, () -> "Invalid workflow job executor: " + param.getJobExecutor());
-            } else {
-                jobExecutors = Collections.singleton(param.getJobExecutor());
-            }
-
+            Set<String> jobExecutors = parseJobExecutor(param);
             VerifyParam verifyParam = new VerifyParam(param.getRouteStrategy().isBroadcast(), param.getJobParam());
             for (String jobExecutorStr : jobExecutors) {
                 JobExecutor jobExecutor = loadJobExecutor(jobExecutorStr);
@@ -74,6 +62,22 @@ public class JobExecutorUtils {
         } catch (Throwable e) {
             throw new JobException(JobCodeMsg.INVALID_JOB_EXECUTOR, e.getMessage());
         }
+    }
+
+    public static Set<String> parseJobExecutor(VerifyJobParam param) {
+        Set<String> jobExecutors;
+        if (param.getJobType().isWorkflow()) {
+            jobExecutors = DAGExpression.parse(param.getJobExecutor())
+                .nodes()
+                .stream()
+                .filter(e -> !e.isStartOrEnd())
+                .map(DAGNode::getName)
+                .collect(Collectors.toSet());
+            Assert.notEmpty(jobExecutors, () -> "Invalid workflow job executor: " + param.getJobExecutor());
+        } else {
+            jobExecutors = Collections.singleton(param.getJobExecutor());
+        }
+        return jobExecutors;
     }
 
     /**
