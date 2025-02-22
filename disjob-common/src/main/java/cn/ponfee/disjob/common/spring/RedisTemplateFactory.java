@@ -142,7 +142,7 @@ public class RedisTemplateFactory implements Closeable {
         }
 
         // apply properties
-        if (properties.isSsl()) {
+        if (properties.getSsl().isEnabled()) {
             builder.useSsl();
         }
         if (properties.getTimeout() != null) {

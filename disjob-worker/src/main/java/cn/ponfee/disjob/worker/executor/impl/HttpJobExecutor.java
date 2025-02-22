@@ -26,12 +26,13 @@ import cn.ponfee.disjob.worker.executor.JobExecutor;
 import cn.ponfee.disjob.worker.executor.Savepoint;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.http.client.config.RequestConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
@@ -94,10 +95,10 @@ public class HttpJobExecutor extends JobExecutor {
         if (!(equals(req.connectionTimeout, DEFAULT_CONNECT_TIMEOUT) && equals(req.readTimeout, DEFAULT_READ_TIMEOUT))) {
             RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
             if (req.connectionTimeout != null) {
-                requestConfigBuilder.setConnectTimeout(req.connectionTimeout);
+                requestConfigBuilder.setConnectionRequestTimeout(Timeout.ofMilliseconds(req.connectionTimeout));
             }
             if (req.readTimeout != null) {
-                requestConfigBuilder.setSocketTimeout(req.readTimeout);
+                requestConfigBuilder.setResponseTimeout(Timeout.ofMilliseconds(req.readTimeout));
             }
             requestConfig = requestConfigBuilder.build();
         }
@@ -107,7 +108,7 @@ public class HttpJobExecutor extends JobExecutor {
             if (responseEntity != null && responseEntity.getStatusCode().is2xxSuccessful()) {
                 return ExecutionResult.success(responseEntity.getBody());
             } else {
-                HttpStatus status = null;
+                HttpStatusCode status = null;
                 String body = null;
                 if (responseEntity != null) {
                     status = responseEntity.getStatusCode();

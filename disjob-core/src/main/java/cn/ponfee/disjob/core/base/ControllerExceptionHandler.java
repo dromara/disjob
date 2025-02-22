@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.exception.BaseRuntimeException;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import com.google.common.collect.ImmutableList;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.HandlerMethod;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;

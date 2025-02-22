@@ -27,7 +27,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-web</artifactId>
-      <version>4.5.5</version>
+      <version>4.5.13</version>
     </dependency>
     <!-- 解决启动中的WARN日志：DnsServerAddressStreamProviders >>>> Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos' -->
     <dependency>

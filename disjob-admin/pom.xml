@@ -27,14 +27,14 @@
     <disjob.version>2.1.9-SNAPSHOT</disjob.version>
 
     <file.encoding>UTF-8</file.encoding>
-    <java.version>1.8</java.version>
+    <java.version>17</java.version>
     <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
     <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
-    <spring-boot.version>2.7.18</spring-boot.version>
-    <shiro.version>1.13.0</shiro.version>
+    <spring-boot.version>3.4.2</spring-boot.version>
+    <shiro.version>2.0.2</shiro.version>
     <thymeleaf-extras-shiro.version>2.1.0</thymeleaf-extras-shiro.version>
     <druid-spring-boot-starter.version>1.2.24</druid-spring-boot-starter.version>
     <UserAgentUtils.version>1.21</UserAgentUtils.version>
@@ -48,7 +48,7 @@
     <graphviz-java.version>0.18.1</graphviz-java.version>
     <springdoc-openapi-ui.version>1.8.0</springdoc-openapi-ui.version>
 
-    <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+    <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
   </properties>
 

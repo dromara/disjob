@@ -22,7 +22,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.test.db.EmbeddedMysqlServerMariaDB;
 import cn.ponfee.disjob.test.redis.EmbeddedRedisServerKstyrc;
-import org.slf4j.impl.SimpleLogger;
+import org.slf4j.simple.SimpleLogger;
 import redis.embedded.RedisServer;
 
 /**

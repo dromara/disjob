@@ -18,8 +18,8 @@ package cn.ponfee.disjob.common.tuple;
 
 import cn.ponfee.disjob.common.collect.DelegatedIntSpliterator;
 import cn.ponfee.disjob.common.util.Comparators;
+import jakarta.annotation.Nonnull;
 
-import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;

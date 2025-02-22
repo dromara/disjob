@@ -19,11 +19,11 @@ package cn.ponfee.disjob.common.tree;
 import cn.ponfee.disjob.common.util.Comparators;
 import cn.ponfee.disjob.common.util.Jsons;
 import com.fasterxml.jackson.core.type.TypeReference;
+import jakarta.annotation.Nonnull;
 import lombok.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Objects;
