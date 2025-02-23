@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.registry.etcd;
 
 import cn.ponfee.disjob.common.concurrent.LoopThread;
+import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.ClassUtils;
@@ -282,6 +283,7 @@ public class EtcdClient implements Closeable {
             .workQueue(new LinkedBlockingQueue<>(2))
             .keepAliveTimeSeconds(600)
             .rejectedHandler(ThreadPoolExecutors.DISCARD)
+            .threadFactory(NamedThreadFactory.builder().prefix("etcd_event_listener").daemon(true).uncaughtExceptionHandler(LOG).build())
             .build();
 
         EventListener(String parentKey, CountDownLatch latch, Consumer<List<String>> listener) {

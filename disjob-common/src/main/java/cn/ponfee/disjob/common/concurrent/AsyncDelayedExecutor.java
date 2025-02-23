@@ -80,7 +80,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
                 .workQueue(new SynchronousQueue<>())
                 .keepAliveTimeSeconds(300)
                 .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
-                .threadFactory(NamedThreadFactory.builder().prefix("async_delayed_executor").uncaughtExceptionHandler(LOG).build())
+                .threadFactory(NamedThreadFactory.builder().prefix("async_delayed_executor").daemon(true).uncaughtExceptionHandler(LOG).build())
                 .build();
         }
         this.asyncExecutor = executor;

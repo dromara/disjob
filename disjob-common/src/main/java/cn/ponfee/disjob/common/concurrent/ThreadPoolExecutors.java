@@ -318,7 +318,7 @@ public final class ThreadPoolExecutors {
             .workQueue(new ArrayBlockingQueue<>(poolSize * 20))
             .keepAliveTimeSeconds(600)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
-            .threadFactory(NamedThreadFactory.builder().prefix("disjob_common_thread_pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build())
+            .threadFactory(NamedThreadFactory.builder().prefix("disjob_common_thread_pool").daemon(true).uncaughtExceptionHandler(LOG).build())
             .build();
 
         ShutdownHookManager.addShutdownHook(0, threadPool::shutdown);
@@ -327,11 +327,10 @@ public final class ThreadPoolExecutors {
 
     private static ScheduledThreadPoolExecutor makeCommonScheduledPoolExecutor() {
         int poolSize = getCommonPoolSize(DISJOB_COMMON_SCHEDULED_POOL_SIZE, 16);
-        ScheduledThreadPoolExecutor scheduledPool = new ScheduledThreadPoolExecutor(
-            poolSize,   // 是一个固定大小的线程池使用`corePoolSize`线程个数和无界队列，内部的`maximumPoolSize`设置实际无作用
-            NamedThreadFactory.builder().prefix("disjob_common_scheduled_pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build(),
-            CALLER_RUNS // 由于使用的是无界的任务队列`DelayedWorkQueue`，这意味着任务队列理论上不会满，因此拒绝策略通常不会触发
-        );
+        // 1、是一个固定大小的线程池使用`corePoolSize`线程个数和无界队列，内部的`maximumPoolSize`设置实际无作用
+        // 2、由于使用的是无界的任务队列`DelayedWorkQueue`，这意味着任务队列理论上不会满，因此拒绝策略通常不会触发
+        NamedThreadFactory threadFactory = NamedThreadFactory.builder().prefix("disjob_common_scheduled_pool").daemon(true).build();
+        ScheduledThreadPoolExecutor scheduledPool = new ScheduledThreadPoolExecutor(poolSize, threadFactory);
         scheduledPool.setRemoveOnCancelPolicy(true);
         ShutdownHookManager.addShutdownHook(0, scheduledPool::shutdown);
         return scheduledPool;

@@ -82,7 +82,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             .workQueue(new SynchronousQueue<>())
             .keepAliveTimeSeconds(300)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
-            .threadFactory(NamedThreadFactory.builder().prefix("triggering_job_scanner").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(log).build())
+            .threadFactory(NamedThreadFactory.builder().prefix("triggering_job_scanner").priority(Thread.MAX_PRIORITY).daemon(true).uncaughtExceptionHandler(log).build())
             .build();
     }
 

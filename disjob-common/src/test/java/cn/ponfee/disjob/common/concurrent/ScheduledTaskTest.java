@@ -33,7 +33,11 @@ public class ScheduledTaskTest {
 
     @Test
     public void testException() throws InterruptedException, ExecutionException {
-        ScheduledThreadPoolExecutor scheduledExecutor = ThreadPoolExecutors.commonScheduledPool();
+        NamedThreadFactory threadFactory = NamedThreadFactory.builder()
+            .prefix("scheduled_task_test")
+            .priority(Thread.MAX_PRIORITY)
+            .build();
+        ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(5, threadFactory);
 
         ScheduledFuture<?> schedule1 = scheduledExecutor.schedule(() -> System.out.println("timeout 1"), 1, TimeUnit.SECONDS);
         ScheduledFuture<?> schedule2 = scheduledExecutor.schedule(() -> {
@@ -51,6 +55,19 @@ public class ScheduledTaskTest {
         Assertions.assertThat(schedule1.get()).isNull();
         Assertions.assertThatThrownBy(schedule2::get).isInstanceOf(ExecutionException.class).hasMessage("java.lang.ArithmeticException: / by zero");
         Assertions.assertThat(schedule3.get()).isNull();
+    }
+
+    @Test
+    public void testSubmit() throws InterruptedException {
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
+        executor.scheduleWithFixedDelay(() -> System.out.println("scheduled"), 500, 200, TimeUnit.MILLISECONDS);
+
+        System.out.println("\n");
+        executor.submit(() -> System.out.println("submit"));
+        executor.execute(() -> System.out.println("execute"));
+        System.out.println("\n");
+
+        Thread.sleep(1000);
     }
 
 }
