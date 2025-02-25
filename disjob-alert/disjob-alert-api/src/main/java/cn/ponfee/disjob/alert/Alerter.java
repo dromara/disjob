@@ -18,8 +18,10 @@ package cn.ponfee.disjob.alert;
 
 import cn.ponfee.disjob.alert.configuration.AlerterProperties;
 import cn.ponfee.disjob.alert.configuration.AlerterProperties.SendRateLimit;
+import cn.ponfee.disjob.alert.enums.AlertLevel;
 import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.alert.event.AlertEvent;
+import cn.ponfee.disjob.alert.event.AlertInstanceEvent;
 import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.core.base.GroupInfoService;
@@ -65,7 +67,14 @@ public class Alerter {
     /**
      * 告警限流
      */
-    private final ConcurrentHashMap<AlertType, SlidingWindow> rateLimiter = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, SlidingWindow> rateLimiter = new ConcurrentHashMap<>();
+
+    /**
+     *  通知level
+     */
+    private final AlertLevel alertLevel;
+
+    private final SendRateLimit limit;
 
     public Alerter(AlerterProperties config,
                    GroupInfoService groupInfoService,
@@ -74,13 +83,11 @@ public class Alerter {
         this.typeChannelsMap = ObjectUtils.defaultIfNull(config.getTypeChannelsMap(), Collections.emptyMap());
         this.groupInfoService = groupInfoService;
         this.executor = Objects.requireNonNull(executor);
-        SendRateLimit limit = config.getSendRateLimit();
-        for (AlertType alertType : typeChannelsMap.keySet()) {
-            rateLimiter.put(alertType, new SlidingWindow(limit.getMaxRequests(), limit.getWindowSizeInMillis()));
-        }
+        this.alertLevel = config.getAlertLevel();
+        this.limit = config.getSendRateLimit();
     }
 
-    public void alert(AlertEvent event) {
+    public void alert(AlertInstanceEvent event) {
         String[] channels = typeChannelsMap.get(event.getAlertType());
         if (channels == null || channels.length == 0) {
             return;
@@ -95,7 +102,23 @@ public class Alerter {
         // TODO 限流：滑动窗口、漏斗算法、分布式集群限流
         // 滑动窗口
         // TODO 待讨论：限流维度为group或job级别
-        SlidingWindow slidingWindow = rateLimiter.get(event.getAlertType());
+        String rateLimiterKey;
+        if (alertLevel == AlertLevel.TYPE) {
+            rateLimiterKey = event.getAlertType().toString();
+        } else if (alertLevel == AlertLevel.GROUP) {
+            rateLimiterKey = event.getGroup();
+        } else if (alertLevel == AlertLevel.JOB) {
+            rateLimiterKey = event.getJobName();
+        } else if (alertLevel == AlertLevel.INSTANCE) {
+            rateLimiterKey = String.valueOf(event.getInstanceId());
+        } else {
+            LOG.error("Unsupported alert level: {}", alertLevel);
+            return;
+        }
+        if (!rateLimiter.containsKey(rateLimiterKey)) {
+            rateLimiter.put(rateLimiterKey, new SlidingWindow(limit.getMaxRequests(), limit.getWindowSizeInMillis()));
+        }
+        SlidingWindow slidingWindow = rateLimiter.get(rateLimiterKey);
         if (slidingWindow != null && !slidingWindow.tryAcquire()) {
             LOG.warn("Alert rate limited for event: {}", event);
             return; // 如果限流器判定超出限制，则直接返回

@@ -19,14 +19,14 @@ disjob.alert:
     sms:
       blends:
         # 自定义的标识，也就是configId这里可以是任意值（最好不要是中文）
-        aliyun:
+        tx1:
           #厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
-          supplier: aliyun
+          supplier: alibaba
           accessKeyId: sampleAccessKeyId
           accessKeySecret: sampleAccessKeySecret
           signaTure: disjob
           templateId: xxx
-        tencent:
+        tx2:
           #厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
           supplier: tencent
           #您的accessKey
@@ -51,3 +51,7 @@ disjob.alert:
       keep-alive-time-seconds: 60
       await-termination-seconds: 5
       allow-core-thread-time-out: true
+    send-rate-limit:
+      max-requests: 2
+      window-size-in-millis: 60
+    alert-level: instance

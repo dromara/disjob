@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.alert.configuration;
 
+import cn.ponfee.disjob.alert.enums.AlertLevel;
 import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.base.JobConstants;
@@ -58,6 +59,11 @@ public class AlerterProperties extends ToJsonString implements Serializable {
      * Send rate limit config
      */
     private SendRateLimit sendRateLimit = new SendRateLimit();
+
+    /**
+     * Alert level
+     */
+    private AlertLevel alertLevel;
 
     @Getter
     @Setter
