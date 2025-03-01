@@ -134,7 +134,7 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
             "  /___,' |_|___// |\\___/|_.__/   \\__/\\__,_| .__/ \\___|_|    \\_/ |_|___/\\___/|_|\n" +
             "              |__/                        |_|\n\n" +
             "  Supervisor: " + Supervisor.local() + "\n" +
-            "  Version   : " + JobConstants.VERSION + "\n" +
+            "  Version   : " + JobConstants.DISJOB_VERSION + "\n" +
             "==================================================================================\n";
         LOG.info(bannerSupervisor);
     }

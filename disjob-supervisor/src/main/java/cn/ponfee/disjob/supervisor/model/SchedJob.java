@@ -287,6 +287,7 @@ public class SchedJob extends BaseEntity {
     private void verifyAndDefaultSetting(int maximumJobRetryCount) {
         this.jobName = CoreUtils.trimRequired(jobName, 60, "Job name");
         this.remark = CoreUtils.trimOptional(remark, 255, "Remark");
+        this.jobExecutor = StringUtils.trim(jobExecutor);
 
         // set default
         this.jobState = defaultIfNull(jobState, JobState.DISABLED.value());

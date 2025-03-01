@@ -139,7 +139,7 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
             "  /___,' |_|___// |\\___/|_.__/     \\/  \\/ \\___/|_|  |_|\\_\\___|_|\n" +
             "              |__/\n\n" +
             "  Worker : " + Worker.local() + "\n" +
-            "  Version: " + JobConstants.VERSION + "\n" +
+            "  Version: " + JobConstants.DISJOB_VERSION + "\n" +
             "==================================================================================\n";
         LOG.info(bannerWorker);
     }

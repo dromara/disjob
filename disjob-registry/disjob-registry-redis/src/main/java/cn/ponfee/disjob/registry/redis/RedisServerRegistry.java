@@ -151,10 +151,14 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     @Override
     public final void deregister(R server) {
-        registered.remove(server);
-        ThrowingSupplier.doCaught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
-        publishServerEvent(RegistryEventType.DEREGISTER, server);
-        log.info("Server deregister: {}, {}", registryRole, server);
+        try {
+            registered.remove(server);
+            ThrowingSupplier.doCaught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
+            publishServerEvent(RegistryEventType.DEREGISTER, server);
+            log.info("Redis server deregister success: {}", server);
+        } catch (Throwable t) {
+            log.error("Redis server deregister error: " + server, t);
+        }
     }
 
     @Override

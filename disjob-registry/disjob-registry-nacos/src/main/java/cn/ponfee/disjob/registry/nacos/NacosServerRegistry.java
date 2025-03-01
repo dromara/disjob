@@ -88,9 +88,9 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         try {
             registered.remove(server);
             client.deregisterInstance(registryRootPath, instance);
-            log.info("Nacos server deregister: {}, {}", registryRole, server);
+            log.info("Nacos server deregister success: {}", server);
         } catch (Throwable t) {
-            log.error("Nacos server deregister error.", t);
+            log.error("Nacos server deregister error: " + server, t);
         }
     }
 

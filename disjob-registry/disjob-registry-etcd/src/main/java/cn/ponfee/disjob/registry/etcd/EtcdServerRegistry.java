@@ -121,9 +121,9 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         try {
             registered.remove(server);
             client.deleteKey(buildRegistryServerId(server));
-            log.info("Etcd server deregister: {}, {}", registryRole, server);
+            log.info("Etcd server deregister success: {}", server);
         } catch (Throwable t) {
-            log.error("Etcd server deregister error.", t);
+            log.error("Etcd server deregister error: " + server, t);
         }
     }
 

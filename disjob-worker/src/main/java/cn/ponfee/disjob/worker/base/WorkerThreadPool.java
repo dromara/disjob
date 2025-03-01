@@ -462,9 +462,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private final long taskId;
         private final String worker;
 
-        private TaskSavepoint(long taskId, String worker) {
-            this.taskId = taskId;
-            this.worker = worker;
+        private TaskSavepoint(WorkerTask workerTask) {
+            this.taskId = workerTask.getTaskId();
+            this.worker = workerTask.getWorker().serialize();
         }
 
         @Override
@@ -522,7 +522,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         private void doStop() {
             toStop();
-            Threads.stopThread(this, 10000L);
+            Threads.stopThread(this, 6000L);
         }
 
         /**
@@ -685,19 +685,22 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         private void execute(WorkerTask workerTask, JobExecutor taskExecutor, ExecutionTask executionTask) throws Exception {
             if (workerTask.getExecuteTimeout() > 0) {
+                long expectTime = System.currentTimeMillis() + workerTask.getExecuteTimeout();
                 Runnable stopTimeoutTask = () -> {
+                    long delayedTime = System.currentTimeMillis() - expectTime;
                     Operation ops = Operation.TIMEOUT_CANCEL;
                     Pair<WorkerThread, WorkerTask> pair = activePool.takeThread(workerTask.getTaskId(), workerTask, ops);
                     if (pair != null) {
-                        LOG.error("Stop execute timeout task: {}", workerTask);
+                        LOG.error("Stop timeout task: {}, {}", workerTask.getTaskId(), delayedTime);
                         stopTask(pair, ops);
+                    } else {
+                        LOG.info("Skip timeout task: {}, {}", workerTask.getTaskId(), delayedTime);
                     }
                 };
                 commonScheduledPool().schedule(stopTimeoutTask, workerTask.getExecuteTimeout(), TimeUnit.MILLISECONDS);
             }
 
-            Savepoint savepoint = new TaskSavepoint(workerTask.getTaskId(), workerTask.getWorker().serialize());
-            ExecutionResult result = taskExecutor.execute(executionTask, savepoint);
+            ExecutionResult result = taskExecutor.execute(executionTask, new TaskSavepoint(workerTask));
             if (result != null && result.isSuccess()) {
                 Operation ops = workerTask.getOperation();
                 LOG.info("Execute task success: {}, {}, {}", workerTask.getTaskId(), ops, result.getMsg());

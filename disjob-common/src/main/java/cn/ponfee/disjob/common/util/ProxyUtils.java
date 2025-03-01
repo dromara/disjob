@@ -21,9 +21,13 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.AdvisedSupport;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.cglib.proxy.Enhancer;
+import org.springframework.util.Assert;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Map;
 
 /**
  * Proxy utility class.
@@ -67,6 +71,15 @@ public final class ProxyUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public static <A extends Annotation> A create(Class<A> annotationType, Map<String, Object> attributes) {
+        return (A) Proxy.newProxyInstance(
+            annotationType.getClassLoader(),
+            new Class<?>[]{annotationType},
+            new AnnotationInvocationHandler(annotationType, attributes)
+        );
+    }
+
     /**
      * Returns the proxy target object
      *
@@ -90,9 +103,49 @@ public final class ProxyUtils {
         return object;
     }
 
+    // -----------------------------------------------------------------private methods or class
+
     private static Object getProxyTargetObject(Object proxy) throws Exception {
         AdvisedSupport advisedSupport = (AdvisedSupport) FieldUtils.readField(proxy, "advised", true);
         return advisedSupport.getTargetSource().getTarget();
+    }
+
+    private static class AnnotationInvocationHandler implements InvocationHandler {
+        private final Class<? extends Annotation> annotationType;
+        private final Map<String, Object> attributes;
+
+        private AnnotationInvocationHandler(Class<? extends Annotation> annotationType, Map<String, Object> attributes) {
+            this.annotationType = annotationType;
+            this.attributes = attributes;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            String methodName = method.getName();
+            int parameterCount = method.getParameterCount();
+            if (parameterCount > 0) {
+                // Annotation中只有`#equals(java.lang.Object)`方法才会带有参数
+                Assert.isTrue(parameterCount == 1 && "equals".equals(methodName), () -> "Unknown annotation method: " + method);
+                return proxy == args[0];
+            }
+            switch (methodName) {
+                case "annotationType":
+                    return annotationType;
+                case "hashCode":
+                    return System.identityHashCode(proxy);
+                case "toString":
+                    return annotationType.getName() + "@" + proxy.hashCode();
+                // 以下方法在`java.lang.Object`类中用了final修饰，不会被覆写，实际调用不会走进来
+                case "getClass":
+                case "notify":
+                case "notifyAll":
+                case "wait":
+                    throw new RuntimeException("Unexpected annotation method: " + method);
+                default:
+                    Object value = attributes == null ? null : attributes.get(methodName);
+                    return value == null ? method.getDefaultValue() : ObjectUtils.cast(value, method.getReturnType());
+            }
+        }
     }
 
 }

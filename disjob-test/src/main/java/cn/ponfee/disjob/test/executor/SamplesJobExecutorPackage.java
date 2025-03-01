@@ -18,7 +18,8 @@ package cn.ponfee.disjob.test.executor;
 
 /**
  * 这个package下是一些JobExecutor测试样例，用于demo演示
- * <p>开发时建议去掉spring扫描该包目录，即删除：`scanBasePackageClasses = SamplesJobExecutorPackage.class`
+ * <p>开发时可以去掉spring扫描该包目录，即删除：`scanBasePackageClasses = SamplesJobExecutorPackage.class`
+ * <p>生产时建议去掉对`disjob-test`模块的依赖
  *
  * @author Ponfee
  */

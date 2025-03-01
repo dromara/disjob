@@ -98,9 +98,9 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         try {
             registered.remove(server);
             client.deletePath(registryPath);
-            log.info("Server deregister: {}, {}", registryRole, server);
-        } catch (Throwable e) {
-            log.error("Deregister to zookeeper failed: " + registryPath, e);
+            log.info("Zookeeper server deregister success: {}", server);
+        } catch (Throwable t) {
+            log.error("Zookeeper server deregister error: " + server, t);
         }
     }
 

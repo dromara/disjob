@@ -151,11 +151,15 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     @Override
     public final void deregister(R server) {
-        registered.remove(server);
-        Object[] args = new Object[]{namespace, registerRoleName, server.serialize()};
-        RetryTemplate.executeQuietly(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args), 3, 1000L);
-        publishServerEvent(RegistryEventType.DEREGISTER, server);
-        log.info("Server deregister: {}, {}", registryRole, server);
+        try {
+            registered.remove(server);
+            Object[] args = new Object[]{namespace, registerRoleName, server.serialize()};
+            RetryTemplate.executeQuietly(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args), 3, 1000L);
+            publishServerEvent(RegistryEventType.DEREGISTER, server);
+            log.info("Database server deregister success: {}", server);
+        } catch (Throwable t) {
+            log.error("Database server deregister error: " + server, t);
+        }
     }
 
     @Override

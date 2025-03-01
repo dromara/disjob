@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
-import cn.ponfee.disjob.common.base.AnnotationProxy;
+import cn.ponfee.disjob.common.util.ProxyUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.web.context.WebServerApplicationContext;
@@ -110,9 +110,9 @@ public final class SpringUtils {
     }
 
     public static <T extends Annotation> T parseAnnotation(Class<T> type, Map<String, Object> attributes) {
-        // `sun.reflect.annotation`包不可见，需要`add-exports`，因此用`AnnotationProxy`替换
+        // `sun.reflect.annotation`包不可见，需要`add-exports`，因此用`ProxyUtils#create(Class,Map)`替换
         //return (T) AnnotationParser.annotationForMap(type, attributes == null ? Collections.emptyMap() : attributes);
-        return AnnotationProxy.create(type, attributes);
+        return ProxyUtils.create(type, attributes);
     }
 
     public static void addPropertyIfAbsent(Environment environment, String key, String value) {

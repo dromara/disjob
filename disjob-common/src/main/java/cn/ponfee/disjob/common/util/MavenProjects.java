@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.util;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * Maven标准的项目文件工具类(Only use in test case)
@@ -36,8 +37,8 @@ public class MavenProjects {
     private static final String EXCLUSION_STRING = "[\r\n]";
 
     public static String getProjectBaseDir() {
-        String path = Thread.currentThread().getContextClassLoader().getResource("").getFile();
-        return Files.cleanPath(new File(path).getParentFile().getParentFile().getPath());
+        URL url = Thread.currentThread().getContextClassLoader().getResource("");
+        return Files.cleanPath(Files.toFile(url).getParentFile().getParentFile().getAbsolutePath());
     }
 
     // --------------------------------------------------------------------------------------java

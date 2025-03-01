@@ -24,6 +24,7 @@ import cn.ponfee.disjob.common.tuple.Tuple3;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +32,12 @@ import org.springframework.objenesis.ObjenesisHelper;
 import org.springframework.util.Assert;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -66,6 +65,10 @@ public final class ClassUtils {
      * @return class object
      */
     public static <T> Class<T> getClass(String text) {
+        if (StringUtils.isBlank(text)) {
+            return null;
+        }
+        text = text.trim();
         if (QUALIFIED_CLASS_NAME_PATTERN.matcher(text).matches()) {
             try {
                 return (Class<T>) Class.forName(text);
@@ -430,9 +433,7 @@ public final class ClassUtils {
      * @return spec class file path
      */
     public static String getClassFilePath(Class<?> clazz) {
-        URL url = clazz.getProtectionDomain().getCodeSource().getLocation();
-        String path = new File(decodeURL(url)).getAbsolutePath();
-
+        String path = Files.toFile(clazz.getProtectionDomain().getCodeSource().getLocation()).getAbsolutePath();
         if (path.toLowerCase().endsWith(".jar")) {
             path += "!";
         }
@@ -446,11 +447,11 @@ public final class ClassUtils {
      * @return spec classpath
      */
     public static String getClasspath(Class<?> clazz) {
-        String path = decodeURL(clazz.getProtectionDomain().getCodeSource().getLocation());
+        String path = Files.toFile(clazz.getProtectionDomain().getCodeSource().getLocation()).getAbsolutePath();
         if (path.toLowerCase().endsWith(".jar")) {
-            path = path.substring(0, path.lastIndexOf("/") + 1);
+            path = path.substring(0, path.lastIndexOf("/"));
         }
-        return new File(path).getAbsolutePath() + File.separator;
+        return path + File.separator;
     }
 
     /**
@@ -460,7 +461,7 @@ public final class ClassUtils {
      */
     public static String getClasspath() {
         URL url = Thread.currentThread().getContextClassLoader().getResource("");
-        return new File(decodeURL(url)).getAbsolutePath() + File.separator;
+        return url == null ? null : Files.toFile(url).getAbsolutePath() + File.separator;
     }
 
     // -------------------------------------------------------------------------------------------private methods
@@ -565,7 +566,7 @@ public final class ClassUtils {
      *
      * @param definedTypes 方法体中定义的参数类型
      * @param actualTypes  调用方法实际传入的参数类型
-     * @return
+     * @return boolean
      */
     private static boolean matches(Class<?>[] definedTypes, Class<?>[] actualTypes) {
         if (definedTypes.length != actualTypes.length) {
@@ -592,14 +593,6 @@ public final class ClassUtils {
         return ArrayUtils.isEmpty(parameterTypes)
             ? "()"
             : "(" + Joiner.on(", ").join(parameterTypes) + ")";
-    }
-
-    private static String decodeURL(URL url) {
-        try {
-            return URLDecoder.decode(Objects.requireNonNull(url).getPath(), Files.UTF_8);
-        } catch (UnsupportedEncodingException e) {
-            return ExceptionUtils.rethrow(e);
-        }
     }
 
 }

@@ -19,7 +19,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
+import java.net.URL;
 
 /**
  * ImageUtils Test
@@ -28,9 +28,9 @@ import java.io.IOException;
  */
 public class ImageUtilsTest {
 
-    public static void main(String[] args) throws IOException {
-        String path = Thread.currentThread().getContextClassLoader().getResource("").getFile();
-        path = new File(path).getParentFile().getParentFile().getPath()+ "/target/dag/test.png";
+    public static void main(String[] args) throws Exception {
+        URL url = Thread.currentThread().getContextClassLoader().getResource("");
+        String path = new File(url.toURI()).getParentFile().getParentFile().getAbsolutePath() + "/target/dag/test.png";
         File file = new File(path);
         FileUtils.deleteQuietly(file);
         file.getParentFile().mkdirs();

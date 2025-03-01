@@ -81,6 +81,14 @@
         job_type = #{jobType,jdbcType=TINYINT},
         route_strategy = #{routeStrategy,jdbcType=TINYINT},
       </if>
+      <if test="triggerType != null">
+        trigger_type = #{triggerType,jdbcType=TINYINT},
+        trigger_value = #{triggerValue,jdbcType=VARCHAR},
+        next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
+      </if>
+      <if test="remark != null and remark != ''">
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
 
         job_state = #{jobState,jdbcType=TINYINT},
         retry_type = #{retryType,jdbcType=TINYINT},
@@ -88,22 +96,10 @@
         retry_interval = #{retryInterval,jdbcType=INTEGER},
         start_time = #{startTime,jdbcType=TIMESTAMP},
         end_time = #{endTime,jdbcType=TIMESTAMP},
-
-      <if test="triggerType != null">
-        trigger_type = #{triggerType,jdbcType=TINYINT},
-        trigger_value = #{triggerValue,jdbcType=VARCHAR},
-        next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
-      </if>
-
         execute_timeout = #{executeTimeout,jdbcType=INTEGER},
         collided_strategy = #{collidedStrategy,jdbcType=TINYINT},
         misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
         shutdown_strategy = #{shutdownStrategy,jdbcType=TINYINT},
-
-      <if test="remark != null and remark != ''">
-        remark = #{remark,jdbcType=VARCHAR},
-      </if>
-
         version = version+1,
         updated_by = #{updatedBy,jdbcType=VARCHAR}
     WHERE job_id = #{jobId,jdbcType=BIGINT}

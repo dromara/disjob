@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.core.base;
 
+import cn.ponfee.disjob.common.util.VersionUtils;
 import org.springframework.http.MediaType;
 
 /**
@@ -28,7 +29,7 @@ public final class JobConstants {
     /**
      * Version
      */
-    public static final String VERSION = "2.1.9-SNAPSHOT";
+    public static final String DISJOB_VERSION = VersionUtils.getVersion(JobConstants.class, "cn.ponfee", "disjob-core");
 
     /**
      * 数据库大文本字段最大长度限制

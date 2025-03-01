@@ -95,7 +95,7 @@ public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
     @Override
     public SupervisorMetrics getMetrics() {
         SupervisorMetrics metrics = new SupervisorMetrics();
-        metrics.setVersion(JobConstants.VERSION);
+        metrics.setVersion(JobConstants.DISJOB_VERSION);
         metrics.setStartupTime(Dates.toDate(localSupervisor.getStartupTime()));
         metrics.setAlsoWorker(Worker.local() != null);
         return metrics;

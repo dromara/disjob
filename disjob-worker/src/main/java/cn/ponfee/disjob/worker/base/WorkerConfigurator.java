@@ -41,7 +41,7 @@ public class WorkerConfigurator {
     public static WorkerMetrics metrics() {
         Worker.Local localWorker = Worker.local();
         WorkerMetrics metrics = new WorkerMetrics();
-        metrics.setVersion(JobConstants.VERSION);
+        metrics.setVersion(JobConstants.DISJOB_VERSION);
         metrics.setWorkerId(localWorker.getWorkerId());
         metrics.setStartupTime(Dates.toDate(localWorker.getStartupTime()));
         metrics.setAlsoSupervisor(Supervisor.local() != null);

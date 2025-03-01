@@ -119,9 +119,9 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             } else {
                 client.agentServiceDeregister(serverId, token);
             }
-            log.info("Consul Server deregister: {}, {}", registryRole, server);
+            log.info("Consul server deregister success: {}", server);
         } catch (Throwable t) {
-            log.error("Consul server deregister error.", t);
+            log.error("Consul server deregister error: " + server, t);
         }
     }
 

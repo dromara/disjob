@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import cn.ponfee.disjob.common.exception.Throwables;
 import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
@@ -354,6 +356,10 @@ public final class Files {
 
     public static Charset charset(String charsetName) {
         return charsetName == null ? DEFAULT_CHARSET : Charset.forName(charsetName);
+    }
+
+    public static File toFile(URL url) {
+        return new File(Throwables.ThrowingSupplier.doChecked(url::toURI));
     }
 
 }
