@@ -4,6 +4,7 @@ import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 
 import javax.net.ssl.*;
 import java.io.*;
@@ -118,6 +119,19 @@ public class HttpUtils
      */
     public static String sendPost(String url, String param)
     {
+        return sendPost(url, param, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+    }
+
+    /**
+     * 向指定 URL 发送POST方法的请求
+     * 
+     * @param url 发送请求的 URL
+     * @param param 请求参数
+     * @param contentType 内容类型
+     * @return 所代表远程资源的响应结果
+     */
+    public static String sendPost(String url, String param, String contentType)
+    {
         PrintWriter out = null;
         BufferedReader in = null;
         StringBuilder result = new StringBuilder();
@@ -130,7 +144,7 @@ public class HttpUtils
             conn.setRequestProperty("connection", "Keep-Alive");
             conn.setRequestProperty("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
             conn.setRequestProperty("Accept-Charset", "utf-8");
-            conn.setRequestProperty("contentType", "utf-8");
+            conn.setRequestProperty("Content-Type", contentType);
             conn.setDoOutput(true);
             conn.setDoInput(true);
             out = new PrintWriter(conn.getOutputStream());
@@ -183,6 +197,11 @@ public class HttpUtils
 
     public static String sendSSLPost(String url, String param)
     {
+        return sendSSLPost(url, param, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+    }
+
+    public static String sendSSLPost(String url, String param, String contentType)
+    {
         StringBuilder result = new StringBuilder();
         String urlNameString = url + "?" + param;
         try
@@ -196,7 +215,7 @@ public class HttpUtils
             conn.setRequestProperty("connection", "Keep-Alive");
             conn.setRequestProperty("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
             conn.setRequestProperty("Accept-Charset", "utf-8");
-            conn.setRequestProperty("contentType", "utf-8");
+            conn.setRequestProperty("Content-Type", contentType);
             conn.setDoOutput(true);
             conn.setDoInput(true);
 
@@ -208,7 +227,7 @@ public class HttpUtils
             String ret = "";
             while ((ret = br.readLine()) != null)
             {
-                if (ret != null && !ret.trim().equals(""))
+                if (StringUtils.isNotBlank(ret))
                 {
                     result.append(new String(ret.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
                 }

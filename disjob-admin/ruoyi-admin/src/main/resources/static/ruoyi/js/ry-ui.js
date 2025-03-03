@@ -152,6 +152,7 @@ var table = {
                     rowStyle: options.rowStyle,                         // 通过自定义函数设置行样式
                     footerStyle: options.footerStyle,                   // 通过自定义函数设置页脚样式
                     headerStyle: options.headerStyle,                   // 通过自定义函数设置标题样式
+                    selectItemName: options.selectItemName,             // 自定义radio/checkbox的name值
                     columns: options.columns,                           // 显示列信息（*）
                     data: options.data,                                 // 被加载的数据
                     responseHandler: $.table.responseHandler,           // 在加载服务器发送来的数据之前处理函数
@@ -1352,16 +1353,17 @@ var table = {
                 if (result.code == web_status.SUCCESS) {
                     var parent = activeWindow();
                     if ($.common.isEmpty(parent.table)) {
-                    	$.modal.msgSuccessReload(result.msg);
+                        $.modal.msgSuccessReload(result.msg);
                     } else if (parent.table.options.type == table_type.bootstrapTable) {
-                        $.modal.close();
                         parent.$.modal.msgSuccess(result.msg);
                         parent.$.table.refresh();
                     } else if (parent.table.options.type == table_type.bootstrapTreeTable) {
-                        $.modal.close();
                         parent.$.modal.msgSuccess(result.msg);
                         parent.$.treeTable.refresh();
+                    } else {
+                        parent.$.modal.msgSuccess(result.msg);
                     }
+                    $.modal.close();
                 } else if (result.code == web_status.WARNING) {
                     $.modal.alertWarning(result.msg)
                 }  else {

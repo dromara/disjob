@@ -12,6 +12,7 @@ import com.ruoyi.framework.manager.AsyncManager;
 import com.ruoyi.framework.manager.factory.AsyncFactory;
 import com.ruoyi.system.domain.SysOperLog;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -50,7 +51,7 @@ public class LogAspect
      * 处理请求前执行
      */
     @Before(value = "@annotation(controllerLog)")
-    public void boBefore(JoinPoint joinPoint, Log controllerLog)
+    public void doBefore(JoinPoint joinPoint, Log controllerLog)
     {
         TIME_THREADLOCAL.set(System.currentTimeMillis());
     }
@@ -105,7 +106,11 @@ public class LogAspect
             if (e != null)
             {
                 operLog.setStatus(BusinessStatus.FAIL.ordinal());
-                operLog.setErrorMsg(StringUtils.substring(e.getMessage(), 0, 2000));
+                String message = StringUtils.trim(ExceptionUtils.getRootCauseMessage(e));
+                if (StringUtils.isBlank(message)) {
+                    message = ExceptionUtils.getStackTrace(ExceptionUtils.getRootCause(e));
+                }
+                operLog.setErrorMsg(StringUtils.substring(message, 0, 2000));
             }
             // 设置方法名称
             String className = joinPoint.getTarget().getClass().getName();
