@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.common.util;
+package cn.ponfee.disjob.worker.executor.impl;
 
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.exception.Throwables;
+import cn.ponfee.disjob.common.util.Files;
+import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.worker.executor.ExecutionResult;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
@@ -160,6 +166,26 @@ public final class ProcessUtils {
             ExceptionUtils.rethrow(e);
         } catch (Throwable t) {
             LOG.error("Kill process id '" + pid + "' error.", t);
+        }
+    }
+
+    public static ExecutionResult completeProcess(Process process, Charset charset, ExecutionTask task, Logger log) {
+        try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
+            // 一次性获取全部执行结果信息：不是在控制台实时展示执行信息，所以此处不用通过异步线程去获取命令的实时执行信息
+            String verbose = IOUtils.toString(is, charset);
+            String error = IOUtils.toString(es, charset);
+            int code = process.waitFor();
+            if (code == ProcessUtils.SUCCESS_CODE) {
+                return ExecutionResult.success(verbose);
+            } else {
+                return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + error);
+            }
+        } catch (Throwable t) {
+            log.error("Process execute error: " + task, t);
+            Threads.interruptIfNecessary(t);
+            return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
+        } finally {
+            ProcessUtils.destroy(process);
         }
     }
 

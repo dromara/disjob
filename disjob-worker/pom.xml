@@ -27,6 +27,12 @@
       <artifactId>disjob-dispatch-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
+    <!-- OS process operate: use by ProcessUtils -->
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna-platform</artifactId>
+      <version>5.16.0</version>
+    </dependency>
   </dependencies>
 
 </project>

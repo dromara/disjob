@@ -51,13 +51,14 @@
       <artifactId>disjob-dispatch-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
-
-    <!-- test dependency -->
+    <!-- Draw DAG graph image: use by DAGUtils -->
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <scope>test</scope>
+      <groupId>guru.nidi</groupId>
+      <artifactId>graphviz-java</artifactId>
+      <version>0.18.1</version>
     </dependency>
+
+    <!-- Test dependencies -->
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-test</artifactId>

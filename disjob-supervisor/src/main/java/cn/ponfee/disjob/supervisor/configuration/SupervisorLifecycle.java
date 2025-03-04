@@ -36,20 +36,20 @@ import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.*;
  *
  * @author Ponfee
  */
-public class SupervisorLifecycle implements SmartLifecycle {
+class SupervisorLifecycle implements SmartLifecycle {
 
     private final SupervisorStartup supervisorStartup;
 
-    public SupervisorLifecycle(Supervisor.Local localSupervisor,
-                               SupervisorProperties supervisorConf,
-                               SupervisorRegistry supervisorRegistry,
-                               WorkerClient workerClient,
-                               JobManager jobManager,
-                               JobQuerier jobQuerier,
-                               TaskDispatcher taskDispatcher,
-                               @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER) LockTemplate scanWaitingInstanceLocker,
-                               @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) LockTemplate scanRunningInstanceLocker,
-                               @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) LockTemplate scanTriggeringJobLocker) {
+    SupervisorLifecycle(Supervisor.Local localSupervisor,
+                        SupervisorProperties supervisorConf,
+                        SupervisorRegistry supervisorRegistry,
+                        WorkerClient workerClient,
+                        JobManager jobManager,
+                        JobQuerier jobQuerier,
+                        TaskDispatcher taskDispatcher,
+                        @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER) LockTemplate scanWaitingInstanceLocker,
+                        @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) LockTemplate scanRunningInstanceLocker,
+                        @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) LockTemplate scanTriggeringJobLocker) {
         this.supervisorStartup = new SupervisorStartup(
             localSupervisor,
             supervisorConf,

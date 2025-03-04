@@ -19,6 +19,7 @@ package cn.ponfee.disjob.worker.executor;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.worker.executor.impl.CommandJobExecutor;
+import cn.ponfee.disjob.worker.executor.impl.ProcessUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,11 @@ import java.util.Date;
  * @author Ponfee
  */
 public class CommandJobExecutorTest {
+
+    @Test
+    public void testProcess() {
+        Assertions.assertTrue(ProcessUtils.getCurrentJvmProcessId() > 0);
+    }
 
     @Test
     public void testCommand() throws Exception {

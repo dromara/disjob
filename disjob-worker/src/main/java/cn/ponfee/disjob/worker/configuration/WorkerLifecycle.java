@@ -35,18 +35,18 @@ import org.springframework.web.client.RestTemplate;
  *
  * @author Ponfee
  */
-public class WorkerLifecycle implements SmartLifecycle {
+class WorkerLifecycle implements SmartLifecycle {
 
     private final WorkerStartup workerStartup;
 
-    public WorkerLifecycle(Worker.Local localWorker,
-                           WorkerProperties workerProperties,
-                           RetryProperties retryProperties,
-                           WorkerRegistry workerRegistry,
-                           TaskReceiver taskReceiver,
-                           @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                           // if the local server also is a supervisor -> cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider
-                           @Nullable SupervisorRpcService supervisorRpcService) {
+    WorkerLifecycle(Worker.Local localWorker,
+                    WorkerProperties workerProperties,
+                    RetryProperties retryProperties,
+                    WorkerRegistry workerRegistry,
+                    TaskReceiver taskReceiver,
+                    @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                    // if the local server also is a supervisor -> cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider
+                    @Nullable SupervisorRpcService supervisorRpcService) {
         this.workerStartup = new WorkerStartup(
             localWorker,
             workerProperties,

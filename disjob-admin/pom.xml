@@ -45,7 +45,6 @@
     <commons-io.version>2.18.0</commons-io.version>
     <poi-ooxml.version>5.4.0</poi-ooxml.version>
     <velocity-engine-core.version>2.4.1</velocity-engine-core.version>
-    <graphviz-java.version>0.18.1</graphviz-java.version>
     <springdoc-openapi-ui.version>1.8.0</springdoc-openapi-ui.version>
 
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>

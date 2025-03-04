@@ -59,13 +59,6 @@
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-jsr223</artifactId>
     </dependency>
-    <!-- OS process operation -->
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna-platform</artifactId>
-      <version>${jna-platform.version}</version>
-    </dependency>
-    <!-- spring dependencies -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
@@ -79,12 +72,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-pool2</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>guru.nidi</groupId>
-      <artifactId>graphviz-java</artifactId>
-      <version>${graphviz-java.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -102,13 +89,6 @@
       <artifactId>mybatis-spring-boot-starter</artifactId>
       <version>${mybatis-spring-boot-starter.version}</version>
       <optional>true</optional>
-    </dependency>
-
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 

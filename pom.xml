@@ -78,14 +78,7 @@
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-io.version>2.18.0</commons-io.version>
     <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
-    <jna-platform.version>5.16.0</jna-platform.version>
-    <curator-recipes.version>5.7.1</curator-recipes.version>
-    <graphviz-java.version>0.18.1</graphviz-java.version>
-
-    <!-- Use for test -->
-    <mariaDB4j.version>2.5.3</mariaDB4j.version>
-    <embedded-redis.version>1.4</embedded-redis.version>
-    <testcontainers.version>1.20.1</testcontainers.version>
+    <curator-framework.version>5.7.1</curator-framework.version>
 
     <!-- spring-boot-dependencies [type=pom, scope=import]方式，无法自动引入plugin依赖版本 -->
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
@@ -94,7 +87,6 @@
     <maven-javadoc-plugin.version>3.4.1</maven-javadoc-plugin.version>
     <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
     <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
-
     <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
     <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
@@ -112,7 +104,7 @@
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-bom</artifactId>
-        <version>${testcontainers.version}</version>
+        <version>1.20.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -163,6 +155,11 @@
     -->
 
     <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>

@@ -28,6 +28,7 @@
       <version>1.4.5</version>
     </dependency>
 
+    <!-- Test dependencies -->
     <dependency>
       <groupId>com.pszymczyk.consul</groupId>
       <artifactId>embedded-consul</artifactId>

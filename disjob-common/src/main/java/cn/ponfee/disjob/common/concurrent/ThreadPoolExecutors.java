@@ -337,11 +337,10 @@ public final class ThreadPoolExecutors {
     }
 
     private static int getCommonPoolSize(String configKey, int minimumSize) {
-        int poolSize = Numbers.toInt(SystemUtils.getConfig(configKey), Runtime.getRuntime().availableProcessors() * 2);
-        if (poolSize < minimumSize || poolSize > MAX_CAP) {
-            LOG.warn("Invalid configured disjob common pool size: {}", poolSize);
-            poolSize = Numbers.bound(poolSize, minimumSize, MAX_CAP);
-        }
+        String configSize = SystemUtils.getConfig(configKey);
+        int coreSize = Runtime.getRuntime().availableProcessors();
+        int poolSize = Numbers.bound(Numbers.toInt(configSize, coreSize * 2), minimumSize, MAX_CAP);
+        LOG.info("Configured {}: [{}, {}] -> {}", configKey, configSize, coreSize, poolSize);
         return poolSize;
     }
 

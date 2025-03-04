@@ -18,8 +18,10 @@ package cn.ponfee.disjob.worker.executor.impl;
 
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.common.util.ProcessUtils;
-import cn.ponfee.disjob.worker.executor.*;
+import cn.ponfee.disjob.worker.executor.ExecutionResult;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
+import cn.ponfee.disjob.worker.executor.Savepoint;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -77,7 +79,7 @@ public class CommandJobExecutor extends JobExecutor {
         Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
         LOG.info("Command process id: {}, {}", task.getTaskId(), pid);
-        return JobExecutorUtils.completeProcess(process, charset, task, LOG);
+        return ProcessUtils.completeProcess(process, charset, task, LOG);
     }
 
     @Getter

@@ -24,7 +24,6 @@ import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.util.Assert;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
@@ -45,7 +44,7 @@ public final class ProxyUtils {
      * @return jdk proxy instance
      */
     @SuppressWarnings("unchecked")
-    public static <T> T create(InvocationHandler invocationHandler, Class<?>... interfaces) {
+    public static <T> T create(java.lang.reflect.InvocationHandler invocationHandler, Class<?>... interfaces) {
         return (T) Proxy.newProxyInstance(interfaces[0].getClassLoader(), interfaces, invocationHandler);
     }
 
@@ -63,9 +62,9 @@ public final class ProxyUtils {
         return (T) Enhancer.create(superClass, invocationHandler);
     }
 
-    public static <T, H extends InvocationHandler & org.springframework.cglib.proxy.InvocationHandler> T create(H invocationHandler, Class<?> cls) {
+    public static <T, H extends java.lang.reflect.InvocationHandler & org.springframework.cglib.proxy.InvocationHandler> T create(H invocationHandler, Class<?> cls) {
         if (cls.isInterface()) {
-            return create((InvocationHandler) invocationHandler, cls);
+            return create((java.lang.reflect.InvocationHandler) invocationHandler, cls);
         } else {
             return create((org.springframework.cglib.proxy.InvocationHandler) invocationHandler, cls);
         }
@@ -110,7 +109,7 @@ public final class ProxyUtils {
         return advisedSupport.getTargetSource().getTarget();
     }
 
-    private static class AnnotationInvocationHandler implements InvocationHandler {
+    private static class AnnotationInvocationHandler implements java.lang.reflect.InvocationHandler {
         private final Class<? extends Annotation> annotationType;
         private final Map<String, Object> attributes;
 

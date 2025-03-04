@@ -30,12 +30,20 @@ public class ShutdownHookManager {
 
     private static volatile PriorityBlockingQueue<ShutdownTask> tasks;
 
-    public static synchronized void addShutdownHook(int priority, ThrowingRunnable<?> task) {
+    /**
+     * Add task for shutdown hook
+     *
+     * @param priority 数值越小，优先级越高
+     * @param task     任务
+     */
+    public static void addShutdownHook(int priority, ThrowingRunnable<?> task) {
         init();
         tasks.add(new ShutdownTask(priority, task));
     }
 
-    private static void init() {
+    // -------------------------------------------------------private methods
+
+    private static synchronized void init() {
         if (tasks == null) {
             tasks = new PriorityBlockingQueue<>();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -60,7 +68,6 @@ public class ShutdownHookManager {
 
         @Override
         public int compareTo(ShutdownTask other) {
-            // 数值越小，优先级越高
             return Integer.compare(this.priority, other.priority);
         }
 

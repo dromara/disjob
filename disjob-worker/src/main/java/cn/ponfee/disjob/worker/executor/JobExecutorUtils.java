@@ -16,26 +16,19 @@
 
 package cn.ponfee.disjob.worker.executor;
 
-import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.dag.DAGExpression;
 import cn.ponfee.disjob.common.dag.DAGNode;
-import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.ProcessUtils;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
 import org.springframework.util.Assert;
 
-import java.io.InputStream;
 import java.lang.reflect.Modifier;
-import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -136,26 +129,6 @@ public class JobExecutorUtils {
         } else {
             Class<? extends JobExecutor> jobExecutorClass = getJobExecutorClass(text);
             return ClassUtils.newInstance(jobExecutorClass);
-        }
-    }
-
-    public static ExecutionResult completeProcess(Process process, Charset charset, ExecutionTask task, Logger log) {
-        try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
-            // 一次性获取全部执行结果信息：不是在控制台实时展示执行信息，所以此处不用通过异步线程去获取命令的实时执行信息
-            String verbose = IOUtils.toString(is, charset);
-            String error = IOUtils.toString(es, charset);
-            int code = process.waitFor();
-            if (code == ProcessUtils.SUCCESS_CODE) {
-                return ExecutionResult.success(verbose);
-            } else {
-                return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + error);
-            }
-        } catch (Throwable t) {
-            log.error("Process execute error: " + task, t);
-            Threads.interruptIfNecessary(t);
-            return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
-        } finally {
-            ProcessUtils.destroy(process);
         }
     }
 

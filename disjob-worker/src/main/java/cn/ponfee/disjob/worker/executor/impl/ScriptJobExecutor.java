@@ -18,10 +18,12 @@ package cn.ponfee.disjob.worker.executor.impl;
 
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.common.util.ProcessUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
-import cn.ponfee.disjob.worker.executor.*;
+import cn.ponfee.disjob.worker.executor.ExecutionResult;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
+import cn.ponfee.disjob.worker.executor.Savepoint;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.io.FileUtils;
@@ -87,7 +89,7 @@ public class ScriptJobExecutor extends JobExecutor {
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
         LOG.info("Script process id: {}, {}", task.getTaskId(), pid);
-        return JobExecutorUtils.completeProcess(process, charset, task, LOG);
+        return ProcessUtils.completeProcess(process, charset, task, LOG);
     }
 
     public enum ScriptType {

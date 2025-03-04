@@ -42,17 +42,12 @@
       </exclusions>
     </dependency>
 
+    <!-- Test dependencies -->
     <dependency>
       <groupId>io.etcd</groupId>
       <artifactId>jetcd-launcher</artifactId>
       <version>${jetcd.version}</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
 

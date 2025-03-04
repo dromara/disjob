@@ -28,6 +28,7 @@
       <version>2.5.0</version>
     </dependency>
 
+    <!-- Test dependencies -->
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
