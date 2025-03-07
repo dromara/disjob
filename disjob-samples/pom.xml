@@ -34,7 +34,7 @@
     <spring-boot.version>2.7.18</spring-boot.version>
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
     <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
-    <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
+    <flatten-maven-plugin.version>1.7.0</flatten-maven-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -71,11 +71,6 @@
       <artifactId>log4j-over-slf4j</artifactId>
     </dependency>
 
-    <!-- 引入`disjob-test`模块中的一些内置`JobExecutor`用于测试，实际开发中建议去除此依赖 -->
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-test</artifactId>
-    </dependency>
 
     <!-- Registry: select one implementation for server registry -->
     <dependency>

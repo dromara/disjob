@@ -36,11 +36,11 @@ public class ExecutionRouterRegistrar {
 
     static {
         // register built-in execution router
-        register0(new RoundRobinExecutionRouter());
+        register0(RoundRobinExecutionRouter.DEFAULT);
         register0(new RandomExecutionRouter());
         register0(new SimpleHashExecutionRouter());
         register0(new ConsistentHashExecutionRouter());
-        register0(new LocalPriorityExecutionRouter(new RoundRobinExecutionRouter()));
+        register0(new LocalPriorityExecutionRouter(RoundRobinExecutionRouter.DEFAULT));
         register0(BroadcastExecutionRouter.INSTANCE);
 
         for (int i = 0; i < REGISTERED_ROUTES.length; i++) {

@@ -27,18 +27,18 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-worker</artifactId>
     </dependency>
-
-    <!-- spring boot web -->
+    <!-- 引入`disjob-test`模块中的一些内置`JobExecutor`用于测试，实际开发中应去除此依赖 -->
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-test</artifactId>
     </dependency>
+
+
+    <!-- spring boot -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
-
-
     <!-- 解决启动中的ERROR日志：DnsServerAddressStreamProviders >>>> Unable to load io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'. Use DEBUG level to see the full stack: java.lang.UnsatisfiedLinkError: failed to load the required native library -->
     <!--
     <dependency>

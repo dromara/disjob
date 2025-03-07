@@ -41,14 +41,14 @@
     <kaptcha.version>2.3.3</kaptcha.version>
     <pagehelper-spring-boot-starter.version>2.1.0</pagehelper-spring-boot-starter.version>
     <fastjson.version>1.2.83</fastjson.version>
-    <oshi-core.version>6.6.6</oshi-core.version>
+    <oshi-core.version>6.7.0</oshi-core.version>
     <commons-io.version>2.18.0</commons-io.version>
     <poi-ooxml.version>5.4.0</poi-ooxml.version>
     <velocity-engine-core.version>2.4.1</velocity-engine-core.version>
     <springdoc-openapi-ui.version>1.8.0</springdoc-openapi-ui.version>
 
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-    <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
+    <flatten-maven-plugin.version>1.7.0</flatten-maven-plugin.version>
   </properties>
 
   <dependencyManagement>

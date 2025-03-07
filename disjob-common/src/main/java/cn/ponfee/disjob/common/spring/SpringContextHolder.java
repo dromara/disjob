@@ -108,6 +108,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @param beanName then bean name
      * @return spring bean
      */
+    @SuppressWarnings("unchecked")
     public static <T> T getBean(String beanName) {
         return (T) getListableBeanFactory().getBean(beanName);
     }
@@ -135,6 +136,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
 
     // -----------------------------------------------------------------------getPrototypeBean
 
+    @SuppressWarnings("unchecked")
     public static <T> T getPrototypeBean(String beanName) throws IllegalStateException {
         ListableBeanFactory factory = getListableBeanFactory();
         T bean;
@@ -202,6 +204,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
 
     // -----------------------------------------------------------------------getSingletonBean
 
+    @SuppressWarnings("unchecked")
     public static <T> T getSingletonBean(String beanName) throws IllegalStateException {
         ListableBeanFactory factory = getListableBeanFactory();
         T bean;

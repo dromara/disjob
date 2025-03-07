@@ -85,11 +85,11 @@ public abstract class Server implements Serializable {
     public abstract String serialize();
 
     public final String buildHttpUrlPrefix() {
-        return String.format("http://%s:%d", host, port);
+        return "http://" + host + ":" + port;
     }
 
     public final String buildHttpsUrlPrefix() {
-        return String.format("https://%s:%d", host, port);
+        return "https://" + host + ":" + port;
     }
 
     static String check(String str) {

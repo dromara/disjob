@@ -24,11 +24,8 @@
       <artifactId>disjob-supervisor</artifactId>
     </dependency>
 
-    <!-- spring boot web -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
+
+    <!-- spring boot -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>

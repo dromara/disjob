@@ -20,8 +20,11 @@ import cn.ponfee.disjob.common.util.Comparators;
 import cn.ponfee.disjob.common.util.Jsons;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.*;
+import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -48,7 +51,7 @@ public class NodePathTest {
     }
 
     @Test
-    public void testJson() {
+    public void testJson() throws JSONException {
         JsonId root = new JsonId(null, "root", 0);
         JsonId parent = new JsonId(root, "parent", 1);
         JsonId child = new JsonId(parent, "child", 1);
@@ -71,7 +74,7 @@ public class NodePathTest {
 
         Wrapper wrapper1 = new Wrapper(npChild);
         String jsonWrapper = Jsons.toJson(wrapper1);
-        Assertions.assertEquals("{\"value\":[{\"name\":\"root\",\"orders\":0},{\"parent\":{\"name\":\"root\",\"orders\":0},\"name\":\"parent\",\"orders\":1},{\"parent\":{\"parent\":{\"name\":\"root\",\"orders\":0},\"name\":\"parent\",\"orders\":1},\"name\":\"child\",\"orders\":1}]}", jsonWrapper);
+        JSONAssert.assertEquals("{\"value\":[{\"name\":\"root\",\"orders\":0},{\"parent\":{\"name\":\"root\",\"orders\":0},\"name\":\"parent\",\"orders\":1},{\"parent\":{\"parent\":{\"name\":\"root\",\"orders\":0},\"name\":\"parent\",\"orders\":1},\"name\":\"child\",\"orders\":1}]}", jsonWrapper, JSONCompareMode.NON_EXTENSIBLE);
         Wrapper wrapper2 = Jsons.fromJson(jsonWrapper, Wrapper.class);
         Assertions.assertEquals(JsonId.class, wrapper2.getValue().get(0).getClass());
         Assertions.assertEquals("root", wrapper2.getValue().get(0).getName());

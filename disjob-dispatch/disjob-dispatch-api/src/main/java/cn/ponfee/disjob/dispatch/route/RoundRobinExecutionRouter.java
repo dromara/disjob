@@ -34,6 +34,8 @@ import java.util.function.Function;
  */
 public class RoundRobinExecutionRouter extends ExecutionRouter {
 
+    public static final RoundRobinExecutionRouter DEFAULT = new RoundRobinExecutionRouter();
+
     private final ConcurrentMap<String, AtomicCounter> groupedCounterMap = new ConcurrentHashMap<>();
     private final Function<String, AtomicCounter> counterFactory;
 

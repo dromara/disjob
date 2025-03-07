@@ -18,7 +18,6 @@ package cn.ponfee.disjob.samples.supervisor;
 
 import cn.ponfee.disjob.id.snowflake.db.DbSnowflakeIdGenerator;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
-import cn.ponfee.disjob.test.executor.SamplesJobExecutorPackage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -29,8 +28,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  *
  * @author Ponfee
  */
-// scan cn.ponfee.disjob.test.executor package
-@SpringBootApplication(scanBasePackageClasses = SamplesJobExecutorPackage.class)
+@SpringBootApplication
 @DbSnowflakeIdGenerator(jdbcTemplateRef = SPRING_BEAN_NAME_JDBC_TEMPLATE)
 @EnableSupervisor
 public class SupervisorApplication {

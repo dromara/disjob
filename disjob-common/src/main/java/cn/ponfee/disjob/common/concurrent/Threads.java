@@ -41,12 +41,12 @@ public final class Threads {
      * @param name     the thread name
      * @param daemon   the daemon
      * @param priority the priority
-     * @param run      the runnable
+     * @param runnable the runnable
      * @param logger   the uncaught exception handler logger
      * @return thread instance
      */
-    public static Thread newThread(String name, boolean daemon, int priority, Runnable run, Logger logger) {
-        Thread thread = new Thread(run);
+    public static Thread newThread(String name, boolean daemon, int priority, Runnable runnable, Logger logger) {
+        Thread thread = new Thread(runnable);
         thread.setName(name);
         thread.setDaemon(daemon);
         thread.setPriority(priority);

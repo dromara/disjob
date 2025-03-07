@@ -56,14 +56,6 @@ public class PageResponse<T> extends ToJsonString implements Serializable {
         return computeTotalPages(request.getPageSize(), total);
     }
 
-    public boolean hasPrevious() {
-        return request.isPaged() && request.getPageNumber() > 1 && getTotalPages() > 1;
-    }
-
-    public boolean hasNext() {
-        return request.isPaged() && request.getPageNumber() < getTotalPages();
-    }
-
     @Transient
     public boolean isFirst() {
         return !hasPrevious();
@@ -72,6 +64,14 @@ public class PageResponse<T> extends ToJsonString implements Serializable {
     @Transient
     public boolean isLast() {
         return !hasNext();
+    }
+
+    public boolean hasPrevious() {
+        return request.isPaged() && request.getPageNumber() > 1 && getTotalPages() > 1;
+    }
+
+    public boolean hasNext() {
+        return request.isPaged() && request.getPageNumber() < getTotalPages();
     }
 
     public void forEachRow(Consumer<T> action) {

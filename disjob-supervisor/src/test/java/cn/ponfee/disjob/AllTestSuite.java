@@ -31,6 +31,7 @@ package cn.ponfee.disjob;
 */
 
 /*
+// org.junit.platform:junit-platform-runner:1.8.2
 @org.junit.runner.RunWith(org.junit.platform.runner.JUnitPlatform.class)
 @org.junit.platform.suite.api.SelectPackages("cn.ponfee.disjob.supervisor")
 */

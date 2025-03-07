@@ -34,7 +34,7 @@ public class WorkerMetrics extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -5848721038892533810L;
 
     /**
-     * 使用的框架代码的版本号
+     * Disjob版本号
      */
     private String version;
 

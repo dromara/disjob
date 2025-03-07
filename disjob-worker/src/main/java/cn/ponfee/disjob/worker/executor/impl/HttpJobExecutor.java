@@ -90,31 +90,12 @@ public class HttpJobExecutor extends JobExecutor {
         RequestCallback requestCallback = REST_TEMPLATE.httpEntityCallback(requestEntity, responseType);
         ResponseExtractor<ResponseEntity<String>> responseExtractor = REST_TEMPLATE.responseEntityExtractor(responseType);
 
-        RequestConfig requestConfig = null;
-        if (!(equals(req.connectionTimeout, DEFAULT_CONNECT_TIMEOUT) && equals(req.readTimeout, DEFAULT_READ_TIMEOUT))) {
-            RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
-            if (req.connectionTimeout != null) {
-                requestConfigBuilder.setConnectTimeout(req.connectionTimeout);
-            }
-            if (req.readTimeout != null) {
-                requestConfigBuilder.setSocketTimeout(req.readTimeout);
-            }
-            requestConfig = requestConfigBuilder.build();
-        }
+        RequestConfig requestConfig = getRequestConfig(req.connectionTimeout, req.readTimeout);
         try {
-            ResponseEntity<String> responseEntity = RestTemplateUtils.invoke(
-                requestConfig, REST_TEMPLATE, uri, method, requestCallback, responseExtractor);
-            if (responseEntity != null && responseEntity.getStatusCode().is2xxSuccessful()) {
-                return ExecutionResult.success(responseEntity.getBody());
-            } else {
-                HttpStatus status = null;
-                String body = null;
-                if (responseEntity != null) {
-                    status = responseEntity.getStatusCode();
-                    body = responseEntity.getBody();
-                }
-                return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), status + ": " + body);
-            }
+            ResponseEntity<String> responseEntity = RestTemplateUtils.invoke(requestConfig, REST_TEMPLATE, uri, method, requestCallback, responseExtractor);
+            HttpStatus status = responseEntity.getStatusCode();
+            String body = responseEntity.getBody();
+            return status.is2xxSuccessful() ? ExecutionResult.success(body) : ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), status + ": " + body);
         } catch (Throwable t) {
             LOG.error("Http request error: " + task, t);
             return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
@@ -135,8 +116,15 @@ public class HttpJobExecutor extends JobExecutor {
         private Integer readTimeout;       // milliseconds unit
     }
 
-    private static boolean equals(Integer source, int target) {
-        return source == null || source == target;
+    private static RequestConfig getRequestConfig(Integer connectionTimeout, Integer readTimeout) {
+        RequestConfig.Builder builder = null;
+        if (connectionTimeout != null && connectionTimeout != DEFAULT_CONNECT_TIMEOUT) {
+            builder = RequestConfig.custom().setConnectionRequestTimeout(connectionTimeout);
+        }
+        if (readTimeout != null && readTimeout != DEFAULT_READ_TIMEOUT) {
+            (builder == null ? (builder = RequestConfig.custom()) : builder).setSocketTimeout(readTimeout);
+        }
+        return builder == null ? null : builder.build();
     }
 
 }

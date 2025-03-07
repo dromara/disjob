@@ -19,8 +19,14 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-worker</artifactId>
     </dependency>
+    <!-- 引入`disjob-test`模块中的一些内置`JobExecutor`用于测试，实际开发中应去除此依赖 -->
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-test</artifactId>
+    </dependency>
 
-    <!-- spring boot web -->
+
+    <!-- spring boot -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -29,8 +35,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
-
-
     <!--
     <dependency>
       <groupId>de.codecentric</groupId>
