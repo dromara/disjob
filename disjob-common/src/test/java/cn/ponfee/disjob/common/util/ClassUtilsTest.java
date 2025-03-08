@@ -45,6 +45,7 @@ public class ClassUtilsTest {
         atomicReference.set(ClassUtilsTest.class);
         Assertions.assertTrue(atomicReference.compareAndSet(ClassUtilsTest.class, ClassUtilsTest.class));
         Assertions.assertFalse(atomicReference.compareAndSet(null, ClassUtilsTest.class));
+        Assertions.assertEquals(PrimitiveTypes.BYTE.size(), 8);
     }
 
 }

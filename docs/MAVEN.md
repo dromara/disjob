@@ -120,6 +120,7 @@ mvn release:prepare release:perform \
   - deploy jar包的`-DpomFile`配置参数必须放在最后且值为`pom.xml`
   - javadoc/sources校验不通过，需要上传一个虚假(dummy)的javadoc/sources来通过验证
 - warning: `./mvnw clean install 2>&1 | grep -iE "WARNING|ERROR"`
+- add VM options: `--add-exports java.base/sun.reflect.annotation=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED`
 ```bash
 mvn gpg:sign-and-deploy-file \
   -Dfile=jdk-tools-1.8.0_371-javadoc.jar \

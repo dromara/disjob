@@ -52,7 +52,6 @@ import java.util.function.Supplier;
 public final class ProcessUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
-    private static final long INVALID_PID = -1L;
     public static final int SUCCESS_CODE = 0;
 
     public static int progress(Process process, Charset charset, Logger log) {
@@ -116,11 +115,11 @@ public final class ProcessUtils {
                 return ((Number) FieldUtils.readField(process, "pid", true)).longValue();
             } else {
                 LOG.error("Get process id unknown os name: {}, {}", SystemUtils.OS_NAME, process.getClass().getName());
-                return INVALID_PID;
+                return null;
             }
         } catch (Throwable t) {
             LOG.error("Get process id error.", t);
-            return INVALID_PID;
+            return null;
         }
     }
 
