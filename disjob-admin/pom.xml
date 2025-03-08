@@ -48,12 +48,11 @@
     <springdoc-openapi-ui.version>1.8.0</springdoc-openapi-ui.version>
 
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-    <flatten-maven-plugin.version>1.7.0</flatten-maven-plugin.version>
+    <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
-      <!-- SpringBoot的依赖配置-->
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -62,45 +61,29 @@
         <scope>import</scope>
       </dependency>
 
-      <!-- 阿里数据库连接池 -->
-      <dependency>
-        <groupId>com.alibaba</groupId>
-        <artifactId>druid-spring-boot-starter</artifactId>
-        <version>${druid-spring-boot-starter.version}</version>
-      </dependency>
-
-      <!-- 代码生成-->
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>ruoyi-generator</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <!-- 核心模块-->
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>ruoyi-framework</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <!-- 系统模块-->
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>ruoyi-system</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <!-- 通用工具-->
       <dependency>
         <groupId>cn.ponfee</groupId>
         <artifactId>ruoyi-common</artifactId>
         <version>${project.version}</version>
       </dependency>
-
-      <!-- disjob管理模块-->
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>ruoyi-system</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>ruoyi-framework</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
         <artifactId>ruoyi-disjob</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>ruoyi-generator</artifactId>
         <version>${project.version}</version>
       </dependency>
     </dependencies>
@@ -122,7 +105,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
-        <version>${flatten-maven-plugin.version}</version>
+        <version>1.7.0</version>
         <configuration>
           <updatePomFile>true</updatePomFile>
           <flattenMode>resolveCiFriendliesOnly</flattenMode>

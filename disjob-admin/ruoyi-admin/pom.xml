@@ -18,17 +18,18 @@
   <dependencies>
     <dependency>
       <groupId>cn.ponfee</groupId>
+      <artifactId>ruoyi-disjob</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
       <artifactId>ruoyi-framework</artifactId>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>ruoyi-generator</artifactId>
     </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>ruoyi-disjob</artifactId>
-    </dependency>
 
+    <!-- Import apache log4j2 for log implementation -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-logging</artifactId>
@@ -39,8 +40,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-
-    <!-- apache log4j2 for log implementation -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-log4j2</artifactId>
@@ -54,25 +53,12 @@
       <artifactId>log4j-over-slf4j</artifactId>
     </dependency>
 
-    <!-- SpringBoot集成thymeleaf模板：https://www.thymeleaf.org/doc/tutorials/3.1/usingthymeleaf.html -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-thymeleaf</artifactId>
-    </dependency>
-
-    <!-- spring-boot-devtools -->
+    <!-- Spring boot devtools -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
       <scope>runtime</scope>
       <optional>true</optional>
-    </dependency>
-
-    <!-- Mysql驱动包 -->
-    <dependency>
-      <groupId>com.mysql</groupId>
-      <artifactId>mysql-connector-j</artifactId>
-      <scope>runtime</scope>
     </dependency>
 
     <!-- Test dependencies -->
@@ -107,7 +93,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>3.3.2</version>
+        <version>${maven-war-plugin.version}</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
           <warName>${project.artifactId}</warName>

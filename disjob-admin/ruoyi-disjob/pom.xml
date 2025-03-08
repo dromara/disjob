@@ -12,7 +12,7 @@
   </parent>
 
   <artifactId>ruoyi-disjob</artifactId>
-  <description>disjob后台管理</description>
+  <description>disjob管理模块</description>
 
   <dependencyManagement>
     <dependencies>
@@ -27,21 +27,16 @@
   </dependencyManagement>
 
   <dependencies>
-    <!-- 引入`disjob-test`模块中的一些内置`JobExecutor`用于测试，实际开发中建议去除此依赖 -->
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-test</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>ruoyi-common</artifactId>
-    </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>ruoyi-system</artifactId>
     </dependency>
 
+    <!-- 引入`disjob-test`模块中的一些内置`JobExecutor`用于测试，实际开发中应去除此依赖 -->
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-test</artifactId>
+    </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-id</artifactId>
@@ -54,6 +49,7 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-worker</artifactId>
     </dependency>
+
 
     <!-- Registry: select one implementation for server registry -->
     <dependency>
