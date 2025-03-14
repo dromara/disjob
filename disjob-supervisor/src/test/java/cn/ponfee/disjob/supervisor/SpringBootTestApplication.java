@@ -17,36 +17,20 @@
 package cn.ponfee.disjob.supervisor;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
-import cn.ponfee.disjob.test.EmbeddedMysqlAndRedisServer;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * SpringBootTestApplication
+ * Spring boot test application
  *
  * @author Ponfee
  */
 @EnableSupervisor
 @SpringBootApplication
 public class SpringBootTestApplication {
-
-    static {
-        EmbeddedMysqlAndRedisServer.starter()
-            .mysqlPort(23306)
-            .redisMasterPort(26379)
-            .redisSlavePort(26380)
-            .start();
-        ThrowingRunnable.doChecked(() -> Thread.sleep(5000));
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(SpringBootTestApplication.class, args);
-    }
 
     // 因测试用例为单机模式，可代替`@DbSnowflakeIdGenerator(jdbcTemplateRef = SPRING_BEAN_NAME_JDBC_TEMPLATE)`
     @Bean

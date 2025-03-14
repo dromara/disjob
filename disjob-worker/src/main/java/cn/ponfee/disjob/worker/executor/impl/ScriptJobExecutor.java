@@ -78,7 +78,7 @@ public class ScriptJobExecutor extends JobExecutor {
     @Override
     public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         ScriptParam scriptParam = Jsons.JSON5.readValue(task.getTaskParam(), ScriptParam.class);
-        Assert.notNull(scriptParam, "Script param cannot null.");
+        Assert.notNull(scriptParam, "Script param cannot be null.");
         Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);
         scriptParam.type.check();
         this.charset = Files.charset(scriptParam.charset);
@@ -89,7 +89,7 @@ public class ScriptJobExecutor extends JobExecutor {
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
         LOG.info("Script process id: {}, {}", task.getTaskId(), pid);
-        return ProcessUtils.completeProcess(process, charset, task, LOG);
+        return ProcessUtils.complete(process, charset, task, LOG);
     }
 
     public enum ScriptType {

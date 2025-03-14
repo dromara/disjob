@@ -127,10 +127,6 @@ public @interface MybatisDataSourceConfigurer {
         @Override
         public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
             MybatisDataSourceConfigurer config = SpringUtils.parseAnnotation(MybatisDataSourceConfigurer.class, importingClassMetadata);
-            if (config == null) {
-                throw new IllegalArgumentException("MybatisDataSourceConfigurer cannot be null.");
-            }
-
             List<String> basePackages = resolveBasePackages(config, importingClassMetadata);
             Assert.notEmpty(basePackages, "Base package cannot be empty.");
 

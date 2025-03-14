@@ -84,6 +84,8 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         this.registryTtlScheduler = LoopThread.createStarted("consul_registry_ttl_scheduler", periodMs, periodMs, this::checkPass);
 
         this.discoveryWatcher = new DiscoveryWatcher();
+
+        log.info("Consul server registry initialized: {}", client.getAgentSelf().getValue());
     }
 
     @Override

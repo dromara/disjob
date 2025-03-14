@@ -79,7 +79,7 @@ public class CommandJobExecutor extends JobExecutor {
         Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
         LOG.info("Command process id: {}, {}", task.getTaskId(), pid);
-        return ProcessUtils.completeProcess(process, charset, task, LOG);
+        return ProcessUtils.complete(process, charset, task, LOG);
     }
 
     @Getter

@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.Watch;
+import io.etcd.jetcd.cluster.Member;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.etcd.jetcd.lease.LeaseTimeToLiveResponse;
 import io.etcd.jetcd.options.GetOption;
@@ -39,6 +40,7 @@ import io.etcd.jetcd.watch.WatchEvent;
 import io.etcd.jetcd.watch.WatchResponse;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -216,6 +218,21 @@ public class EtcdClient implements Closeable {
             })
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
+    }
+
+    public String getServerInfo() throws InterruptedException {
+        try {
+            List<Member> members = client.getClusterClient().listMember().get(1, TimeUnit.SECONDS).getMembers();
+            if (CollectionUtils.isEmpty(members)) {
+                return "Found member server empty.";
+            }
+            String path = members.get(0).getClientURIs().get(0).toString();
+            return client.getMaintenanceClient().statusMember(path).get(1, TimeUnit.SECONDS).toString();
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (Exception e) {
+            return "Found member server error: " + e.getMessage();
+        }
     }
 
     // ----------------------------------------------------------------watch

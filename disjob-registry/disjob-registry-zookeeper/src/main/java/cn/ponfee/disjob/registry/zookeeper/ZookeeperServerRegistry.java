@@ -62,6 +62,8 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             client.createPersistent(zkRegistryRootPath);
             client.createPersistent(zkDiscoveryRootPath);
             client.watch(zkDiscoveryRootPath, this::refreshDiscoveryServers);
+
+            log.info("Zookeeper server registry initialized: {}", client.getServerInfo());
         } catch (Throwable t) {
             if (client0 != null) {
                 client0.close();

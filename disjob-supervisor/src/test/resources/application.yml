@@ -5,7 +5,7 @@ server.port: 0
 disjob.datasource:
   disjob:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:23306/disjob?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
+    url: jdbc:mysql://localhost:${mysql.port}/disjob?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
     username: disjob
     password: disjob$123456
     hikari:
@@ -14,7 +14,7 @@ disjob.datasource:
       connection-timeout: 2000
   disjob-admin:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:23306/disjob_admin?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
+    url: jdbc:mysql://localhost:${mysql.port}/disjob_admin?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
     username: disjob_admin
     password: disjob_admin$123456
     hikari:
@@ -25,6 +25,6 @@ disjob.datasource:
 # redis configuration
 spring.redis:
   client-type: LETTUCE
-  password: 123456  # redis node auth password
-  host: localhost   # redis standalone host name
-  port: 26379       # redis standalone port
+  password: 123456    # redis node auth password
+  host: localhost     # redis standalone host name
+  port: ${redis.port} # redis standalone port

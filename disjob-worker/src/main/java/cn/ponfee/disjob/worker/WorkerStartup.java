@@ -60,12 +60,12 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
                          TaskReceiver taskReceiver,
                          RestTemplate restTemplate,
                          @Nullable SupervisorRpcService supervisorRpcService) {
-        Objects.requireNonNull(localWorker, "Local worker cannot null.");
+        Objects.requireNonNull(localWorker, "Local worker cannot be null.");
         Objects.requireNonNull(workerProperties, "Worker properties cannot be null.").check();
         Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
-        Objects.requireNonNull(workerRegistry, "Server registry cannot null.");
-        Objects.requireNonNull(taskReceiver, "Task receiver cannot null.");
-        Objects.requireNonNull(restTemplate, "Rest template cannot null.");
+        Objects.requireNonNull(workerRegistry, "Server registry cannot be null.");
+        Objects.requireNonNull(taskReceiver, "Task receiver cannot be null.");
+        Objects.requireNonNull(restTemplate, "Rest template cannot be null.");
 
         SupervisorRpcService supervisorRpcClient = DiscoveryServerRestProxy.create(
             SupervisorRpcService.class,

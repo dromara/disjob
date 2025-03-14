@@ -38,8 +38,8 @@ public final class GenericUtils {
     /**
      * map泛型协变
      *
-     * @param origin
-     * @return
+     * @param origin the origin map
+     * @return map
      */
     public static Map<String, String> covariant(Map<String, ?> origin) {
         if (origin == null) {
@@ -73,9 +73,9 @@ public final class GenericUtils {
     /**
      * public class GenericClass extends GenericSuperClass<Long,Integer,...,String> implements GenericInterface<String,Short,..,Long> {}
      *
-     * @param clazz
-     * @param genericArgsIndex
-     * @return
+     * @param clazz            the class
+     * @param genericArgsIndex the generic arg index
+     * @return generic type
      */
     @SuppressWarnings("unchecked")
     public static <T> Class<T> getActualTypeArgument(Class<?> clazz, int genericArgsIndex) {
@@ -106,7 +106,7 @@ public final class GenericUtils {
      * @param method           方法对象
      * @param methodArgsIndex  方法参数索引号
      * @param genericArgsIndex 泛型参数索引号
-     * @return
+     * @return generic type
      */
     public static <T> Class<T> getActualArgTypeArgument(Method method, int methodArgsIndex, int genericArgsIndex) {
         return getActualTypeArgument(method.getGenericParameterTypes()[methodArgsIndex], genericArgsIndex);
@@ -123,7 +123,7 @@ public final class GenericUtils {
      *
      * @param method           the method
      * @param genericArgsIndex the generic argument index
-     * @return
+     * @return generic type
      */
     public static <T> Class<T> getActualReturnTypeArgument(Method method, int genericArgsIndex) {
         return getActualTypeArgument(method.getGenericReturnType(), genericArgsIndex);
@@ -140,7 +140,7 @@ public final class GenericUtils {
      *
      * @param field            the class field
      * @param genericArgsIndex the genericArgsIndex
-     * @return
+     * @return generic type
      */
     public static <T> Class<T> getActualTypeArgument(Field field, int genericArgsIndex) {
         return getActualTypeArgument(field.getGenericType(), genericArgsIndex);
@@ -167,10 +167,11 @@ public final class GenericUtils {
      * public class BeanClass extends BaseEntity<String> {}
      * }</pre>
      *
-     * @param clazz the sub class
+     * @param clazz the subclass
      * @param field the super class defined field
      * @return a Class of field actual type
      */
+    @SuppressWarnings("unchecked")
     public static <T> Class<T> getFieldActualType(Class<?> clazz, Field field) {
         return Modifier.isStatic(field.getModifiers())
              ? (Class<T>) field.getType()
@@ -188,7 +189,7 @@ public final class GenericUtils {
      * public class ClassB extends classA<String>{}
      * }</pre>
      *
-     * @param clazz           the sub class
+     * @param clazz           the subclass
      * @param method          the super class defined method
      * @param methodArgsIndex the method arg index
      * @return a Class of method arg actual type
@@ -208,7 +209,7 @@ public final class GenericUtils {
      * public class ClassB extends classA<String>{}
      * }</pre>
      *
-     * @param clazz  the sub class
+     * @param clazz  the subclass
      * @param method the super class defined method
      * @return a Class of method return actual type
      */

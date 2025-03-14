@@ -58,16 +58,16 @@ public final class Files {
     public static final String UTF_8 = "UTF-8"; // UTF-8 encoding
 
     // ------------------------------------------------------------file separator
-    public static final String WINDOWS_FOLDER_SEPARATOR = "\\"; // windows file separator
+    public static final String WINDOWS_FOLDER_SEPARATOR = "\\"; // Windows file separator
 
-    public static final String UNIX_FOLDER_SEPARATOR = "/"; // unix file separator
+    public static final String UNIX_FOLDER_SEPARATOR = "/"; // Unix file separator
 
     public static final String SYSTEM_FOLDER_SEPARATOR = File.separator; // system file separator
 
     // ------------------------------------------------------------line separator
-    public static final String UNIX_LINE_SEPARATOR = "\n"; // unix file line separator spec \n  LF
+    public static final String UNIX_LINE_SEPARATOR = "\n"; // Unix file line separator spec \n  LF
 
-    public static final String WINDOWS_LINE_SEPARATOR = "\r\n"; // windows file line separator spec \r\n  CRLF
+    public static final String WINDOWS_LINE_SEPARATOR = "\r\n"; // Windows file line separator spec \r\n  CRLF
 
     public static final String MAC_LINE_SEPARATOR = "\r"; // mac file line separator spec \r  CR
 
@@ -225,8 +225,8 @@ public final class Files {
     /**
      * Reads file to byte array
      *
-     * @param file
-     * @return
+     * @param file the file
+     * @return file byte array
      */
     public static byte[] toByteArray(File file) {
         try (FileInputStream in = new FileInputStream(file);
@@ -256,12 +256,11 @@ public final class Files {
     /**
      * Read input-stream as text line
      *
-     * @param input
-     * @param charset
-     * @param consumer
+     * @param input    the input stream
+     * @param charset  the charset
+     * @param consumer the consumer
      */
-    public static void readLines(InputStream input, String charset,
-                                 Consumer<String> consumer) {
+    public static void readLines(InputStream input, String charset, Consumer<String> consumer) {
         try (Scanner scanner = (charset == null) ? new Scanner(input) : new Scanner(input, charset)) {
             while (scanner.hasNextLine()) {
                 consumer.accept(scanner.nextLine());

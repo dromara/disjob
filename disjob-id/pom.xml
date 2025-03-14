@@ -32,16 +32,6 @@
       <artifactId>curator-framework</artifactId>
       <version>${curator-framework.version}</version>
       <optional>true</optional>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
 

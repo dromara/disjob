@@ -20,22 +20,17 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.supervisor.component.JobManager;
-import cn.ponfee.disjob.supervisor.component.JobQuerier;
-import cn.ponfee.disjob.supervisor.component.WorkerClient;
-import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.scanner.RunningInstanceScanner;
 import cn.ponfee.disjob.supervisor.scanner.TriggeringJobScanner;
 import cn.ponfee.disjob.supervisor.scanner.WaitingInstanceScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Startup supervisor.
@@ -55,32 +50,17 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
     private final TripState state = TripState.create();
 
     public SupervisorStartup(Supervisor.Local localSupervisor,
-                             SupervisorProperties supervisorConf,
                              SupervisorRegistry supervisorRegistry,
-                             WorkerClient workerClient,
-                             JobManager jobManager,
-                             JobQuerier jobQuerier,
                              TaskDispatcher taskDispatcher,
-                             LockTemplate scanWaitingInstanceLocker,
-                             LockTemplate scanRunningInstanceLocker,
-                             LockTemplate scanTriggeringJobLocker) {
-        Objects.requireNonNull(localSupervisor, "Local supervisor cannot null.");
-        Objects.requireNonNull(supervisorConf, "Supervisor config cannot null.").check();
-        Objects.requireNonNull(supervisorRegistry, "Supervisor registry cannot null.");
-        Objects.requireNonNull(workerClient, "Worker client cannot null.");
-        Objects.requireNonNull(jobManager, "Job manager cannot null.");
-        Objects.requireNonNull(jobQuerier, "Job querier cannot null.");
-        Objects.requireNonNull(taskDispatcher, "Task dispatcher cannot null.");
-        Objects.requireNonNull(scanWaitingInstanceLocker, "Scan waiting instance locker cannot null.");
-        Objects.requireNonNull(scanRunningInstanceLocker, "Scan running instance locker cannot null.");
-        Objects.requireNonNull(scanTriggeringJobLocker, "Scan triggering job locker cannot null.");
-
-        this.localSupervisor = localSupervisor;
-        this.supervisorRegistry = supervisorRegistry;
-        this.taskDispatcher = taskDispatcher;
-        this.waitingInstanceScanner = new WaitingInstanceScanner(supervisorConf, jobManager, jobQuerier, workerClient, scanWaitingInstanceLocker);
-        this.runningInstanceScanner = new RunningInstanceScanner(supervisorConf, jobManager, jobQuerier, workerClient, scanRunningInstanceLocker);
-        this.triggeringJobScanner   = new TriggeringJobScanner  (supervisorConf, jobManager, jobQuerier, workerClient, scanTriggeringJobLocker);
+                             WaitingInstanceScanner waitingInstanceScanner,
+                             RunningInstanceScanner runningInstanceScanner,
+                             TriggeringJobScanner triggeringJobScanner) {
+        this.localSupervisor = requireNonNull(localSupervisor, "Local supervisor cannot be null.");
+        this.supervisorRegistry = requireNonNull(supervisorRegistry, "Supervisor registry cannot be null.");
+        this.taskDispatcher = requireNonNull(taskDispatcher, "Task dispatcher cannot be null.");
+        this.waitingInstanceScanner = requireNonNull(waitingInstanceScanner, "Waiting instance scanner cannot be null.");
+        this.runningInstanceScanner = requireNonNull(runningInstanceScanner, "Running instance scanner cannot be null.");
+        this.triggeringJobScanner = requireNonNull(triggeringJobScanner, "Triggering job scanner cannot be null.");
     }
 
     @Override
@@ -108,10 +88,10 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
         }
 
         LOG.info("Supervisor stop begin: {}", localSupervisor);
-        ThrowingRunnable.doCaught(supervisorRegistry::close);
         ThrowingRunnable.doCaught(triggeringJobScanner::toStop);
         ThrowingRunnable.doCaught(runningInstanceScanner::toStop);
         ThrowingRunnable.doCaught(waitingInstanceScanner::toStop);
+        ThrowingRunnable.doCaught(supervisorRegistry::close);
         ThrowingRunnable.doCaught(taskDispatcher::close);
         ThrowingRunnable.doCaught(triggeringJobScanner::close);
         ThrowingRunnable.doCaught(runningInstanceScanner::close);

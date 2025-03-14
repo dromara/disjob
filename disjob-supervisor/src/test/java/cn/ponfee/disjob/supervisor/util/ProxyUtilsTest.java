@@ -103,9 +103,12 @@ class ProxyUtilsTest {
 
         Object[] a = {new Object(), new Object()};
         String[] b = {"a", "b"};
-        org.assertj.core.api.Assertions.assertThat(Object[].class.isInstance(b)).isTrue();
-        org.assertj.core.api.Assertions.assertThat(String[].class.isInstance(b)).isTrue();
-        org.assertj.core.api.Assertions.assertThat(String[].class.isInstance(a)).isFalse();
+        org.assertj.core.api.Assertions.assertThat(b instanceof Object[]).isTrue();
+        org.assertj.core.api.Assertions.assertThat(b instanceof String[]).isTrue();
+        org.assertj.core.api.Assertions.assertThat(a instanceof String[]).isFalse();
+        Assertions.assertEquals(b instanceof Object[], Object[].class.isInstance(b));
+        Assertions.assertEquals(b instanceof String[], String[].class.isInstance(b));
+        Assertions.assertEquals(a instanceof String[], String[].class.isInstance(a));
 
         a = b;
         org.assertj.core.api.Assertions.assertThat(Arrays.toString(a)).isEqualTo("[a, b]");

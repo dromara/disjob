@@ -78,7 +78,7 @@
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-io.version>2.18.0</commons-io.version>
     <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
-    <curator-framework.version>5.7.1</curator-framework.version>
+    <curator-framework.version>5.8.0</curator-framework.version>
 
     <!-- spring-boot-dependencies [type=pom, scope=import]方式，无法自动引入plugin依赖版本 -->
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>

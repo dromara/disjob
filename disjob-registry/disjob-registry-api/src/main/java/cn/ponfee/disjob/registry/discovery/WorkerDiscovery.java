@@ -92,7 +92,7 @@ public final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
 
     @Override
     public List<Worker> getServers(String group) {
-        Assert.hasText(group, "Get discovery worker group cannot null.");
+        Assert.hasText(group, "Get discovery worker group cannot be null.");
         List<Worker> workers = groupedWorkers.get(group);
         return workers == null ? Collections.emptyList() : workers;
     }

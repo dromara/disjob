@@ -64,6 +64,7 @@ public final class ClassUtils {
      * @param text the class qualifier name or source code
      * @return class object
      */
+    @SuppressWarnings("unchecked")
     public static <T> Class<T> getClass(String text) {
         if (StringUtils.isBlank(text)) {
             return null;
@@ -367,6 +368,7 @@ public final class ClassUtils {
         return invoke(caller, method, null);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T invoke(Object caller, Method method, Object[] args) {
         checkObjectArray(args);
         if (!method.isAccessible()) {
@@ -513,6 +515,7 @@ public final class ClassUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static <T> Constructor<T> obtainConstructor(Class<T> type, Class<?>[] actualTypes) {
         Assert.notEmpty(actualTypes, "Should be always non empty.");
         Constructor<T> constructor = obtainConstructor((Constructor<T>[]) type.getConstructors(), actualTypes);

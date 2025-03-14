@@ -19,13 +19,13 @@ package cn.ponfee.disjob.worker.executor.impl;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
-import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -41,6 +41,7 @@ import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -53,41 +54,6 @@ public final class ProcessUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
     public static final int SUCCESS_CODE = 0;
-
-    public static int progress(Process process, Charset charset, Logger log) {
-        return progress(process, charset, log::info, log::error);
-    }
-
-    public static int progress(Process process, Charset charset, Consumer<String> verbose, Consumer<String> error) {
-        // 控制台实时展示
-        ThreadPoolExecutors.commonThreadPool().execute(() -> read(process.getInputStream(), charset, verbose));
-        ThreadPoolExecutors.commonThreadPool().execute(() -> read(process.getErrorStream(), charset, error));
-        try {
-            return process.waitFor();
-        } catch (InterruptedException e) {
-            error.accept("Process execute interrupted: " + ExceptionUtils.getStackTrace(e));
-            Thread.currentThread().interrupt();
-            // return error code: -1
-            return -1;
-        } finally {
-            try {
-                process.destroy();
-            } catch (Throwable t) {
-                verbose.accept("Destroy process error: " + ExceptionUtils.getStackTrace(t));
-            }
-        }
-    }
-
-    public static void destroy(Process process) {
-        if (process == null) {
-            return;
-        }
-        try {
-            process.destroy();
-        } catch (Throwable t) {
-            LOG.error("Destroy process " + process.getClass().getName() + " error.", t);
-        }
-    }
 
     public static Long getCurrentJvmProcessId() {
         // Windows: pid@hostname, for example "1234@ponfee"
@@ -110,12 +76,9 @@ public final class ProcessUtils {
                 WinNT.HANDLE handle = new WinNT.HANDLE();
                 handle.setPointer(Pointer.createConstant(handlePointer));
                 return (long) Kernel32.INSTANCE.GetProcessId(handle);
-            } else if (SystemUtils.IS_OS_UNIX) {
+            } else {
                 // Unix Process class：java.lang.UNIXProcess
                 return ((Number) FieldUtils.readField(process, "pid", true)).longValue();
-            } else {
-                LOG.error("Get process id unknown os name: {}, {}", SystemUtils.OS_NAME, process.getClass().getName());
-                return null;
             }
         } catch (Throwable t) {
             LOG.error("Get process id error.", t);
@@ -168,7 +131,16 @@ public final class ProcessUtils {
         }
     }
 
-    public static ExecutionResult completeProcess(Process process, Charset charset, ExecutionTask task, Logger log) {
+    /**
+     * Completed process execution
+     *
+     * @param process the process
+     * @param charset the message charset
+     * @param task    the task
+     * @param log     the log
+     * @return process executed result code
+     */
+    public static ExecutionResult complete(Process process, Charset charset, ExecutionTask task, Logger log) {
         try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
             // 一次性获取全部执行结果信息：不是在控制台实时展示执行信息，所以此处不用通过异步线程去获取命令的实时执行信息
             String verbose = IOUtils.toString(is, charset);
@@ -188,14 +160,71 @@ public final class ProcessUtils {
         }
     }
 
+    public static int progress(Process process, Charset charset) {
+        return progress(process, charset, System.out::println, System.err::println);
+    }
+
+    /**
+     * Progressed process execution
+     *
+     * @param process the process
+     * @param charset the message charset
+     * @param verbose the verbose message handler
+     * @param error   the error message handler
+     * @return process executed result code
+     */
+    public static int progress(Process process, Charset charset, Consumer<String> verbose, Consumer<String> error) {
+        // 控制台实时展示
+        ThreadPoolExecutors.commonThreadPool().execute(() -> read(process.getInputStream(), charset, verbose));
+        ThreadPoolExecutors.commonThreadPool().execute(() -> read(process.getErrorStream(), charset, error));
+        try {
+            return process.waitFor();
+        } catch (InterruptedException e) {
+            error.accept("Process execute interrupted: " + ExceptionUtils.getStackTrace(e));
+            Thread.currentThread().interrupt();
+            // return error code: -1
+            return -1;
+        } finally {
+            try {
+                process.destroy();
+            } catch (Throwable t) {
+                verbose.accept("Destroy process error: " + ExceptionUtils.getStackTrace(t));
+            }
+        }
+    }
+
+    public static void mergeEnv(Map<String, String> environment, Map<String, String> envParam) {
+        if (MapUtils.isEmpty(envParam)) {
+            return;
+        }
+        String separator = SystemUtils.IS_OS_WINDOWS ? ";" : ":";
+        for (Map.Entry<String, String> e : envParam.entrySet()) {
+            String k = e.getKey(), v = e.getValue();
+            if ("PATH".equals(k)) {
+                String currentPath = environment.get(k);
+                v = StringUtils.isBlank(currentPath) ? v : currentPath + separator + v;
+            }
+            environment.put(k, v);
+        }
+    }
+
     // -------------------------------------------------------------------------private methods
+
+    private static void destroy(Process process) {
+        if (process != null) {
+            try {
+                process.destroy();
+            } catch (Throwable t) {
+                LOG.error("Destroy process " + process.getClass().getName() + " error.", t);
+            }
+        }
+    }
 
     private static void read(InputStream input, Charset charset, Consumer<String> consumer) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, charset))) {
             String line;
             while (!Thread.currentThread().isInterrupted() && (line = reader.readLine()) != null) {
                 consumer.accept(line);
-                consumer.accept(Files.SYSTEM_LINE_SEPARATOR);
             }
         } catch (IOException e) {
             consumer.accept("Read output error: " + ExceptionUtils.getStackTrace(e));

@@ -18,14 +18,14 @@
 
   <dependencies>
     <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-common</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-    <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-common</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
   </dependencies>
 

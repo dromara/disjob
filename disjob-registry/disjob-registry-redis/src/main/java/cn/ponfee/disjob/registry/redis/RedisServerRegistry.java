@@ -127,6 +127,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             this,
             "handleMessage"
         );
+
+        log.info("Redis server registry initialized: {}", RedisTemplateUtils.getServerInfo(stringRedisTemplate));
     }
 
     @Override

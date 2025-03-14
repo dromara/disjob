@@ -577,7 +577,7 @@ public class Dates {
      *
      * @param begin 开发日期
      * @param end   结束日期
-     * @return
+     * @return date
      */
     public static Date random(Date begin, Date end) {
         long beginMills = begin.getTime(), endMills = end.getTime();

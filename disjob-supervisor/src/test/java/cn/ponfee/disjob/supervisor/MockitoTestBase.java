@@ -114,7 +114,7 @@ public abstract class MockitoTestBase {
             try {
                 Object mockedObj = field.get(this);
                 if (mockedObj == null) {
-                    throw new RuntimeException("Mocked object cannot null: " + field.toGenericString());
+                    throw new RuntimeException("Mocked object cannot be null: " + field.toGenericString());
                 } else if (mockedObj instanceof MockedStatic) {
                     ((MockedStatic<?>) mockedObj).close();
                     //((MockedStatic<?>) mockedObj).reset();

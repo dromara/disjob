@@ -86,6 +86,8 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             this.keepAliveCheckThread = LoopThread.createStarted("etcd_keep_alive_check", periodMs, periodMs, this::keepAliveCheck);
 
             client.addConnectionStateListener(ConnectionStateListener.<EtcdClient>builder().onConnected(c -> keepAliveRecover()).build());
+
+            log.info("Etcd server registry initialized: {}", client.getServerInfo());
         } catch (Throwable t) {
             if (client0 != null) {
                 client0.close();

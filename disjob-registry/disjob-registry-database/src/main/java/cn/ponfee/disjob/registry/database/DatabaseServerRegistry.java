@@ -119,6 +119,8 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
         // heartbeat discover servers
         this.discoverHeartbeatThread = LoopThread.createStarted("database_discover_heartbeat", periodMs, periodMs, this::discoverServers);
+
+        log.info("Database server registry initialized: {}", jdbcTemplateWrapper.getServerInfo());
     }
 
     @Override

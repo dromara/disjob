@@ -306,7 +306,6 @@ public class Collects {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
     @SafeVarargs
     public static <T> T[] concat(T[] a1, T... a2) {
         if (a1 == null || a1.length == 0) {
@@ -316,7 +315,7 @@ public class Collects {
             return a1;
         }
 
-        T[] result = newArray((Class<? extends T[]>) a1.getClass(), a1.length + a2.length);
+        T[] result = newArray(a1.getClass(), a1.length + a2.length);
         System.arraycopy(a1, 0, result, 0, a1.length);
         try {
             System.arraycopy(a2, 0, result, a1.length, a2.length);

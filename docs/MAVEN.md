@@ -115,12 +115,12 @@ mvn release:prepare release:perform \
 
 ## Others
 - 使用“mvnw”命令需要确认“~/.m2”目录下是否有settings.xml文件且正确配置<server>元素
+- warning: `./mvnw clean install 2>&1 | grep -iE "WARNING|ERROR"`
+- add VM options: `--add-exports java.base/sun.reflect.annotation=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED`
 - release版本deploy完后还需要在“s01.oss.sonatype.org”页面上手动操作：“Staging Repositories” -> “Close” -> “Release”
 - deploy本地jar包到中央仓库：
   - deploy jar包的`-DpomFile`配置参数必须放在最后且值为`pom.xml`
   - javadoc/sources校验不通过，需要上传一个虚假(dummy)的javadoc/sources来通过验证
-- warning: `./mvnw clean install 2>&1 | grep -iE "WARNING|ERROR"`
-- add VM options: `--add-exports java.base/sun.reflect.annotation=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED`
 ```bash
 mvn gpg:sign-and-deploy-file \
   -Dfile=jdk-tools-1.8.0_371-javadoc.jar \

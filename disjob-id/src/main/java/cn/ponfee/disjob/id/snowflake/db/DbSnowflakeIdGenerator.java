@@ -118,10 +118,6 @@ public @interface DbSnowflakeIdGenerator {
         @Override
         public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
             DbSnowflakeIdGenerator config = SpringUtils.parseAnnotation(DbSnowflakeIdGenerator.class, importingClassMetadata);
-            if (config == null) {
-                return;
-            }
-
             String jdbcTemplateRef = config.jdbcTemplateRef();
             GenericBeanDefinition bd;
             if (StringUtils.isBlank(jdbcTemplateRef)) {

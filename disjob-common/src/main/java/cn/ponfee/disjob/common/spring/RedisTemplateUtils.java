@@ -22,6 +22,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.NonTransientDataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -125,6 +126,14 @@ public class RedisTemplateUtils {
         container.afterPropertiesSet();
         container.start();
         return container;
+    }
+
+    public static String getServerInfo(RedisTemplate<?, ?> redisTemplate) {
+        return getInfo(redisTemplate, "server");
+    }
+
+    public static String getInfo(RedisTemplate<?, ?> redisTemplate, String section) {
+        return redisTemplate.execute((RedisConnection conn) -> Objects.toString(conn.info(section)));
     }
 
     private static boolean exceptionContainsNoScriptError(Throwable t) {

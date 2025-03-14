@@ -18,16 +18,15 @@ package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.util.ProxyUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.util.Assert;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -40,6 +39,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Spring utils
@@ -115,12 +115,20 @@ public final class SpringUtils {
         return ProxyUtils.create(type, attributes);
     }
 
-    public static void addPropertyIfAbsent(Environment environment, String key, String value) {
-        if (environment instanceof ConfigurableEnvironment && StringUtils.isEmpty(environment.getProperty(key))) {
-            Properties properties = new Properties();
-            properties.setProperty(key, value);
-            PropertiesPropertySource propertySource = new PropertiesPropertySource(key, properties);
-            ((ConfigurableEnvironment) environment).getPropertySources().addFirst(propertySource);
+    public static void addPropertySource(ConfigurableEnvironment env, String propertySourceName, Map<String, ?> map) {
+        Assert.notEmpty(map, "Additional properties cannot be empty.");
+        Properties properties = new Properties();
+        properties.putAll(map);
+        env.getPropertySources().addLast(new PropertiesPropertySource(propertySourceName, properties));
+    }
+
+    public static void addPropertySourceIfAbsent(ConfigurableEnvironment env, String propertySourceName, Map<String, ?> map) {
+        map = map.entrySet()
+            .stream()
+            .filter(e -> !env.containsProperty(e.getKey()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        if (!map.isEmpty()) {
+            addPropertySource(env, propertySourceName, map);
         }
     }
 

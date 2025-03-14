@@ -22,6 +22,7 @@ package cn.ponfee.disjob.registry;
  * @author Ponfee
  */
 public class RegistryException extends RuntimeException {
+    private static final long serialVersionUID = 8291649034077934876L;
 
     public RegistryException() {
     }

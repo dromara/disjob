@@ -24,6 +24,9 @@ import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
+import cn.ponfee.disjob.supervisor.scanner.RunningInstanceScanner;
+import cn.ponfee.disjob.supervisor.scanner.TriggeringJobScanner;
+import cn.ponfee.disjob.supervisor.scanner.WaitingInstanceScanner;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.SmartLifecycle;
 
@@ -40,27 +43,25 @@ class SupervisorLifecycle implements SmartLifecycle {
 
     private final SupervisorStartup supervisorStartup;
 
+    @SuppressWarnings("all")
     SupervisorLifecycle(Supervisor.Local localSupervisor,
-                        SupervisorProperties supervisorConf,
                         SupervisorRegistry supervisorRegistry,
-                        WorkerClient workerClient,
+                        TaskDispatcher taskDispatcher,
+                        SupervisorProperties supervisorConf,
                         JobManager jobManager,
                         JobQuerier jobQuerier,
-                        TaskDispatcher taskDispatcher,
+                        WorkerClient workerClient,
                         @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER) LockTemplate scanWaitingInstanceLocker,
                         @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) LockTemplate scanRunningInstanceLocker,
                         @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) LockTemplate scanTriggeringJobLocker) {
+        supervisorConf.check();
         this.supervisorStartup = new SupervisorStartup(
             localSupervisor,
-            supervisorConf,
             supervisorRegistry,
-            workerClient,
-            jobManager,
-            jobQuerier,
             taskDispatcher,
-            scanWaitingInstanceLocker,
-            scanRunningInstanceLocker,
-            scanTriggeringJobLocker
+            new WaitingInstanceScanner(supervisorConf, jobManager, jobQuerier, workerClient, scanWaitingInstanceLocker),
+            new RunningInstanceScanner(supervisorConf, jobManager, jobQuerier, workerClient, scanRunningInstanceLocker),
+            new TriggeringJobScanner  (supervisorConf, jobManager, jobQuerier, workerClient, scanTriggeringJobLocker)
         );
     }
 

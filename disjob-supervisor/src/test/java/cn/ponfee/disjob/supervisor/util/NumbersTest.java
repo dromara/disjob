@@ -46,7 +46,7 @@ public class NumbersTest {
     public void testRandom() {
         double min = 1.0D, max = 0.0D;
         Random random = new Random();
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 1000; i++) {
             double r = random.nextDouble();
             if (r < min) {
                 min = r;

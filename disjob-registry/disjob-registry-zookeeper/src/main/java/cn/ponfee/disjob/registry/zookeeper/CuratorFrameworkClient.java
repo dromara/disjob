@@ -18,6 +18,7 @@ package cn.ponfee.disjob.registry.zookeeper;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.registry.zookeeper.configuration.ZookeeperRegistryProperties;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -26,10 +27,7 @@ import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -208,6 +206,16 @@ public class CuratorFrameworkClient implements Closeable {
 
     public boolean isConnected() {
         return curatorFramework.getZookeeperClient().isConnected();
+    }
+
+    public String getServerInfo() {
+        try {
+            ZooKeeper zooKeeper = curatorFramework.getZookeeperClient().getZooKeeper();
+            byte[] configData = zooKeeper.getConfig(false, null);
+            return ArrayUtils.isEmpty(configData) ? zooKeeper.toString() : new String(configData);
+        } catch (Exception e) {
+            return "Get server info error: " + e.getMessage();
+        }
     }
 
     @Override

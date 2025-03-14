@@ -32,6 +32,14 @@ public class ObjectUtilsTest {
         Assertions.assertEquals(ObjectUtils.getValue(DAGNode.START, "topology"), 0);
         Assertions.assertEquals(ObjectUtils.getValue(DAGNode.START, "name"), "Start");
         Assertions.assertNotEquals(System.identityHashCode(new String("abc")), System.identityHashCode(new String("abc")));
+
+        long max = Long.MAX_VALUE;
+        Long max1 = max;
+        Long max2 = max;
+        Long max3 = Long.MAX_VALUE;
+        Assertions.assertTrue(max1 != max2);
+        Assertions.assertTrue(max1 != max3);
+        Assertions.assertTrue(max2 != max3);
     }
 
 }

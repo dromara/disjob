@@ -16,14 +16,10 @@
 
 package cn.ponfee.disjob.test;
 
-import ch.vorburger.mariadb4j.DB;
-import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.test.db.EmbeddedMysqlServerMariaDB;
 import cn.ponfee.disjob.test.redis.EmbeddedRedisServerKstyrc;
 import org.slf4j.impl.SimpleLogger;
-import redis.embedded.RedisServer;
 
 /**
  * Embedded mysql & redis server
@@ -43,35 +39,6 @@ public final class EmbeddedMysqlAndRedisServer {
             .redisMasterPort(6379)
             .redisSlavePort(6380)
             .start();
-    }
-
-    private volatile DB mariaDBServer;
-    private volatile RedisServer redisServer;
-
-    private EmbeddedMysqlAndRedisServer(int mysqlPort, int redisMasterPort, int redisSlavePort) {
-        System.out.println("/*============================================================*\\");
-        this.mariaDBServer = ThrowingSupplier.doChecked(() -> EmbeddedMysqlServerMariaDB.start(mysqlPort));
-        System.out.println("\\*============================================================*/");
-
-        System.out.println("\n\n\n\n\n\n");
-
-        System.out.println("/*============================================================*\\");
-        this.redisServer = EmbeddedRedisServerKstyrc.start(redisMasterPort, redisSlavePort);
-        System.out.println("\\*============================================================*/");
-
-        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, this::stop);
-    }
-
-    public synchronized void stop() {
-        ThrowingRunnable.doCaught(() -> Thread.sleep(10000));
-        if (mariaDBServer != null) {
-            ThrowingRunnable.doCaught(mariaDBServer::stop);
-            mariaDBServer = null;
-        }
-        if (redisServer != null) {
-            ThrowingRunnable.doCaught(redisServer::stop);
-            redisServer = null;
-        }
     }
 
     public static Starter starter() {
@@ -101,8 +68,16 @@ public final class EmbeddedMysqlAndRedisServer {
             return this;
         }
 
-        public EmbeddedMysqlAndRedisServer start() {
-            return new EmbeddedMysqlAndRedisServer(mysqlPort, redisMasterPort, redisSlavePort);
+        public void start() {
+            System.out.println("/*============================================================*\\");
+            ThrowingSupplier.doChecked(() -> EmbeddedMysqlServerMariaDB.start(mysqlPort));
+            System.out.println("\\*============================================================*/");
+
+            System.out.println("\n\n\n\n\n\n");
+
+            System.out.println("/*============================================================*\\");
+            EmbeddedRedisServerKstyrc.start(redisMasterPort, redisSlavePort);
+            System.out.println("\\*============================================================*/");
         }
     }
 
