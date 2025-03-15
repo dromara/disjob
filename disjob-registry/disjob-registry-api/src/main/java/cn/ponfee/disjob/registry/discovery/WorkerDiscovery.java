@@ -121,8 +121,7 @@ public final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
     @Override
     void notifyServer(Worker worker, RegistryEventType eventType, Supervisor supervisor) {
         try {
-            String authToken = Supervisor.local().createSupervisorAuthenticationToken(worker.getGroup());
-            SupervisorEventParam param = SupervisorEventParam.of(authToken, eventType, supervisor);
+            SupervisorEventParam param = SupervisorEventParam.of(worker.getGroup(), eventType, supervisor);
             workerRpcClient.invoke(worker, client -> client.subscribeSupervisorEvent(param));
         } catch (Throwable t) {
             log.error("Notify server error: {}, {}", worker, t.getMessage());

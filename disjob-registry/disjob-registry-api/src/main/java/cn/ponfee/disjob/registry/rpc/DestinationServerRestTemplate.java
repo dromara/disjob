@@ -18,13 +18,16 @@ package cn.ponfee.disjob.registry.rpc;
 
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.base.*;
+import cn.ponfee.disjob.core.base.RetryProperties;
+import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.core.base.Supervisor;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.Assert;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -87,11 +90,12 @@ final class DestinationServerRestTemplate {
     <T> T invoke(Class<?> declaringClass, Server destinationServer, String path,
                  HttpMethod httpMethod, Type returnType, Object... args) throws Exception {
         Map<String, String> authenticationHeaders = null;
-        if (destinationServer instanceof Supervisor && declaringClass.isAssignableFrom(SupervisorRpcService.class)) {
-            // `ExtendedSupervisorRpcService`声明的接口是供Supervisor之间的调用，因此不需要带认证信息。
-            // `SupervisorRpcService`声明的接口是供Worker调用Supervisor，需要带上Worker的认证信息。
-            // 但目前Worker调用Supervisor都是用的DiscoveryServerRestTemplate，因此实际上不会走到此处
-            authenticationHeaders = Worker.local().createWorkerAuthenticationHeaders();
+        if (destinationServer instanceof Supervisor) {
+            // 1）`Worker`调用`Supervisor`都是用的`DiscoveryServerRestTemplate`，因此不会走到这里
+            // 2）`Supervisor`调用`Supervisor`是在`ExtendedSupervisorRpcService`接口中，未做认证
+            String expectCls = "cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService";
+            String actualCls = declaringClass.getName();
+            Assert.isTrue(expectCls.equals(actualCls), () -> "Unknown server rpc service: " + actualCls);
         }
 
         String url = destinationServer.buildHttpUrlPrefix() + path;

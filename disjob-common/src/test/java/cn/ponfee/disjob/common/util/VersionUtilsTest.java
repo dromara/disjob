@@ -41,6 +41,7 @@ class VersionUtilsTest {
         File file = new File(path);
         Assertions.assertEquals(path, file.getPath());
         Assertions.assertEquals(file.getPath(), file.getAbsolutePath());
+        Assertions.assertSame(file.getPath(), file.toString());
 
         URL url = file.toURI().toURL();
         Assertions.assertEquals(file.getPath(), new File(url.toURI()).toPath().toString());

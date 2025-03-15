@@ -109,7 +109,6 @@ final class DiscoveryServerRestTemplate<D extends Server> {
                     break;
                 }
                 if (i < n) {
-                    // round-robin retry, 100L * IntMath.pow(i + 1, 2)
                     Thread.sleep((i + 1) * retryBackoffPeriod);
                 }
             }

@@ -182,7 +182,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     private WorkerMetricsResponse getWorkerMetrics(Worker worker) {
         WorkerMetrics metrics = null;
         Long pingTime = null;
-        GetMetricsParam param = GetMetricsParam.of(createSupervisorAuthenticationToken(worker));
+        GetMetricsParam param = GetMetricsParam.of(worker.getGroup());
         try {
             long start = System.currentTimeMillis();
             metrics = workerClient.call(worker, service -> service.getMetrics(param));
@@ -212,7 +212,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     private void verifyWorkerSignature(Worker worker) {
-        GetMetricsParam param = GetMetricsParam.of(createSupervisorAuthenticationToken(worker));
+        GetMetricsParam param = GetMetricsParam.of(worker.getGroup());
         WorkerMetrics metrics = workerClient.call(worker, service -> service.getMetrics(param));
         if (!Supervisor.local().verifyWorkerSignatureToken(worker.getGroup(), metrics.getSignature())) {
             throw new AuthenticationException("Worker authenticated failed: " + worker);
@@ -223,7 +223,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         if (action == Action.ADD_WORKER) {
             verifyWorkerSignature(worker);
         }
-        ConfigureWorkerParam param = ConfigureWorkerParam.of(createSupervisorAuthenticationToken(worker), action, data);
+        ConfigureWorkerParam param = ConfigureWorkerParam.of(worker.getGroup(), action, data);
         workerClient.invoke(worker, service -> service.configureWorker(param));
     }
 
@@ -233,10 +233,6 @@ public class ServerInvokeService extends SingletonClassConstraint {
             1,
             2000
         );
-    }
-
-    private String createSupervisorAuthenticationToken(Worker worker) {
-        return Supervisor.local().createSupervisorAuthenticationToken(worker.getGroup());
     }
 
 }

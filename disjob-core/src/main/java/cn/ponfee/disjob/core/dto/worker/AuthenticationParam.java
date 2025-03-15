@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.core.dto.worker;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.base.Supervisor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,5 +37,9 @@ public abstract class AuthenticationParam extends ToJsonString implements Serial
      * 从Supervisor侧传过来的token
      */
     private String supervisorAuthenticationToken;
+
+    public final void fillSupervisorAuthenticationToken(String group) {
+        this.supervisorAuthenticationToken = Supervisor.local().createSupervisorAuthenticationToken(group);
+    }
 
 }

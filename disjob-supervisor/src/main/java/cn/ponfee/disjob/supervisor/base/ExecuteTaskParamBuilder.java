@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
-import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
@@ -61,7 +60,7 @@ public final class ExecuteTaskParamBuilder {
         param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
         param.setShutdownStrategy(ShutdownStrategy.of(job.getShutdownStrategy()));
         param.setExecuteTimeout(job.getExecuteTimeout());
-        param.setSupervisorAuthenticationToken(Supervisor.local().createSupervisorAuthenticationToken(job.getGroup()));
+        param.fillSupervisorAuthenticationToken(job.getGroup());
         param.setWorker(worker);
         param.setJobExecutor(obtainJobExecutor());
         return param;

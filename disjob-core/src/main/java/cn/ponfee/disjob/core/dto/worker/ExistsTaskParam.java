@@ -31,9 +31,9 @@ public class ExistsTaskParam extends AuthenticationParam {
 
     private long taskId;
 
-    public static ExistsTaskParam of(String supervisorAuthenticationToken, long taskId) {
+    public static ExistsTaskParam of(String group, long taskId) {
         ExistsTaskParam param = new ExistsTaskParam();
-        param.setSupervisorAuthenticationToken(supervisorAuthenticationToken);
+        param.fillSupervisorAuthenticationToken(group);
         param.setTaskId(taskId);
         return param;
     }

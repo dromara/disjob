@@ -252,7 +252,8 @@ public class Worker extends Server implements Comparable<Worker> {
 
                 @Override
                 public void verifySupervisorAuthenticationToken(AuthenticationParam param) {
-                    if (!Tokens.verifyAuthentication(param.getSupervisorAuthenticationToken(), supervisorToken, TokenType.supervisor, group)) {
+                    String tokenSecret = (param == null) ? null : param.getSupervisorAuthenticationToken();
+                    if (!Tokens.verifyAuthentication(tokenSecret, supervisorToken, TokenType.supervisor, group)) {
                         throw new AuthenticationException("Authenticate failed.");
                     }
                 }
