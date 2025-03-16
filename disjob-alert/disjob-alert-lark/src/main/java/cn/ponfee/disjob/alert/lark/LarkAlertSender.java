@@ -54,7 +54,6 @@ public class LarkAlertSender extends AlertSender {
     public LarkAlertSender(LarkAlertSenderProperties config, LarkUserRecipientMapper mapper) {
         super(CHANNEL, "飞书", mapper);
         this.config = config;
-
     }
 
 

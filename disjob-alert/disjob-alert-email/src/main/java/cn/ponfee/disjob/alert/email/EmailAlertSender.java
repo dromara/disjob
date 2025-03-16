@@ -100,10 +100,10 @@ public class EmailAlertSender extends AlertSender {
      */
     private String buildContent(AlertEvent alertEvent) {
         return String.format(
-            "Alert Notification\n\n" +
-                "Alert Type: %s\n" +
-                "Timestamp: %s\n\n" +
-                "Details:\n%s",
+            "Alert Notification<br><br>" +
+                "Alert Type: %s<br>" +
+                "Timestamp: %s<br>" +
+                "Details:<br>%s",
             alertEvent.getAlertType(),
             alertEvent.buildTitle(),
             alertEvent.buildContent()
