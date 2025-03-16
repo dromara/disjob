@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.lark.configuration;
+package cn.ponfee.disjob.alert.im.configuration;
 
-import cn.ponfee.disjob.alert.lark.LarkAlertSender;
-import cn.ponfee.disjob.alert.lark.LarkUserRecipientMapper;
+import cn.ponfee.disjob.alert.im.ImAlertSender;
+import cn.ponfee.disjob.alert.im.ImUserRecipientMapper;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -28,14 +28,14 @@ import org.springframework.core.Ordered;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
- * LarkAlertSender auto configuration
+ * ImAlertSender auto configuration
  *
  * @author Ponfee
  */
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
-@EnableConfigurationProperties(LarkAlertSenderProperties.class)
-@Import(LarkAlertSenderAutoConfiguration.LarkAlertSenderDeferredImportSelector.class)
-public class LarkAlertSenderAutoConfiguration {
+@EnableConfigurationProperties(ImAlertSenderProperties.class)
+@Import(ImAlertSenderAutoConfiguration.LarkAlertSenderDeferredImportSelector.class)
+public class ImAlertSenderAutoConfiguration {
 
     static class LarkAlertSenderDeferredImportSelector implements DeferredImportSelector {
         @SuppressWarnings("NullableProblems")
@@ -48,14 +48,14 @@ public class LarkAlertSenderAutoConfiguration {
     static class LarkAlertSenderDeferredConfiguration {
         @ConditionalOnMissingBean
         @Bean
-        public LarkUserRecipientMapper larkUserRecipientMapper() {
-            return new LarkUserRecipientMapper();
+        public ImUserRecipientMapper larkUserRecipientMapper() {
+            return new ImUserRecipientMapper();
         }
     }
 
     @Bean
-    public LarkAlertSender larkAlertSender(LarkAlertSenderProperties config, LarkUserRecipientMapper mapper) {
-        return new LarkAlertSender(config, mapper);
+    public ImAlertSender larkAlertSender(ImAlertSenderProperties config, ImUserRecipientMapper mapper) {
+        return new ImAlertSender(config, mapper);
     }
 
 }

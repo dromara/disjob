@@ -82,7 +82,7 @@
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-alert-lark</artifactId>
+      <artifactId>disjob-alert-im</artifactId>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>

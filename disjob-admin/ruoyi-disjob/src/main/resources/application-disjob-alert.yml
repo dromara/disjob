@@ -1,37 +1,32 @@
 disjob.alert:
   sender:
     email:
-      host: xxx
-      protocol: SMTP
-      username: xxx@xxx.com
-      password: xxx
-      fromAddress: xxx@xxx.com
+      enabled: true
+      host: smtp.qiye.aliyun.com
       port: 465
+      auth: true
+      # 发送方，遵循RFC-822标准
+      fromAddress: from_address@gmail.com
+      username: disjob@username.com
+      # 密码（注意，某些邮箱需要为SMTP服务单独设置密码，详情查看相关帮助）
+      password: 123456
       start-tls-enabled: true
       ssl-enabled: true
-      auth: true
-    lark:
+    im:
       tokenId: xxx
       sign: c9oV8sSo9bG3uxD03EXv7b
-      supplier: lark
+      supplier: lark # lark:飞书，企业微信:we_talk，钉钉:ding_talk
     sms:
       blends:
         # 自定义的标识，也就是configId这里可以是任意值（最好不要是中文）
         aliyun:
           #厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
-          supplier: tencent
-          #您的accessKey
-          access-key-id: test
-          #您的accessKeySecret
-          access-key-secret: test
-          #您的短信签名
-          signature: disjob测试
-          #模板ID 非必须配置，如果使用sendMessage的快速发送需此配置
-          template-id: xxxxxxxx
-          #您的sdkAppId
-          #sdk-app-id: 您的sdkAppId
-          # 自定义的标识，也就是configId这里可以是任意值（最好不要是中文）
-        tx2:
+          supplier: aliyun
+          accessKeyId: sampleAccessKeyId
+          accessKeySecret: sampleAccessKeySecret
+          signaTure: disjob
+          templateId: xxx
+        tencent:
           #厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
           supplier: tencent
           #您的accessKey
@@ -47,8 +42,8 @@ disjob.alert:
 
   alerter:
     type-channels-map:
-      ALARM: [lark, email]
-      NOTICE: [lark,sms]
+      ALARM: [sms, im, email]
+      NOTICE: [im]
     task-execution-pool:
       core-pool-size: 2
       maximum-pool-size: 8

@@ -72,6 +72,10 @@ public class EmailAlertSender extends AlertSender {
         }
         for (Map.Entry<String, String> entry : alertRecipients.entrySet()) {
             String alertUser = entry.getKey();
+            if (alertUser == null || !alertUser.contains("@")) {
+                LOG.warn("Mail invalid recipient found for alert event: {}", alertEvent);
+                continue;
+            }
             String recipientEmail = entry.getValue();
             try {
                 Message message = new MimeMessage(mailSession);

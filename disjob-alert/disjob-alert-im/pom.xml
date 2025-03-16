@@ -11,7 +11,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>disjob-alert-lark</artifactId>
+  <artifactId>disjob-alert-im</artifactId>
   <name>${project.artifactId}</name>
   <description>Distributed job alert lark module</description>
   <url>https://github.com/dromara/disjob</url>

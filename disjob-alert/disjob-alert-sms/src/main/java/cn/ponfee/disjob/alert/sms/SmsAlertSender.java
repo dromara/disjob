@@ -55,6 +55,10 @@ public class SmsAlertSender extends AlertSender {
         }
         for (Map.Entry<String, String> entry : alertRecipients.entrySet()) {
             String alertUser = entry.getKey();
+            if (alertUser == null || (alertUser.contains("@") && alertUser.contains(".com"))) {
+                LOG.warn("Sms invalid recipient found for alert event: {}", alertEvent);
+                continue;
+            }
             String recipientPhoneNumber = entry.getValue();
             try {
                 String message = buildMessage(alertEvent);

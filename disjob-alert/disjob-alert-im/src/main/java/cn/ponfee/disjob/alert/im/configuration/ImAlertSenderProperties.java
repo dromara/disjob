@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.lark.configuration;
+package cn.ponfee.disjob.alert.im.configuration;
 
-import cn.ponfee.disjob.alert.lark.LarkAlertSender;
+import cn.ponfee.disjob.alert.im.ImAlertSender;
 import cn.ponfee.disjob.alert.sender.AlertSenderProperties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Lark alert properties
+ * Im alert properties
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = AlertSenderProperties.KEY_PREFIX + "." + LarkAlertSender.CHANNEL)
-public class LarkAlertSenderProperties extends AlertSenderProperties {
+@ConfigurationProperties(prefix = AlertSenderProperties.KEY_PREFIX + "." + ImAlertSender.CHANNEL)
+public class ImAlertSenderProperties extends AlertSenderProperties {
 
     private static final long serialVersionUID = 2531779048449076379L;
 

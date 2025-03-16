@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.lark;
+package cn.ponfee.disjob.alert.im;
 
 import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
 
 /**
- * Lark user recipient mapper
+ * Im user recipient mapper
  *
  * @author Ponfee
  */
-public class LarkUserRecipientMapper extends UserRecipientMapper {
-    
+public class ImUserRecipientMapper extends UserRecipientMapper {
+
 }

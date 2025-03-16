@@ -104,7 +104,12 @@
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-alert-lark</artifactId>
+        <artifactId>disjob-alert-im</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-alert-sms</artifactId>
         <version>${project.parent.version}</version>
       </dependency>
 

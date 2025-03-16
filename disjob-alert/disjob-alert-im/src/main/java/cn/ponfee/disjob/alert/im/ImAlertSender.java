@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.lark;
+package cn.ponfee.disjob.alert.im;
 
 import cn.ponfee.disjob.alert.event.AlertEvent;
-import cn.ponfee.disjob.alert.lark.configuration.LarkAlertSenderProperties;
+import cn.ponfee.disjob.alert.im.configuration.ImAlertSenderProperties;
 import cn.ponfee.disjob.alert.sender.AlertSender;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -38,21 +38,21 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 /**
- * Lark alert sender
+ * IM alert sender
  *
  * @author Ponfee
  */
 @Slf4j
-public class LarkAlertSender extends AlertSender {
+public class ImAlertSender extends AlertSender {
 
-    public static final String CHANNEL = "lark";
+    public static final String CHANNEL = "im";
 
-    private static final Logger LOG = LoggerFactory.getLogger(LarkAlertSender.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ImAlertSender.class);
 
-    private final LarkAlertSenderProperties config;
+    private final ImAlertSenderProperties config;
 
-    public LarkAlertSender(LarkAlertSenderProperties config, LarkUserRecipientMapper mapper) {
-        super(CHANNEL, "飞书", mapper);
+    public ImAlertSender(ImAlertSenderProperties config, ImUserRecipientMapper mapper) {
+        super(CHANNEL, "Instant Messaging", mapper);
         this.config = config;
     }
 
@@ -142,7 +142,7 @@ public class LarkAlertSender extends AlertSender {
             case "lark":
                 int currentTimeMillis = (int) (System.currentTimeMillis() / 1000);
                 try {
-                    return createLarkJsonPayload(currentTimeMillis, genLarkSign(config.getSign(), currentTimeMillis), title, message);
+                    return createImJsonPayload(currentTimeMillis, genLarkSign(config.getSign(), currentTimeMillis), title, message);
                 } catch (NoSuchAlgorithmException | InvalidKeyException e) {
                     throw new RuntimeException(e);
                 }
@@ -151,7 +151,7 @@ public class LarkAlertSender extends AlertSender {
         }
     }
 
-    private String createLarkJsonPayload(long timestamp, String sign, String title, String message) {
+    private String createImJsonPayload(long timestamp, String sign, String title, String message) {
         return String.format(
             "{\"timestamp\": %d," +
                 "\"sign\": \"%s\"," +
