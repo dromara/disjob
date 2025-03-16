@@ -14,19 +14,25 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.event;
-
-import cn.ponfee.disjob.common.base.ToJsonString;
-
-import java.io.Serializable;
+package cn.ponfee.disjob.alert.enums;
 
 /**
- * Alarm event
+ * Alert type
  *
  * @author Ponfee
  */
-public abstract class AlarmEvent extends AlertEvent {
+public enum AlertType {
 
-    private static final long serialVersionUID = -2992954028676615673L;
+    /**
+     * 警报
+     */
+    ALARM,
+
+    /**
+     * 通知
+     */
+    NOTICE,
+
+    ;
 
 }

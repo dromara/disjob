@@ -14,15 +14,32 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.event;
+package cn.ponfee.disjob.alert.lark;
+
+import cn.ponfee.disjob.alert.event.AlertEvent;
+import cn.ponfee.disjob.alert.lark.configuration.LarkAlertSenderProperties;
+import cn.ponfee.disjob.alert.sender.AlertSender;
+
+import java.util.Map;
 
 /**
- * Notice event
+ * Lark alert sender
  *
  * @author Ponfee
  */
-public abstract class NoticeEvent extends AlertEvent {
+public class LarkAlertSender extends AlertSender {
 
-    private static final long serialVersionUID = 4389763753335066739L;
+    public static final String CHANNEL = "lark";
+
+    public LarkAlertSender(LarkAlertSenderProperties config) {
+        super(CHANNEL, "飞书");
+
+        // TODO: init Mail client by config
+    }
+
+    @Override
+    protected void doSend(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
+
+    }
 
 }

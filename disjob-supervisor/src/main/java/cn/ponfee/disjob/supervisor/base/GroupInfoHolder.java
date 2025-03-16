@@ -65,6 +65,11 @@ public final class GroupInfoHolder implements GroupInfoService {
     }
 
     @Override
+    public Set<String> getDevUsers(String group) {
+        return getGroup(group).getDevUsers();
+    }
+
+    @Override
     public Set<String> getAlertUsers(String group) {
         return getGroup(group).getAlertUsers();
     }

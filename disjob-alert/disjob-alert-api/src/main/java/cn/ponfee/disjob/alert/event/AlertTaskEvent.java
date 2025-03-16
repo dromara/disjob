@@ -29,14 +29,9 @@ import java.util.Date;
  */
 @Getter
 @Setter
-public class AlertTaskEvent extends AlarmEvent {
+public class AlertTaskEvent extends AlertEvent {
 
     private static final long serialVersionUID = 5550051265102992301L;
-
-    /**
-     * The group
-     */
-    private String group;
 
     /**
      * The job name
@@ -74,7 +69,7 @@ public class AlertTaskEvent extends AlarmEvent {
     private Date executeEndTime;
 
     /**
-     * 工作进程(JVM进程，GROUP:WORKER-ID:HOST:PORT)
+     * Worker
      */
     private String worker;
 
@@ -82,5 +77,15 @@ public class AlertTaskEvent extends AlarmEvent {
      * 执行错误信息
      */
     private String errorMsg;
+
+    @Override
+    public String buildTitle() {
+        return null;
+    }
+
+    @Override
+    public String buildContent() {
+        return null;
+    }
 
 }

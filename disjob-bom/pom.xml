@@ -94,6 +94,22 @@
 
       <dependency>
         <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-alert-api</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-alert-email</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-alert-lark</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>cn.ponfee</groupId>
         <artifactId>disjob-supervisor</artifactId>
         <version>${project.parent.version}</version>
       </dependency>

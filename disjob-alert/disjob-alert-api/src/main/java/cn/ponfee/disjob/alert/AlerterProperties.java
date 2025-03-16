@@ -14,48 +14,35 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.event;
+package cn.ponfee.disjob.alert;
 
 import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.base.JobConstants;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
- * Alert event
+ * Abstract alert properties
  *
  * @author Ponfee
  */
-@Getter
 @Setter
-public abstract class AlertEvent extends ToJsonString implements Serializable {
+@Getter
+@ConfigurationProperties(prefix = AlerterProperties.KEY_PREFIX + "." + "alerter")
+public class AlerterProperties extends ToJsonString implements Serializable {
 
-    private static final long serialVersionUID = 6379056446763475308L;
-
-    /**
-     * The alert type
-     */
-    private AlertType alertType;
+    private static final long serialVersionUID = 3369292434171863341L;
 
     /**
-     * The group
+     * Alert key prefix
      */
-    private String group;
+    public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".alert";
 
-    /**
-     * Build alert title.
-     *
-     * @return alert title
-     */
-    public abstract String buildTitle();
-
-    /**
-     * Build alert content.
-     *
-     * @return alert content
-     */
-    public abstract String buildContent();
+    private Map<AlertType, String[]> typeChannelMap;
 
 }

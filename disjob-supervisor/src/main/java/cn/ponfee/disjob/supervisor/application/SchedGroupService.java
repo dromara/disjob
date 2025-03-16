@@ -43,9 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
@@ -190,7 +188,15 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     private static Map<String, ImmutableSet<String>> toUserMap(List<DisjobGroup> list) {
         return list.stream()
-            .flatMap(e -> e.getDevUsers().stream().map(u -> Pair.of(u, e.getGroup())))
+            .flatMap(e -> {
+                Collection<String> users = e.getDevUsers();
+                if (!users.contains(e.getOwnUser())) {
+                    users = new ArrayList<>(1 + e.getDevUsers().size());
+                    users.add(e.getOwnUser());
+                    users.addAll(e.getDevUsers());
+                }
+                return users.stream().map(u -> Pair.of(u, e.getGroup()));
+            })
             .collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, ImmutableSet.toImmutableSet())));
     }
 

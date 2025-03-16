@@ -16,18 +16,29 @@
 
 package cn.ponfee.disjob.alert.email;
 
-import cn.ponfee.disjob.alert.AlertSender;
+import cn.ponfee.disjob.alert.email.configuration.EmailAlertSenderProperties;
 import cn.ponfee.disjob.alert.event.AlertEvent;
+import cn.ponfee.disjob.alert.sender.AlertSender;
+
+import java.util.Map;
 
 /**
- * TODO description
+ * Email alert sender
  *
  * @author Ponfee
  */
 public class EmailAlertSender extends AlertSender {
 
+    public static final String CHANNEL = "email";
+
+    public EmailAlertSender(EmailAlertSenderProperties config) {
+        super(CHANNEL, "邮件");
+
+        // TODO: init Mail client by config
+    }
+
     @Override
-    public void send(AlertEvent event) {
+    protected void doSend(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
 
     }
 

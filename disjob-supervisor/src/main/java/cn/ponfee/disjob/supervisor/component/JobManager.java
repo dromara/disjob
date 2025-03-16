@@ -16,6 +16,8 @@
 
 package cn.ponfee.disjob.supervisor.component;
 
+import cn.ponfee.disjob.alert.Alerter;
+import cn.ponfee.disjob.alert.event.AlertInstanceEvent;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
@@ -59,6 +61,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -109,6 +112,7 @@ public class JobManager {
     private final SchedWorkflowMapper workflowMapper;
     private final SchedTaskMapper taskMapper;
     private final WorkerClient workerClient;
+    private final Alerter alerter;
     private final TransactionTemplate transactionTemplate;
 
     public JobManager(SupervisorProperties conf,
@@ -119,6 +123,7 @@ public class JobManager {
                       SchedWorkflowMapper workflowMapper,
                       SchedTaskMapper taskMapper,
                       WorkerClient workerClient,
+                      @Nullable Alerter alerter,
                       @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate txTemplate) {
         conf.check();
         this.conf = conf;
@@ -129,6 +134,7 @@ public class JobManager {
         this.workflowMapper = workflowMapper;
         this.taskMapper = taskMapper;
         this.workerClient = workerClient;
+        this.alerter = alerter;
         this.transactionTemplate = txTemplate;
     }
 
@@ -846,10 +852,11 @@ public class JobManager {
         }
 
         // 任务实例已结束且不会再重试，则触发通知
-        if (!retrying) {
+        if (!retrying && alerter != null) {
             SchedJob job = jobMapper.get(instance.getJobId());
             SchedInstance origin = instance.isRunRetry() ? instanceMapper.get(instance.getPnstanceId()) : instance;
-            ModelConverter.toAlertInstanceEvent(job, origin, instance.getRunEndTime(), instance.getRetriedCount());
+            AlertInstanceEvent event = ModelConverter.toAlertInstanceEvent(job, origin, instance.getRunEndTime(), instance.getRetriedCount());
+            doAfterTransactionCommit(() -> alerter.alert(event));
         }
     }
 

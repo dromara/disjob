@@ -1,0 +1,16 @@
+disjob.alert:
+  sender:
+    email:
+      host: host1
+      protocol: protocol2
+      username: username3
+      password: password4
+      properties:
+    lark:
+      urlKey: xxx
+      secret: xxx
+
+  alerter:
+    type-channel-map:
+      ALARM: [lark, email]
+      NOTICE: [email]

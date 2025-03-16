@@ -6,21 +6,22 @@
 
   <parent>
     <groupId>cn.ponfee</groupId>
-    <artifactId>disjob-parent</artifactId>
+    <artifactId>disjob-alert</artifactId>
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>disjob-alert</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>disjob-alert-lark</artifactId>
   <name>${project.artifactId}</name>
-  <description>Distributed job alert parent module</description>
+  <description>Distributed job alert lark module</description>
   <url>https://github.com/dromara/disjob</url>
 
-  <modules>
-    <module>disjob-alert-api</module>
-    <module>disjob-alert-email</module>
-    <module>disjob-alert-lark</module>
-  </modules>
+  <dependencies>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-alert-api</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+  </dependencies>
 
 </project>

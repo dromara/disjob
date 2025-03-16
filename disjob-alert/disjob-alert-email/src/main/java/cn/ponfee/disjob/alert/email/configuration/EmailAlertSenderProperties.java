@@ -14,48 +14,29 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.event;
+package cn.ponfee.disjob.alert.email.configuration;
 
-import cn.ponfee.disjob.alert.enums.AlertType;
-import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.alert.email.EmailAlertSender;
+import cn.ponfee.disjob.alert.sender.AlertSenderProperties;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.io.Serializable;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Alert event
+ * Email alert properties
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public abstract class AlertEvent extends ToJsonString implements Serializable {
+@ConfigurationProperties(prefix = AlertSenderProperties.KEY_PREFIX + "." + EmailAlertSender.CHANNEL)
+public class EmailAlertSenderProperties extends AlertSenderProperties {
 
-    private static final long serialVersionUID = 6379056446763475308L;
+    private static final long serialVersionUID = 2531779048449076379L;
 
-    /**
-     * The alert type
-     */
-    private AlertType alertType;
-
-    /**
-     * The group
-     */
-    private String group;
-
-    /**
-     * Build alert title.
-     *
-     * @return alert title
-     */
-    public abstract String buildTitle();
-
-    /**
-     * Build alert content.
-     *
-     * @return alert content
-     */
-    public abstract String buildContent();
+    private String host;
+    private String protocol;
+    private String username;
+    private String password;
 
 }

@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-cn.ponfee.disjob.alert.email.configuration.EmailAlertAutoConfiguration
+cn.ponfee.disjob.alert.email.configuration.EmailAlertSenderAutoConfiguration

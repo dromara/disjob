@@ -49,23 +49,23 @@ public class DisjobGroup {
         this.workerToken       = o.getWorkerToken();
         this.userToken         = o.getUserToken();
         this.ownUser           = o.getOwnUser().trim();
-        this.devUsers          = parse(o.getDevUsers(), ownUser);
-        this.alertUsers        = parse(o.getAlertUsers(), ownUser);
+        this.devUsers          = parse(o.getDevUsers());
+        this.alertUsers        = parse(o.getAlertUsers());
         this.workerContextPath = Strings.trimPath(o.getWorkerContextPath());
         this.webhook           = o.getWebhook();
     }
 
     // --------------------------------------------------------------private methods
 
-    private static ImmutableSet<String> parse(String str, String ownUser) {
+    private static ImmutableSet<String> parse(String str) {
         if (StringUtils.isBlank(str)) {
-            return ImmutableSet.of(ownUser);
+            return ImmutableSet.of();
         }
 
         String[] array = str.split(Str.COMMA);
-        ImmutableSet.Builder<String> builder = ImmutableSet.builderWithExpectedSize(array.length + 1);
+        ImmutableSet.Builder<String> builder = ImmutableSet.builderWithExpectedSize(array.length);
         Arrays.stream(array).filter(StringUtils::isNotBlank).map(String::trim).forEach(builder::add);
-        return builder.add(ownUser).build();
+        return builder.build();
     }
 
 }

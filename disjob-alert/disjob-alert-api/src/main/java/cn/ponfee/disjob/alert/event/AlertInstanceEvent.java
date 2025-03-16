@@ -30,14 +30,9 @@ import java.util.Date;
  */
 @Getter
 @Setter
-public class AlertInstanceEvent extends AlarmEvent {
+public class AlertInstanceEvent extends AlertEvent {
 
     private static final long serialVersionUID = 5213948727010283020L;
-
-    /**
-     * The group
-     */
-    private String group;
 
     /**
      * The job name
@@ -83,5 +78,15 @@ public class AlertInstanceEvent extends AlarmEvent {
      * 已重试的次数
      */
     private int retriedCount;
+
+    @Override
+    public String buildTitle() {
+        return null;
+    }
+
+    @Override
+    public String buildContent() {
+        return null;
+    }
 
 }

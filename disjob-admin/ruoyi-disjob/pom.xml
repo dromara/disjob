@@ -74,6 +74,16 @@
       <artifactId>disjob-dispatch-http</artifactId>
       -->
     </dependency>
+
+    <!-- Alert send: select many implementation for alert -->
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-alert-email</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-alert-lark</artifactId>
+    </dependency>
   </dependencies>
 
 </project>

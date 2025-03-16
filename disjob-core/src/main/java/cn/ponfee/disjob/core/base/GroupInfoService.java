@@ -37,6 +37,8 @@ public interface GroupInfoService {
 
     String getOwnUser(String group);
 
+    Set<String> getDevUsers(String group);
+
     Set<String> getAlertUsers(String group);
 
 }

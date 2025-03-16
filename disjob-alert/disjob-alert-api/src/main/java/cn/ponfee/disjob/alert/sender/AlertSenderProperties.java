@@ -14,15 +14,25 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.enums;
+package cn.ponfee.disjob.alert.sender;
+
+import cn.ponfee.disjob.alert.AlerterProperties;
+import cn.ponfee.disjob.common.base.ToJsonString;
+
+import java.io.Serializable;
 
 /**
- * Alert level
+ * Abstract alert properties
  *
  * @author Ponfee
  */
-public enum AlertLevel {
+public abstract class AlertSenderProperties extends ToJsonString implements Serializable {
 
-    P0, P1, P2;
+    private static final long serialVersionUID = 3369292434171863341L;
+
+    /**
+     * Alert channel  key prefix
+     */
+    public static final String KEY_PREFIX = AlerterProperties.KEY_PREFIX + ".sender";
 
 }
