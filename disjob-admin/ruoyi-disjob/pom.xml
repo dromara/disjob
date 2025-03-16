@@ -75,7 +75,8 @@
       -->
     </dependency>
 
-    <!-- Alert send: select many implementation for alert -->
+    <!-- Alert event send: import many implementation for alert -->
+    <!--
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-alert-email</artifactId>
@@ -88,6 +89,7 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-alert-sms</artifactId>
     </dependency>
+    -->
   </dependencies>
 
 </project>

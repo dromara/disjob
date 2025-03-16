@@ -20,10 +20,12 @@ import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.BasicDeferredImportSelector;
 import cn.ponfee.disjob.core.base.CoreUtils;
+import cn.ponfee.disjob.core.base.GroupInfoService;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
-import cn.ponfee.disjob.supervisor.base.GroupInfoHolder;
+import cn.ponfee.disjob.supervisor.base.DefaultGroupInfoService;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor.EnableSupervisorConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -68,10 +70,17 @@ public @interface EnableSupervisor {
     @ComponentScan(basePackageClasses = SupervisorStartup.class)
     class EnableSupervisorConfiguration {
 
+        @ConditionalOnMissingBean
         @Bean
-        public Supervisor.Local localSupervisor(WebServerApplicationContext webServerApplicationContext) {
+        public GroupInfoService groupInfoService() {
+            return DefaultGroupInfoService.INSTANCE;
+        }
+
+        @Bean
+        public Supervisor.Local localSupervisor(WebServerApplicationContext webServerApplicationContext,
+                                                GroupInfoService groupInfoService) {
             int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
-            Object[] args = {CoreUtils.getLocalHost(), port, GroupInfoHolder.INSTANCE};
+            Object[] args = {CoreUtils.getLocalHost(), port, groupInfoService};
             try {
                 // inject local supervisor: Supervisor.class.getDeclaredClasses()[0]
                 return ClassUtils.invoke(Class.forName(Supervisor.Local.class.getName()), "create", args);

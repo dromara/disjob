@@ -86,20 +86,6 @@
         <artifactId>ruoyi-generator</artifactId>
         <version>${project.version}</version>
       </dependency>
-
-      <!-- Jakarta Mail -->
-      <dependency>
-        <groupId>jakarta.mail</groupId>
-        <artifactId>jakarta.mail-api</artifactId>
-        <version>${jakarta.mail.version}</version> <!-- 统一版本 -->
-      </dependency>
-
-      <!-- Jakarta Activation -->
-      <dependency>
-        <groupId>jakarta.activation</groupId>
-        <artifactId>jakarta.activation-api</artifactId>
-        <version>${jakarta.activation.version}</version> <!-- 统一版本 -->
-      </dependency>
     </dependencies>
   </dependencyManagement>
 

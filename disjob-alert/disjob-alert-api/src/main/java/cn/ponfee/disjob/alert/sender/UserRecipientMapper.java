@@ -27,13 +27,13 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-public abstract class UserRecipientMapper {
+public class UserRecipientMapper {
 
     /**
      * Mapping the users to recipients
      *
      * @param users the users
-     * @return recipients
+     * @return recipients Map[user, channel-user-identity]
      */
     public Map<String, String> map(Set<String> users) {
         if (users == null) {

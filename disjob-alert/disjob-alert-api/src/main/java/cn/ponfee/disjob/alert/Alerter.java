@@ -18,27 +18,24 @@ package cn.ponfee.disjob.alert;
 
 import cn.ponfee.disjob.alert.configuration.AlerterProperties;
 import cn.ponfee.disjob.alert.configuration.AlerterProperties.SendRateLimit;
-import cn.ponfee.disjob.alert.enums.AlertLevel;
 import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.alert.event.AlertEvent;
-import cn.ponfee.disjob.alert.event.AlertInstanceEvent;
 import cn.ponfee.disjob.alert.sender.AlertSender;
+import cn.ponfee.disjob.common.collect.SlidingWindow;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.core.base.GroupInfoService;
+import cn.ponfee.disjob.core.base.JobConstants;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Alerter
@@ -46,6 +43,21 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Ponfee
  */
 public class Alerter {
+
+    /**
+     * Alert key prefix
+     */
+    public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".alert";
+
+    /**
+     * Alert sender config key prefix
+     */
+    public static final String SENDER_CONFIG_KEY_PREFIX = KEY_PREFIX + ".sender";
+
+    /**
+     * Alert UserRecipientMapper spring bean name prefix
+     */
+    public static final String USER_RECIPIENT_MAPPER_BEAN_NAME_PREFIX = KEY_PREFIX + ".user_recipient_mapper";
 
     private static final Logger LOG = LoggerFactory.getLogger(Alerter.class);
 
@@ -65,29 +77,24 @@ public class Alerter {
     private final Executor executor;
 
     /**
-     * 告警限流
+     * Send rate limit config
      */
-    private final ConcurrentHashMap<String, SlidingWindow> rateLimiter = new ConcurrentHashMap<>();
-
-    /**
-     *  通知level
-     */
-    private final AlertLevel alertLevel;
-
     private final SendRateLimit limit;
 
-    public Alerter(AlerterProperties config,
-                   GroupInfoService groupInfoService,
-                   Executor executor) {
+    /**
+     * 告警限流
+     */
+    private final ConcurrentHashMap<String, SlidingWindow> rateLimiterMap = new ConcurrentHashMap<>();
+
+    public Alerter(AlerterProperties config, GroupInfoService groupInfoService, Executor executor) {
         Assert.notNull(config, "Alerter config cannot be empty.");
-        this.typeChannelsMap = ObjectUtils.defaultIfNull(config.getTypeChannelsMap(), Collections.emptyMap());
+        this.typeChannelsMap = config.getTypeChannelsMap();
         this.groupInfoService = groupInfoService;
         this.executor = Objects.requireNonNull(executor);
-        this.alertLevel = config.getAlertLevel();
         this.limit = config.getSendRateLimit();
     }
 
-    public void alert(AlertInstanceEvent event) {
+    public void alert(AlertEvent event) {
         String[] channels = typeChannelsMap.get(event.getAlertType());
         if (channels == null || channels.length == 0) {
             return;
@@ -99,36 +106,20 @@ public class Alerter {
             return;
         }
 
-        // TODO 限流：滑动窗口、漏斗算法、分布式集群限流
-        // 滑动窗口
-        // TODO 待讨论：限流维度为group或job级别
-        String rateLimiterKey;
-        if (alertLevel == AlertLevel.TYPE) {
-            rateLimiterKey = event.getAlertType().toString();
-        } else if (alertLevel == AlertLevel.GROUP) {
-            rateLimiterKey = event.getGroup();
-        } else if (alertLevel == AlertLevel.JOB) {
-            rateLimiterKey = event.getJobName();
-        } else if (alertLevel == AlertLevel.INSTANCE) {
-            rateLimiterKey = String.valueOf(event.getInstanceId());
-        } else {
-            LOG.error("Unsupported alert level: {}", alertLevel);
+        SlidingWindow slidingWindow = rateLimiterMap.computeIfAbsent(
+            event.buildRateLimitKey(),
+            key -> new SlidingWindow(limit.getMaxRequests(), limit.getWindowSizeInMillis())
+        );
+        if (!slidingWindow.tryAcquire()) {
+            LOG.warn("Alert event rate limited: {}", event);
             return;
-        }
-        if (!rateLimiter.containsKey(rateLimiterKey)) {
-            rateLimiter.put(rateLimiterKey, new SlidingWindow(limit.getMaxRequests(), limit.getWindowSizeInMillis()));
-        }
-        SlidingWindow slidingWindow = rateLimiter.get(rateLimiterKey);
-        if (slidingWindow != null && !slidingWindow.tryAcquire()) {
-            LOG.warn("Alert rate limited for event: {}", event);
-            return; // 如果限流器判定超出限制，则直接返回
         }
 
         try {
             doAlert(channels, event, alertUsers, webhook);
         } catch (Throwable t) {
             // if RejectedExecutionException or other exception
-            LOG.warn("Do alert event failed: {}, {}", event, t.getMessage());
+            LOG.warn("Alert event execute error: {}, {}", event, t.getMessage());
             Threads.interruptIfNecessary(t);
         }
     }
@@ -143,42 +134,10 @@ public class Alerter {
                     }
                 }
             } catch (Throwable t) {
-                LOG.error("Send alert event error: " + event, t);
+                LOG.error("Alert event send error: " + event, t);
                 Threads.interruptIfNecessary(t);
             }
         });
     }
 
-    /**
-     * Sliding window implementation class
-     */
-    private static class SlidingWindow {
-        private final int maxRequests; // maximum number of requests
-        private final long windowSizeInMillis; // Window size (milliseconds)
-        private final AtomicInteger requestCount; // Current request count
-        private volatile long windowStart; // window start time
-
-        public SlidingWindow(int maxRequests, long windowSizeInMillis) {
-            this.maxRequests = maxRequests;
-            this.windowSizeInMillis = windowSizeInMillis;
-            this.requestCount = new AtomicInteger(0);
-            this.windowStart = System.currentTimeMillis();
-        }
-
-        /**
-         * Try to obtain a request quota.
-         */
-        public synchronized boolean tryAcquire() {
-            long now = System.currentTimeMillis();
-            if (now - windowStart > windowSizeInMillis) {
-                windowStart = now;
-                requestCount.set(0);
-            }
-            if (requestCount.get() < maxRequests) {
-                requestCount.incrementAndGet();
-                return true;
-            }
-            return false;
-        }
-    }
 }

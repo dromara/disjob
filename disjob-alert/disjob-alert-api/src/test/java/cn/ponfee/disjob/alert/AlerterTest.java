@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.email;
-
-import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
+package cn.ponfee.disjob.alert;
 
 /**
- * Email user recipient mapper
+ * Alerter test
  *
  * @author Ponfee
  */
-public class EmailUserRecipientMapper extends UserRecipientMapper {
+class AlerterTest {
+
 
 }

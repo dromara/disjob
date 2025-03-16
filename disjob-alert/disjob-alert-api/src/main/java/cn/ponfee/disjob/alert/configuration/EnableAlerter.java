@@ -31,7 +31,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * Enable alerter
+ * Enable alerter annotation based springboot
  *
  * @author Ponfee
  */
@@ -44,13 +44,14 @@ public @interface EnableAlerter {
     @EnableConfigurationProperties(AlerterProperties.class)
     class EnableAlerterConfiguration implements DisposableBean {
 
-        private final AlerterProperties config;
+        private final AlerterProperties alerterConfig;
         private final ThreadPoolExecutor alertSendExecutor;
 
-        EnableAlerterConfiguration(AlerterProperties config) {
-            this.config = config;
-
-            AlerterProperties.SendThreadPool pool = config.getSendThreadPool();
+        EnableAlerterConfiguration(AlerterProperties alerterConfig) {
+            // Alerter config
+            this.alerterConfig = alerterConfig;
+            // Alert send executor
+            AlerterProperties.SendThreadPool pool = alerterConfig.getSendThreadPool();
             this.alertSendExecutor = ThreadPoolExecutors.builder()
                 .corePoolSize(pool.getCorePoolSize())
                 .maximumPoolSize(pool.getMaximumPoolSize())
@@ -64,12 +65,12 @@ public @interface EnableAlerter {
 
         @Bean
         public Alerter alerter(GroupInfoService groupInfoService) {
-            return new Alerter(config, groupInfoService, alertSendExecutor);
+            return new Alerter(alerterConfig, groupInfoService, alertSendExecutor);
         }
 
         @Override
         public void destroy() throws Exception {
-            int awaitTerminationSeconds = config.getSendThreadPool().getAwaitTerminationSeconds();
+            int awaitTerminationSeconds = alerterConfig.getSendThreadPool().getAwaitTerminationSeconds();
             ThreadPoolExecutors.shutdown(alertSendExecutor, awaitTerminationSeconds);
         }
     }

@@ -22,7 +22,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
-import java.text.DateFormat;
 
 /**
  * Alert instance event
@@ -32,23 +31,7 @@ import java.text.DateFormat;
 @Getter
 @Setter
 public class AlertInstanceEvent extends AlertEvent {
-
     private static final long serialVersionUID = 5213948727010283020L;
-
-    /**
-     * The job name
-     */
-    private String jobName;
-
-    /**
-     * The job id
-     */
-    private long jobId;
-
-    /**
-     * The instance id
-     */
-    private long instanceId;
 
     /**
      * 运行类型
@@ -82,54 +65,27 @@ public class AlertInstanceEvent extends AlertEvent {
 
     @Override
     public String buildTitle() {
-        return String.format("%s [%s]",
-            DateFormat.getDateTimeInstance().format(new Date()),
-            this.getAlertType()
-        );
+        return String.format("【实例-%s | %s】", alertType.desc(), formatDate(new Date()));
     }
 
     @Override
-    public String buildContent() {
+    public String buildContent(String indent, String lineSeparator) {
         StringBuilder content = new StringBuilder();
-        // 使用大标题
-        content.append("# 【实例告警通知】\n\n");
-
-        // 使用分组标题
-        content.append("## 基本信息\n");
-        content.append("作业名称：").append(this.jobName != null ? this.jobName : "-").append("\n");
-        content.append("作业ID：").append(this.jobId).append("\n");
-        content.append("实例ID：").append(this.instanceId).append("\n");
-        content.append("告警类型：**").append(this.getAlertType()).append("**\n");
-        content.append("告警时间：").append(DateFormat.getDateTimeInstance().format(new Date())).append("\n");
-
-        // 分隔线
-        content.append("\n---\n");
-
+        // 基本信息
+        content.append(indent).append("分组名称：").append(group).append(lineSeparator);
+        content.append(indent).append("作业名称：").append(jobName).append(lineSeparator);
+        content.append(indent).append("作业ID：").append(jobId).append(lineSeparator);
+        content.append(indent).append("实例ID：").append(instanceId).append(lineSeparator);
         // 运行信息
-        content.append("## 运行信息\n");
-        content.append("运行类型：").append(this.runType != null ? this.runType : "-").append("\n");
-        content.append("运行状态：").append(this.runState != null ? "**" + this.runState + "**" : "-").append("\n");
-        if (this.retriedCount > 0) {
-            content.append("重试次数：**").append(this.retriedCount).append("**\n");
+        content.append(indent).append("运行类型：").append(runType.desc()).append(lineSeparator);
+        content.append(indent).append("运行状态：").append(runState.desc()).append(lineSeparator);
+        content.append(indent).append("计划触发时间：").append(formatDate(triggerTime)).append(lineSeparator);
+        content.append(indent).append("运行开始时间：").append(formatDate(runStartTime)).append(lineSeparator);
+        content.append(indent).append("运行结束时间：").append(formatDate(runEndTime)).append(lineSeparator);
+        if (retriedCount > 0) {
+            content.append(indent).append("已重试的次数：").append(retriedCount).append(lineSeparator);
         }
-
-        // 分隔线
-        content.append("\n---\n");
-
-        // 时间信息
-        content.append("## 时间信息\n");
-        content.append("触发时间：").append(this.triggerTime != null
-            ? DateFormat.getDateTimeInstance().format(this.triggerTime) : "-").append("\n");
-        content.append("开始时间：").append(this.runStartTime != null
-            ? DateFormat.getDateTimeInstance().format(this.runStartTime) : "-").append("\n");
-        content.append("结束时间：").append(this.runEndTime != null
-            ? DateFormat.getDateTimeInstance().format(this.runEndTime) : "-").append("\n");
-
-        // 处理特殊字符，确保消息格式正确
-        return content.toString()
-            .replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;");
+        return content.toString();
     }
 
 }

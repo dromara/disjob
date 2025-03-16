@@ -1,21 +1,32 @@
 disjob.alert:
+  # 1、Alert alerter config
+  alerter:
+    type-channels-map:
+      ALARM: [email, im, sms]
+      NOTICE: [im]
+    send-thread-pool:
+      core-pool-size: 2
+      maximum-pool-size: 8
+      queue-capacity: 1000
+      keep-alive-time-seconds: 60
+      await-termination-seconds: 5
+      allow-core-thread-time-out: true
+    send-rate-limit:
+      max-requests: 2
+      window-size-in-millis: 60
+  # 2、Alert sender config
   sender:
     email:
-      enabled: true
-      host: smtp.qiye.aliyun.com
-      port: 465
-      auth: true
-      # 发送方，遵循RFC-822标准
-      fromAddress: from_address@gmail.com
-      username: disjob@username.com
-      # 密码（注意，某些邮箱需要为SMTP服务单独设置密码，详情查看相关帮助）
-      password: 123456
-      start-tls-enabled: true
-      ssl-enabled: true
+      host: smtp.163.com
+      port: 25
+      username: xxxx@163.com
+      # 到`mail.163.com`邮箱服务上配置授权码
+      password:
+      test-connection: true
     im:
       tokenId: xxx
-      sign: c9oV8sSo9bG3uxD03EXv7b
-      supplier: lark # lark:飞书，企业微信:we_talk，钉钉:ding_talk
+      secret-key: c9oV8sSo9bG3uxD03EXv7b
+      supplier: LARK
     sms:
       blends:
         # 自定义的标识，也就是configId这里可以是任意值（最好不要是中文）
@@ -39,19 +50,3 @@ disjob.alert:
           template-id: xxxxxxxx
           #您的sdkAppId
           sdk-app-id: 您的sdkAppId
-
-  alerter:
-    type-channels-map:
-      ALARM: [sms, im, email]
-      NOTICE: [im]
-    task-execution-pool:
-      core-pool-size: 2
-      maximum-pool-size: 8
-      queue-capacity: 1000
-      keep-alive-time-seconds: 60
-      await-termination-seconds: 5
-      allow-core-thread-time-out: true
-    send-rate-limit:
-      max-requests: 2
-      window-size-in-millis: 60
-    alert-level: instance

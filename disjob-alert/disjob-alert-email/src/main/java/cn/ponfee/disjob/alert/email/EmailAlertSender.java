@@ -19,14 +19,22 @@ package cn.ponfee.disjob.alert.email;
 import cn.ponfee.disjob.alert.email.configuration.EmailAlertSenderProperties;
 import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.alert.sender.AlertSender;
-import jakarta.mail.*;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
+import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
+import cn.ponfee.disjob.common.collect.Collects;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jndi.JndiLocatorDelegate;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.naming.NamingException;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Email alert sender
@@ -35,82 +43,85 @@ import java.util.Properties;
  */
 public class EmailAlertSender extends AlertSender {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EmailAlertSender.class);
     public static final String CHANNEL = "email";
+    private static final Logger LOG = LoggerFactory.getLogger(EmailAlertSender.class);
 
-    private final Session mailSession;
-    private final EmailAlertSenderProperties emailConfig;
+    private final EmailAlertSenderProperties config;
+    private final JavaMailSenderImpl sender;
 
-    public EmailAlertSender(EmailAlertSenderProperties config, EmailUserRecipientMapper mapper) {
-        super(CHANNEL, "邮件", mapper);
-        this.emailConfig = config;
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", config.getAuth());
-        props.put("mail.smtp.starttls.enable", config.isStartTlsEnabled());
-        props.put("mail.smtp.host", config.getHost());
-        props.put("mail.smtp.port", config.getPort());
-        props.put("mail.smtp.ssl.enable", config.isSslEnabled());
-        props.put("mail.smtp.user", config.getUsername());
-        props.put("mail.smtp.password", config.getPassword());
-
-        this.mailSession = Session.getInstance(props, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(config.getUsername(), config.getPassword());
-            }
-        });
-
-        LOG.info("EmailAlertSender initialized with host: {}, port: {}, startTLS: {}, SSL: {}",
-            config.getHost(), config.getPort(), config.isStartTlsEnabled(), config.isSslEnabled());
+    public EmailAlertSender(EmailAlertSenderProperties config, UserRecipientMapper mapper) {
+        super(CHANNEL, "Email", mapper);
+        this.config = config;
+        this.sender = createMailSender(config);
+        LOG.info("Email alert sender initialized: {}", config);
     }
 
     @Override
     protected void doSend(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
-        if (alertRecipients == null || alertRecipients.isEmpty()) {
-            LOG.warn("No recipients found for alert event: {}", alertEvent);
+        if (MapUtils.isEmpty(alertRecipients)) {
+            LOG.warn("Alert email recipients is empty.");
             return;
         }
-        for (Map.Entry<String, String> entry : alertRecipients.entrySet()) {
-            String alertUser = entry.getKey();
-            if (alertUser == null || !alertUser.contains("@")) {
-                LOG.warn("Mail invalid recipient found for alert event: {}", alertEvent);
-                continue;
-            }
-            String recipientEmail = entry.getValue();
-            try {
-                Message message = new MimeMessage(mailSession);
-                message.setFrom(new InternetAddress(emailConfig.getFromAddress())); // Sender
-                message.setSubject(buildSubject(alertEvent));
-                message.setContent(buildContent(alertEvent), "text/html; charset=utf-8");
-                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail)); // Recipient
-                Transport.send(message);
-
-                LOG.info("Alert email sent to {} ({}) for event: {}", alertUser, recipientEmail, alertEvent);
-            } catch (MessagingException e) {
-                LOG.error("Failed to send alert email to {} ({}) for event: {}", alertUser, recipientEmail, alertEvent, e);
-            }
+        try {
+            MimeMessage mimeMessage = sender.createMimeMessage();
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+            mimeMessageHelper.setFrom(config.getUsername());
+            mimeMessageHelper.setTo(buildRecipients(alertRecipients));
+            mimeMessageHelper.setSubject(alertEvent.buildTitle());
+            mimeMessageHelper.setText(alertEvent.buildContent("", "<br/>"), true);
+            sender.send(mimeMessage);
+            LOG.info("Alert event email send success: {}", alertRecipients.values());
+        } catch (Exception e) {
+            LOG.error("Alert event email send error: " + alertRecipients.values(), e);
         }
     }
 
-    /**
-     * build the email alert subject
-     */
-    private String buildSubject(AlertEvent alertEvent) {
-        return "Alert: " + alertEvent.getAlertType() + " - " + alertEvent.buildTitle();
+    // ----------------------------------------------------------private static methods
+
+    private static JavaMailSenderImpl createMailSender(EmailAlertSenderProperties config) {
+        JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        String jndiName = config.getJndiName();
+        if (StringUtils.isNotBlank(jndiName)) {
+            try {
+                Session session = JndiLocatorDelegate.createDefaultResourceRefLocator().lookup(jndiName, Session.class);
+                sender.setDefaultEncoding(config.getDefaultEncoding().name());
+                sender.setSession(session);
+            } catch (NamingException ex) {
+                throw new IllegalStateException("Alert email sender jndi unable.", ex);
+            }
+        } else {
+            sender.setHost(config.getHost());
+            if (config.getPort() != null) {
+                sender.setPort(config.getPort());
+            }
+            sender.setUsername(config.getUsername());
+            sender.setPassword(config.getPassword());
+            sender.setProtocol(config.getProtocol());
+            if (config.getDefaultEncoding() != null) {
+                sender.setDefaultEncoding(config.getDefaultEncoding().name());
+            }
+            if (!config.getProperties().isEmpty()) {
+                sender.setJavaMailProperties(Collects.toProperties(config.getProperties()));
+            }
+        }
+
+        if (Boolean.TRUE.equals(config.getTestConnection())) {
+            try {
+                sender.testConnection();
+            } catch (MessagingException ex) {
+                throw new IllegalStateException("Alert email sender server unavailable.", ex);
+            }
+        }
+        return sender;
     }
 
-    /**
-     * build the email alert content
-     */
-    private String buildContent(AlertEvent alertEvent) {
-        return String.format(
-            "Alert Notification<br><br>" +
-                "Alert Type: %s<br>" +
-                "Timestamp: %s<br>" +
-                "Details:<br>%s",
-            alertEvent.getAlertType(),
-            alertEvent.buildTitle(),
-            alertEvent.buildContent()
-        );
+    private static InternetAddress[] buildRecipients(Map<String, String> alertRecipients) throws Exception {
+        InternetAddress[] recipients = new InternetAddress[alertRecipients.size()];
+        int i = 0;
+        for (Map.Entry<String, String> e : alertRecipients.entrySet()) {
+            recipients[i++] = new InternetAddress(e.getValue(), e.getKey());
+        }
+        return recipients;
     }
+
 }

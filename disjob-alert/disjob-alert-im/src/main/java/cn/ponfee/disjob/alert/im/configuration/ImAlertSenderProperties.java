@@ -16,28 +16,36 @@
 
 package cn.ponfee.disjob.alert.im.configuration;
 
+import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.alert.im.ImAlertSender;
+import cn.ponfee.disjob.alert.im.ImAlertSupplier;
 import cn.ponfee.disjob.alert.sender.AlertSenderProperties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Im alert properties
+ * Instant messaging alert sender properties
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = AlertSenderProperties.KEY_PREFIX + "." + ImAlertSender.CHANNEL)
+@ConfigurationProperties(prefix = Alerter.SENDER_CONFIG_KEY_PREFIX + "." + ImAlertSender.CHANNEL)
 public class ImAlertSenderProperties extends AlertSenderProperties {
-
     private static final long serialVersionUID = 2531779048449076379L;
 
-    private String tokenId; // lark and dingtalk
-
-    private String sign; // lark and dingtalk
-
-    private String supplier;
+    /**
+     * Token id
+     */
+    private String tokenId;
+    /**
+     * Secret key
+     */
+    private String secretKey;
+    /**
+     * Supplier
+     */
+    private ImAlertSupplier supplier;
 
 }

@@ -16,46 +16,39 @@
 
 package cn.ponfee.disjob.alert.email.configuration;
 
+import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.alert.email.EmailAlertSender;
-import cn.ponfee.disjob.alert.email.EmailUserRecipientMapper;
+import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.DeferredImportSelector;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
-import org.springframework.core.type.AnnotationMetadata;
 
 /**
  * EmailAlertSender auto configuration
  *
  * @author Ponfee
  */
+@ConditionalOnProperty(prefix = EmailAlertSenderProperties.EMAIL_SENDER_CONFIG_KEY, name = "host")
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(EmailAlertSenderProperties.class)
-@Import(EmailAlertSenderAutoConfiguration.EmailAlertSenderDeferredImportSelector.class)
 public class EmailAlertSenderAutoConfiguration {
 
-    static class EmailAlertSenderDeferredImportSelector implements DeferredImportSelector {
-        @SuppressWarnings("NullableProblems")
-        @Override
-        public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-            return new String[]{EmailAlertSenderDeferredConfiguration.class.getName()};
-        }
+    public static final String EMAIL_USER_RECIPIENT_MAPPER_BEAN_NAME = Alerter.USER_RECIPIENT_MAPPER_BEAN_NAME_PREFIX + "." + EmailAlertSender.CHANNEL;
+
+    @ConditionalOnMissingBean(name = EMAIL_USER_RECIPIENT_MAPPER_BEAN_NAME)
+    @Bean(EMAIL_USER_RECIPIENT_MAPPER_BEAN_NAME)
+    public UserRecipientMapper emailUserRecipientMapper() {
+        return new UserRecipientMapper();
     }
 
-    static class EmailAlertSenderDeferredConfiguration {
-        @ConditionalOnMissingBean
-        @Bean
-        public EmailUserRecipientMapper emailUserRecipientMapper() {
-            return new EmailUserRecipientMapper();
-        }
-
-        @Bean
-        public EmailAlertSender emailAlertSender(EmailAlertSenderProperties config, EmailUserRecipientMapper mapper) {
-            return new EmailAlertSender(config, mapper);
-        }
+    @Bean
+    public EmailAlertSender emailAlertSender(EmailAlertSenderProperties config,
+                                             @Qualifier(EMAIL_USER_RECIPIENT_MAPPER_BEAN_NAME) UserRecipientMapper mapper) {
+        return new EmailAlertSender(config, mapper);
     }
 
 }

@@ -26,13 +26,23 @@ public enum AlertType {
     /**
      * 异常警报
      */
-    ALARM,
+    ALARM("警报"),
 
     /**
      * 正常通知
      */
-    NOTICE,
+    NOTICE("通知"),
 
     ;
+
+    private final String desc;
+
+    AlertType(String desc) {
+        this.desc = desc;
+    }
+
+    public String desc() {
+        return desc;
+    }
 
 }

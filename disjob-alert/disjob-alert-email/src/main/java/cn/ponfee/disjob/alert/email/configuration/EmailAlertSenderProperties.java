@@ -16,40 +16,75 @@
 
 package cn.ponfee.disjob.alert.email.configuration;
 
+import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.alert.email.EmailAlertSender;
 import cn.ponfee.disjob.alert.sender.AlertSenderProperties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Email alert properties
+ * Email alert sender properties
  *
  * @author Ponfee
+ * @see org.springframework.boot.autoconfigure.mail.MailProperties
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = AlertSenderProperties.KEY_PREFIX + "." + EmailAlertSender.CHANNEL)
+@ConfigurationProperties(prefix = EmailAlertSenderProperties.EMAIL_SENDER_CONFIG_KEY)
 public class EmailAlertSenderProperties extends AlertSenderProperties {
-
     private static final long serialVersionUID = 2531779048449076379L;
 
+    public static final String EMAIL_SENDER_CONFIG_KEY = Alerter.SENDER_CONFIG_KEY_PREFIX + "." + EmailAlertSender.CHANNEL;
+
+    /**
+     * SMTP server host. For instance, 'smtp.example.com'.
+     */
     private String host;
 
-    private String protocol;
+    /**
+     * SMTP server port.
+     */
+    private Integer port;
 
+    /**
+     * Login user of the SMTP server.
+     */
     private String username;
 
+    /**
+     * Login password of the SMTP server.
+     */
     private String password;
 
-    private String fromAddress;
+    /**
+     * Protocol used by the SMTP server.
+     */
+    private String protocol = "smtp";
 
-    private String port;
+    /**
+     * Default MimeMessage encoding.
+     */
+    private Charset defaultEncoding = StandardCharsets.UTF_8;
 
-    private boolean startTlsEnabled; // 是否启用 STARTTLS
+    /**
+     * Additional JavaMail Session properties.
+     */
+    private Map<String, String> properties = new HashMap<>();
 
-    private boolean sslEnabled;
+    /**
+     * Session JNDI name. When set, takes precedence over other Session settings.
+     */
+    private String jndiName;
 
-    private String auth;
+    /**
+     * Testing email service connectivity on startup.
+     */
+    private Boolean testConnection;
 
 }

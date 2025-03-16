@@ -16,25 +16,41 @@
 
 package cn.ponfee.disjob.alert.sms.configuration;
 
+import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.alert.sender.AlertSenderProperties;
 import cn.ponfee.disjob.alert.sms.SmsAlertSender;
+import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Sms alert properties
+ * Sms alert sender properties
  *
  * @author TJxiaobao
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = AlertSenderProperties.KEY_PREFIX + "." + SmsAlertSender.CHANNEL)
+@ConfigurationProperties(prefix = Alerter.SENDER_CONFIG_KEY_PREFIX + "." + SmsAlertSender.CHANNEL)
 public class SmsAlertSenderProperties extends AlertSenderProperties {
+    private static final long serialVersionUID = 2531779048449076379L;
 
-        private static final long serialVersionUID = 2531779048449076379L;
+    private Map<String, SmsBlendProperties> blends = new HashMap<>();
 
-        private HashMap<String, SmsBaseConfig> blends = new HashMap<>();
+    @Getter
+    @Setter
+    public static class SmsBlendProperties extends ToJsonString implements Serializable {
+        private static final long serialVersionUID = 1305124631930608648L;
+
+        private String accessKeyId;
+        private String accessKeySecret;
+        private String signature;
+        private String templateId;
+        private String supplier;
+    }
+
 }

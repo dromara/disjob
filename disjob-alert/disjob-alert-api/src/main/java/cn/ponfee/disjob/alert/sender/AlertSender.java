@@ -35,6 +35,9 @@ import java.util.stream.Collectors;
 @Getter
 public abstract class AlertSender extends SingletonClassConstraint {
 
+    /**
+     * Registered all alert senders, Map[channel, AlertSender]
+     */
     private static final Map<String, AlertSender> ALERT_SENDERS = new HashMap<>();
 
     /**
@@ -48,7 +51,7 @@ public abstract class AlertSender extends SingletonClassConstraint {
     private final String name;
 
     /**
-     * 把在页面中配置的alertUsers转为实际的渠道收件人（如邮箱地址、手机号、飞书账号等）
+     * 把在页面中配置的alertUsers转为实际的渠道收件人（如邮箱地址、钉钉号、企业微信号、飞书账号、手机号等）
      */
     private final UserRecipientMapper userRecipientMapper;
 
@@ -63,10 +66,9 @@ public abstract class AlertSender extends SingletonClassConstraint {
 
     public void send(AlertEvent alertEvent, Set<String> alertUsers, String webhook) {
         Map<String, String> recipients = userRecipientMapper.map(alertUsers);
-        if (MapUtils.isEmpty(recipients) || StringUtils.isBlank(webhook)) {
-            return;
+        if (MapUtils.isNotEmpty(recipients) || StringUtils.isNotBlank(webhook)) {
+            doSend(alertEvent, recipients, webhook);
         }
-        doSend(alertEvent, recipients, webhook);
     }
 
     public void checkAlertUsers(Set<String> alertUsers) {

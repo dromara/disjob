@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.admin;
 
+import cn.ponfee.disjob.alert.configuration.EnableAlerter;
 import cn.ponfee.disjob.id.snowflake.db.DbSnowflakeIdGenerator;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.disjob.test.executor.SamplesJobExecutorPackage;
@@ -34,6 +35,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
 @DbSnowflakeIdGenerator(jdbcTemplateRef = SPRING_BEAN_NAME_JDBC_TEMPLATE)
 @ComponentScan(basePackageClasses = SamplesJobExecutorPackage.class) // 加载一些测试的JobExecutor，只用于demo演示使用(开发时应删掉这行)
 @EnableSupervisor                                                    // disjob-admin必须启用Supervisor角色，即：必须加@EnableSupervisor注解
+@EnableAlerter                                                       // 启用告警
 @EnableWorker                                                        // 若要取消worker角色可去掉@EnableWorker注解(生产建议Supervisor与Worker分开部署，即去掉@EnableWorker注解)
 public class DisjobAdminConfiguration {
 

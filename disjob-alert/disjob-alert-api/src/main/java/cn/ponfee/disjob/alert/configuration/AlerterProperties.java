@@ -16,15 +16,15 @@
 
 package cn.ponfee.disjob.alert.configuration;
 
-import cn.ponfee.disjob.alert.enums.AlertLevel;
+import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.base.JobConstants;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.io.Serializable;
+import java.util.EnumMap;
 import java.util.Map;
 
 /**
@@ -34,21 +34,14 @@ import java.util.Map;
  */
 @Setter
 @Getter
-@ConfigurationProperties(prefix = AlerterProperties.KEY_PREFIX + ".alerter")
+@ConfigurationProperties(prefix = Alerter.KEY_PREFIX + ".alerter")
 public class AlerterProperties extends ToJsonString implements Serializable {
-
     private static final long serialVersionUID = 3369292434171863341L;
 
     /**
-     * Alert key prefix
+     * Type channels mapping, Map[AlertType, channel[]]
      */
-    public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".alert";
-
-    /**
-     * Type channels mapping
-     * <p>Map<AlertType, channel[]>
-     */
-    private Map<AlertType, String[]> typeChannelsMap;
+    private Map<AlertType, String[]> typeChannelsMap = new EnumMap<>(AlertType.class);
 
     /**
      * Send thread pool config
@@ -59,11 +52,6 @@ public class AlerterProperties extends ToJsonString implements Serializable {
      * Send rate limit config
      */
     private SendRateLimit sendRateLimit = new SendRateLimit();
-
-    /**
-     * Alert level
-     */
-    private AlertLevel alertLevel;
 
     @Getter
     @Setter

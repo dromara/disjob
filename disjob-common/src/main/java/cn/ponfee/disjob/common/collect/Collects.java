@@ -111,6 +111,12 @@ public class Collects {
         return list.stream().collect(Collectors.toMap(keyMapper, valueMapper));
     }
 
+    public static Properties toProperties(Map<String, String> map) {
+        Properties properties = new Properties();
+        properties.putAll(map);
+        return properties;
+    }
+
     /**
      * Returns the duplicates elements for list
      *

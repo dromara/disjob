@@ -14,15 +14,28 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.sms;
-
-import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
+package cn.ponfee.disjob.alert.im;
 
 /**
- * Sms user recipient mapper
+ * Instant messaging alert supplier (provider)
  *
  * @author Ponfee
  */
-public class SmsUserRecipientMapper extends UserRecipientMapper {
+public enum ImAlertSupplier {
+
+    /**
+     * 阿里钉钉
+     */
+    DING_TALK,
+
+    /**
+     * 企业微信
+     */
+    WE_COM,
+
+    /**
+     * 字节飞书
+     */
+    LARK,
 
 }

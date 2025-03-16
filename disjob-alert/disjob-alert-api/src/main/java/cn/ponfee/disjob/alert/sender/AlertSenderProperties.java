@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.alert.sender;
 
-import cn.ponfee.disjob.alert.configuration.AlerterProperties;
 import cn.ponfee.disjob.common.base.ToJsonString;
 
 import java.io.Serializable;
@@ -29,10 +28,5 @@ import java.io.Serializable;
 public abstract class AlertSenderProperties extends ToJsonString implements Serializable {
 
     private static final long serialVersionUID = 3369292434171863341L;
-
-    /**
-     * Alert channel  key prefix
-     */
-    public static final String KEY_PREFIX = AlerterProperties.KEY_PREFIX + ".sender";
 
 }

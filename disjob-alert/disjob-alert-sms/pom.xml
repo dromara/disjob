@@ -25,7 +25,7 @@
     <dependency>
       <groupId>org.dromara.sms4j</groupId>
       <artifactId>sms4j-spring-boot-starter</artifactId>
-      <version>3.0.0</version>
+      <version>3.3.4</version>
     </dependency>
   </dependencies>
 

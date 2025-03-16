@@ -19,9 +19,9 @@ package cn.ponfee.disjob.alert.event;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
-import java.text.DateFormat;
 
 /**
  * Alert task event
@@ -31,23 +31,7 @@ import java.text.DateFormat;
 @Getter
 @Setter
 public class AlertTaskEvent extends AlertEvent {
-
     private static final long serialVersionUID = 5550051265102992301L;
-
-    /**
-     * The job name
-     */
-    private String jobName;
-
-    /**
-     * The job id
-     */
-    private long jobId;
-
-    /**
-     * The instance id
-     */
-    private long instanceId;
 
     /**
      * The task id
@@ -81,44 +65,26 @@ public class AlertTaskEvent extends AlertEvent {
 
     @Override
     public String buildTitle() {
-        return String.format("%s [%s]",
-            DateFormat.getDateTimeInstance().format(new Date()),
-            this.getAlertType()
-        );
+        return String.format("【任务-%s | %s】", alertType.desc(), formatDate(new Date()));
     }
 
     @Override
-    public String buildContent() {
+    public String buildContent(String indent, String lineSeparator) {
         StringBuilder content = new StringBuilder();
-        content.append("【任务告警通知】\n\n");
-
-        // 任务基本信息
-        content.append("任务ID：").append(this.taskId).append("\n");
-        content.append("作业名称：").append(this.jobName).append("\n");
-        content.append("作业ID：").append(this.jobId).append("\n");
-        content.append("实例ID：").append(this.instanceId).append("\n");
-        content.append("告警类型：").append(this.getAlertType()).append("\n");
-        content.append("告警时间：").append(DateFormat.getDateTimeInstance().format(new Date())).append("\n");
-
+        // 基本信息
+        content.append(indent).append("分组名称：").append(group).append(lineSeparator);
+        content.append(indent).append("作业名称：").append(jobName).append(lineSeparator);
+        content.append(indent).append("作业ID：").append(jobId).append(lineSeparator);
+        content.append(indent).append("实例ID：").append(instanceId).append(lineSeparator);
+        content.append(indent).append("任务ID：").append(taskId).append(lineSeparator);
         // 执行信息
-        if (this.worker != null) {
-            content.append("执行节点：").append(this.worker).append("\n");
+        content.append(indent).append("执行状态：").append(executeState.desc()).append(lineSeparator);
+        content.append(indent).append("执行开始时间：").append(formatDate(executeStartTime)).append(lineSeparator);
+        content.append(indent).append("执行结束时间：").append(formatDate(executeEndTime)).append(lineSeparator);
+        content.append(indent).append("执行机器：").append(worker).append(lineSeparator);
+        if (StringUtils.isNotEmpty(errorMsg)) {
+            content.append(indent).append("异常信息：").append(errorMsg).append(lineSeparator);
         }
-        if (this.executeStartTime != null) {
-            content.append("开始时间：").append(DateFormat.getDateTimeInstance().format(this.executeStartTime)).append("\n");
-        }
-        if (this.executeEndTime != null) {
-            content.append("结束时间：").append(DateFormat.getDateTimeInstance().format(this.executeEndTime)).append("\n");
-        }
-
-        // 状态信息
-        if (this.executeState != null) {
-            content.append("执行状态：").append(this.executeState).append("\n");
-        }
-        if (this.errorMsg != null && !this.errorMsg.isEmpty()) {
-            content.append("\n异常信息：\n").append(this.errorMsg);
-        }
-
         return content.toString();
     }
 

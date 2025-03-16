@@ -17,16 +17,16 @@
 
 package cn.ponfee.disjob.alert.sms.configuration;
 
+import cn.ponfee.disjob.alert.Alerter;
+import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
+import cn.ponfee.disjob.alert.sms.SmsAlertReadConfig;
 import cn.ponfee.disjob.alert.sms.SmsAlertSender;
-import cn.ponfee.disjob.alert.sms.SmsUserRecipientMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.DeferredImportSelector;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
-import org.springframework.core.type.AnnotationMetadata;
 
 /**
  * SmsAlertSender auto configuration
@@ -35,27 +35,25 @@ import org.springframework.core.type.AnnotationMetadata;
  */
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(SmsAlertSenderProperties.class)
-@Import(SmsAlertSenderAutoConfiguration.SmsAlertSenderDeferredImportSelector.class)
 public class SmsAlertSenderAutoConfiguration {
 
-    static class SmsAlertSenderDeferredImportSelector implements DeferredImportSelector {
-        @SuppressWarnings("NullableProblems")
-        @Override
-        public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-            return new String[]{SmsAlertSenderDeferredConfiguration.class.getName()};
-        }
+    public static final String SMS_USER_RECIPIENT_MAPPER_BEAN_NAME = Alerter.USER_RECIPIENT_MAPPER_BEAN_NAME_PREFIX + "." + SmsAlertSender.CHANNEL;
+
+    @ConditionalOnMissingBean(name = SMS_USER_RECIPIENT_MAPPER_BEAN_NAME)
+    @Bean(SMS_USER_RECIPIENT_MAPPER_BEAN_NAME)
+    public UserRecipientMapper smsUserRecipientMapper() {
+        return new UserRecipientMapper();
     }
 
-    static class SmsAlertSenderDeferredConfiguration {
-        @ConditionalOnMissingBean
-        @Bean
-        public SmsUserRecipientMapper smsUserRecipientMapper() {
-            return new SmsUserRecipientMapper();
-        }
+    @ConditionalOnMissingBean
+    @Bean
+    public SmsAlertReadConfig smsAlertReadConfig(SmsAlertSenderProperties config) {
+        return new SmsAlertReadConfig(config);
     }
 
     @Bean
-    public SmsAlertSender smsAlertSender(SmsAlertSenderProperties config, SmsUserRecipientMapper mapper) {
-        return new SmsAlertSender(config, mapper);
+    public SmsAlertSender smsAlertSender(@Qualifier(SMS_USER_RECIPIENT_MAPPER_BEAN_NAME) UserRecipientMapper mapper) {
+        return new SmsAlertSender(mapper);
     }
+
 }

@@ -19,13 +19,16 @@ package cn.ponfee.disjob.alert.sms;
 
 import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.alert.sender.AlertSender;
-import cn.ponfee.disjob.alert.sms.configuration.SmsAlertSenderProperties;
+import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
+import org.apache.commons.collections4.MapUtils;
 import org.dromara.sms4j.api.SmsBlend;
 import org.dromara.sms4j.core.factory.SmsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Sms alert sender
@@ -35,47 +38,29 @@ import java.util.Map;
 public class SmsAlertSender extends AlertSender {
 
     public static final String CHANNEL = "sms";
-
-    public SmsAlertSenderProperties config;
-
     private static final Logger LOG = LoggerFactory.getLogger(SmsAlertSender.class);
 
-    public SmsAlertSender(SmsAlertSenderProperties config, SmsUserRecipientMapper mapper) {
-        super(CHANNEL, "短信", mapper);
-        // todo: init sms client by config
-        this.config = config;
+    public SmsAlertSender(UserRecipientMapper mapper) {
+        super(CHANNEL, "Short Message Service", mapper);
+        LOG.info("SMS alert sender initialized.");
     }
 
     @Override
     protected void doSend(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
-        SmsBlend smsBlend = SmsFactory.getSmsBlend();
-        if (alertRecipients == null || alertRecipients.isEmpty()) {
-            LOG.warn("No recipients found for alert event: {}", alertEvent);
+        if (MapUtils.isEmpty(alertRecipients)) {
+            LOG.warn("Alert sms phones is empty.");
             return;
         }
-        for (Map.Entry<String, String> entry : alertRecipients.entrySet()) {
-            String alertUser = entry.getKey();
-            if (alertUser == null || (alertUser.contains("@") && alertUser.contains(".com"))) {
-                LOG.warn("Sms invalid recipient found for alert event: {}", alertEvent);
-                continue;
-            }
-            String recipientPhoneNumber = entry.getValue();
-            try {
-                String message = buildMessage(alertEvent);
-                smsBlend.sendMessage(recipientPhoneNumber, message);
-                LOG.info("Alert sent to {} ({}) for event: {}", alertUser, recipientPhoneNumber, alertEvent);
-            } catch (Exception e) {
-                LOG.error("Failed to send alert to {} ({}) for event: {}", alertUser, recipientPhoneNumber, alertEvent, e);
-            }
+
+        SmsBlend smsBlend = SmsFactory.getSmsBlend();
+        String message = alertEvent.buildTitle() + "\n" + alertEvent.buildContent("\t", "\n");
+        List<String> phones = alertRecipients.values().stream().distinct().collect(Collectors.toList());
+        try {
+            smsBlend.massTexting(phones, message);
+            LOG.info("Alert event sms send success: {}", phones);
+        } catch (Exception e) {
+            LOG.error("Alert event sms send error: " + phones, e);
         }
     }
 
-    private String buildMessage(AlertEvent alertEvent) {
-        return String.format(
-            "Alert Notification\n\nAlert Type: %s\nTimestamp: %s\n\nDetails:\n%s",
-            alertEvent.getAlertType(),
-            alertEvent.buildTitle(),
-            alertEvent.buildContent()
-        );
-    }
 }

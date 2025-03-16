@@ -18,10 +18,12 @@ package cn.ponfee.disjob.alert.event;
 
 import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.common.date.Dates;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Alert event
@@ -31,18 +33,32 @@ import java.io.Serializable;
 @Getter
 @Setter
 public abstract class AlertEvent extends ToJsonString implements Serializable {
-
     private static final long serialVersionUID = 6379056446763475308L;
 
     /**
      * The alert type
      */
-    private AlertType alertType;
+    protected AlertType alertType;
 
     /**
      * The group
      */
-    private String group;
+    protected String group;
+
+    /**
+     * The job name
+     */
+    protected String jobName;
+
+    /**
+     * The job id
+     */
+    protected long jobId;
+
+    /**
+     * The instance id
+     */
+    protected long instanceId;
 
     /**
      * Build alert title.
@@ -54,8 +70,18 @@ public abstract class AlertEvent extends ToJsonString implements Serializable {
     /**
      * Build alert content.
      *
-     * @return alert content
+     * @param indent        the indent
+     * @param lineSeparator the line separator
+     * @return content
      */
-    public abstract String buildContent();
+    public abstract String buildContent(String indent, String lineSeparator);
+
+    public String buildRateLimitKey() {
+        return jobId + ":" + alertType;
+    }
+
+    public static String formatDate(Date date) {
+        return (date == null) ? "" : Dates.format(date);
+    }
 
 }

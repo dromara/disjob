@@ -13,7 +13,7 @@
 
   <artifactId>disjob-alert-im</artifactId>
   <name>${project.artifactId}</name>
-  <description>Distributed job alert lark module</description>
+  <description>Distributed job alert instant messaging module</description>
   <url>https://github.com/dromara/disjob</url>
 
   <dependencies>

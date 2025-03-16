@@ -16,45 +16,36 @@
 
 package cn.ponfee.disjob.alert.im.configuration;
 
+import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.alert.im.ImAlertSender;
-import cn.ponfee.disjob.alert.im.ImUserRecipientMapper;
+import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.DeferredImportSelector;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
-import org.springframework.core.type.AnnotationMetadata;
 
 /**
- * ImAlertSender auto configuration
+ * Instant messaging alert sender auto configuration
  *
  * @author Ponfee
  */
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(ImAlertSenderProperties.class)
-@Import(ImAlertSenderAutoConfiguration.LarkAlertSenderDeferredImportSelector.class)
 public class ImAlertSenderAutoConfiguration {
 
-    static class LarkAlertSenderDeferredImportSelector implements DeferredImportSelector {
-        @SuppressWarnings("NullableProblems")
-        @Override
-        public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-            return new String[]{LarkAlertSenderDeferredConfiguration.class.getName()};
-        }
-    }
+    public static final String IM_USER_RECIPIENT_MAPPER_BEAN_NAME = Alerter.USER_RECIPIENT_MAPPER_BEAN_NAME_PREFIX + "." + ImAlertSender.CHANNEL;
 
-    static class LarkAlertSenderDeferredConfiguration {
-        @ConditionalOnMissingBean
-        @Bean
-        public ImUserRecipientMapper larkUserRecipientMapper() {
-            return new ImUserRecipientMapper();
-        }
+    @ConditionalOnMissingBean(name = IM_USER_RECIPIENT_MAPPER_BEAN_NAME)
+    @Bean(IM_USER_RECIPIENT_MAPPER_BEAN_NAME)
+    public UserRecipientMapper imUserRecipientMapper() {
+        return new UserRecipientMapper();
     }
 
     @Bean
-    public ImAlertSender larkAlertSender(ImAlertSenderProperties config, ImUserRecipientMapper mapper) {
+    public ImAlertSender imAlertSender(ImAlertSenderProperties config,
+                                       @Qualifier(IM_USER_RECIPIENT_MAPPER_BEAN_NAME) UserRecipientMapper mapper) {
         return new ImAlertSender(config, mapper);
     }
 
