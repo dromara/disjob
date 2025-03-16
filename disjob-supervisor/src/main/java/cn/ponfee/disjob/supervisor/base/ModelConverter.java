@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
+import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.alert.event.AlertInstanceEvent;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.core.dag.PredecessorInstance;
@@ -87,22 +88,22 @@ public final class ModelConverter {
         return result;
     }
 
-    public static AlertInstanceEvent toAlertInstanceEvent(SchedJob job, SchedInstance instance,
-                                                          Date runEndTime, int retriedCount) {
-        if (job == null || instance == null) {
+    public static AlertInstanceEvent toAlertInstanceEvent(SchedJob job, SchedInstance original, SchedInstance current) {
+        if (job == null || original == null || current == null) {
             return null;
         }
         AlertInstanceEvent event = new AlertInstanceEvent();
         event.setGroup(job.getGroup());
         event.setJobName(job.getJobName());
         event.setJobId(job.getJobId());
-        event.setInstanceId(instance.getInstanceId());
-        event.setRunType(RunType.of(instance.getRunType()));
-        event.setRunState(RunState.of(instance.getRunState()));
-        event.setTriggerTime(new Date(instance.getTriggerTime()));
-        event.setRunStartTime(instance.getRunStartTime());
-        event.setRunEndTime(runEndTime);
-        event.setRetriedCount(retriedCount);
+        event.setAlertType(original.isCompleted() ? AlertType.NOTICE : AlertType.ALARM);
+        event.setInstanceId(original.getInstanceId());
+        event.setRunType(RunType.of(original.getRunType()));
+        event.setRunState(RunState.of(original.getRunState()));
+        event.setTriggerTime(new Date(original.getTriggerTime()));
+        event.setRunStartTime(original.getRunStartTime());
+        event.setRunEndTime(current.getRunEndTime());
+        event.setRetriedCount(current.getRetriedCount());
         return event;
     }
 

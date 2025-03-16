@@ -32,8 +32,8 @@ public class SmsAlertSender extends AlertSender {
 
     public static final String CHANNEL = "sms";
 
-    public SmsAlertSender(SmsAlertSenderProperties config) {
-        super(CHANNEL, "短信");
+    public SmsAlertSender(SmsAlertSenderProperties config, SmsUserRecipientMapper mapper) {
+        super(CHANNEL, "短信", mapper);
 
         // todo: init sms client by config
     }

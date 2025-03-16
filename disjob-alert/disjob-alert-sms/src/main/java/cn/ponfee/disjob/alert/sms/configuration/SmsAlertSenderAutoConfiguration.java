@@ -18,10 +18,15 @@
 package cn.ponfee.disjob.alert.sms.configuration;
 
 import cn.ponfee.disjob.alert.sms.SmsAlertSender;
+import cn.ponfee.disjob.alert.sms.SmsUserRecipientMapper;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DeferredImportSelector;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
+import org.springframework.core.type.AnnotationMetadata;
 
 /**
  * SmsAlertSender auto configuration
@@ -30,10 +35,27 @@ import org.springframework.core.Ordered;
  */
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(SmsAlertSenderProperties.class)
+@Import(SmsAlertSenderAutoConfiguration.SmsAlertSenderDeferredImportSelector.class)
 public class SmsAlertSenderAutoConfiguration {
 
+    static class SmsAlertSenderDeferredImportSelector implements DeferredImportSelector {
+        @SuppressWarnings("NullableProblems")
+        @Override
+        public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+            return new String[]{SmsAlertSenderDeferredConfiguration.class.getName()};
+        }
+    }
+
+    static class SmsAlertSenderDeferredConfiguration {
+        @ConditionalOnMissingBean
+        @Bean
+        public SmsUserRecipientMapper smsUserRecipientMapper() {
+            return new SmsUserRecipientMapper();
+        }
+    }
+
     @Bean
-    public SmsAlertSender smsAlertSender(SmsAlertSenderProperties config) {
-        return new SmsAlertSender(config);
+    public SmsAlertSender smsAlertSender(SmsAlertSenderProperties config, SmsUserRecipientMapper mapper) {
+        return new SmsAlertSender(config, mapper);
     }
 }

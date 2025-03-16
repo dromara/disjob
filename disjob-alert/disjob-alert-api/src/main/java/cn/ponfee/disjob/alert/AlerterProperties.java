@@ -33,7 +33,7 @@ import java.util.Map;
  */
 @Setter
 @Getter
-@ConfigurationProperties(prefix = AlerterProperties.KEY_PREFIX + "." + "alerter")
+@ConfigurationProperties(prefix = AlerterProperties.KEY_PREFIX + ".alerter")
 public class AlerterProperties extends ToJsonString implements Serializable {
 
     private static final long serialVersionUID = 3369292434171863341L;
@@ -43,6 +43,26 @@ public class AlerterProperties extends ToJsonString implements Serializable {
      */
     public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".alert";
 
+    /**
+     * Type channel mapping
+     * <p>Map<AlertType, channel[]>
+     */
     private Map<AlertType, String[]> typeChannelMap;
+
+    /**
+     * Task execution pool
+     */
+    private TaskExecutionPool taskExecutionPool = new TaskExecutionPool();
+
+    @Getter
+    @Setter
+    public static class TaskExecutionPool extends ToJsonString {
+        private int corePoolSize = 2;
+        private int maximumPoolSize = 8;
+        private int queueCapacity = 1000;
+        private int keepAliveTimeSeconds = 60;
+        private int awaitTerminationSeconds = 3;
+        private boolean allowCoreThreadTimeOut = true;
+    }
 
 }

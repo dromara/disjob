@@ -854,8 +854,8 @@ public class JobManager {
         // 任务实例已结束且不会再重试，则触发通知
         if (!retrying && alerter != null) {
             SchedJob job = jobMapper.get(instance.getJobId());
-            SchedInstance origin = instance.isRunRetry() ? instanceMapper.get(instance.getPnstanceId()) : instance;
-            AlertInstanceEvent event = ModelConverter.toAlertInstanceEvent(job, origin, instance.getRunEndTime(), instance.getRetriedCount());
+            SchedInstance original = instance.isRunRetry() ? instanceMapper.get(instance.getPnstanceId()) : instance;
+            AlertInstanceEvent event = ModelConverter.toAlertInstanceEvent(job, original, instance);
             doAfterTransactionCommit(() -> alerter.alert(event));
         }
     }

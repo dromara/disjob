@@ -17,10 +17,15 @@
 package cn.ponfee.disjob.alert.email.configuration;
 
 import cn.ponfee.disjob.alert.email.EmailAlertSender;
+import cn.ponfee.disjob.alert.email.EmailUserRecipientMapper;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DeferredImportSelector;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
+import org.springframework.core.type.AnnotationMetadata;
 
 /**
  * EmailAlertSender auto configuration
@@ -29,11 +34,28 @@ import org.springframework.core.Ordered;
  */
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(EmailAlertSenderProperties.class)
+@Import(EmailAlertSenderAutoConfiguration.EmailAlertSenderDeferredImportSelector.class)
 public class EmailAlertSenderAutoConfiguration {
 
+    static class EmailAlertSenderDeferredImportSelector implements DeferredImportSelector {
+        @SuppressWarnings("NullableProblems")
+        @Override
+        public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+            return new String[]{EmailAlertSenderDeferredConfiguration.class.getName()};
+        }
+    }
+
+    static class EmailAlertSenderDeferredConfiguration {
+        @ConditionalOnMissingBean
+        @Bean
+        public EmailUserRecipientMapper emailUserRecipientMapper() {
+            return new EmailUserRecipientMapper();
+        }
+    }
+
     @Bean
-    public EmailAlertSender emailAlertSender(EmailAlertSenderProperties config) {
-        return new EmailAlertSender(config);
+    public EmailAlertSender emailAlertSender(EmailAlertSenderProperties config, EmailUserRecipientMapper mapper) {
+        return new EmailAlertSender(config, mapper);
     }
 
 }

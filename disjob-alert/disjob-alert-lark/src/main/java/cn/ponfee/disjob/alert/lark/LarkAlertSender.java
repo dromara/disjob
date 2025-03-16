@@ -31,8 +31,8 @@ public class LarkAlertSender extends AlertSender {
 
     public static final String CHANNEL = "lark";
 
-    public LarkAlertSender(LarkAlertSenderProperties config) {
-        super(CHANNEL, "飞书");
+    public LarkAlertSender(LarkAlertSenderProperties config, LarkUserRecipientMapper mapper) {
+        super(CHANNEL, "飞书", mapper);
 
         // TODO: init Mail client by config
     }

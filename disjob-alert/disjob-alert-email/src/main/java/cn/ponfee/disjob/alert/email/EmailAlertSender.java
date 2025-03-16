@@ -41,8 +41,8 @@ public class EmailAlertSender extends AlertSender {
     private final Session mailSession;
     private final EmailAlertSenderProperties emailConfig;
 
-    public EmailAlertSender(EmailAlertSenderProperties config) {
-        super(CHANNEL, "邮件");
+    public EmailAlertSender(EmailAlertSenderProperties config, EmailUserRecipientMapper mapper) {
+        super(CHANNEL, "邮件", mapper);
         this.emailConfig = config;
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
@@ -69,9 +69,9 @@ public class EmailAlertSender extends AlertSender {
             LOG.warn("No recipients found for alert event: {}", alertEvent);
             return;
         }
-        for (Map.Entry<String, String> recipient : alertRecipients.entrySet()) {
-            String recipientEmail = recipient.getKey();
-            String recipientName = recipient.getValue();
+        for (Map.Entry<String, String> entry : alertRecipients.entrySet()) {
+            String alertUser = entry.getKey();
+            String recipientEmail = entry.getValue();
             try {
                 Message message = new MimeMessage(mailSession);
                 message.setFrom(new InternetAddress(emailConfig.getFromAddress())); // Sender
@@ -80,9 +80,9 @@ public class EmailAlertSender extends AlertSender {
                 message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail)); // Recipient
                 Transport.send(message);
 
-                LOG.info("Alert email sent to {} ({}) for event: {}", recipientEmail, recipientName, alertEvent);
+                LOG.info("Alert email sent to {} ({}) for event: {}", alertUser, recipientEmail, alertEvent);
             } catch (MessagingException e) {
-                LOG.error("Failed to send alert email to {} ({}) for event: {}", recipientEmail, recipientName, alertEvent, e);
+                LOG.error("Failed to send alert email to {} ({}) for event: {}", alertUser, recipientEmail, alertEvent, e);
             }
         }
     }

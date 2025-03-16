@@ -23,16 +23,16 @@ import java.util.Set;
 import static cn.ponfee.disjob.supervisor.application.SchedGroupService.getGroup;
 
 /**
- * Group info holder.
+ * Default group info service.
  * <p>当`group`还未配置时，会报错：“Not found worker group”
  *
  * @author Ponfee
  */
-public final class GroupInfoHolder implements GroupInfoService {
+public final class DefaultGroupInfoService implements GroupInfoService {
 
-    public static final GroupInfoHolder INSTANCE = new GroupInfoHolder();
+    public static final DefaultGroupInfoService INSTANCE = new DefaultGroupInfoService();
 
-    private GroupInfoHolder() { }
+    private DefaultGroupInfoService() { }
 
     @Override
     public String getWorkerContextPath(String group) {

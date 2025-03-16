@@ -78,6 +78,7 @@ public class Alerter {
 
         // TODO 限流：滑动窗口、漏斗算法、分布式集群限流
         // 滑动窗口
+        // TODO 待讨论：限流维度为group或job级别
         SlidingWindow slidingWindow = rateLimiter.get(event.getAlertType());
         if (slidingWindow != null && !slidingWindow.tryAcquire()) {
             LOG.warn("Alert rate limited for event: {}", event);
@@ -87,8 +88,10 @@ public class Alerter {
         executor.execute(() -> {
             try {
                 for (String channel : channels) {
-                    AlertSender alertSender = AlertSender.getAlertSender(channel);
-                    alertSender.send(event, alertUsers, webhook);
+                    AlertSender sender = AlertSender.getAlertSender(channel);
+                    if (sender != null) {
+                        sender.send(event, alertUsers, webhook);
+                    }
                 }
             } catch (Throwable t) {
                 Threads.interruptIfNecessary(t);

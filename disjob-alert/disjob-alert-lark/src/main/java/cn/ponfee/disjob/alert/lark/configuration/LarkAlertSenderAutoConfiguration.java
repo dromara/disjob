@@ -17,10 +17,15 @@
 package cn.ponfee.disjob.alert.lark.configuration;
 
 import cn.ponfee.disjob.alert.lark.LarkAlertSender;
+import cn.ponfee.disjob.alert.lark.LarkUserRecipientMapper;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DeferredImportSelector;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
+import org.springframework.core.type.AnnotationMetadata;
 
 /**
  * LarkAlertSender auto configuration
@@ -29,11 +34,28 @@ import org.springframework.core.Ordered;
  */
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(LarkAlertSenderProperties.class)
+@Import(LarkAlertSenderAutoConfiguration.LarkAlertSenderDeferredImportSelector.class)
 public class LarkAlertSenderAutoConfiguration {
 
+    static class LarkAlertSenderDeferredImportSelector implements DeferredImportSelector {
+        @SuppressWarnings("NullableProblems")
+        @Override
+        public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+            return new String[]{LarkAlertSenderDeferredConfiguration.class.getName()};
+        }
+    }
+
+    static class LarkAlertSenderDeferredConfiguration {
+        @ConditionalOnMissingBean
+        @Bean
+        public LarkUserRecipientMapper larkUserRecipientMapper() {
+            return new LarkUserRecipientMapper();
+        }
+    }
+
     @Bean
-    public LarkAlertSender larkAlertSender(LarkAlertSenderProperties config) {
-        return new LarkAlertSender(config);
+    public LarkAlertSender larkAlertSender(LarkAlertSenderProperties config, LarkUserRecipientMapper mapper) {
+        return new LarkAlertSender(config, mapper);
     }
 
 }

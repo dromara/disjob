@@ -20,11 +20,11 @@ import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -39,40 +39,43 @@ public abstract class AlertSender extends SingletonClassConstraint {
 
     private final String channel;
     private final String name;
+    private final UserRecipientMapper mapper;
 
-    protected AlertSender(String channel, String name) {
+    protected AlertSender(String channel, String name, UserRecipientMapper mapper) {
+        Assert.hasText(channel, "Alert sender channel cannot be blank.");
+        Assert.hasText(name, "Alert sender name cannot be blank.");
         this.channel = channel;
         this.name = name;
+        this.mapper = Objects.requireNonNull(mapper);
         registerAlertSender(this);
     }
 
     public void send(AlertEvent alertEvent, Set<String> alertUsers, String webhook) {
-        doSend(alertEvent, mapRecipients(alertUsers), webhook);
+        Map<String, String> recipients = mapper.map(alertUsers);
+        if (MapUtils.isEmpty(recipients) || StringUtils.isBlank(webhook)) {
+            return;
+        }
+        doSend(alertEvent, recipients, webhook);
     }
 
     public void checkAlertUsers(Set<String> alertUsers) {
         if (CollectionUtils.isEmpty(alertUsers)) {
             return;
         }
-        Map<String, String> alertRecipients = mapRecipients(alertUsers);
+        Map<String, String> alertRecipients = mapper.map(alertUsers);
         List<String> list = alertUsers.stream()
             .filter(e -> StringUtils.isBlank(alertRecipients.get(e)))
             .collect(Collectors.toList());
         Assert.isTrue(list.isEmpty(), () -> "Invalid alert users: " + list);
     }
 
-    public Map<String, String> mapRecipients(Set<String> alertUsers) {
-        if (CollectionUtils.isEmpty(alertUsers)) {
-            return Collections.emptyMap();
-        }
-        return alertUsers.stream().collect(Collectors.toMap(Function.identity(), Function.identity()));
-    }
+    // ------------------------------------------------------------------protected methods
 
     /**
      * Do send alert message.
      *
      * @param alertEvent      the alert event
-     * @param alertRecipients the alert recipients
+     * @param alertRecipients the alert recipients [user -> recipient]
      * @param webhook         the webhook
      */
     protected abstract void doSend(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook);

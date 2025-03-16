@@ -14,25 +14,15 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.enums;
+package cn.ponfee.disjob.alert.lark;
+
+import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
 
 /**
- * Alert type
+ * Lark user recipient mapper
  *
  * @author Ponfee
  */
-public enum AlertType {
-
-    /**
-     * 异常警报
-     */
-    ALARM,
-
-    /**
-     * 正常通知
-     */
-    NOTICE,
-
-    ;
-
+public class LarkUserRecipientMapper extends UserRecipientMapper {
+    
 }

@@ -14,3 +14,10 @@ disjob.alert:
     type-channel-map:
       ALARM: [lark, email]
       NOTICE: [email]
+    task-execution-pool:
+      core-pool-size: 2
+      maximum-pool-size: 8
+      queue-capacity: 1000
+      keep-alive-time-seconds: 60
+      await-termination-seconds: 5
+      allow-core-thread-time-out: true

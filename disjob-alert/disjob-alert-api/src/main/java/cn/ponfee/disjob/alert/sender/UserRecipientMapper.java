@@ -14,25 +14,35 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.enums;
+package cn.ponfee.disjob.alert.sender;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
- * Alert type
+ * User recipient mapper
  *
  * @author Ponfee
  */
-public enum AlertType {
+public abstract class UserRecipientMapper {
 
     /**
-     * 异常警报
+     * Mapping the users to recipients
+     *
+     * @param users the users
+     * @return recipients
      */
-    ALARM,
-
-    /**
-     * 正常通知
-     */
-    NOTICE,
-
-    ;
+    public Map<String, String> map(Set<String> users) {
+        if (users == null) {
+            return null;
+        }
+        if (users.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return users.stream().collect(Collectors.toMap(Function.identity(), Function.identity()));
+    }
 
 }
