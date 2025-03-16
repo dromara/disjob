@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
+import cn.ponfee.disjob.alert.event.AlertInstanceEvent;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import cn.ponfee.disjob.core.dag.PredecessorTask;
@@ -24,12 +25,15 @@ import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
+import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
 import cn.ponfee.disjob.supervisor.model.SchedWorkflow;
 import org.springframework.util.Assert;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -81,6 +85,25 @@ public final class ModelConverter {
         result.setExecuteSnapshot(task.getExecuteSnapshot());
         result.setTaskParam(task.getTaskParam());
         return result;
+    }
+
+    public static AlertInstanceEvent toAlertInstanceEvent(SchedJob job, SchedInstance instance,
+                                                          Date runEndTime, int retriedCount) {
+        if (job == null || instance == null) {
+            return null;
+        }
+        AlertInstanceEvent event = new AlertInstanceEvent();
+        event.setGroup(job.getGroup());
+        event.setJobName(job.getJobName());
+        event.setJobId(job.getJobId());
+        event.setInstanceId(instance.getInstanceId());
+        event.setRunType(RunType.of(instance.getRunType()));
+        event.setRunState(RunState.of(instance.getRunState()));
+        event.setTriggerTime(new Date(instance.getTriggerTime()));
+        event.setRunStartTime(instance.getRunStartTime());
+        event.setRunEndTime(runEndTime);
+        event.setRetriedCount(retriedCount);
+        return event;
     }
 
     // ----------------------------------------------------------------------private methods

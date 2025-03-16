@@ -832,8 +832,9 @@ public class JobManager {
         Assert.isTrue(!instance.isWorkflowLead(), () -> "After terminate task cannot be workflow lead: " + instance);
         RunState runState = RunState.of(instance.getRunState());
 
+        boolean retrying = false;
         if (runState == RunState.CANCELED) {
-            retryJob(instance);
+            retrying = retryJob(instance);
         } else if (runState == RunState.COMPLETED) {
             if (!instance.isWorkflowNode()) {
                 renewFixedNextTriggerTime(instance);
@@ -843,13 +844,20 @@ public class JobManager {
         } else {
             throw new IllegalStateException("Unknown terminate run state " + runState);
         }
+
+        // 任务实例已结束且不会再重试，则触发通知
+        if (!retrying) {
+            SchedJob job = jobMapper.get(instance.getJobId());
+            SchedInstance origin = instance.isRunRetry() ? instanceMapper.get(instance.getPnstanceId()) : instance;
+            ModelConverter.toAlertInstanceEvent(job, origin, instance.getRunEndTime(), instance.getRetriedCount());
+        }
     }
 
-    private void retryJob(SchedInstance failed) {
+    private boolean retryJob(SchedInstance failed) {
         Long retryingInstanceId = ThrowingSupplier.doCaught(() -> retryJob0(failed));
         if (retryingInstanceId != null) {
             startRetrying(failed);
-            return;
+            return true;
         }
         if (failed.isWorkflowNode()) {
             // If workflow without retry, then require update workflow graph state
@@ -858,6 +866,7 @@ public class JobManager {
         } else {
             renewFixedNextTriggerTime(failed);
         }
+        return false;
     }
 
     private Long retryJob0(SchedInstance failed) throws JobException {
