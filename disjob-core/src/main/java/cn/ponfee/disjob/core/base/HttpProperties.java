@@ -31,10 +31,9 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = HttpProperties.KEY_PREFIX)
+@ConfigurationProperties(prefix = JobConstants.HTTP_CONFIG_KEY)
 public class HttpProperties extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 5956808059609905150L;
-    public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".http";
 
     /**
      * Http rest connect timeout milliseconds, default 2000.

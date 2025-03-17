@@ -19,13 +19,11 @@ package cn.ponfee.disjob.alert.sender;
 import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import lombok.Getter;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Abstract alert sender
@@ -46,7 +44,7 @@ public abstract class AlertSender extends SingletonClassConstraint {
     private final String channel;
 
     /**
-     * 渠道发送名称
+     * 渠道名称
      */
     private final String name;
 
@@ -65,24 +63,15 @@ public abstract class AlertSender extends SingletonClassConstraint {
     }
 
     public void send(AlertEvent alertEvent, Set<String> alertUsers, String webhook) {
-        Map<String, String> recipients = userRecipientMapper.map(alertUsers);
-        if (MapUtils.isNotEmpty(recipients) || StringUtils.isNotBlank(webhook)) {
+        Map<String, String> recipients = userRecipientMapper.mapping(alertUsers);
+        if (verify(recipients, webhook)) {
             doSend(alertEvent, recipients, webhook);
         }
     }
 
-    public void checkAlertUsers(Set<String> alertUsers) {
-        if (CollectionUtils.isEmpty(alertUsers)) {
-            return;
-        }
-        Map<String, String> alertRecipients = userRecipientMapper.map(alertUsers);
-        List<String> list = alertUsers.stream()
-            .filter(e -> StringUtils.isBlank(alertRecipients.get(e)))
-            .collect(Collectors.toList());
-        Assert.isTrue(list.isEmpty(), () -> "Invalid alert users: " + list);
+    protected boolean verify(Map<String, String> recipients, String webhook) {
+        return MapUtils.isNotEmpty(recipients) || StringUtils.isNotBlank(webhook);
     }
-
-    // ------------------------------------------------------------------protected methods
 
     /**
      * Do send alert message.

@@ -69,21 +69,21 @@ public class AlertInstanceEvent extends AlertEvent {
     }
 
     @Override
-    public String buildContent(String indent, String lineSeparator) {
+    public String buildContent(String format) {
         StringBuilder content = new StringBuilder();
         // 基本信息
-        content.append(indent).append("分组名称：").append(group).append(lineSeparator);
-        content.append(indent).append("作业名称：").append(jobName).append(lineSeparator);
-        content.append(indent).append("作业ID：").append(jobId).append(lineSeparator);
-        content.append(indent).append("实例ID：").append(instanceId).append(lineSeparator);
+        content.append(String.format(format, "分组名称：", group));
+        content.append(String.format(format, "作业名称：", jobName));
+        content.append(String.format(format, "作业ID：", jobId));
+        content.append(String.format(format, "实例ID：", instanceId));
         // 运行信息
-        content.append(indent).append("运行类型：").append(runType.desc()).append(lineSeparator);
-        content.append(indent).append("运行状态：").append(runState.desc()).append(lineSeparator);
-        content.append(indent).append("计划触发时间：").append(formatDate(triggerTime)).append(lineSeparator);
-        content.append(indent).append("运行开始时间：").append(formatDate(runStartTime)).append(lineSeparator);
-        content.append(indent).append("运行结束时间：").append(formatDate(runEndTime)).append(lineSeparator);
+        content.append(String.format(format, "运行类型：", runType.desc()));
+        content.append(String.format(format, "运行状态：", runState.desc()));
+        content.append(String.format(format, "计划触发时间：", formatDate(triggerTime)));
+        content.append(String.format(format, "运行开始时间：", formatDate(runStartTime)));
+        content.append(String.format(format, "运行结束时间：", formatDate(runEndTime)));
         if (retriedCount > 0) {
-            content.append(indent).append("已重试的次数：").append(retriedCount).append(lineSeparator);
+            content.append(String.format(format, "已重试的次数：", retriedCount));
         }
         return content.toString();
     }

@@ -69,21 +69,21 @@ public class AlertTaskEvent extends AlertEvent {
     }
 
     @Override
-    public String buildContent(String indent, String lineSeparator) {
+    public String buildContent(String format) {
         StringBuilder content = new StringBuilder();
         // 基本信息
-        content.append(indent).append("分组名称：").append(group).append(lineSeparator);
-        content.append(indent).append("作业名称：").append(jobName).append(lineSeparator);
-        content.append(indent).append("作业ID：").append(jobId).append(lineSeparator);
-        content.append(indent).append("实例ID：").append(instanceId).append(lineSeparator);
-        content.append(indent).append("任务ID：").append(taskId).append(lineSeparator);
+        content.append(String.format(format, "分组名称：", group));
+        content.append(String.format(format, "作业名称：", jobName));
+        content.append(String.format(format, "作业ID：", jobId));
+        content.append(String.format(format, "实例ID：", instanceId));
+        content.append(String.format(format, "任务ID：", taskId));
         // 执行信息
-        content.append(indent).append("执行状态：").append(executeState.desc()).append(lineSeparator);
-        content.append(indent).append("执行开始时间：").append(formatDate(executeStartTime)).append(lineSeparator);
-        content.append(indent).append("执行结束时间：").append(formatDate(executeEndTime)).append(lineSeparator);
-        content.append(indent).append("执行机器：").append(worker).append(lineSeparator);
-        if (StringUtils.isNotEmpty(errorMsg)) {
-            content.append(indent).append("异常信息：").append(errorMsg).append(lineSeparator);
+        content.append(String.format(format, "执行状态：", executeState.desc()));
+        content.append(String.format(format, "执行开始时间：", formatDate(executeStartTime)));
+        content.append(String.format(format, "执行结束时间：", formatDate(executeEndTime)));
+        content.append(String.format(format, "执行机器：", worker));
+        if (StringUtils.isNotBlank(errorMsg)) {
+            content.append(String.format(format, "异常信息：", errorMsg));
         }
         return content.toString();
     }

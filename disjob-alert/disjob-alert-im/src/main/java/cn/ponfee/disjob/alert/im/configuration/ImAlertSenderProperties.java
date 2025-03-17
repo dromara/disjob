@@ -39,10 +39,12 @@ public class ImAlertSenderProperties extends AlertSenderProperties {
      * Token id
      */
     private String tokenId;
+
     /**
      * Secret key
      */
     private String secretKey;
+
     /**
      * Supplier
      */

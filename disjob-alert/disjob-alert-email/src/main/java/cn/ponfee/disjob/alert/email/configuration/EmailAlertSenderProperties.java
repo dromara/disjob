@@ -36,11 +36,9 @@ import java.util.Map;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = EmailAlertSenderProperties.EMAIL_SENDER_CONFIG_KEY)
+@ConfigurationProperties(prefix = Alerter.SENDER_CONFIG_KEY_PREFIX + "." + EmailAlertSender.CHANNEL)
 public class EmailAlertSenderProperties extends AlertSenderProperties {
     private static final long serialVersionUID = 2531779048449076379L;
-
-    public static final String EMAIL_SENDER_CONFIG_KEY = Alerter.SENDER_CONFIG_KEY_PREFIX + "." + EmailAlertSender.CHANNEL;
 
     /**
      * SMTP server host. For instance, 'smtp.example.com'.
@@ -85,6 +83,6 @@ public class EmailAlertSenderProperties extends AlertSenderProperties {
     /**
      * Testing email service connectivity on startup.
      */
-    private Boolean testConnection;
+    private boolean testConnection = false;
 
 }

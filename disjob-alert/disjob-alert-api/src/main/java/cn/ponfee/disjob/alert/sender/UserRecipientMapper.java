@@ -30,12 +30,12 @@ import java.util.stream.Collectors;
 public class UserRecipientMapper {
 
     /**
-     * Mapping the users to recipients
+     * Mapping the users to message channel recipients
      *
      * @param users the users
      * @return recipients Map[user, channel-user-identity]
      */
-    public Map<String, String> map(Set<String> users) {
+    public Map<String, String> mapping(Set<String> users) {
         if (users == null) {
             return null;
         }

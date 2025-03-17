@@ -47,6 +47,26 @@ public final class JobConstants {
     public static final String DISJOB_KEY_PREFIX = "disjob";
 
     /**
+     * Http config key
+     */
+    public static final String HTTP_CONFIG_KEY = DISJOB_KEY_PREFIX + ".http";
+
+    /**
+     * Retry config key
+     */
+    public static final String RETRY_CONFIG_KEY = DISJOB_KEY_PREFIX + ".retry";
+
+    /**
+     * Supervisor config key
+     */
+    public static final String SUPERVISOR_CONFIG_KEY = DISJOB_KEY_PREFIX + ".supervisor";
+
+    /**
+     * Worker config key
+     */
+    public static final String WORKER_CONFIG_KEY = DISJOB_KEY_PREFIX + ".worker";
+
+    /**
      * Server bound host
      */
     public static final String DISJOB_BOUND_SERVER_HOST = DISJOB_KEY_PREFIX + ".bound.server.host";

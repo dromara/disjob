@@ -64,7 +64,7 @@ public class ImAlertSender extends AlertSender {
         }
 
         String title = alertEvent.buildTitle();
-        String content = alertEvent.buildContent("", "\n");
+        String content = alertEvent.buildContent("**%s**%s\n");
         String message = StringUtils.replaceEach(content, new String[]{"\\", "\"", "\n"}, new String[]{"\\\\", "\\\"", "\\n"});
         ImAlertSupplier supplier = config.getSupplier();
         try {

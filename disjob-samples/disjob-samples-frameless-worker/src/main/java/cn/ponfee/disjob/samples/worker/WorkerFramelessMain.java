@@ -46,8 +46,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
-import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_BOUND_SERVER_HOST;
-
 /**
  * Job worker configuration.
  * <p>Note: non web application not supported HttpTaskReceiver
@@ -67,11 +65,11 @@ public class WorkerFramelessMain {
     public static void main(String[] args) throws Exception {
         // 1、load config
         YamlProperties config = loadConfig(args);
-        HttpProperties httpProps = config.bind(HttpProperties.KEY_PREFIX, HttpProperties.class);
+        HttpProperties httpProps = config.bind(JobConstants.HTTP_CONFIG_KEY, HttpProperties.class);
         httpProps.check();
-        RetryProperties retryProps = config.bind(RetryProperties.KEY_PREFIX, RetryProperties.class);
+        RetryProperties retryProps = config.bind(JobConstants.RETRY_CONFIG_KEY, RetryProperties.class);
         retryProps.check();
-        WorkerProperties workerProps = config.bind(WorkerProperties.KEY_PREFIX, WorkerProperties.class);
+        WorkerProperties workerProps = config.bind(JobConstants.WORKER_CONFIG_KEY, WorkerProperties.class);
         workerProps.check();
 
         // 2、create component
@@ -101,7 +99,7 @@ public class WorkerFramelessMain {
         Object[] args = {
             workerProps.getGroup(),
             UuidUtils.uuid32(),
-            CoreUtils.getLocalHost(config.getString(DISJOB_BOUND_SERVER_HOST)),
+            CoreUtils.getLocalHost(config.getString(JobConstants.DISJOB_BOUND_SERVER_HOST)),
             Optional.ofNullable(config.getInt(SpringUtils.SPRING_BOOT_SERVER_PORT)).orElseGet(() -> NetUtils.findAvailablePort(10000)),
             workerProps.getWorkerToken(),
             workerProps.getSupervisorToken(),

@@ -61,23 +61,22 @@ public abstract class AlertEvent extends ToJsonString implements Serializable {
     protected long instanceId;
 
     /**
-     * Build alert title.
+     * Builds alert title.
      *
      * @return alert title
      */
     public abstract String buildTitle();
 
     /**
-     * Build alert content.
+     * Builds alert content.
      *
-     * @param indent        the indent
-     * @param lineSeparator the line separator
-     * @return content
+     * @param format the format
+     * @return alert content
      */
-    public abstract String buildContent(String indent, String lineSeparator);
+    public abstract String buildContent(String format);
 
     public String buildRateLimitKey() {
-        return jobId + ":" + alertType;
+        return group + ":" + alertType;
     }
 
     public static String formatDate(Date date) {

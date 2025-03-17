@@ -14,41 +14,29 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.email.configuration;
+package cn.ponfee.disjob.alert.configuration;
 
 import cn.ponfee.disjob.alert.Alerter;
-import cn.ponfee.disjob.alert.email.EmailAlertSender;
-import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
+import cn.ponfee.disjob.core.base.GroupInfoService;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 
 /**
- * EmailAlertSender auto configuration
+ * Alerter auto configuration
  *
  * @author Ponfee
  */
 @ConditionalOnProperty(name = Alerter.ENABLED_KEY, havingValue = "true", matchIfMissing = true)
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
-@EnableConfigurationProperties(EmailAlertSenderProperties.class)
-public class EmailAlertSenderAutoConfiguration {
-
-    public static final String EMAIL_USER_RECIPIENT_MAPPER_BEAN_NAME = Alerter.USER_RECIPIENT_MAPPER_BEAN_NAME_PREFIX + "." + EmailAlertSender.CHANNEL;
-
-    @ConditionalOnMissingBean(name = EMAIL_USER_RECIPIENT_MAPPER_BEAN_NAME)
-    @Bean(EMAIL_USER_RECIPIENT_MAPPER_BEAN_NAME)
-    public UserRecipientMapper emailUserRecipientMapper() {
-        return new UserRecipientMapper();
-    }
+@EnableConfigurationProperties(AlerterProperties.class)
+public class AlerterAutoConfiguration {
 
     @Bean
-    public EmailAlertSender emailAlertSender(EmailAlertSenderProperties config,
-                                             @Qualifier(EMAIL_USER_RECIPIENT_MAPPER_BEAN_NAME) UserRecipientMapper mapper) {
-        return new EmailAlertSender(config, mapper);
+    public Alerter alerter(AlerterProperties alerterConfig, GroupInfoService groupInfoService) {
+        return new Alerter(alerterConfig, groupInfoService);
     }
 
 }

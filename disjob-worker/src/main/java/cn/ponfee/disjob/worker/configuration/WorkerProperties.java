@@ -34,10 +34,9 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = WorkerProperties.KEY_PREFIX)
+@ConfigurationProperties(prefix = JobConstants.WORKER_CONFIG_KEY)
 public class WorkerProperties extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 7914242555106016172L;
-    public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".worker";
 
     /**
      * Worker group name

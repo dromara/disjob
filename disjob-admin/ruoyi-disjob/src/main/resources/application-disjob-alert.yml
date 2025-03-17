@@ -1,5 +1,8 @@
 disjob.alert:
-  # 1、Alert alerter config
+  # 1、把`enabled`设置为`true`或删除掉即可启用`alert`功能
+  enabled: false
+
+  # 2、Alert alerter config
   alerter:
     type-channels-map:
       ALARM: [email, im, sms]
@@ -7,22 +10,23 @@ disjob.alert:
     send-thread-pool:
       core-pool-size: 2
       maximum-pool-size: 8
-      queue-capacity: 1000
-      keep-alive-time-seconds: 60
-      await-termination-seconds: 5
+      queue-capacity: 100
+      keep-alive-time-seconds: 300
+      await-termination-seconds: 3
       allow-core-thread-time-out: true
     send-rate-limit:
-      max-requests: 2
-      window-size-in-millis: 60
-  # 2、Alert sender config
+      max-requests: 20
+      window-size-in-millis: 1000
+
+  # 3、Alert sender config
   sender:
     email:
       host: smtp.163.com
       port: 25
-      username: xxxx@163.com
+      username: xxx@163.com
       # 到`mail.163.com`邮箱服务上配置授权码
-      password:
-      test-connection: true
+      password: xxx
+      test-connection: false
     im:
       tokenId: xxx
       secret-key: c9oV8sSo9bG3uxD03EXv7b
@@ -31,22 +35,22 @@ disjob.alert:
       blends:
         # 自定义的标识，也就是configId这里可以是任意值（最好不要是中文）
         tx1:
-          #厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
+          # 厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
           supplier: alibaba
           accessKeyId: sampleAccessKeyId
           accessKeySecret: sampleAccessKeySecret
           signaTure: disjob
           templateId: xxx
         tx2:
-          #厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
+          # 厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
           supplier: tencent
-          #您的accessKey
+          # 您的accessKey
           access-key-id: 您的accessKey
-          #您的accessKeySecret
+          # 您的accessKeySecret
           access-key-secret: 您的accessKeySecret
-          #您的短信签名
+          # 您的短信签名
           signature: 您的短信签名
-          #模板ID 非必须配置，如果使用sendMessage的快速发送需此配置
+          # 模板ID 非必须配置，如果使用sendMessage的快速发送需此配置
           template-id: xxxxxxxx
-          #您的sdkAppId
+          # 您的sdkAppId
           sdk-app-id: 您的sdkAppId

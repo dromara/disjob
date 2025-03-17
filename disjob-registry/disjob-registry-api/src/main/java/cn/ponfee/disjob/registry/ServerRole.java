@@ -35,12 +35,12 @@ public enum ServerRole {
     /**
      * Worker
      */
-    WORKER(Worker.class, JobConstants.DISJOB_KEY_PREFIX + ".worker"),
+    WORKER(Worker.class, JobConstants.WORKER_CONFIG_KEY),
 
     /**
      * Supervisor
      */
-    SUPERVISOR(Supervisor.class, JobConstants.DISJOB_KEY_PREFIX + ".supervisor"),
+    SUPERVISOR(Supervisor.class, JobConstants.SUPERVISOR_CONFIG_KEY),
 
     ;
 

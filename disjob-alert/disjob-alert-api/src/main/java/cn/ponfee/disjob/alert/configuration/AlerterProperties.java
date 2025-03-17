@@ -58,17 +58,17 @@ public class AlerterProperties extends ToJsonString implements Serializable {
     public static class SendThreadPool extends ToJsonString {
         private int corePoolSize = 2;
         private int maximumPoolSize = 8;
-        private int queueCapacity = 1000;
-        private int keepAliveTimeSeconds = 60;
-        private int awaitTerminationSeconds = 3;
+        private int queueCapacity = 100;
+        private int keepAliveTimeSeconds = 300;
         private boolean allowCoreThreadTimeOut = true;
+        private int awaitTerminationSeconds = 3;
     }
 
     @Getter
     @Setter
     public static class SendRateLimit extends ToJsonString {
-        private int maxRequests = 5;
-        private int windowSizeInMillis = 60;
+        private int maxRequests = 20;
+        private long windowSizeInMillis = 1000;
     }
 
 }

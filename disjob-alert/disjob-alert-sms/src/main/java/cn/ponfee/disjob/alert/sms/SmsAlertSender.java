@@ -53,7 +53,7 @@ public class SmsAlertSender extends AlertSender {
         }
 
         SmsBlend smsBlend = SmsFactory.getSmsBlend();
-        String message = alertEvent.buildTitle() + "\n" + alertEvent.buildContent("\t", "\n");
+        String message = alertEvent.buildTitle() + "\n" + alertEvent.buildContent("\t%s%s\n");
         List<String> phones = alertRecipients.values().stream().distinct().collect(Collectors.toList());
         try {
             smsBlend.massTexting(phones, message);

@@ -96,4 +96,11 @@ public class StringsTest {
         Assertions.assertEquals(" ", CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, " "));
     }
 
+    @Test
+    public void testFormat() {
+        Assertions.assertEquals("\t作业ID：1329633560065048576\n", String.format("\t%s%s\n", "作业ID：", 1329633560065048576L));
+        Assertions.assertEquals("**作业ID：**1329633560065048576\n", String.format("**%s**%s\n", "作业ID：", 1329633560065048576L));
+        Assertions.assertEquals("<b>作业ID：</b>1329633560065048576<br/>", String.format("<b>%s</b>%s<br/>", "作业ID：", 1329633560065048576L));
+    }
+
 }

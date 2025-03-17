@@ -52,8 +52,6 @@ import java.util.function.Function;
 import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 
-import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE;
-
 /**
  * Worker client
  *
@@ -73,7 +71,7 @@ public class WorkerClient {
                         TaskDispatcher taskDispatcher,
                         Supervisor.Local localSupervisor,
                         RetryProperties retry,
-                        @Qualifier(SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                        @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                         @Nullable WorkerRpcService workerRpcProvider,
                         @Nullable Worker.Local localWorker) {
         this.discoverWorker = discoverWorker;

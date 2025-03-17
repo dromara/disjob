@@ -32,10 +32,9 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = SupervisorProperties.KEY_PREFIX)
+@ConfigurationProperties(prefix = JobConstants.SUPERVISOR_CONFIG_KEY)
 public class SupervisorProperties extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -7896732123210543684L;
-    public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".supervisor";
 
     /**
      * Scan batch size

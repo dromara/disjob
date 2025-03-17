@@ -34,6 +34,7 @@ import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.naming.NamingException;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -68,7 +69,8 @@ public class EmailAlertSender extends AlertSender {
             mimeMessageHelper.setFrom(config.getUsername());
             mimeMessageHelper.setTo(buildRecipients(alertRecipients));
             mimeMessageHelper.setSubject(alertEvent.buildTitle());
-            mimeMessageHelper.setText(alertEvent.buildContent("", "<br/>"), true);
+            mimeMessageHelper.setText(alertEvent.buildContent("<b>%s</b>%s<br/>"), true);
+            mimeMessageHelper.setSentDate(new Date());
             sender.send(mimeMessage);
             LOG.info("Alert event email send success: {}", alertRecipients.values());
         } catch (Exception e) {
@@ -83,11 +85,9 @@ public class EmailAlertSender extends AlertSender {
         String jndiName = config.getJndiName();
         if (StringUtils.isNotBlank(jndiName)) {
             try {
-                Session session = JndiLocatorDelegate.createDefaultResourceRefLocator().lookup(jndiName, Session.class);
-                sender.setDefaultEncoding(config.getDefaultEncoding().name());
-                sender.setSession(session);
+                sender.setSession(JndiLocatorDelegate.createDefaultResourceRefLocator().lookup(jndiName, Session.class));
             } catch (NamingException ex) {
-                throw new IllegalStateException("Alert email sender jndi unable.", ex);
+                throw new IllegalStateException("Alert email sender jndi name unable.", ex);
             }
         } else {
             sender.setHost(config.getHost());
@@ -97,15 +97,17 @@ public class EmailAlertSender extends AlertSender {
             sender.setUsername(config.getUsername());
             sender.setPassword(config.getPassword());
             sender.setProtocol(config.getProtocol());
-            if (config.getDefaultEncoding() != null) {
-                sender.setDefaultEncoding(config.getDefaultEncoding().name());
-            }
             if (!config.getProperties().isEmpty()) {
                 sender.setJavaMailProperties(Collects.toProperties(config.getProperties()));
             }
         }
 
-        if (Boolean.TRUE.equals(config.getTestConnection())) {
+        if (config.getDefaultEncoding() != null) {
+            sender.setDefaultEncoding(config.getDefaultEncoding().name());
+        }
+
+        // testing connection
+        if (config.isTestConnection()) {
             try {
                 sender.testConnection();
             } catch (MessagingException ex) {

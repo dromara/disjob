@@ -25,6 +25,7 @@ import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
@@ -39,8 +40,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
-
-import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 
 /**
  * The thread for rotating timing wheel.
@@ -128,7 +127,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
         }
 
         String worker = Collects.getFirst(list).getWorker().serialize();
-        for (List<Long> ids : Lists.partition(taskIds, PROCESS_BATCH_SIZE)) {
+        for (List<Long> ids : Lists.partition(taskIds, JobConstants.PROCESS_BATCH_SIZE)) {
             ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(worker, ids), () -> "Update task worker error: " + ids);
         }
     }

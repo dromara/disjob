@@ -46,8 +46,6 @@ import org.springframework.core.Ordered;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
 
-import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_PREFIX;
-
 /**
  * Spring autoconfiguration for database server registry
  *
@@ -60,7 +58,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     /**
      * Database registry JdbcTemplateWrapper spring bean name
      */
-    public static final String SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER = SPRING_BEAN_NAME_PREFIX + ".registry.database.jdbc-template-wrapper";
+    public static final String SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER = JobConstants.SPRING_BEAN_NAME_PREFIX + ".registry.database.jdbc-template-wrapper";
 
     /**
      * Data source holder

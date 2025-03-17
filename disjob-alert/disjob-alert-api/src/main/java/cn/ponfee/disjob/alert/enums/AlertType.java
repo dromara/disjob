@@ -45,4 +45,8 @@ public enum AlertType {
         return desc;
     }
 
+    public boolean isAlarm() {
+        return this == ALARM;
+    }
+
 }

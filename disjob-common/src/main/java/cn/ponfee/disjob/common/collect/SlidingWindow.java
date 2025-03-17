@@ -29,14 +29,17 @@ public class SlidingWindow {
      * Maximum number of requests
      */
     private final int maxRequests;
+
     /**
      * Window size (milliseconds)
      */
     private final long windowSizeInMillis;
+
     /**
      * Current request count
      */
     private final AtomicInteger requestCount;
+
     /**
      * Window start time
      */

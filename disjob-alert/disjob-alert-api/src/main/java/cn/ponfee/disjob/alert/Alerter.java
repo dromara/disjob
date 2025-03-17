@@ -18,36 +18,44 @@ package cn.ponfee.disjob.alert;
 
 import cn.ponfee.disjob.alert.configuration.AlerterProperties;
 import cn.ponfee.disjob.alert.configuration.AlerterProperties.SendRateLimit;
-import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.alert.sender.AlertSender;
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.SlidingWindow;
-import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.core.base.GroupInfoService;
 import cn.ponfee.disjob.core.base.JobConstants;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
+import org.springframework.beans.factory.DisposableBean;
 
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Alerter
  *
  * @author Ponfee
  */
-public class Alerter {
+public class Alerter extends SingletonClassConstraint implements DisposableBean {
 
     /**
      * Alert key prefix
      */
     public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".alert";
+
+    /**
+     * Alert enabled key
+     */
+    public static final String ENABLED_KEY = KEY_PREFIX + ".enabled";
 
     /**
      * Alert sender config key prefix
@@ -59,12 +67,15 @@ public class Alerter {
      */
     public static final String USER_RECIPIENT_MAPPER_BEAN_NAME_PREFIX = KEY_PREFIX + ".user_recipient_mapper";
 
+    /**
+     * Logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(Alerter.class);
 
     /**
-     * 配置告警类型使用的渠道列表
+     * The alerter config
      */
-    private final Map<AlertType, String[]> typeChannelsMap;
+    private final AlerterProperties config;
 
     /**
      * 通过group获取告警接收人信息（alertUsers、webhook等）
@@ -72,31 +83,59 @@ public class Alerter {
     private final GroupInfoService groupInfoService;
 
     /**
-     * 告警发送执行器（异步执行线程池）
+     * 异步发送线程池：警报消息
      */
-    private final Executor executor;
+    private final ThreadPoolExecutor alarmAsyncExecutor;
 
     /**
-     * Send rate limit config
+     * 异步发送线程池：通知消息
      */
-    private final SendRateLimit limit;
+    private final ThreadPoolExecutor noticeAsyncExecutor;
 
     /**
-     * 告警限流
+     * 告警限流器
      */
     private final ConcurrentHashMap<String, SlidingWindow> rateLimiterMap = new ConcurrentHashMap<>();
 
-    public Alerter(AlerterProperties config, GroupInfoService groupInfoService, Executor executor) {
-        Assert.notNull(config, "Alerter config cannot be empty.");
-        this.typeChannelsMap = config.getTypeChannelsMap();
-        this.groupInfoService = groupInfoService;
-        this.executor = Objects.requireNonNull(executor);
-        this.limit = config.getSendRateLimit();
+    public Alerter(AlerterProperties config, GroupInfoService groupInfoService) {
+        this.config = Objects.requireNonNull(config, "Alerter config cannot be null.");
+        this.groupInfoService = Objects.requireNonNull(groupInfoService, "Group info service cannot be null.");
+        this.alarmAsyncExecutor = createThreadPoolExecutor(config);
+        this.noticeAsyncExecutor = createThreadPoolExecutor(config);
     }
 
     public void alert(AlertEvent event) {
-        String[] channels = typeChannelsMap.get(event.getAlertType());
-        if (channels == null || channels.length == 0) {
+        try {
+            doAlert(event);
+        } catch (Throwable t) {
+            LOG.warn("Alert event occur error: " + event, t);
+        }
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        ThreadPoolExecutors.shutdown(noticeAsyncExecutor, config.getSendThreadPool().getAwaitTerminationSeconds());
+        ThreadPoolExecutors.shutdown(alarmAsyncExecutor, config.getSendThreadPool().getAwaitTerminationSeconds());
+    }
+
+    // ------------------------------------------------------------------private methods
+
+    public static ThreadPoolExecutor createThreadPoolExecutor(AlerterProperties config) {
+        AlerterProperties.SendThreadPool pool = config.getSendThreadPool();
+        return ThreadPoolExecutors.builder()
+            .corePoolSize(pool.getCorePoolSize())
+            .maximumPoolSize(pool.getMaximumPoolSize())
+            .workQueue(new LinkedBlockingQueue<>(pool.getQueueCapacity()))
+            .keepAliveTimeSeconds(pool.getKeepAliveTimeSeconds())
+            .allowCoreThreadTimeOut(pool.isAllowCoreThreadTimeOut())
+            .threadFactory(NamedThreadFactory.builder().prefix("alert_async_send_thread").build())
+            .rejectedHandler((task, executor) -> LOG.warn("Alert event be discard: {}", ((AlertTask) task).event))
+            .build();
+    }
+
+    private void doAlert(AlertEvent event) {
+        String[] channels = config.getTypeChannelsMap().get(event.getAlertType());
+        if (ArrayUtils.isEmpty(channels)) {
             return;
         }
 
@@ -106,38 +145,43 @@ public class Alerter {
             return;
         }
 
-        SlidingWindow slidingWindow = rateLimiterMap.computeIfAbsent(
-            event.buildRateLimitKey(),
-            key -> new SlidingWindow(limit.getMaxRequests(), limit.getWindowSizeInMillis())
-        );
-        if (!slidingWindow.tryAcquire()) {
-            LOG.warn("Alert event rate limited: {}", event);
-            return;
-        }
-
-        try {
-            doAlert(channels, event, alertUsers, webhook);
-        } catch (Throwable t) {
-            // if RejectedExecutionException or other exception
-            LOG.warn("Alert event execute error: {}, {}", event, t.getMessage());
-            Threads.interruptIfNecessary(t);
-        }
+        ThreadPoolExecutor executor = event.getAlertType().isAlarm() ? alarmAsyncExecutor : noticeAsyncExecutor;
+        executor.execute(new AlertTask(channels, event, alertUsers, webhook));
     }
 
-    private void doAlert(String[] channels, AlertEvent event, Set<String> alertUsers, String webhook) {
-        executor.execute(() -> {
-            try {
-                for (String channel : channels) {
-                    AlertSender sender = AlertSender.get(channel);
-                    if (sender != null) {
-                        sender.send(event, alertUsers, webhook);
-                    }
-                }
-            } catch (Throwable t) {
-                LOG.error("Alert event send error: " + event, t);
-                Threads.interruptIfNecessary(t);
+    private class AlertTask implements Runnable {
+        private final String[] channels;
+        private final AlertEvent event;
+        private final Set<String> alertUsers;
+        private final String webhook;
+
+        AlertTask(String[] channels, AlertEvent event, Set<String> alertUsers, String webhook) {
+            this.channels = channels;
+            this.event = event;
+            this.alertUsers = alertUsers;
+            this.webhook = webhook;
+        }
+
+        @Override
+        public void run() {
+            SendRateLimit sendRateLimit = config.getSendRateLimit();
+            SlidingWindow slidingWindow = rateLimiterMap.computeIfAbsent(
+                event.buildRateLimitKey(),
+                key -> new SlidingWindow(sendRateLimit.getMaxRequests(), sendRateLimit.getWindowSizeInMillis())
+            );
+            if (!slidingWindow.tryAcquire()) {
+                LOG.warn("Alert event rate limited: {}", event);
+                return;
             }
-        });
+
+            Arrays.stream(channels).map(AlertSender::get).filter(Objects::nonNull).forEach(sender -> {
+                try {
+                    sender.send(event, alertUsers, webhook);
+                } catch (Throwable t) {
+                    LOG.error("Alert event send error: " + event, t);
+                }
+            });
+        }
     }
 
 }
