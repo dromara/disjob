@@ -16,31 +16,44 @@
 
 package cn.ponfee.disjob.alert.enums;
 
+import cn.ponfee.disjob.common.base.IntValueEnum;
+import cn.ponfee.disjob.common.util.Enums;
+
+import java.util.Arrays;
+
 /**
- * Alert type
+ * Alert type, value must be a power of 2 number, such as: 1, 2, 4, 8, 16, ...
  *
  * @author Ponfee
  */
-public enum AlertType {
+public enum AlertType implements IntValueEnum<AlertType> {
 
     /**
      * 异常警报
      */
-    ALARM("警报"),
+    ALARM(1, "警报"),
 
     /**
      * 正常通知
      */
-    NOTICE("通知"),
+    NOTICE(2, "通知"),
 
     ;
 
+    private final int value;
     private final String desc;
 
-    AlertType(String desc) {
+    AlertType(int value, String desc) {
+        this.value = value;
         this.desc = desc;
     }
 
+    @Override
+    public int value() {
+        return value;
+    }
+
+    @Override
     public String desc() {
         return desc;
     }
@@ -48,5 +61,31 @@ public enum AlertType {
     public boolean isAlarm() {
         return this == ALARM;
     }
+
+    public boolean matches(Integer val) {
+        // 通过位运算判断是否已匹配当前警告类型
+        return val != null && (val & value) == value;
+    }
+
+    public static void check(Integer val) {
+        // 0表示未选，MAX_VAL表示全选
+        if (val == null || val < 0 || val > MAX_VAL) {
+            throw new IllegalArgumentException("Invalid alert type val: " + val);
+        }
+    }
+
+    static {
+        // check the alert type value must be a power of 2
+        for (AlertType e : values()) {
+            int n = e.value();
+            if (n < 1 || (n & (n - 1)) != 0) {
+                throw new Error("Invalid Alert type value definition: " + e);
+            }
+        }
+        // check not exists duplicated value
+        Enums.checkDuplicated(AlertType.class, AlertType::value);
+    }
+
+    private static final int MAX_VAL = Arrays.stream(values()).mapToInt(AlertType::value).reduce(0, (a, b) -> a ^ b);
 
 }

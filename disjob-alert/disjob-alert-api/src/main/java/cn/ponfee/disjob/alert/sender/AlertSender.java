@@ -74,7 +74,7 @@ public abstract class AlertSender extends SingletonClassConstraint {
     }
 
     /**
-     * Do send alert message.
+     * Do send alert event message.
      *
      * @param alertEvent      the alert event
      * @param alertRecipients the alert recipients [user -> recipient]

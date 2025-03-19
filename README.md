@@ -34,6 +34,11 @@
 ```text
 disjob                                        # 主项目①pom.xml
 ├── disjob-admin                              # 管理后台项目②pom.xml(基于Ruoyi框架二次开发)
+├── disjob-alert                              # 告警模块
+│   ├── disjob-alert-api                      # 告警的抽象接口层
+│   ├── disjob-alert-email                    # 邮件告警
+│   ├── disjob-alert-im                       # 即时通信告警(钉钉、企业微信、飞书等)
+│   └── disjob-alert-sms                      # 短信告警
 ├── disjob-bom                                # Maven项目bom模块
 ├── disjob-common                             # 公共的工具类模块
 ├── disjob-core                               # 任务调度相关的核心类（如枚举类、接口定义、接口参数等）
@@ -287,7 +292,7 @@ Worker接收到子任务后，会提交到框架自定义的线程池中执行�
 - [x] 扩展注册中心：Zookeeper、Etcd、Nacos
 - [x] 工作流任务(Workflow DAG)
 - [x] 管理后台：用户体系、权限控制、调度管理等
-- [x] 任务执行异常告警通知：邮件、短信、电话、飞书、钉钉、微信
+- [x] 任务执行告警：邮件、短信、电话、飞书、钉钉、微信
 - [ ] 搭建一个关于项目使用说明的文档站点
 - [ ] 在线查看任务实时运行日志
 - [ ] 任务执行情况的可视化监控BI(Dashboard)

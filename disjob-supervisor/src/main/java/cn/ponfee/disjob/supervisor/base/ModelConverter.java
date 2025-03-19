@@ -89,20 +89,23 @@ public final class ModelConverter {
     }
 
     public static AlertInstanceEvent toAlertInstanceEvent(SchedJob job, SchedInstance original, SchedInstance current) {
-        if (job == null || original == null || current == null) {
+        AlertType alertType = original.isCompleted() ? AlertType.NOTICE : AlertType.ALARM;
+        if (!alertType.matches(job.getAlertOptions())) {
             return null;
         }
+
         AlertInstanceEvent event = new AlertInstanceEvent();
         event.setGroup(job.getGroup());
         event.setJobName(job.getJobName());
         event.setJobId(job.getJobId());
-        event.setAlertType(original.isCompleted() ? AlertType.NOTICE : AlertType.ALARM);
+        event.setAlertType(alertType);
         event.setInstanceId(original.getInstanceId());
         event.setRunType(RunType.of(original.getRunType()));
         event.setRunState(RunState.of(original.getRunState()));
         event.setTriggerTime(new Date(original.getTriggerTime()));
         event.setRunStartTime(original.getRunStartTime());
         event.setRunEndTime(current.getRunEndTime());
+        // 如果是DAG任务，original和current都是为lead实例，此时的retriedCount始终为0
         event.setRetriedCount(current.getRetriedCount());
         return event;
     }

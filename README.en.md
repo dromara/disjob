@@ -34,6 +34,11 @@ Lightweight and easy to use, it is particularly suitable for the execution of lo
 ```text
 disjob                                        # Main project①pom.xml
 ├── disjob-admin                              # Management backend project②pom.xml (Based on RuoYi framework secondary development)
+├── disjob-alert                              # Alert module
+│   ├── disjob-alert-api                      # Abstract interface layer of alert
+│   ├── disjob-alert-email                    # Email alert
+│   ├── disjob-alert-im                       # Instant messaging alert(DingTalk, WeCom, Lark)
+│   └── disjob-alert-sms                      # SMS alert
 ├── disjob-bom                                # Maven project bom module
 ├── disjob-common                             # Common utility class module
 ├── disjob-core                               # Task scheduling related core classes (such as data models, enumeration classes, abstract layer interfaces, etc.)
@@ -52,11 +57,11 @@ disjob                                        # Main project①pom.xml
 │   └── disjob-registry-zookeeper             # Server registry center: Zookeeper implementation
 ├── disjob-reports                            # Aggregate test coverage reports of various modules
 ├── disjob-samples                            # Samples project③pom.xml
-│   ├── disjob-samples-conf                   # Samples configuration file
-│   ├── disjob-samples-frameless-worker       # Example of Worker deployed separately (ordinary Java-main application)
-│   ├── disjob-samples-springboot-merged      # Example of Supervisor and Worker deployed together (Spring-boot application)
-│   ├── disjob-samples-springboot-supervisor  # Example of Supervisor deployed separately (Spring-boot application)
-│   └── disjob-samples-springboot-worker      # Example of Worker deployed separately (Spring-boot application)
+│   ├── disjob-samples-conf                   # Sample configuration file
+│   ├── disjob-samples-frameless-worker       # Sample of Worker deployed separately (ordinary Java-main application)
+│   ├── disjob-samples-springboot-merged      # Sample of Supervisor and Worker deployed together (Spring-boot application)
+│   ├── disjob-samples-springboot-supervisor  # Sample of Supervisor deployed separately (Spring-boot application)
+│   └── disjob-samples-springboot-worker      # Sample of Worker deployed separately (Spring-boot application)
 ├── disjob-supervisor                         # Supervisor code
 ├── disjob-test                               # Used for auxiliary testing
 └── disjob-worker                             # Worker code

@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.model;
 
+import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.enums.*;
@@ -151,6 +152,11 @@ public class SchedJob extends BaseEntity {
      * @see ShutdownStrategy
      */
     private Integer shutdownStrategy;
+
+    /**
+     * 告警选项(存储位运算或的结果)：1-警报；2-通知；3-全选；
+     */
+    private Integer alertOptions;
 
     /**
      * 最近一次的触发时间(毫秒时间戳)
@@ -304,6 +310,7 @@ public class SchedJob extends BaseEntity {
         CollidedStrategy.of(collidedStrategy);
         MisfireStrategy.of(misfireStrategy);
         ShutdownStrategy.of(shutdownStrategy);
+        AlertType.check(alertOptions);
         if (RetryType.of(retryType) == RetryType.NONE) {
             this.retryCount = defaultIfNull(retryCount, 0);
             this.retryInterval = defaultIfNull(retryInterval, 0);

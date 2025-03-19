@@ -96,6 +96,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_LOST.value());
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setShutdownStrategy(ShutdownStrategy.RESUME.value());
+        job.setAlertOptions(0);
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
         job.setNextTriggerTime(TriggerTimes.computeNextTriggerTime(job, new Date()));
@@ -135,6 +136,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setCollidedStrategy(CollidedStrategy.CONCURRENT.value());
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setShutdownStrategy(ShutdownStrategy.RESUME.value());
+        job.setAlertOptions(0);
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
         job.setNextTriggerTime(TriggerTimes.computeNextTriggerTime(job, new Date()));
@@ -174,6 +176,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setCollidedStrategy(CollidedStrategy.CONCURRENT.value());
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setShutdownStrategy(ShutdownStrategy.RESUME.value());
+        job.setAlertOptions(0);
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
         job.setNextTriggerTime(TriggerTimes.computeNextTriggerTime(job, new Date()));

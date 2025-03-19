@@ -22,14 +22,13 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.Discovery;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nullable;
 import java.util.function.Function;
-
-import static cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
-import static cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.create;
 
 /**
  * Dispatch task based http
@@ -51,7 +50,7 @@ public class HttpTaskDispatcher extends TaskDispatcher {
         Function<Worker, String> workerContextPath = worker -> localSupervisor.getWorkerContextPath(worker.getGroup());
         RetryProperties retry = RetryProperties.none();
         // `TaskDispatcher#dispatch0`内部有处理本地worker的分派逻辑，这里不需要本地的`HttpTaskController`，所以传null
-        this.httpTaskReceiverClient = create(
+        this.httpTaskReceiverClient = DestinationServerRestProxy.create(
             HttpTaskController.class,
             null, // httpTaskReceiver
             null, // Worker.local()

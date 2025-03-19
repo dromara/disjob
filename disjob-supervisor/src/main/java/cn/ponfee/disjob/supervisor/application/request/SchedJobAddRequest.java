@@ -53,6 +53,7 @@ public class SchedJobAddRequest extends ToJsonString implements Serializable {
     private Integer misfireStrategy;
     private Integer routeStrategy;
     private Integer shutdownStrategy;
+    private Integer alertOptions;
     private String remark;
 
     public SchedJob tosSchedJob(String user) {

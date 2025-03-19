@@ -75,7 +75,7 @@
       -->
     </dependency>
 
-    <!-- Alert event send: select multiple implementations for alert -->
+    <!-- Alert: select multiple implementations for alert -->
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-alert-email</artifactId>

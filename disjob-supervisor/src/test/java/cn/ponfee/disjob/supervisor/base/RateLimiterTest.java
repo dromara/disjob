@@ -65,7 +65,7 @@ public class RateLimiterTest {
             }
         };
         t.start();
-        Thread.sleep(300);
+        Thread.sleep(100);
     }
 
     @Test

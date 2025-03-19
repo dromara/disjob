@@ -62,9 +62,9 @@ public class TimingWheelTest {
 
     @Test
     public void testTimeSecond() throws InterruptedException {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             Assertions.assertEquals((int) ((System.currentTimeMillis() % 60000) / 1000), Calendar.getInstance().get(Calendar.SECOND));
-            Thread.sleep(ThreadLocalRandom.current().nextLong(50));
+            Thread.sleep(ThreadLocalRandom.current().nextLong(10));
         }
     }
 

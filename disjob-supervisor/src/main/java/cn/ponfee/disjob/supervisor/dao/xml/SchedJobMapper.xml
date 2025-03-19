@@ -8,7 +8,7 @@
     job_id, `group`, job_name, job_type, job_state, job_executor, job_param,
     retry_type, retry_count, retry_interval, trigger_type, trigger_value, start_time, end_time,
     execute_timeout, collided_strategy, misfire_strategy, route_strategy, shutdown_strategy,
-    remark, last_trigger_time, next_trigger_time, next_scan_time, scan_failed_count,
+    alert_options, remark, last_trigger_time, next_trigger_time, next_scan_time, scan_failed_count,
     version, updated_by, created_by, updated_at, created_at
   </sql>
 
@@ -40,6 +40,7 @@
       misfire_strategy,
       route_strategy,
       shutdown_strategy,
+      alert_options,
       remark,
       next_trigger_time,
       updated_by,
@@ -64,6 +65,7 @@
       #{misfireStrategy,jdbcType=TINYINT},
       #{routeStrategy,jdbcType=TINYINT},
       #{shutdownStrategy,jdbcType=TINYINT},
+      #{alertOptions,jdbcType=TINYINT},
       #{remark,jdbcType=VARCHAR},
       #{nextTriggerTime,jdbcType=BIGINT},
       #{updatedBy,jdbcType=VARCHAR},
@@ -100,6 +102,7 @@
         collided_strategy = #{collidedStrategy,jdbcType=TINYINT},
         misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
         shutdown_strategy = #{shutdownStrategy,jdbcType=TINYINT},
+        alert_options = #{alertOptions,jdbcType=TINYINT},
         version = version+1,
         updated_by = #{updatedBy,jdbcType=VARCHAR}
     WHERE job_id = #{jobId,jdbcType=BIGINT}
@@ -200,7 +203,7 @@
       AND next_trigger_time = 9223372036854775807
   </update>
 
-  <update id="softDelete" parameterType="_long">
+  <update id="softDelete">
     UPDATE <include refid="Table_Name" />
     SET is_deleted = id,
         updated_by = #{updatedBy,jdbcType=VARCHAR},

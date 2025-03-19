@@ -233,6 +233,11 @@ public class SchedInstance extends BaseEntity {
         return RunType.RETRY.equalsValue(runType);
     }
 
+    @Transient
+    public boolean isRunSchedule() {
+        return RunType.SCHEDULE.equalsValue(runType);
+    }
+
     public DAGNode parseWorkflowCurNode() {
         return StringUtils.isBlank(workflowCurNode) ? null : DAGNode.fromString(workflowCurNode);
     }

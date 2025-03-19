@@ -46,7 +46,7 @@ public class ThreadExceptionTest {
     @Test
     public void testQueueOfferSync() throws InterruptedException {
         SynchronousQueue queue = new SynchronousQueue();
-        if (!queue.offer(new Object(), 1, TimeUnit.SECONDS)) {
+        if (!queue.offer(new Object(), 100, TimeUnit.MILLISECONDS)) {
             System.out.println(123);
         }
     }
@@ -57,7 +57,7 @@ public class ThreadExceptionTest {
 
         Thread t = new Thread(() -> {
             try {
-                if (!queue.offer(new Object(), 1, TimeUnit.SECONDS)) {
+                if (!queue.offer(new Object(), 100, TimeUnit.MILLISECONDS)) {
                     System.out.println(123);
                 }
             } catch (InterruptedException e) {

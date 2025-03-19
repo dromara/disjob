@@ -40,5 +40,3 @@ public class HttpTaskReceiver extends TaskReceiver implements HttpTaskController
     }
 
 }
-
-

@@ -16,9 +16,11 @@
 
 package cn.ponfee.disjob.common.util;
 
+import org.apache.commons.io.HexDump;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -46,6 +48,16 @@ public class ClassUtilsTest {
         Assertions.assertTrue(atomicReference.compareAndSet(ClassUtilsTest.class, ClassUtilsTest.class));
         Assertions.assertFalse(atomicReference.compareAndSet(null, ClassUtilsTest.class));
         Assertions.assertEquals(PrimitiveTypes.BYTE.size(), 8);
+    }
+
+    @Test
+    public void testClass() throws IOException {
+        byte[] mainClassFileAsBytes = MavenProjects.getMainClassFileAsBytes(MavenProjects.class);
+        HexDump.dump(mainClassFileAsBytes, System.out);
+        System.out.print("\n\n---------------------------------------------------\n\n");
+
+        byte[] testClassFileAsBytes = MavenProjects.getTestClassFileAsBytes(ClassUtilsTest.class);
+        HexDump.dump(testClassFileAsBytes, System.out);
     }
 
 }

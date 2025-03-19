@@ -386,14 +386,14 @@ public class JobManager {
             instance.markTerminated(tuple.a, tuple.b);
             if (ops.isTrigger()) {
                 // trigger operation
-                afterTerminateTask(instance);
+                processTerminatedInstance(instance);
             } else if (instance.isWorkflowNode()) {
                 Assert.isTrue(tuple.a == RunState.CANCELED, () -> "Invalid workflow non-trigger stop state: " + tuple.a);
                 updateWorkflowNodeState(instance, tuple.a, RS_TERMINABLE);
                 updateWorkflowLeadState(instanceMapper.get(instance.getWnstanceId()), tuple.a, RS_RUNNABLE);
             } else {
                 Assert.isTrue(tuple.a == RunState.CANCELED, () -> "Invalid general non-trigger stop state: " + tuple.a);
-                renewFixedNextTriggerTime(instance);
+                afterTerminatedInstance(instance);
             }
 
             return true;
@@ -489,7 +489,7 @@ public class JobManager {
             });
 
             instance.markTerminated(tuple.a, tuple.b);
-            afterTerminateTask(instance);
+            processTerminatedInstance(instance);
             LOG.warn("Purge instance {} to state {}", instanceId, tuple.a);
             return true;
         });
@@ -746,7 +746,7 @@ public class JobManager {
                 updateWorkflowNodeState(instance, tuple.a, RS_PAUSABLE);
             } else if (tuple.a.isTerminal()) {
                 instance.markTerminated(tuple.a, tuple.b);
-                renewFixedNextTriggerTime(instance);
+                afterTerminatedInstance(instance);
             }
         } else {
             // has alive executing tasks: dispatch and pause executing tasks
@@ -787,7 +787,7 @@ public class JobManager {
             if (instance.isWorkflowNode()) {
                 updateWorkflowNodeState(instance, tuple.a, RS_TERMINABLE);
             } else {
-                renewFixedNextTriggerTime(instance);
+                afterTerminatedInstance(instance);
             }
         } else {
             // dispatch and cancel executing tasks
@@ -834,46 +834,36 @@ public class JobManager {
         doAfterTransactionCommit(() -> dispatch(param.a, param.b, param.c));
     }
 
-    private void afterTerminateTask(SchedInstance instance) {
+    private void processTerminatedInstance(SchedInstance instance) {
         Assert.isTrue(!instance.isWorkflowLead(), () -> "After terminate task cannot be workflow lead: " + instance);
         RunState runState = RunState.of(instance.getRunState());
 
-        boolean retrying = false;
         if (runState == RunState.CANCELED) {
-            retrying = retryJob(instance);
+            retryJob(instance);
         } else if (runState == RunState.COMPLETED) {
             if (!instance.isWorkflowNode()) {
-                renewFixedNextTriggerTime(instance);
+                afterTerminatedInstance(instance);
             }
             processWorkflowInstance(instance);
             dependJob(instance);
         } else {
             throw new IllegalStateException("Unknown terminate run state " + runState);
         }
-
-        // 任务实例已结束且不会再重试，则触发通知
-        if (!retrying && alerter != null) {
-            SchedJob job = jobMapper.get(instance.getJobId());
-            SchedInstance original = instance.isRunRetry() ? instanceMapper.get(instance.getPnstanceId()) : instance;
-            AlertInstanceEvent event = ModelConverter.toAlertInstanceEvent(job, original, instance);
-            doAfterTransactionCommit(() -> alerter.alert(event));
-        }
     }
 
-    private boolean retryJob(SchedInstance failed) {
+    private void retryJob(SchedInstance failed) {
         Long retryingInstanceId = ThrowingSupplier.doCaught(() -> retryJob0(failed));
         if (retryingInstanceId != null) {
             startRetrying(failed);
-            return true;
+            return;
         }
         if (failed.isWorkflowNode()) {
             // If workflow without retry, then require update workflow graph state
             updateWorkflowNodeState(failed, RunState.CANCELED, RS_TERMINABLE);
             updateWorkflowLeadState(instanceMapper.get(failed.getWnstanceId()), RunState.CANCELED, RS_RUNNABLE);
         } else {
-            renewFixedNextTriggerTime(failed);
+            afterTerminatedInstance(failed);
         }
-        return false;
     }
 
     private Long retryJob0(SchedInstance failed) throws JobException {
@@ -1014,33 +1004,41 @@ public class JobManager {
         }
     }
 
-    private void renewFixedNextTriggerTime(SchedInstance instance) {
+    private void afterTerminatedInstance(SchedInstance instance) {
         Assert.isTrue(instance.isTerminal(), () -> "Renew fixed instance must be terminal state: " + instance);
         Assert.isTrue(!instance.isWorkflowNode(), () -> "Renew fixed instance cannot be workflow node: " + instance);
         if (instance.isRunRetry()) {
             stopRetrying(instance, RunState.of(instance.getRunState()));
         }
 
-        long instanceId = instance.obtainRetryOriginalInstanceId();
-        SchedInstance original = (instanceId == instance.getInstanceId()) ? instance : instanceMapper.get(instanceId);
-        if (!original.getJobId().equals(instance.getJobId()) || !RunType.SCHEDULE.equalsValue(original.getRunType())) {
-            return;
-        }
+        // 1、get original instance if run retry
+        SchedInstance original = instance.isRunRetry() ? instanceMapper.get(instance.getPnstanceId()) : instance;
         SchedJob job = jobMapper.get(original.getJobId());
-        TriggerType triggerType;
-        if (job == null || job.isDisabled() || !(triggerType = TriggerType.of(job.getTriggerType())).isFixedTriggerType()) {
+        if (job == null) {
+            LOG.error("Sched job not found: {}", original);
             return;
         }
-        long lastTriggerTime = original.getTriggerTime(), nextTriggerTime;
-        if (triggerType == TriggerType.FIXED_RATE) {
-            Date time = triggerType.computeNextTriggerTime(job.getTriggerValue(), new Date(original.getTriggerTime()));
-            nextTriggerTime = Dates.max(time, original.getRunEndTime()).getTime();
-        } else {
-            // TriggerType.FIXED_DELAY
-            nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), original.getRunEndTime()).getTime();
+
+        // 2、if fixed trigger type job then update the job next triggertime
+        if (job.isEnabled() && job.isFixedTriggerType() && original.isRunSchedule()) {
+            TriggerType triggerType = TriggerType.of(job.getTriggerType());
+            long lastTriggerTime = original.getTriggerTime(), nextTriggerTime;
+            if (triggerType == TriggerType.FIXED_RATE) {
+                Date time = triggerType.computeNextTriggerTime(job.getTriggerValue(), new Date(original.getTriggerTime()));
+                nextTriggerTime = Dates.max(time, original.getRunEndTime()).getTime();
+            } else {
+                // TriggerType.FIXED_DELAY
+                nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), original.getRunEndTime()).getTime();
+            }
+            boolean updated = isOneAffectedRow(jobMapper.updateFixedNextTriggerTime(job.getJobId(), lastTriggerTime, nextTriggerTime));
+            LOG.info("Renew fixed next trigger time: {}, {}, {}, {}", job.getJobId(), lastTriggerTime, nextTriggerTime, updated);
         }
-        boolean updated = isOneAffectedRow(jobMapper.updateFixedNextTriggerTime(job.getJobId(), lastTriggerTime, nextTriggerTime));
-        LOG.info("Renew fixed next trigger time: {}, {}, {}, {}", job.getJobId(), lastTriggerTime, nextTriggerTime, updated);
+
+        // 3、alert instance event
+        if (alerter != null) {
+            AlertInstanceEvent event = ModelConverter.toAlertInstanceEvent(job, original, instance);
+            doAfterTransactionCommit(() -> alerter.alert(event));
+        }
     }
 
     // ------------------------------------------------------------------private workflow methods
@@ -1162,7 +1160,7 @@ public class JobManager {
             Assert.state(updated, () -> "Stop workflow instance failed: " + wnstanceId + ", " + state);
             SchedInstance lead = instanceMapper.get(wnstanceId);
             dependJob(lead);
-            renewFixedNextTriggerTime(lead);
+            afterTerminatedInstance(lead);
             return true;
         }
         if (graph.allMatch(e -> e.getValue().isTerminal() || e.getValue().isPaused())) {

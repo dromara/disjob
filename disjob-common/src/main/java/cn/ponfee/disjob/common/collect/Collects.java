@@ -113,7 +113,9 @@ public class Collects {
 
     public static Properties toProperties(Map<String, String> map) {
         Properties properties = new Properties();
-        properties.putAll(map);
+        if (map != null) {
+            properties.putAll(map);
+        }
         return properties;
     }
 

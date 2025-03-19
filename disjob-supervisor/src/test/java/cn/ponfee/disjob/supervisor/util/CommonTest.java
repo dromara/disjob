@@ -248,16 +248,16 @@ public class CommonTest {
         Cache<Long, String> cache = CacheBuilder.newBuilder()
             .initialCapacity(10)
             .maximumSize(100)
-            .expireAfterAccess(Duration.ofSeconds(2))
+            .expireAfterAccess(Duration.ofMillis(200))
             .build();
         cache.put(1L,"a");
         cache.put(2L,"b");
         cache.put(3L,"c");
 
-        Thread.sleep(1000);
+        Thread.sleep(100);
         cache.cleanUp();
         Assertions.assertEquals(3, cache.size());
-        Thread.sleep(1000);
+        Thread.sleep(100);
         Assertions.assertEquals(3, cache.size());
         cache.cleanUp();
         Assertions.assertEquals(0, cache.size());
@@ -268,17 +268,17 @@ public class CommonTest {
         Cache<Long, String> cache = CacheBuilder.newBuilder()
             .initialCapacity(10)
             .maximumSize(100)
-            .expireAfterAccess(Duration.ofSeconds(2))
+            .expireAfterAccess(Duration.ofMillis(200))
             .build();
         cache.put(111L,"a");
         cache.put(222L,"b");
         cache.put(333L,"c");
 
-        Thread.sleep(1000);
+        Thread.sleep(100);
         cache.cleanUp();
         Assertions.assertEquals(3, cache.size());
         Assertions.assertEquals("a", cache.getIfPresent(111L));
-        Thread.sleep(1000);
+        Thread.sleep(100);
         Assertions.assertEquals(3, cache.size());
         cache.cleanUp();
         Assertions.assertEquals(1, cache.size());

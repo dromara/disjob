@@ -196,7 +196,7 @@ public class HashTest {
             System.out.println("------------b");
         });
         System.out.println("------------1");
-        Thread.sleep(1000);
+        Thread.sleep(200);
     }
 
 }

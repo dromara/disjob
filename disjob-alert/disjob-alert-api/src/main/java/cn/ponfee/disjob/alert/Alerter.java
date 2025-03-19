@@ -105,10 +105,12 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
     }
 
     public void alert(AlertEvent event) {
-        try {
-            doAlert(event);
-        } catch (Throwable t) {
-            LOG.warn("Alert event occur error: " + event, t);
+        if (event != null) {
+            try {
+                doAlert(event);
+            } catch (Throwable t) {
+                LOG.warn("Alert event occur error: " + event, t);
+            }
         }
     }
 
@@ -120,7 +122,7 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
 
     // ------------------------------------------------------------------private methods
 
-    public static ThreadPoolExecutor createThreadPoolExecutor(AlerterProperties config) {
+    private static ThreadPoolExecutor createThreadPoolExecutor(AlerterProperties config) {
         AlerterProperties.SendThreadPool pool = config.getSendThreadPool();
         return ThreadPoolExecutors.builder()
             .corePoolSize(pool.getCorePoolSize())
@@ -138,26 +140,24 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
         if (ArrayUtils.isEmpty(channels)) {
             return;
         }
-
         Set<String> alertUsers = groupInfoService.getAlertUsers(event.getGroup());
         String webhook = groupInfoService.getWebhook(event.getGroup());
         if (CollectionUtils.isEmpty(alertUsers) && StringUtils.isBlank(webhook)) {
             return;
         }
-
         ThreadPoolExecutor executor = event.getAlertType().isAlarm() ? alarmAsyncExecutor : noticeAsyncExecutor;
-        executor.execute(new AlertTask(channels, event, alertUsers, webhook));
+        executor.execute(new AlertTask(event, channels, alertUsers, webhook));
     }
 
     private class AlertTask implements Runnable {
-        private final String[] channels;
         private final AlertEvent event;
+        private final String[] channels;
         private final Set<String> alertUsers;
         private final String webhook;
 
-        AlertTask(String[] channels, AlertEvent event, Set<String> alertUsers, String webhook) {
-            this.channels = channels;
+        AlertTask(AlertEvent event, String[] channels, Set<String> alertUsers, String webhook) {
             this.event = event;
+            this.channels = channels;
             this.alertUsers = alertUsers;
             this.webhook = webhook;
         }
