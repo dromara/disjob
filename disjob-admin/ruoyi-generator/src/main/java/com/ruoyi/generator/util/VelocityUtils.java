@@ -13,6 +13,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * VelocityUtils
+ *
+ * @author ruoyi
+ */
 public class VelocityUtils
 {
     /** 项目空间路径 */

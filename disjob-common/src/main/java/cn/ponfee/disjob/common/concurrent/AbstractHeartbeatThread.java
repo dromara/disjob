@@ -38,7 +38,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
     /**
      * Thread heartbeat state
      */
-    private final TripState state = TripState.createStarted();
+    private final TripleState state = TripleState.createStarted();
 
     /**
      * Heartbeat period milliseconds.

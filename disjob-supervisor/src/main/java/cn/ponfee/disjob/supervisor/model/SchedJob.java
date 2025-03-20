@@ -154,7 +154,7 @@ public class SchedJob extends BaseEntity {
     private Integer shutdownStrategy;
 
     /**
-     * 告警选项(存储位运算或的结果)：1-警报；2-通知；3-全选；
+     * 告警选项(存储位运算`xor`的结果)：1-警报；2-通知；3-全选；
      */
     private Integer alertOptions;
 

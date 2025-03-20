@@ -77,8 +77,9 @@ public class EmbeddedMysqlServerTestcontainers {
             // scriptPath只用于打印日志，此处直接设置为空字符串
             String scriptPath = "";
             String jdbcUrlParameter = "?useSSL=false&allowPublicKeyRetrieval=true&connectTimeout=2000&socketTimeout=5000";
-            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySqlContainer, jdbcUrlParameter), scriptPath, DBUtils.loadScript(DISJOB_ADMIN_SCRIPT_CLASSPATH));
-            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySqlContainer, jdbcUrlParameter), scriptPath, DBUtils.loadScript(DISJOB_SCRIPT_CLASSPATH));
+            for (String script : DBUtils.loadScript()) {
+                ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySqlContainer, jdbcUrlParameter), scriptPath, script);
+            }
 
             JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate("jdbc:mysql://localhost:3306/" + DB_NAME, USERNAME, PASSWORD);
 

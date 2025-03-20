@@ -23,15 +23,20 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.util.Assert;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 内存DB测试工具类
@@ -40,12 +45,11 @@ import java.util.Map;
  */
 public class DBUtils {
 
+    private static final List<String> SCRIPTS_CLASSPATH = Arrays.asList("mysql-disjob.sql", "mysql-disjob_admin.sql");
+
     public static final String DB_NAME = "disjob";
     public static final String USERNAME = "disjob";
     public static final String PASSWORD = "disjob$123456";
-
-    public static final String DISJOB_SCRIPT_CLASSPATH = "mysql-disjob.sql";
-    public static final String DISJOB_ADMIN_SCRIPT_CLASSPATH = "mysql-disjob_admin.sql";
 
     public static JdbcTemplate createJdbcTemplate(String url, String username, String password) {
         HikariConfig config = new HikariConfig();
@@ -55,8 +59,23 @@ public class DBUtils {
         return new JdbcTemplate(new HikariDataSource(config));
     }
 
-    public static String loadScript(String scriptPath) throws Exception {
-        return IOUtils.resourceToString(scriptPath, StandardCharsets.UTF_8, DBUtils.class.getClassLoader());
+    public static List<String> loadScript() {
+        return SCRIPTS_CLASSPATH.stream().map(DBUtils::loadScript).collect(Collectors.toList());
+    }
+
+    public static String loadScript(String scriptClasspath) {
+        try {
+            return IOUtils.resourceToString(scriptClasspath, StandardCharsets.UTF_8, DBUtils.class.getClassLoader());
+        } catch (IOException e) {
+            return ExceptionUtils.rethrow(e);
+        }
+    }
+
+    public static String correctScriptForMariaDB(String script) {
+        return Arrays.stream(script.split("\n"))
+            // fix error: The MariaDB server is running with the --skip-grant-tables option so it cannot execute this statement
+            .filter(s -> !StringUtils.startsWithAny(s, "DROP USER ", "CREATE USER ", "GRANT ALL PRIVILEGES ON ", "FLUSH PRIVILEGES;"))
+            .collect(Collectors.joining("\n"));
     }
 
     public static void testNativeConnection(String driver, String url, String username, String password) throws Exception {
@@ -72,7 +91,7 @@ public class DBUtils {
         // insert
         List<String> data = new ArrayList<>();
         PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO test VALUES(?, ?)");
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             String str = RandomStringUtils.randomAlphanumeric(4);
             data.add(str);
             insertStatement.setInt(1, i);

@@ -27,12 +27,12 @@ import cn.ponfee.disjob.supervisor.model.SchedGroup;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
-import com.google.common.collect.Sets;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
 import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * ModelClassFileDiffTest
@@ -43,13 +43,13 @@ public class ModelClassFileDiffTest {
 
     @Test
     public void test() {
-        Assertions.assertThat(Objects.equals(null, null)).isTrue();
+        assertThat(Objects.equals(null, null)).isTrue();
 
         // SchedJob ⇋ AddSchedJobRequest
         assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobAddRequest.class), "createdAt", "createdBy", "id", "updatedAt", "updatedBy", "lastTriggerTime", "version", "jobId", "nextTriggerTime", "nextScanTime", "scanFailedCount");
 
         // SchedJob ⇋ UpdateSchedJobRequest
-        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobUpdateRequest.class), "createdAt", "createdBy", "id", "updatedAt", "updatedBy", "lastTriggerTime", "createdBy", "nextTriggerTime", "nextScanTime", "scanFailedCount");
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobUpdateRequest.class), "createdAt", "createdBy", "id", "updatedAt", "updatedBy", "lastTriggerTime", "nextTriggerTime", "nextScanTime", "scanFailedCount");
 
         // SchedJob ⇋ SchedJobResponse
         assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobResponse.class), "id", "nextScanTime", "scanFailedCount");
@@ -65,7 +65,7 @@ public class ModelClassFileDiffTest {
     }
 
     private static void assertSame(Set<String> set, String... array) {
-        Assertions.assertThat(set).isEqualTo(Sets.newHashSet(array));
+        assertThat(set).containsOnly(array);
     }
 
 }

@@ -19,11 +19,11 @@ package cn.ponfee.disjob.common.concurrent;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Trip state: New -> Running -> Stopped
+ * Triple state: New -> Running -> Stopped
  *
  * @author Ponfee
  */
-public class TripState {
+public class TripleState {
 
     private static final int NEW     = 0;
     private static final int RUNNING = 1;
@@ -31,16 +31,16 @@ public class TripState {
 
     private final AtomicInteger state;
 
-    private TripState() {
+    private TripleState() {
         this.state = new AtomicInteger(NEW);
     }
 
-    public static TripState create() {
-        return new TripState();
+    public static TripleState create() {
+        return new TripleState();
     }
 
-    public static TripState createStarted() {
-        TripState state = new TripState();
+    public static TripleState createStarted() {
+        TripleState state = new TripleState();
         state.start();
         return state;
     }

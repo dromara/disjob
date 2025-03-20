@@ -18,7 +18,7 @@ package cn.ponfee.disjob.worker;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
-import cn.ponfee.disjob.common.concurrent.TripState;
+import cn.ponfee.disjob.common.concurrent.TripleState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
@@ -51,7 +51,7 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
     private final TimingWheelRotator timingWheelRotator;
     private final TaskReceiver taskReceiver;
     private final WorkerRegistry workerRegistry;
-    private final TripState state = TripState.create();
+    private final TripleState state = TripleState.create();
 
     public WorkerStartup(Worker.Local localWorker,
                          WorkerProperties workerProperties,

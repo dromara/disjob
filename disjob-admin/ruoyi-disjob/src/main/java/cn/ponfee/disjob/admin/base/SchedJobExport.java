@@ -144,6 +144,12 @@ public class SchedJobExport {
     @Excel(name = "Worker关机的执行策略")
     private Integer shutdownStrategy;
 
+    /**
+     * 告警选项(存储位运算`xor`的结果)：1-警报；2-通知；3-全选；
+     */
+    @Excel(name = "告警选项")
+    private Integer alertOptions;
+
     public static SchedJobExport of(SchedJobResponse schedJobResponse) {
         SchedJobExport schedJobExport = new SchedJobExport();
         BeanUtils.copyProperties(schedJobResponse, schedJobExport);
@@ -302,6 +308,14 @@ public class SchedJobExport {
 
     public void setShutdownStrategy(Integer shutdownStrategy) {
         this.shutdownStrategy = shutdownStrategy;
+    }
+
+    public Integer getAlertOptions() {
+        return alertOptions;
+    }
+
+    public void setAlertOptions(Integer alertOptions) {
+        this.alertOptions = alertOptions;
     }
 
 }

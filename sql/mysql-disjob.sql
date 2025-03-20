@@ -50,7 +50,7 @@ CREATE TABLE `sched_job` (
   `misfire_strategy`      TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '过期策略：1-立即触发执行一次；2-跳过所有被错过的；3-执行所有被错过的；',
   `route_strategy`        TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '任务分派给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；',
   `shutdown_strategy`     TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT 'Worker关机的执行策略(如重新发布服务时)：1-恢复执行；2-暂停执行；3-取消执行；',
-  `alert_options`         TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '告警选项(存储位运算或的结果)：1-警报；2-通知；3-全选；',
+  `alert_options`         TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '告警选项(存储位运算`xor`的结果)：1-警报；2-通知；3-全选；',
   `last_trigger_time`     BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '最近一次的触发时间(毫秒时间戳)',
   `next_trigger_time`     BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '下一次的触发时间(毫秒时间戳)',
   `next_scan_time`        DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '下一次的扫描时间',

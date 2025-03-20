@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.registry;
 
-import cn.ponfee.disjob.common.concurrent.TripState;
+import cn.ponfee.disjob.common.concurrent.TripleState;
 import cn.ponfee.disjob.common.util.GenericUtils;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.Server;
@@ -62,7 +62,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     /**
      * Server registry state
      */
-    protected final TripState state = TripState.createStarted();
+    protected final TripleState state = TripleState.createStarted();
 
     protected ServerRegistry(AbstractRegistryProperties config, RestTemplate restTemplate, char separator) {
         this.separator = separator;

@@ -18,7 +18,7 @@ package cn.ponfee.disjob.supervisor;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
-import cn.ponfee.disjob.common.concurrent.TripState;
+import cn.ponfee.disjob.common.concurrent.TripleState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
@@ -47,7 +47,7 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
     private final WaitingInstanceScanner waitingInstanceScanner;
     private final RunningInstanceScanner runningInstanceScanner;
     private final TriggeringJobScanner triggeringJobScanner;
-    private final TripState state = TripState.create();
+    private final TripleState state = TripleState.create();
 
     public SupervisorStartup(Supervisor.Local localSupervisor,
                              SupervisorRegistry supervisorRegistry,

@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.supervisor.component;
 
-import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.alert.event.AlertInstanceEvent;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Str;
@@ -60,8 +59,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -112,7 +111,7 @@ public class JobManager {
     private final SchedWorkflowMapper workflowMapper;
     private final SchedTaskMapper taskMapper;
     private final WorkerClient workerClient;
-    private final Alerter alerter;
+    private final ApplicationEventPublisher eventPublisher;
     private final TransactionTemplate transactionTemplate;
 
     public JobManager(SupervisorProperties conf,
@@ -123,7 +122,7 @@ public class JobManager {
                       SchedWorkflowMapper workflowMapper,
                       SchedTaskMapper taskMapper,
                       WorkerClient workerClient,
-                      @Nullable Alerter alerter,
+                      ApplicationEventPublisher eventPublisher,
                       @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate txTemplate) {
         conf.check();
         this.conf = conf;
@@ -134,7 +133,7 @@ public class JobManager {
         this.workflowMapper = workflowMapper;
         this.taskMapper = taskMapper;
         this.workerClient = workerClient;
-        this.alerter = alerter;
+        this.eventPublisher = eventPublisher;
         this.transactionTemplate = txTemplate;
     }
 
@@ -291,7 +290,7 @@ public class JobManager {
      * @param event the TaskDispatchFailedEvent
      */
     @EventListener
-    public void processTaskDispatchFailedEvent(TaskDispatchFailedEvent event) {
+    public void onTaskDispatchFailedEvent(TaskDispatchFailedEvent event) {
         transactionTemplate.executeWithoutResult(status -> {
             long taskId = event.getTaskId();
             if (!shouldTerminateDispatchFailedTask(taskId)) {
@@ -1034,10 +1033,10 @@ public class JobManager {
             LOG.info("Renew fixed next trigger time: {}, {}, {}, {}", job.getJobId(), lastTriggerTime, nextTriggerTime, updated);
         }
 
-        // 3、alert instance event
-        if (alerter != null) {
-            AlertInstanceEvent event = ModelConverter.toAlertInstanceEvent(job, original, instance);
-            doAfterTransactionCommit(() -> alerter.alert(event));
+        // 3、publish alert instance event
+        AlertInstanceEvent event = ModelConverter.toAlertInstanceEvent(job, original, instance);
+        if (event != null) {
+            doAfterTransactionCommit(() -> eventPublisher.publishEvent(event));
         }
     }
 

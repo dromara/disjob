@@ -17,8 +17,8 @@ import org.dromara.sms4j.unisms.config.UniConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  *
  * @author TJxiaobao
  */
-public class SmsAlertReadConfig implements SmsReadConfig {
+public class SmsAlertReadConfig implements SmsReadConfig, ApplicationListener<ContextRefreshedEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SmsAlertReadConfig.class);
 
@@ -45,8 +45,8 @@ public class SmsAlertReadConfig implements SmsReadConfig {
      *
      * @param event the ContextRefreshedEvent
      */
-    @EventListener
-    public void init(ContextRefreshedEvent event) {
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
         SmsFactory.createSmsBlend(this);
         LOG.info("Sms alert read config refreshed.");
     }

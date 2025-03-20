@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +29,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -84,16 +86,16 @@ public class CopyrightTest {
         handleFile(file -> {
             String text = ThrowingSupplier.doChecked(() -> IOUtils.toString(file.toURI(), UTF_8));
             if (StringUtils.countMatches(text, " @author ") == 0) {
-                System.out.println(file.getName());
+                System.out.println("No author: " + file.getName());
             } else if (isOwnerCode(text)) {
                 // 自己编写的代码，添加Copyright
                 if (!text.contains(NEW_COPYRIGHT_KEYWORD)) {
-                    System.out.println(file.getName());
+                    System.out.println("No copyright: " + file.getName());
                 }
             } else {
                 // 引用他人的代码，不加Copyright
                 if (text.contains(NEW_COPYRIGHT_KEYWORD)) {
-                    System.out.println(file.getName());
+                    System.out.println("Mistake copyright: " + file.getName());
                 }
             }
         });
@@ -109,9 +111,13 @@ public class CopyrightTest {
         });
     }
 
+    // ---------------------------------------------------------------------------------
+
     private static void handleFile(Consumer<File> consumer) {
         FileUtils
             .listFiles(new File(BASE_DIR).getParentFile(), new String[]{"java"}, true)
+            .stream()
+            .filter(e -> !IGNORED_FILES.contains(e.getName()))
             .forEach(consumer);
     }
 
@@ -122,5 +128,11 @@ public class CopyrightTest {
         }
         return sourceCode.contains("\n * @author Ponfee\n") && StringUtils.countMatches(sourceCode, " @author ") == 1;
     }
+
+    private static final Set<String> IGNORED_FILES = ImmutableSet.of(
+        "SchedJobConverterImpl.java",
+        "ServerMetricsConverterImpl.java",
+        "SchedGroupConverterImpl.java"
+    );
 
 }

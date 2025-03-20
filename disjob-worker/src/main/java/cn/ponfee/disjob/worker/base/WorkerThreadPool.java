@@ -107,7 +107,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     /**
      * Thread pool state
      */
-    private final TripState threadPoolState = TripState.createStarted();
+    private final TripleState threadPoolState = TripleState.createStarted();
 
     public WorkerThreadPool(int maximumPoolSize, long keepAliveTimeSeconds, SupervisorRpcService supervisorRpcClient) {
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be positive number.");
@@ -487,7 +487,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         /**
          * Worker thread state
          */
-        private final TripState state = TripState.createStarted();
+        private final TripleState state = TripleState.createStarted();
 
         /**
          * Current worker task

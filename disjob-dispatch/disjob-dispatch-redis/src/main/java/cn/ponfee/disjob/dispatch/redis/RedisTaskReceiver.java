@@ -19,7 +19,7 @@ package cn.ponfee.disjob.dispatch.redis;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
-import cn.ponfee.disjob.common.concurrent.TripState;
+import cn.ponfee.disjob.common.concurrent.TripleState;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
@@ -79,7 +79,7 @@ public class RedisTaskReceiver extends TaskReceiver {
      */
     private static final byte[] LIST_POP_BATCH_SIZE_BYTES = Integer.toString(JobConstants.PROCESS_BATCH_SIZE).getBytes(UTF_8);
 
-    private final TripState state = TripState.create();
+    private final TripleState state = TripleState.create();
     private final ReceiveHeartbeatThread receiveHeartbeatThread;
 
     public RedisTaskReceiver(Worker.Local localWorker,

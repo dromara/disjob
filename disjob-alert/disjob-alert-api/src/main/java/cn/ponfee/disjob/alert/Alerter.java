@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.context.event.EventListener;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -104,13 +105,12 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
         this.noticeAsyncExecutor = createThreadPoolExecutor(config);
     }
 
-    public void alert(AlertEvent event) {
-        if (event != null) {
-            try {
-                doAlert(event);
-            } catch (Throwable t) {
-                LOG.warn("Alert event occur error: " + event, t);
-            }
+    @EventListener
+    public void onAlertEvent(AlertEvent event) {
+        try {
+            alert(event);
+        } catch (Throwable t) {
+            LOG.warn("Alert event occur error: " + event, t);
         }
     }
 
@@ -135,7 +135,7 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
             .build();
     }
 
-    private void doAlert(AlertEvent event) {
+    private void alert(AlertEvent event) {
         String[] channels = config.getTypeChannelsMap().get(event.getAlertType());
         if (ArrayUtils.isEmpty(channels)) {
             return;

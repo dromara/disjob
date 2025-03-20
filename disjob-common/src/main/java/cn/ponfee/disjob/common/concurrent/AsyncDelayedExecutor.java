@@ -59,7 +59,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
 
     private final DelayQueue<DelayedData<E>> queue = new DelayQueue<>();
 
-    private final TripState state = TripState.createStarted();
+    private final TripleState state = TripleState.createStarted();
 
     public AsyncDelayedExecutor(Consumer<E> dataProcessor) {
         this(1, dataProcessor);

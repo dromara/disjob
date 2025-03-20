@@ -29,7 +29,7 @@ public class LoopThread extends Thread {
 
     private static final Logger LOG = LoggerFactory.getLogger(LoopThread.class);
 
-    private final TripState state = TripState.create();
+    private final TripleState state = TripleState.create();
     private final long periodMs;
     private final long delayMs;
     private final ThrowingRunnable<?> action;

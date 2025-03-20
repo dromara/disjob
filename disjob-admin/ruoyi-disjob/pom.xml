@@ -36,6 +36,12 @@
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-test</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>

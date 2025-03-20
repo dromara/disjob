@@ -23,13 +23,10 @@ import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.test.db.DBUtils.*;
 
@@ -78,9 +75,9 @@ public class EmbeddedMysqlServerMariaDB {
         System.out.println("Embedded maria db starting...");
         ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, db::stop);
         db.start();
-
-        db.source(IOUtils.toInputStream(loadScript(DISJOB_ADMIN_SCRIPT_CLASSPATH), StandardCharsets.UTF_8));
-        db.source(IOUtils.toInputStream(loadScript(DISJOB_SCRIPT_CLASSPATH), StandardCharsets.UTF_8));
+        for (String script : DBUtils.loadScript()) {
+            db.source(IOUtils.toInputStream(DBUtils.correctScriptForMariaDB(script), StandardCharsets.UTF_8));
+        }
 
         String jdbcUrl = "jdbc:mysql://localhost:" + port + "/" + DB_NAME;
         JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate(jdbcUrl, USERNAME, PASSWORD);
@@ -99,13 +96,6 @@ public class EmbeddedMysqlServerMariaDB {
 
         System.out.println("Embedded maria db started!");
         return db;
-    }
-
-    private static String loadScript(String scriptPath) throws Exception {
-        return Arrays.stream(DBUtils.loadScript(scriptPath).split("\n"))
-            // fix error: The MariaDB server is running with the --skip-grant-tables option so it cannot execute this statement
-            .filter(s -> !StringUtils.startsWithAny(s, "DROP USER ", "CREATE USER ", "GRANT ALL PRIVILEGES ON ", "FLUSH PRIVILEGES;"))
-            .collect(Collectors.joining("\n"));
     }
 
     private static String createDirectory(String name) throws IOException {
