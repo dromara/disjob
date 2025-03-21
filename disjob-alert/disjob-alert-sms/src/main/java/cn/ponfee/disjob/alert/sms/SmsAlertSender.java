@@ -17,9 +17,9 @@
 
 package cn.ponfee.disjob.alert.sms;
 
-import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
+import cn.ponfee.disjob.core.alert.AlertEvent;
 import org.apache.commons.collections4.MapUtils;
 import org.dromara.sms4j.api.SmsBlend;
 import org.dromara.sms4j.core.factory.SmsFactory;

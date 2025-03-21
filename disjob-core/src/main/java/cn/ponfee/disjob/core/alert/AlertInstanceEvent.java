@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.event;
+package cn.ponfee.disjob.core.alert;
 
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.enums.RunType;
@@ -32,6 +32,21 @@ import java.util.Date;
 @Setter
 public class AlertInstanceEvent extends AlertEvent {
     private static final long serialVersionUID = 5213948727010283020L;
+
+    /**
+     * The job name
+     */
+    private String jobName;
+
+    /**
+     * The job id
+     */
+    private long jobId;
+
+    /**
+     * The instance id
+     */
+    private long instanceId;
 
     /**
      * 运行类型

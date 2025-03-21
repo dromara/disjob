@@ -18,12 +18,12 @@ package cn.ponfee.disjob.alert;
 
 import cn.ponfee.disjob.alert.configuration.AlerterProperties;
 import cn.ponfee.disjob.alert.configuration.AlerterProperties.SendRateLimit;
-import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.SlidingWindow;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.core.alert.AlertEvent;
 import cn.ponfee.disjob.core.base.GroupInfoService;
 import cn.ponfee.disjob.core.base.JobConstants;
 import org.apache.commons.collections4.CollectionUtils;

@@ -89,8 +89,8 @@ create table sys_user (
 -- 初始化-用户信息表数据：admin/123456、disjob/123456
 -- ----------------------------
 insert into sys_user values(1,  103, 'admin',  '管理员', '00', 'ponfee1.cn@gmail.com', '15888888888', '1', '', '9d6f39c3df35e33504d646820e139943', 'b67ffd', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '管理员');
-insert into sys_user values(2,  105, 'disjob', '巴韭特', '00', 'ponfee2.cn@gmail.com', '15666666666', '1', '', '3c7230aa7e491814538c02c9e3a2e343', '468561', '0', '0', '127.0.0.1', null, null, 'admin', sysdate(), '', null, '');
-insert into sys_user values(3,  107, 'nobody', '路人甲', '00', 'ponfee3.cn@gmail.com', '15777777777', '1', '', '11111111111111111111111111111111', '111111', '0', '0', '127.0.0.1', null, null, 'admin', sysdate(), '', null, '');
+insert into sys_user values(2,  105, 'disjob', '开发',  '00', 'ponfee2.cn@gmail.com', '15666666666', '1', '', '3c7230aa7e491814538c02c9e3a2e343', '468561', '0', '0', '127.0.0.1', null, null, 'admin', sysdate(), '', null, '');
+insert into sys_user values(3,  107, 'nobody', '测试',  '00', 'ponfee3.cn@gmail.com', '15777777777', '1', '', '11111111111111111111111111111111', '111111', '0', '0', '127.0.0.1', null, null, 'admin', sysdate(), '', null, '');
 
 
 -- ----------------------------

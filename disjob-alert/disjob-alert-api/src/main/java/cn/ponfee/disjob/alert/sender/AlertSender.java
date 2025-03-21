@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.alert.sender;
 
-import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.core.alert.AlertEvent;
 import lombok.Getter;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;

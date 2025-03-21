@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.supervisor.component;
 
-import cn.ponfee.disjob.alert.event.AlertInstanceEvent;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
@@ -29,6 +28,7 @@ import cn.ponfee.disjob.common.model.BaseEntity;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import cn.ponfee.disjob.common.util.Strings;
+import cn.ponfee.disjob.core.alert.AlertInstanceEvent;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;

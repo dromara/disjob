@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.event;
+package cn.ponfee.disjob.core.alert;
 
-import cn.ponfee.disjob.alert.enums.AlertType;
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.date.Dates;
 import lombok.Getter;
@@ -44,21 +43,6 @@ public abstract class AlertEvent extends ToJsonString implements Serializable {
      * The group
      */
     protected String group;
-
-    /**
-     * The job name
-     */
-    protected String jobName;
-
-    /**
-     * The job id
-     */
-    protected long jobId;
-
-    /**
-     * The instance id
-     */
-    protected long instanceId;
 
     /**
      * Builds alert title.

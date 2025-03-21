@@ -16,10 +16,10 @@
 
 package cn.ponfee.disjob.alert.im;
 
-import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.alert.im.configuration.ImAlertSenderProperties;
 import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
+import cn.ponfee.disjob.core.alert.AlertEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;

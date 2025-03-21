@@ -17,10 +17,10 @@
 package cn.ponfee.disjob.alert.email;
 
 import cn.ponfee.disjob.alert.email.configuration.EmailAlertSenderProperties;
-import cn.ponfee.disjob.alert.event.AlertEvent;
 import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.core.alert.AlertEvent;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

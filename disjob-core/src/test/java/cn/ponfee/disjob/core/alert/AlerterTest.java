@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert;
+package cn.ponfee.disjob.core.alert;
 
-import cn.ponfee.disjob.alert.enums.AlertType;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

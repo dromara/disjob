@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.enums;
+package cn.ponfee.disjob.core.alert;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
 import cn.ponfee.disjob.common.util.Enums;
@@ -75,7 +75,7 @@ public enum AlertType implements IntValueEnum<AlertType> {
     }
 
     static {
-        // check the alert type value must be a power of 2
+        // check the alert type value must be a power of 2 number
         for (AlertType e : values()) {
             int n = e.value();
             if (n < 1 || (n & (n - 1)) != 0) {
