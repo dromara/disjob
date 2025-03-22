@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:include="include :: header('修改分组')" />
-  <th:block th:include="include :: bootstrap-tagsinput-css" />
+  <th:block th:insert="~{include :: header('修改分组')}" />
+  <th:block th:insert="~{include :: bootstrap-tagsinput-css}" />
   <style>
     label {
       text-align: right;
@@ -54,8 +54,8 @@
     </form>
   </div>
 
-  <th:block th:include="include :: footer" />
-  <th:block th:include="include :: bootstrap-tagsinput-js" />
+  <th:block th:insert="~{include :: footer}" />
+  <th:block th:insert="~{include :: bootstrap-tagsinput-js}" />
 
   <script th:inline="javascript">
     const prefix = ctx + "disjob/mygroup";

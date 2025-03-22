@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:include="include :: header('调度任务')" />
+  <th:block th:insert="~{include :: header('调度任务')}" />
 </head>
 <body class="gray-bg">
   <div class="container-div">
@@ -12,8 +12,8 @@
     </div>
   </div>
 
-  <div th:include="include :: footer"></div>
-  <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
+  <div th:insert="~{include :: footer}"></div>
+  <th:block th:insert="~{include :: bootstrap-table-fixed-columns-js}" />
 
   <script th:inline="javascript">
     const executeStates = [[${@disjobService.enums('ExecuteState')}]];

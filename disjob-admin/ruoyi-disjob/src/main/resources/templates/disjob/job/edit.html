@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:include="include :: header('修改作业配置')" />
-  <th:block th:include="include :: select2-css" />
+  <th:block th:insert="~{include :: header('修改作业配置')}" />
+  <th:block th:insert="~{include :: select2-css}" />
 </head>
 <body class="white-bg">
 
@@ -134,8 +134,8 @@
     </form>
   </div>
 
-  <th:block th:include="include :: footer" />
-  <th:block th:include="include :: select2-js" />
+  <th:block th:insert="~{include :: footer}" />
+  <th:block th:insert="~{include :: select2-js}" />
 
   <script th:inline="javascript">
     const prefix = ctx + "disjob/job";

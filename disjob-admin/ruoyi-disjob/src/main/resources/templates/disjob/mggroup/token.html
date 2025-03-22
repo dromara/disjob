@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:include="include :: header('令牌管理')" />
+  <th:block th:insert="~{include :: header('令牌管理')}" />
   <style>
     label {
       text-align: right;
@@ -60,7 +60,7 @@
     </form>
   </div>
 
-  <th:block th:include="include :: footer" />
+  <th:block th:insert="~{include :: footer}" />
 
   <script th:inline="javascript">
     const prefix = ctx + "disjob/mggroup";

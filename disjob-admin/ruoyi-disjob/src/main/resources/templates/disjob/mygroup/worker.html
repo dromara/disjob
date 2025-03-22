@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:include="include :: header('Worker')" />
-  <th:block th:include="include :: bootstrap-editable-css" />
+  <th:block th:insert="~{include :: header('Worker')}" />
+  <th:block th:insert="~{include :: bootstrap-editable-css}" />
 </head>
 <body class="gray-bg">
   <div class="container-div">
@@ -39,9 +39,9 @@
     </div>
   </div>
 
-  <div th:include="include :: footer"></div>
-  <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
-  <th:block th:include="include :: bootstrap-table-editable-js" />
+  <div th:insert="~{include :: footer}"></div>
+  <th:block th:insert="~{include :: bootstrap-table-fixed-columns-js}" />
+  <th:block th:insert="~{include :: bootstrap-table-editable-js}" />
 
   <script th:inline="javascript">
     const prefix = ctx + "disjob/mygroup";

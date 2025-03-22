@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:include="include :: header('我的分组')" />
-  <th:block th:include="include :: select2-css" />
+  <th:block th:insert="~{include :: header('我的分组')}" />
+  <th:block th:insert="~{include :: select2-css}" />
 </head>
 <body class="gray-bg">
 
@@ -37,9 +37,9 @@
     </div>
   </div>
 
-  <th:block th:include="include :: footer" />
-  <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
-  <th:block th:include="include :: select2-js" />
+  <th:block th:insert="~{include :: footer}" />
+  <th:block th:insert="~{include :: bootstrap-table-fixed-columns-js}" />
+  <th:block th:insert="~{include :: select2-js}" />
 
   <script th:inline="javascript">
     const operateFlag = [[${@permission.hasPermi('disjob:mygroup:operate')}]];
