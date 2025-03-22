@@ -27,7 +27,7 @@ import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dto.worker.*;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
-import cn.ponfee.disjob.worker.executor.JobExecutorUtils;
+import cn.ponfee.disjob.worker.util.JobExecutorUtils;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;

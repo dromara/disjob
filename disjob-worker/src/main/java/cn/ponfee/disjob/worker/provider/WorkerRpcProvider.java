@@ -26,7 +26,7 @@ import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.WorkerConfigurator;
-import cn.ponfee.disjob.worker.executor.JobExecutorUtils;
+import cn.ponfee.disjob.worker.util.JobExecutorUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

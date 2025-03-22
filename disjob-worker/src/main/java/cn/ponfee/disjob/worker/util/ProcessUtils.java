@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.executor.impl;
+package cn.ponfee.disjob.worker.util;
 
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
@@ -146,7 +146,7 @@ public final class ProcessUtils {
             String verbose = IOUtils.toString(is, charset);
             String error = IOUtils.toString(es, charset);
             int code = process.waitFor();
-            if (code == ProcessUtils.SUCCESS_CODE) {
+            if (code == SUCCESS_CODE) {
                 return ExecutionResult.success(verbose);
             } else {
                 return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + error);
@@ -156,7 +156,7 @@ public final class ProcessUtils {
             Threads.interruptIfNecessary(t);
             return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
         } finally {
-            ProcessUtils.destroy(process);
+            destroy(process);
         }
     }
 

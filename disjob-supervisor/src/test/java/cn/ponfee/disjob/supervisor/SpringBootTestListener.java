@@ -19,9 +19,11 @@ package cn.ponfee.disjob.supervisor;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.test.EmbeddedMysqlAndRedisServer;
+import com.google.common.collect.ImmutableMap;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.context.ApplicationListener;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
+
+import java.util.Map;
 
 /**
  * Spring boot test application listener
@@ -36,7 +38,7 @@ public class SpringBootTestListener implements ApplicationListener<ApplicationEn
         int redisPort = NetUtils.findAvailablePort(mysqlPort + 1);
         int redisSlavePort = NetUtils.findAvailablePort(redisPort + 1);
 
-        ImmutableMap<String, Object> ports = ImmutableMap.of("mysql.port", mysqlPort, "redis.port", redisPort);
+        Map<String, Object> ports = ImmutableMap.of("mysql.port", mysqlPort, "redis.port", redisPort);
         SpringUtils.addPropertySource(event.getEnvironment(), "server_test_port_config", ports);
 
         EmbeddedMysqlAndRedisServer.starter()

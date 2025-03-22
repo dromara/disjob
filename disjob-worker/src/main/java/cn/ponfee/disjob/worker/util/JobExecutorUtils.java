@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.executor;
+package cn.ponfee.disjob.worker.util;
 
 import cn.ponfee.disjob.common.dag.DAGExpression;
 import cn.ponfee.disjob.common.dag.DAGNode;
@@ -26,6 +26,9 @@ import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
+import cn.ponfee.disjob.worker.executor.SplitParam;
+import cn.ponfee.disjob.worker.executor.VerifyParam;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Modifier;
@@ -135,7 +138,7 @@ public class JobExecutorUtils {
     // ---------------------------------------------------------------------------------private methods
 
     private static Class<? extends JobExecutor> getJobExecutorClass(String text) throws JobException {
-        Class<? extends JobExecutor> type = ClassUtils.getClass(text);
+        Class<? extends JobExecutor> type = GroovyUtils.getClass(text);
         if (type == null) {
             throw new JobException(JobCodeMsg.LOAD_JOB_EXECUTOR_ERROR, "Illegal job executor class: " + text);
         }

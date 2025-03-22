@@ -24,7 +24,6 @@ import cn.ponfee.disjob.common.tuple.Tuple3;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -53,37 +51,15 @@ public final class ClassUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClassUtils.class);
 
-    public static final Pattern QUALIFIED_CLASS_NAME_PATTERN = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*\\.)*[a-zA-Z_$][a-zA-Z\\d_$]*$");
-
+    /**
+     * Constructor cache
+     */
     private static final ConcurrentMap<Object, Constructor<?>> CONSTRUCTOR_CACHE = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<Object, Method> METHOD_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * Returns class object for text, can be class qualifier name or source code
-     *
-     * @param text the class qualifier name or source code
-     * @return class object
+     * Method cache
      */
-    @SuppressWarnings("unchecked")
-    public static <T> Class<T> getClass(String text) {
-        if (StringUtils.isBlank(text)) {
-            return null;
-        }
-        text = text.trim();
-        if (QUALIFIED_CLASS_NAME_PATTERN.matcher(text).matches()) {
-            try {
-                return (Class<T>) Class.forName(text);
-            } catch (Exception ignored) {
-                // ignored
-            }
-        }
-        try {
-            return GroovyUtils.parseClass(text);
-        } catch (Exception e) {
-            LOG.warn("Parse source class code occur error.", e);
-            return null;
-        }
-    }
+    private static final ConcurrentMap<Object, Method> METHOD_CACHE = new ConcurrentHashMap<>();
 
     /**
      * Returns the member field(include super class)

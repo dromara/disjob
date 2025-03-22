@@ -34,7 +34,7 @@ class VersionUtilsTest {
     @Test
     void test() throws Exception {
         Assertions.assertEquals("3.12.0", VersionUtils.getVersion(StringUtils.class));
-        Assertions.assertEquals("33.4.0-jre", VersionUtils.getVersion(Graph.class, "com.google.guava", "guava"));
+        Assertions.assertEquals("33.4.5-jre", VersionUtils.getVersion(Graph.class, "com.google.guava", "guava"));
         Assertions.assertEquals("${revision}", VersionUtils.getVersion(VersionUtils.class, "cn.ponfee", "disjob-common"));
 
         String path = "/Applications/Movist Pro.app/Contents/PlugIns/SafariExtension Pro.appex/Contents/Info.plist";

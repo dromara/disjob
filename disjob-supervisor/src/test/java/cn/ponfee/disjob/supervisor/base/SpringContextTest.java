@@ -16,18 +16,20 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
-import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.env.Environment;
 
 import javax.annotation.Resource;
+import java.util.regex.Pattern;
 
 /**
  * @author Ponfee
  */
 public class SpringContextTest extends SpringBootTestBase<Object> {
+
+    public static final Pattern QUALIFIED_CLASS_NAME_PATTERN = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*\\.)*[a-zA-Z_$][a-zA-Z\\d_$]*$");
 
     @Resource
     private Environment environment;
@@ -39,7 +41,7 @@ public class SpringContextTest extends SpringBootTestBase<Object> {
             String className = applicationContext.getBean(beanDefinitionName).getClass().getName();
             if (!className.contains("/")) {
                 // exclude such as org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration$$Lambda$1323/394591403
-                Assertions.assertTrue(ClassUtils.QUALIFIED_CLASS_NAME_PATTERN.matcher(className).matches(), className);
+                Assertions.assertTrue(QUALIFIED_CLASS_NAME_PATTERN.matcher(className).matches(), className);
             } else {
                 System.out.println(className);
             }

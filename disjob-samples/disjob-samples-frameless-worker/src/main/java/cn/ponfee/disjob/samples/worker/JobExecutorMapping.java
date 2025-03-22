@@ -19,7 +19,7 @@ package cn.ponfee.disjob.samples.worker;
 import cn.ponfee.disjob.common.spring.ResourceScanner;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.worker.executor.JobExecutor;
-import cn.ponfee.disjob.worker.executor.JobExecutorUtils;
+import cn.ponfee.disjob.worker.util.JobExecutorUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.Pair;

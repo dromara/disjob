@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.common.util;
+package cn.ponfee.disjob.worker.util;
 
 import cn.ponfee.disjob.common.collect.PooledObjectProcessor;
 import groovy.lang.*;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptEngine;
 import javax.script.SimpleBindings;
@@ -27,6 +30,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
 
 /**
  * Groovy utility
@@ -35,6 +39,13 @@ import java.util.concurrent.ConcurrentMap;
  */
 @SuppressWarnings("unchecked")
 public final class GroovyUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GroovyUtils.class);
+
+    /**
+     * Pattern of qualified class name
+     */
+    private static final Pattern QUALIFIED_CLASS_NAME_PATTERN = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*\\.)*[a-zA-Z_$][a-zA-Z\\d_$]*$");
 
     /**
      * Groovy class loader
@@ -50,6 +61,33 @@ public final class GroovyUtils {
      * Groovy shell
      */
     private static final GroovyShell GROOVY_SHELL = new GroovyShell();
+
+    /**
+     * Returns class object for text, can be class qualifier name or source code
+     *
+     * @param text the class qualifier name or source code
+     * @return class object
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Class<T> getClass(String text) {
+        if (StringUtils.isBlank(text)) {
+            return null;
+        }
+        text = text.trim();
+        if (QUALIFIED_CLASS_NAME_PATTERN.matcher(text).matches()) {
+            try {
+                return (Class<T>) Class.forName(text);
+            } catch (Exception ignored) {
+                // ignored
+            }
+        }
+        try {
+            return parseClass(text);
+        } catch (Exception e) {
+            LOG.warn("Parse source class code occur error.", e);
+            return null;
+        }
+    }
 
     public static <T> Class<T> parseClass(String sourceCode) {
         String sha1 = DigestUtils.sha1Hex(sourceCode);

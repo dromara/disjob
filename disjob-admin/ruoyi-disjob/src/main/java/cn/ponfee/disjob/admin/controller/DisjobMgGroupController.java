@@ -38,6 +38,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -68,7 +69,7 @@ public class DisjobMgGroupController extends BaseController {
     @ResponseBody
     public AjaxResult searchGroup(@RequestParam(value = "term", required = false) String term) {
         term = Strings.concatSqlLike(term);
-        List<ImmutableMap<String, String>> result = schedGroupService.searchGroup(term)
+        List<Map<String, String>> result = schedGroupService.searchGroup(term)
             .stream()
             .map(e -> ImmutableMap.of("id", e, "text", e))
             .collect(Collectors.toList());

@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.util.Bytes;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.supervisor.base.SpringContextTest;
 import com.google.common.math.IntMath;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -97,7 +98,7 @@ public class HashTest {
         System.out.println(Long.MAX_VALUE);
         Assertions.assertEquals(1000000L, 1000000);
         Assertions.assertEquals(16, 0x10);
-        Assertions.assertTrue(ClassUtils.QUALIFIED_CLASS_NAME_PATTERN.matcher("org.springframework.context.annotation.ConfigurationClassParser$ImportStack").matches());
+        Assertions.assertTrue(SpringContextTest.QUALIFIED_CLASS_NAME_PATTERN.matcher("org.springframework.context.annotation.ConfigurationClassParser$ImportStack").matches());
         Assertions.assertEquals("900150983cd24fb0d6963f7d28e17f72", DigestUtils.md5Hex("abc".getBytes(StandardCharsets.UTF_8)));
         Assertions.assertEquals(" abc \n\r ".trim(), "abc");
         Assertions.assertEquals(String.class, Class.forName("java.lang.String"));
