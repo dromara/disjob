@@ -194,6 +194,10 @@ public final class ClassUtils {
         return obj == null ? null : obj.getClass().getName();
     }
 
+    public static String packageToPath(String packageName) {
+        return packageName.replace('.', '/');
+    }
+
     /**
      * 包名称转目录路径名<p>
      * getPackagePath("cn.ponfee.commons.reflect")  ->  cn/ponfee/commons/reflect
@@ -203,7 +207,7 @@ public final class ClassUtils {
      * @see org.springframework.util.ClassUtils#convertClassNameToResourcePath
      */
     public static String getPackagePath(String packageName) {
-        return packageName.replace('.', '/') + "/";
+        return packageToPath(packageName) + "/";
     }
 
     /**
@@ -427,7 +431,7 @@ public final class ClassUtils {
     public static String getClasspath(Class<?> clazz) {
         String path = Files.toFile(clazz.getProtectionDomain().getCodeSource().getLocation()).getAbsolutePath();
         if (path.toLowerCase().endsWith(".jar")) {
-            path = path.substring(0, path.lastIndexOf("/"));
+            path = path.substring(0, path.lastIndexOf(File.separator));
         }
         return path + File.separator;
     }

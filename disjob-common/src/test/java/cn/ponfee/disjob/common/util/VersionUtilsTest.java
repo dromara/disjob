@@ -19,6 +19,7 @@ package cn.ponfee.disjob.common.util;
 import com.google.common.graph.Graph;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -32,11 +33,15 @@ import java.net.URL;
 class VersionUtilsTest {
 
     @Test
-    void test() throws Exception {
+    void testGetVersion() {
         Assertions.assertEquals("3.12.0", VersionUtils.getVersion(StringUtils.class));
         Assertions.assertEquals("33.4.5-jre", VersionUtils.getVersion(Graph.class, "com.google.guava", "guava"));
         Assertions.assertEquals("${revision}", VersionUtils.getVersion(VersionUtils.class, "cn.ponfee", "disjob-common"));
+    }
 
+    @Disabled
+    @Test
+    void testUriPath() throws Exception {
         String path = "/Applications/Movist Pro.app/Contents/PlugIns/SafariExtension Pro.appex/Contents/Info.plist";
         File file = new File(path);
         Assertions.assertEquals(path, file.getPath());

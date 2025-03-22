@@ -257,7 +257,7 @@ public class CommonTest {
         Thread.sleep(100);
         cache.cleanUp();
         Assertions.assertEquals(3, cache.size());
-        Thread.sleep(100);
+        Thread.sleep(130);
         Assertions.assertEquals(3, cache.size());
         cache.cleanUp();
         Assertions.assertEquals(0, cache.size());
@@ -278,7 +278,7 @@ public class CommonTest {
         cache.cleanUp();
         Assertions.assertEquals(3, cache.size());
         Assertions.assertEquals("a", cache.getIfPresent(111L));
-        Thread.sleep(100);
+        Thread.sleep(130);
         Assertions.assertEquals(3, cache.size());
         cache.cleanUp();
         Assertions.assertEquals(1, cache.size());

@@ -44,7 +44,7 @@ public class MavenProjects {
     // --------------------------------------------------------------------------------------java
 
     public static File getMainJavaFile(Class<?> clazz) {
-        return new File(getMainJavaPath("") + clazz.getCanonicalName().replace('.', '/') + ".java");
+        return new File(getMainJavaPath("") + ClassUtils.packageToPath(clazz.getCanonicalName()) + ".java");
     }
 
     public static byte[] getMainJavaFileAsBytes(Class<?> clazz) {
@@ -56,7 +56,7 @@ public class MavenProjects {
     }
 
     public static File getTestJavaFile(Class<?> clazz) {
-        return new File(getTestJavaPath("") + clazz.getCanonicalName().replace('.', '/') + ".java");
+        return new File(getTestJavaPath("") + ClassUtils.packageToPath(clazz.getCanonicalName()) + ".java");
     }
 
     public static byte[] getTestJavaFileAsBytes(Class<?> clazz) {
@@ -68,7 +68,7 @@ public class MavenProjects {
     }
 
     public static String getMainJavaPath(String basePackage) {
-        return getProjectBaseDir() + "/src/main/java/" + basePackage.replace('.', '/');
+        return getProjectBaseDir() + "/src/main/java/" + ClassUtils.packageToPath(basePackage);
     }
 
     public static String getMainJavaPath(String basePackage, String filename) {
@@ -76,7 +76,7 @@ public class MavenProjects {
     }
 
     public static String getTestJavaPath(String basePackage) {
-        return getProjectBaseDir() + "/src/test/java/" + basePackage.replace('.', '/');
+        return getProjectBaseDir() + "/src/test/java/" + ClassUtils.packageToPath(basePackage);
     }
 
     public static String getTestJavaPath(String basePackage, String filename) {
@@ -86,7 +86,7 @@ public class MavenProjects {
     // --------------------------------------------------------------------------------------scala
 
     public static File getMainScalaFile(Class<?> clazz) {
-        return new File(getMainScalaPath("") + clazz.getCanonicalName().replace('.', '/') + ".scala");
+        return new File(getMainScalaPath("") + ClassUtils.packageToPath(clazz.getCanonicalName()) + ".scala");
     }
 
     public static byte[] getMainScalaFileAsBytes(Class<?> clazz) {
@@ -98,7 +98,7 @@ public class MavenProjects {
     }
 
     public static File getTestScalaFile(Class<?> clazz) {
-        return new File(getTestScalaPath("") + clazz.getCanonicalName().replace('.', '/') + ".scala");
+        return new File(getTestScalaPath("") + ClassUtils.packageToPath(clazz.getCanonicalName()) + ".scala");
     }
 
     public static byte[] getTestScalaFileAsBytes(Class<?> clazz) {
@@ -110,7 +110,7 @@ public class MavenProjects {
     }
 
     public static String getMainScalaPath(String basePackage) {
-        return getProjectBaseDir() + "/src/main/scala/" + basePackage.replace('.', '/');
+        return getProjectBaseDir() + "/src/main/scala/" + ClassUtils.packageToPath(basePackage);
     }
 
     public static String getMainScalaPath(String basePackage, String filename) {
@@ -118,7 +118,7 @@ public class MavenProjects {
     }
 
     public static String getTestScalaPath(String basePackage) {
-        return getProjectBaseDir() + "/src/test/scala/" + basePackage.replace('.', '/');
+        return getProjectBaseDir() + "/src/test/scala/" + ClassUtils.packageToPath(basePackage);
     }
 
     public static String getTestScalaPath(String basePackage, String filename) {
@@ -156,11 +156,11 @@ public class MavenProjects {
     // --------------------------------------------------------------------------------------class
 
     public static String getMainClassPath(String basePackage) {
-        return getProjectBaseDir() + "/target/classes/" + basePackage.replace('.', '/');
+        return getProjectBaseDir() + "/target/classes/" + ClassUtils.packageToPath(basePackage);
     }
 
     public static File getMainClassFile(Class<?> clazz) {
-        return new File(getMainClassPath("") + clazz.getName().replace('.', '/') + ".class");
+        return new File(getMainClassPath("") + ClassUtils.packageToPath(clazz.getName()) + ".class");
     }
 
     public static byte[] getMainClassFileAsBytes(Class<?> clazz) {
@@ -168,11 +168,11 @@ public class MavenProjects {
     }
 
     public static String getTestClassPath(String basePackage) {
-        return getProjectBaseDir() + "/target/test-classes/" + basePackage.replace('.', '/');
+        return getProjectBaseDir() + "/target/test-classes/" + ClassUtils.packageToPath(basePackage);
     }
 
     public static File getTestClassFile(Class<?> clazz) {
-        return new File(getTestClassPath("") + clazz.getName().replace('.', '/') + ".class");
+        return new File(getTestClassPath("") + ClassUtils.packageToPath(clazz.getName()) + ".class");
     }
 
     public static byte[] getTestClassFileAsBytes(Class<?> clazz) {

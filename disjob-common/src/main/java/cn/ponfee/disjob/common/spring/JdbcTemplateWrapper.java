@@ -163,13 +163,17 @@ public final class JdbcTemplateWrapper {
     }
 
     public String getServerInfo() {
-        return jdbcTemplate.execute((ConnectionCallback<String>) conn -> {
-            DatabaseMetaData meta = conn.getMetaData();
-            String productName = meta.getDatabaseProductName();
-            String productVersion = meta.getDatabaseProductVersion();
-            String jdbcUrl = meta.getURL();
-            return String.format("Product=%s(%s), Url=%s", productName, productVersion, jdbcUrl);
-        });
+        try {
+            return jdbcTemplate.execute((ConnectionCallback<String>) conn -> {
+                DatabaseMetaData meta = conn.getMetaData();
+                String productName = meta.getDatabaseProductName();
+                String productVersion = meta.getDatabaseProductVersion();
+                String jdbcUrl = meta.getURL();
+                return String.format("Product=%s(%s), Url=%s", productName, productVersion, jdbcUrl);
+            });
+        } catch (Exception e) {
+            return "Get database server info failed: " + e.getMessage();
+        }
     }
 
     // -----------------------------------------------------------------private methods

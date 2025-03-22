@@ -133,7 +133,11 @@ public class RedisTemplateUtils {
     }
 
     public static String getInfo(RedisTemplate<?, ?> redisTemplate, String section) {
-        return redisTemplate.execute((RedisConnection conn) -> Objects.toString(conn.info(section)));
+        try {
+            return redisTemplate.execute((RedisConnection conn) -> Objects.toString(conn.info(section)));
+        } catch (Exception e) {
+            return "Get redis server info '" + section + "' failed: " + e.getMessage();
+        }
     }
 
     private static boolean exceptionContainsNoScriptError(Throwable t) {

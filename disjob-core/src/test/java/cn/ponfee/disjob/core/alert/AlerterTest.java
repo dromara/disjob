@@ -16,13 +16,15 @@
 
 package cn.ponfee.disjob.core.alert;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Alerter test
@@ -39,41 +41,44 @@ class AlerterTest {
                 list.add(n);
             }
         }
-        Assertions.assertThat(list.toString()).isEqualTo("[0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]");
+        assertThat(list.toString()).isEqualTo("[0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]");
     }
 
     @Test
     void testMatches() {
-        Assertions.assertThat(AlertType.ALARM.matches(0)).isFalse();
-        Assertions.assertThat(AlertType.ALARM.matches(1)).isTrue();
-        Assertions.assertThat(AlertType.ALARM.matches(2)).isFalse();
-        Assertions.assertThat(AlertType.ALARM.matches(3)).isTrue();
+        assertThat(AlertType.ALARM.matches(0)).isFalse();
+        assertThat(AlertType.ALARM.matches(1)).isTrue();
+        assertThat(AlertType.ALARM.matches(2)).isFalse();
+        assertThat(AlertType.ALARM.matches(3)).isTrue();
 
-        Assertions.assertThat(AlertType.NOTICE.matches(0)).isFalse();
-        Assertions.assertThat(AlertType.NOTICE.matches(1)).isFalse();
-        Assertions.assertThat(AlertType.NOTICE.matches(2)).isTrue();
-        Assertions.assertThat(AlertType.NOTICE.matches(3)).isTrue();
+        assertThat(AlertType.NOTICE.matches(0)).isFalse();
+        assertThat(AlertType.NOTICE.matches(1)).isFalse();
+        assertThat(AlertType.NOTICE.matches(2)).isTrue();
+        assertThat(AlertType.NOTICE.matches(3)).isTrue();
     }
 
     @Test
     void testCheck() {
-        Assertions.assertThat(Arrays.stream(AlertType.values()).mapToInt(AlertType::value).reduce(0, (a, b) -> a ^ b)).isEqualTo(3);
-        Assertions.assertThat(IntStream.of(1, 2, 4, 8).reduce(0, (a, b) -> a ^ b)).isEqualTo(15);
+        assertThat(Arrays.stream(AlertType.values()).mapToInt(AlertType::value).reduce(0, (a, b) -> a ^ b)).isEqualTo(3);
+        assertThat(IntStream.of(1, 2, 4, 8).reduce(0, (a, b) -> a ^ b)).isEqualTo(15);
+        assertThat(IntStream.of(1).reduce(0, (a, b) -> a ^ b)).isOne();
+        assertThat(IntStream.of(0).reduce(0, (a, b) -> a ^ b)).isZero();
+        assertThat(IntStream.of().reduce(0, (a, b) -> a ^ b)).isZero();
 
         AlertType.check(0);
         AlertType.check(1);
         AlertType.check(2);
         AlertType.check(3);
 
-        Assertions.assertThatThrownBy(() -> AlertType.check(-1))
+        assertThatThrownBy(() -> AlertType.check(-1))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Invalid alert type val: -1");
 
-        Assertions.assertThatThrownBy(() -> AlertType.check(4))
+        assertThatThrownBy(() -> AlertType.check(4))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Invalid alert type val: 4");
 
-        Assertions.assertThatThrownBy(() -> AlertType.check(null))
+        assertThatThrownBy(() -> AlertType.check(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Invalid alert type val: null");
     }
