@@ -132,15 +132,7 @@ public class HashTest {
 
     @Test
     public void testExpression() {
-        String basePackage1 = ClassUtils.getPackagePath(getClass());
-        Assertions.assertTrue((basePackage1.endsWith("/")));
-
-        String basePackage2 = basePackage1.substring(0, basePackage1.length() - 1);
-        Assertions.assertFalse((basePackage2.endsWith("/")));
-        Assertions.assertEquals(basePackage2 + "/", basePackage1);
-
-        System.out.println(basePackage1);
-        System.out.println(basePackage2);
+        Assertions.assertEquals("cn/ponfee/disjob/supervisor/util", ClassUtils.getPackagePath(getClass()));
 
         int i = 9;
         int num = i < 10 ? i * 2 : round(i / 0);

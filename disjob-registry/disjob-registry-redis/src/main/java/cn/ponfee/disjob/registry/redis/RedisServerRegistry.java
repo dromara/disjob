@@ -64,10 +64,11 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     @SuppressWarnings("rawtypes")
     private static final RedisScript<List> QUERY_SCRIPT = RedisScript.of(
-        "redis.call('zremrangebyscore', KEYS[1], '-inf', ARGV[1]);          \n" +
-        "local ret = redis.call('zrangebyscore', KEYS[1], ARGV[1], '+inf'); \n" +
-        "redis.call('pexpire', KEYS[1], ARGV[2]);                           \n" +
-        "return ret;                                                        \n" ,
+        // ['-inf', '+inf'] on redis-windows 7.4.2 occur error: ERR min or max is not a float script
+        "redis.call('zremrangebyscore', KEYS[1], '-9223372036854775808', ARGV[1]);         \n" +
+        "local ret = redis.call('zrangebyscore', KEYS[1], ARGV[1], '9223372036854775807'); \n" +
+        "redis.call('pexpire', KEYS[1], ARGV[2]);                                          \n" +
+        "return ret;                                                                       \n" ,
         List.class
     );
 

@@ -49,7 +49,7 @@ public abstract class AlertSender extends SingletonClassConstraint {
     private final String name;
 
     /**
-     * 把在页面中配置的alertUsers转为实际的渠道收件人（如邮箱地址、钉钉号、企业微信号、飞书账号、手机号等）
+     * 把在页面中配置的alertUsers转为实际的渠道接收人（如邮箱地址、钉钉号、企业微信号、飞书账号、手机号等）
      */
     private final UserRecipientMapper userRecipientMapper;
 
