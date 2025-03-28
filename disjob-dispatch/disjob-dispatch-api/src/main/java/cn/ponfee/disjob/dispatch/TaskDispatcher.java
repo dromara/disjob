@@ -73,18 +73,17 @@ public abstract class TaskDispatcher implements Startable {
      * <p>this method is used to stop(pause or cancel) the executing task
      *
      * @param tasks the list of execution task param
-     * @return {@code true} if the first dispatch successful
      */
-    public final boolean dispatch(List<ExecuteTaskParam> tasks) {
+    public final void dispatch(List<ExecuteTaskParam> tasks) {
         if (CollectionUtils.isEmpty(tasks)) {
-            return false;
+            return;
         }
         for (ExecuteTaskParam e : tasks) {
             Assert.notNull(e.getOperation(), () -> "Dispatch task operation cannot be null: " + e);
             Assert.isTrue(e.getOperation().isNotTrigger(), () -> "Specific dispatch task operation cannot be trigger: " + e);
             Assert.notNull(e.getWorker(), () -> "Specific dispatch task worker cannot be null: " + e);
         }
-        return dispatch0(Collects.convert(tasks, e -> new DispatchTaskParam(e, null)));
+        dispatch0(Collects.convert(tasks, e -> new DispatchTaskParam(e, null)));
     }
 
     /**
@@ -92,11 +91,10 @@ public abstract class TaskDispatcher implements Startable {
      *
      * @param group the group
      * @param tasks the list of execution task param
-     * @return {@code true} if the first dispatch successful
      */
-    public final boolean dispatch(String group, List<ExecuteTaskParam> tasks) {
+    public final void dispatch(String group, List<ExecuteTaskParam> tasks) {
         if (CollectionUtils.isEmpty(tasks)) {
-            return false;
+            return;
         }
         for (ExecuteTaskParam e : tasks) {
             Assert.notNull(e.getOperation(), () -> "Dispatch task operation cannot be null: " + e);
@@ -105,7 +103,7 @@ public abstract class TaskDispatcher implements Startable {
                 Assert.notNull(e.getWorker(), () -> "Broadcast dispatch task worker cannot be null: " + e);
             }
         }
-        return dispatch0(Collects.convert(tasks, e -> new DispatchTaskParam(e, group)));
+        dispatch0(Collects.convert(tasks, e -> new DispatchTaskParam(e, group)));
     }
 
     /**
@@ -135,13 +133,12 @@ public abstract class TaskDispatcher implements Startable {
 
     // ------------------------------------------------------------private methods
 
-    private boolean dispatch0(List<DispatchTaskParam> params) {
+    private void dispatch0(List<DispatchTaskParam> params) {
         params.stream()
             .filter(e -> e.task().getWorker() == null)
             .collect(Collectors.groupingBy(e -> e.task().getInstanceId()))
             .forEach((instanceId, list) -> assignWorker(list));
 
-        boolean result = true;
         for (DispatchTaskParam param : params) {
             ExecuteTaskParam task = param.task();
             log.info("Task trace [{}] dispatching: {}, {}, {}", task.getTaskId(), task.getOperation(), task.getWorker(), param.retried());
@@ -156,11 +153,8 @@ public abstract class TaskDispatcher implements Startable {
                     log.error("Dispatch task error: " + param, t);
                 }
                 retry(param);
-                result = false;
             }
         }
-
-        return result;
     }
 
     private void assignWorker(List<DispatchTaskParam> params) {

@@ -94,7 +94,7 @@ public final class VersionUtils {
         JarEntry jarEntry = jarFile.getJarEntry(String.format(pathFormat, groupId, artifactId));
         if (jarEntry == null) {
             // e.g.: META-INF/maven/com/google/guava/guava/pom.properties
-            jarEntry = jarFile.getJarEntry(String.format(pathFormat, groupId.replace(".", "/"), artifactId));
+            jarEntry = jarFile.getJarEntry(String.format(pathFormat, groupId.replace('.', '/'), artifactId));
         }
         return jarEntry;
     }

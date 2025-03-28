@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.test;
 
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.test.db.EmbeddedMysqlServerMariaDB;
 import cn.ponfee.disjob.test.redis.EmbeddedRedisServerKstyrc;
 import org.slf4j.impl.SimpleLogger;
@@ -70,7 +70,7 @@ public final class EmbeddedMysqlAndRedisServer {
 
         public void start() {
             System.out.println("/*============================================================*\\");
-            ThrowingSupplier.doChecked(() -> EmbeddedMysqlServerMariaDB.start(mysqlPort));
+            ThrowingRunnable.doChecked(() -> EmbeddedMysqlServerMariaDB.start(mysqlPort));
             System.out.println("\\*============================================================*/");
 
             System.out.println("\n\n\n\n\n\n");

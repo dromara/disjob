@@ -34,7 +34,7 @@ import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
  */
 public interface SchedInstanceMapper {
 
-    int insert(SchedInstance instance);
+    int batchInsert(List<SchedInstance> instances);
 
     /**
      * Gets sched instance by instance_id

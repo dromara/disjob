@@ -16,7 +16,9 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -97,8 +99,8 @@ public class TransactionUtils {
     }
 
     public static void doAfterTransactionCommit(Collection<Runnable> actions) {
-        if (actions != null) {
-            actions.forEach(TransactionUtils::doAfterTransactionCommit);
+        if (CollectionUtils.isNotEmpty(actions)) {
+            doAfterTransactionCommit(() -> actions.forEach(Runnable::run));
         }
     }
 
@@ -174,6 +176,12 @@ public class TransactionUtils {
                                                    ThrowingSupplier<R, Throwable> action,
                                                    Consumer<Throwable> errorHandler) {
         return doInPropagationTransaction(txManager, action, errorHandler, PROPAGATION_REQUIRES_NEW);
+    }
+
+    public static boolean doInNestedTransaction(TransactionTemplate transactionTemplate,
+                                                ThrowingRunnable<Throwable> action,
+                                                Consumer<Throwable> errorHandler) {
+        return Boolean.TRUE.equals(doInNestedTransaction(transactionTemplate, action.toSupplier(true), errorHandler));
     }
 
     /**

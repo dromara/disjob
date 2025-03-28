@@ -169,13 +169,13 @@ disjob                                        # 主项目①pom.xml
 - [Supervisor角色Mysql配置](disjob-samples/disjob-samples-conf/application-mysql.yml)
 - [Supervisor角色核心配置](disjob-samples/disjob-samples-conf/application-supervisor.yml)
 - [Worker角色核心配置](disjob-samples/disjob-samples-conf/application-worker.yml)（Spring-boot应用）
-- [Redis配置](disjob-samples/disjob-samples-conf/application-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
+- [Redis配置](disjob-samples/disjob-samples-conf/application-registry-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
 - [Spring-boot Web相关配置](disjob-samples/disjob-samples-conf/application-web.yml)（Worker与Supervisor共用）
 - [Worker角色普通Java-main应用配置](disjob-samples/disjob-samples-frameless-worker/src/main/resources/worker-conf.yml)
 
 4. Admin项目配置文件【disjob-admin】
 - [Supervisor角色相关的Mysql配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)
-- [Redis配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
+- [Redis配置](disjob-admin/ruoyi-disjob/src/main/resources/application-registry-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
 - [可加@EnableWorker注解启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)（管理后台必须启用Supervisor角色）
 - [管理后台功能相关的Mysql配置](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)
 - [RuoYi框架相关配置参考官方文档](http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE )（只增加了[ruoyi-disjob](disjob-admin/ruoyi-disjob)模块，其它的RuoYi原有模块基本未改动）

@@ -216,13 +216,12 @@ public class Collects {
     }
 
     public static <T> void batchProcess(List<T> list, Consumer<List<T>> processor, int batchSize) {
-        if (CollectionUtils.isEmpty(list)) {
-            return;
-        }
-        if (list.size() <= batchSize) {
-            processor.accept(list);
-        } else {
-            Lists.partition(list, batchSize).forEach(processor);
+        if (CollectionUtils.isNotEmpty(list)) {
+            if (list.size() <= batchSize) {
+                processor.accept(list);
+            } else {
+                Lists.partition(list, batchSize).forEach(processor);
+            }
         }
     }
 

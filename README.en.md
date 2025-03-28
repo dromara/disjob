@@ -149,13 +149,13 @@ disjob                                        # Main project①pom.xml
 - [Supervisor role Mysql configuration](disjob-samples/disjob-samples-conf/application-mysql.yml)
 - [Supervisor role core configuration](disjob-samples/disjob-samples-conf/application-supervisor.yml)
 - [Worker role core configuration](disjob-samples/disjob-samples-conf/application-worker.yml)
-- [Redis configuration](disjob-samples/disjob-samples-conf/application-redis.yml)
+- [Redis configuration](disjob-samples/disjob-samples-conf/application-registry-redis.yml)
 - [Spring-boot Web configuration](disjob-samples/disjob-samples-conf/application-web.yml)
 - [Worker Java-main application configuration](disjob-samples/disjob-samples-frameless-worker/src/main/resources/worker-conf.yml)
 
 4. Admin project configuration files
 - [Supervisor role related Mysql configuration](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)
-- [Redis configuration](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)
+- [Redis configuration](disjob-admin/ruoyi-disjob/src/main/resources/application-registry-redis.yml)
 - [Enable Worker role with @EnableWorker annotation](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)
 - [Admin Mysql configuration](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)
 - [RuoYi framework configuration](http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE )

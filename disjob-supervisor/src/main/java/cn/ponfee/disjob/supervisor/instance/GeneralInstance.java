@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.instance;
 
+import cn.ponfee.disjob.common.base.TriConsumer;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.base.ModelConverter;
@@ -23,7 +24,9 @@ import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
+import cn.ponfee.disjob.supervisor.model.SchedWorkflow;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,20 +43,20 @@ public class GeneralInstance extends TriggerInstance {
     }
 
     @Override
-    protected void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
+    void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
         long instanceId = jobManager.generateId();
         super.instance = SchedInstance.of(parent, null, instanceId, job.getJobId(), runType, triggerTime, 0);
         this.tasks = jobManager.splitJob(job.getGroup(), instanceId, ModelConverter.toSplitJobParam(job, instance));
     }
 
     @Override
-    public void save() {
-        jobManager.saveInstanceAndTasks(instance, tasks);
+    public void save(TriConsumer<List<SchedInstance>, List<SchedWorkflow>, List<SchedTask>> persistence) {
+        persistence.accept(Collections.singletonList(instance), null, tasks);
     }
 
     @Override
-    public void dispatch() {
-        jobManager.dispatch(job, instance, tasks);
+    public void dispatch(TriConsumer<SchedJob, SchedInstance, List<SchedTask>> dispatching) {
+        dispatching.accept(job, instance, tasks);
     }
 
 }

@@ -121,8 +121,8 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             log.error("Scanned waiting state instance not discovered worker: {}, {}", instance.getInstanceId(), job.getGroup());
             return;
         }
-        boolean result = jobManager.redispatch(job, instance, redispatchingTasks);
-        log.info("Scanned waiting state instance re-dispatch task: {}, {}", result, instance.getInstanceId());
+        jobManager.redispatch(job, instance, redispatchingTasks);
+        log.info("Scanned waiting state instance re-dispatch task: {}", instance.getInstanceId());
     }
 
     private void processNoWaitingTask(SchedInstance instance, List<SchedTask> tasks) {

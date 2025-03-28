@@ -16,6 +16,8 @@
 
 package cn.ponfee.disjob.supervisor.instance;
 
+import cn.ponfee.disjob.common.base.TriConsumer;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGExpression;
 import cn.ponfee.disjob.common.dag.DAGNode;
@@ -54,7 +56,7 @@ public class WorkflowInstance extends TriggerInstance {
     }
 
     @Override
-    protected void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
+    void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
         long wnstanceId = jobManager.generateId();
         long jobId = job.getJobId();
         SchedInstance leadInstance = SchedInstance.of(parent, wnstanceId, wnstanceId, jobId, runType, triggerTime, 0);
@@ -89,19 +91,20 @@ public class WorkflowInstance extends TriggerInstance {
     }
 
     @Override
-    public void save() {
-        // save lead instance & workflow graph
-        jobManager.saveLeadInstanceAndWorkflows(instance, workflows);
+    public void save(TriConsumer<List<SchedInstance>, List<SchedWorkflow>, List<SchedTask>> persistence) {
+        List<SchedInstance> instances = Collects.newArrayList(nodes.size() + 1, instance);
+        List<SchedTask> tasks = new ArrayList<>(nodes.stream().mapToInt(e -> e.b.size()).sum());
         for (Tuple2<SchedInstance, List<SchedTask>> node : nodes) {
-            // save node instance and node tasks
-            jobManager.saveInstanceAndTasks(node.a, node.b);
+            instances.add(node.a);
+            tasks.addAll(node.b);
         }
+        persistence.accept(instances, workflows, tasks);
     }
 
     @Override
-    public void dispatch() {
+    public void dispatch(TriConsumer<SchedJob, SchedInstance, List<SchedTask>> dispatching) {
         for (Tuple2<SchedInstance, List<SchedTask>> node : nodes) {
-            jobManager.dispatch(job, node.a, node.b);
+            dispatching.accept(job, node.a, node.b);
         }
     }
 

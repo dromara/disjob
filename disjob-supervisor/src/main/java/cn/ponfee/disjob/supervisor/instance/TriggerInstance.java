@@ -16,12 +16,17 @@
 
 package cn.ponfee.disjob.supervisor.instance;
 
+import cn.ponfee.disjob.common.base.TriConsumer;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedTask;
+import cn.ponfee.disjob.supervisor.model.SchedWorkflow;
+
+import java.util.List;
 
 /**
  * Abstract trigger instance
@@ -48,22 +53,25 @@ public abstract class TriggerInstance {
      * @param triggerTime the trigger time
      * @throws JobException if split task occur JobException
      */
-    protected abstract void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException;
+    abstract void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException;
 
-    public abstract void save();
+    public abstract void save(TriConsumer<List<SchedInstance>, List<SchedWorkflow>, List<SchedTask>> persistence);
 
-    public abstract void dispatch();
+    public abstract void dispatch(TriConsumer<SchedJob, SchedInstance, List<SchedTask>> dispatching);
 
-    public static TriggerInstance of(JobManager jobManager, SchedJob job, SchedInstance parent,
-                                     RunType runType, long triggerTime) throws JobException {
+    public static TriggerInstance of(JobManager jobManager, SchedJob job,
+                                     SchedInstance parent, RunType runType, long triggerTime) throws JobException {
         JobType jobType = JobType.of(job.getJobType());
         TriggerInstance triggerInstance;
-        if (jobType.isGeneral()) {
-            triggerInstance = new GeneralInstance(jobManager, job);
-        } else if (jobType.isWorkflow()) {
-            triggerInstance = new WorkflowInstance(jobManager, job);
-        } else {
-            throw new UnsupportedOperationException("Unknown job type: " + jobType);
+        switch (jobType) {
+            case GENERAL:
+                triggerInstance = new GeneralInstance(jobManager, job);
+                break;
+            case WORKFLOW:
+                triggerInstance = new WorkflowInstance(jobManager, job);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown job type: " + jobType);
         }
         triggerInstance.create(parent, runType, triggerTime);
 

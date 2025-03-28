@@ -57,7 +57,7 @@ public class ImAlertSender extends AlertSender {
     }
 
     @Override
-    protected void doSend(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
+    protected void send(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
         if (StringUtils.isBlank(webhook)) {
             LOG.warn("Alert instant messaging webhook is empty.");
             return;

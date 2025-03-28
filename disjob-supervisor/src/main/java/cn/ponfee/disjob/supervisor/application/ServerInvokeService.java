@@ -157,13 +157,13 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     private SupervisorMetricsResponse getSupervisorMetrics(Supervisor supervisor) {
         SupervisorMetrics metrics = null;
-        Long pingTime = null;
+        Long responseTime = null;
         try {
             long start = System.currentTimeMillis();
             metrics = supervisorRpcClient.call(supervisor, ExtendedSupervisorRpcService::getMetrics);
-            pingTime = System.currentTimeMillis() - start;
+            responseTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
-            LOG.warn("Ping supervisor occur error: {} {}", supervisor, e.getMessage());
+            LOG.warn("Gets supervisor metrics occur error: {} {}", supervisor, e.getMessage());
         }
 
         SupervisorMetricsResponse response;
@@ -175,20 +175,20 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
         response.setHost(supervisor.getHost());
         response.setPort(supervisor.getPort());
-        response.setPingTime(pingTime);
+        response.setResponseTime(responseTime);
         return response;
     }
 
     private WorkerMetricsResponse getWorkerMetrics(Worker worker) {
         WorkerMetrics metrics = null;
-        Long pingTime = null;
+        Long responseTime = null;
         GetMetricsParam param = GetMetricsParam.of(worker.getGroup());
         try {
             long start = System.currentTimeMillis();
             metrics = workerClient.call(worker, service -> service.getMetrics(param));
-            pingTime = System.currentTimeMillis() - start;
+            responseTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
-            LOG.warn("Ping worker occur error: {} {}", worker, e.getMessage());
+            LOG.warn("Gets worker metrics occur error: {} {}", worker, e.getMessage());
         }
 
         WorkerMetricsResponse response;
@@ -199,7 +199,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         }
         response.setHost(worker.getHost());
         response.setPort(worker.getPort());
-        response.setPingTime(pingTime);
+        response.setResponseTime(responseTime);
         return response;
     }
 

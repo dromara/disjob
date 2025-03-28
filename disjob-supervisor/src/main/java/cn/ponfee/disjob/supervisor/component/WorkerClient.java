@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.component;
 
+import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingConsumer;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.spring.TransactionUtils;
@@ -49,7 +50,6 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 
 /**
@@ -101,10 +101,6 @@ public class WorkerClient {
         return !discoverWorker.hasDiscoveredServers();
     }
 
-    public boolean isAliveWorker(Worker worker) {
-        return worker != null && discoverWorker.isDiscoveredServer(worker);
-    }
-
     public boolean hasAliveExecutingTasks(List<SchedTask> tasks) {
         return CollectionUtils.isNotEmpty(tasks)
             && tasks.stream().filter(SchedTask::isExecuting).anyMatch(e -> isAliveWorker(e.worker()));
@@ -131,7 +127,21 @@ public class WorkerClient {
         }
     }
 
-    public void verifyJob(SchedJob job) throws JobException {
+    public <R, E extends Throwable> R call(Worker worker, ThrowingFunction<WorkerRpcService, R, E> function) throws E {
+        return destinationClient.call(worker, function);
+    }
+
+    public <E extends Throwable> void invoke(Worker worker, ThrowingConsumer<WorkerRpcService, E> consumer) throws E {
+        destinationClient.call(worker, consumer.toFunction(null));
+    }
+
+    // -----------------------------------------------------------------------------
+
+    boolean isAliveWorker(Worker worker) {
+        return worker != null && discoverWorker.isDiscoveredServer(worker);
+    }
+
+    void verifyJob(SchedJob job) throws JobException {
         Assert.hasText(job.getJobExecutor(), "Job executor cannot be blank.");
         CoreUtils.checkClobMaximumLength(job.getJobExecutor(), "Job executor");
         CoreUtils.checkClobMaximumLength(job.getJobParam(), "Job param");
@@ -142,8 +152,8 @@ public class WorkerClient {
         groupedClient.invoke(job.getGroup(), client -> client.verifyJob(param));
     }
 
-    public List<SchedTask> splitJob(String group, long instanceId, SplitJobParam param,
-                                    LongSupplier idGenerator, int maximumSplitTaskSize) throws JobException {
+    List<SchedTask> splitJob(String group, long instanceId, SplitJobParam param,
+                             IdGenerator idGenerator, int maximumSplitTaskSize) throws JobException {
         List<Worker> workers = getDiscoveredWorkers(group);
         Assert.state(!workers.isEmpty(), () -> "Not discovered worker for split job: " + group);
         int wCount = workers.size();
@@ -164,27 +174,19 @@ public class WorkerClient {
         List<SchedTask> tasks = new ArrayList<>(tCount);
         for (int i = 0; i < tCount; i++) {
             String worker = isBroadcast ? workers.get(i).serialize() : null;
-            tasks.add(SchedTask.of(taskParams.get(i), idGenerator.getAsLong(), instanceId, i + 1, tCount, worker));
+            tasks.add(SchedTask.of(taskParams.get(i), idGenerator.generateId(), instanceId, i + 1, tCount, worker));
         }
         return tasks;
     }
 
-    public <R, E extends Throwable> R call(Worker worker, ThrowingFunction<WorkerRpcService, R, E> function) throws E {
-        return destinationClient.call(worker, function);
-    }
-
-    public <E extends Throwable> void invoke(Worker worker, ThrowingConsumer<WorkerRpcService, E> consumer) throws E {
-        destinationClient.call(worker, consumer.toFunction(null));
-    }
-
-    public boolean dispatch(List<ExecuteTaskParam> tasks) {
+    void dispatch(List<ExecuteTaskParam> tasks) {
         TransactionUtils.assertWithoutTransaction();
-        return taskDispatcher.dispatch(tasks);
+        taskDispatcher.dispatch(tasks);
     }
 
-    public boolean dispatch(String group, List<ExecuteTaskParam> tasks) {
+    void dispatch(String group, List<ExecuteTaskParam> tasks) {
         TransactionUtils.assertWithoutTransaction();
-        return taskDispatcher.dispatch(group, tasks);
+        taskDispatcher.dispatch(group, tasks);
     }
 
 }

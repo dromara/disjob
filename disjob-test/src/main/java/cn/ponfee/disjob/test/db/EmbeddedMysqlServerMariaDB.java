@@ -56,10 +56,10 @@ import static cn.ponfee.disjob.test.db.DBUtils.*;
 public class EmbeddedMysqlServerMariaDB {
 
     public static void main(String[] args) throws Exception {
-        DB db = start(3306);
+        start(3306);
     }
 
-    public static DB start(int port) throws Exception {
+    public static void start(int port) throws Exception {
         DBConfiguration configuration = DBConfigurationBuilder.newBuilder()
             .setPort(port) // OR, default: setPort(0); => autom. detect free port
             .setBaseDir(createDirectory("base"))
@@ -95,7 +95,6 @@ public class EmbeddedMysqlServerMariaDB {
         DBUtils.testQuerySchedJob(jdbcTemplate);
 
         System.out.println("Embedded maria db started!");
-        return db;
     }
 
     private static String createDirectory(String name) throws IOException {

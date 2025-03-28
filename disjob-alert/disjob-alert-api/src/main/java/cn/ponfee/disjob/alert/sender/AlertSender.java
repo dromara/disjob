@@ -62,25 +62,32 @@ public abstract class AlertSender extends SingletonClassConstraint {
         register(this);
     }
 
-    public void send(AlertEvent alertEvent, Set<String> alertUsers, String webhook) {
+    public final void send(AlertEvent alertEvent, Set<String> alertUsers, String webhook) {
         Map<String, String> recipients = userRecipientMapper.mapping(alertUsers);
         if (verify(recipients, webhook)) {
-            doSend(alertEvent, recipients, webhook);
+            send(alertEvent, recipients, webhook);
         }
     }
 
+    /**
+     * Verifies the recipients and webhook param
+     *
+     * @param recipients the recipients
+     * @param webhook    the webhook
+     * @return {@code true} is verified success
+     */
     protected boolean verify(Map<String, String> recipients, String webhook) {
         return MapUtils.isNotEmpty(recipients) || StringUtils.isNotBlank(webhook);
     }
 
     /**
-     * Do send alert event message.
+     * Sends the alert event by current message channel.
      *
      * @param alertEvent      the alert event
      * @param alertRecipients the alert recipients [user -> recipient]
      * @param webhook         the webhook
      */
-    protected abstract void doSend(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook);
+    protected abstract void send(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook);
 
     // ------------------------------------------------------------------static methods
 

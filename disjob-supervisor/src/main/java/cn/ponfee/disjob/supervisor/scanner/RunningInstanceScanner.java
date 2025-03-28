@@ -123,8 +123,8 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
             log.error("Scanned running state instance not discovered worker: {}, {}", instance.getInstanceId(), job.getGroup());
             return;
         }
-        boolean result = jobManager.redispatch(job, instance, redispatchingTasks);
-        log.info("Scanned running state instance re-dispatch task: {}, {}", result, instance.getInstanceId());
+        jobManager.redispatch(job, instance, redispatchingTasks);
+        log.info("Scanned running state instance re-dispatch task: {}", instance.getInstanceId());
     }
 
     private void processAllTerminatedTask(SchedInstance instance) {

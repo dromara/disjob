@@ -51,6 +51,7 @@ public final class Files {
     public static final String CURRENT_PATH = ".";
 
     // ------------------------------------------------------------charset encoding
+
     public static final Charset DEFAULT_CHARSET = Charset.defaultCharset(); // default charset
 
     public static final String DEFAULT_CHARSET_NAME = DEFAULT_CHARSET.name(); // default charset name
@@ -58,6 +59,7 @@ public final class Files {
     public static final String UTF_8 = "UTF-8"; // UTF-8 encoding
 
     // ------------------------------------------------------------file separator
+
     public static final String WINDOWS_FOLDER_SEPARATOR = "\\"; // Windows file separator
 
     public static final String UNIX_FOLDER_SEPARATOR = "/"; // Unix file separator
@@ -65,6 +67,7 @@ public final class Files {
     public static final String SYSTEM_FOLDER_SEPARATOR = File.separator; // system file separator
 
     // ------------------------------------------------------------line separator
+
     public static final String UNIX_LINE_SEPARATOR = "\n"; // Unix file line separator spec \n  LF
 
     public static final String WINDOWS_LINE_SEPARATOR = "\r\n"; // Windows file line separator spec \r\n  CRLF

@@ -58,7 +58,7 @@ public class EmailAlertSender extends AlertSender {
     }
 
     @Override
-    protected void doSend(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
+    protected void send(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
         if (MapUtils.isEmpty(alertRecipients)) {
             LOG.warn("Alert email recipients is empty.");
             return;

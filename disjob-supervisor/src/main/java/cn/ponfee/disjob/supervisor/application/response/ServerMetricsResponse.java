@@ -53,8 +53,8 @@ public abstract class ServerMetricsResponse extends ToJsonString implements Seri
     private String startupTime;
 
     /**
-     * Ping time milliseconds
+     * Response time milliseconds
      */
-    private Long pingTime;
+    private Long responseTime;
 
 }
