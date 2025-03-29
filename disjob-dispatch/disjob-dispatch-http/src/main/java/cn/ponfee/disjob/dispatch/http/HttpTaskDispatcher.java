@@ -24,10 +24,10 @@ import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
+import jakarta.annotation.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**

@@ -156,7 +156,7 @@ final class DestinationServerRestTemplate {
             || (e instanceof java.net.SocketException)
             || (e instanceof java.rmi.ConnectException)
             || (e instanceof java.rmi.ConnectIOException)
-            || (e instanceof org.apache.http.conn.ConnectTimeoutException);
+            || (e instanceof org.apache.hc.client5.http.ConnectTimeoutException);
     }
 
 }

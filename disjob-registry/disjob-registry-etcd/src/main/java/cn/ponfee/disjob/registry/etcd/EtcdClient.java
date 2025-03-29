@@ -40,13 +40,13 @@ import io.etcd.jetcd.watch.WatchEvent;
 import io.etcd.jetcd.watch.WatchResponse;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
+import jakarta.annotation.PreDestroy;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PreDestroy;
 import java.io.Closeable;
 import java.util.*;
 import java.util.concurrent.*;

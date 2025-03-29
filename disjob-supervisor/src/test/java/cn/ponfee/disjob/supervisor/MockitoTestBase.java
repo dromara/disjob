@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Field;
@@ -90,13 +90,13 @@ public abstract class MockitoTestBase {
     private static final List<Field> MOCKED_FIELDS = FieldUtils.getAllFieldsList(MockitoTestBase.class)
         .stream()
         .filter(e -> !Modifier.isStatic(e.getModifiers()))
-        .filter(e -> e.isAnnotationPresent(MockBean.class) || MockedStatic.class.isAssignableFrom(e.getType()))
+        .filter(e -> e.isAnnotationPresent(MockitoBean.class) || MockedStatic.class.isAssignableFrom(e.getType()))
         .peek(e -> Assert.isTrue(Modifier.isProtected(e.getModifiers()), () -> "Mock field must protected: " + e.toGenericString()))
         .collect(Collectors.toList());
 
     // --------------------------------------mock bean definition
 
-    @MockBean
+    @MockitoBean
     protected WorkerRpcService workerRpcService;
 
     // --------------------------------------mock static method definition
