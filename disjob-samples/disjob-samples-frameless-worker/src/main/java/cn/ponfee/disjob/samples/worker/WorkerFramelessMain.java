@@ -18,7 +18,7 @@ package cn.ponfee.disjob.samples.worker;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
-import cn.ponfee.disjob.common.spring.RedisTemplateFactory;
+import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.spring.YamlProperties;
@@ -30,15 +30,14 @@ import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.dispatch.http.HttpTaskReceiver;
 import cn.ponfee.disjob.registry.WorkerRegistry;
-import cn.ponfee.disjob.registry.redis.RedisWorkerRegistry;
-import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
+import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
+import cn.ponfee.disjob.registry.database.configuration.DatabaseServerRegistryAutoConfiguration;
 import cn.ponfee.disjob.worker.WorkerStartup;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.FileInputStream;
@@ -111,25 +110,13 @@ public class WorkerFramelessMain {
     private static TaskReceiver createTaskReceiver(WorkerProperties props, Worker.Local localWorker) {
         TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(props.getTimingWheelTickMs(), props.getTimingWheelRingSize());
         return new HttpTaskReceiver(localWorker, timingWheel);
-
-        /* 不建议使用`RedisTaskReceiver`，后续版本会废弃`disjob-dispatch-redis`
-        return new RedisTaskReceiver(localWorker, timingWheel, redisTemplate) {
-            @Override
-            public boolean receive(ExecuteTaskParam param) {
-                JobExecutorMapping.correctParamJobExecutor(param, "jobExecutor");
-                return super.receive(param);
-            }
-        };
-        */
     }
 
     private static WorkerRegistry createWorkerRegistry(YamlProperties config, RestTemplate restTemplate) {
-        RedisRegistryProperties registryProps = config.bind(RedisRegistryProperties.KEY_PREFIX, RedisRegistryProperties.class);
-        RedisProperties redisProps = config.bind(RedisRegistryProperties.KEY_PREFIX, RedisProperties.class);
-        @SuppressWarnings("all")
-        RedisTemplateFactory redisTemplateFactory = new RedisTemplateFactory(redisProps);
-        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, redisTemplateFactory::close);
-        return new RedisWorkerRegistry(registryProps, restTemplate, redisTemplateFactory.getStringRedisTemplate());
+        DatabaseRegistryProperties registryProps = config.bind(DatabaseRegistryProperties.KEY_PREFIX, DatabaseRegistryProperties.class);
+        DatabaseServerRegistryAutoConfiguration registryConfigure = new DatabaseServerRegistryAutoConfiguration();
+        JdbcTemplateWrapper jdbcTemplateWrapper = registryConfigure.databaseRegistryJdbcTemplateWrapper(registryProps);
+        return registryConfigure.workerRegistry(registryProps, restTemplate, jdbcTemplateWrapper);
     }
 
     private static VertxWebServer createVertxWebServer(YamlProperties config, Worker.Local localWorker, TaskReceiver taskReceiver, WorkerRegistry workerRegistry) {

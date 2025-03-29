@@ -20,14 +20,24 @@ import cn.ponfee.disjob.test.executor.SamplesJobExecutorPackage;
 import cn.ponfee.disjob.worker.configuration.EnableWorker;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
+ * <pre>
  * Worker application based spring boot
+ *
+ * DataSourceAutoConfiguration生效的条件：
+ * 1）依赖了`org.springframework:spring-jdbc`
+ * 2）在EnableAutoConfiguration之前没有注入DataSource bean
+ * </pre>
  *
  * @author Ponfee
  */
 // scan cn.ponfee.disjob.test.executor package
-@SpringBootApplication(scanBasePackageClasses = SamplesJobExecutorPackage.class)
+@SpringBootApplication(
+    scanBasePackageClasses = SamplesJobExecutorPackage.class,
+    exclude = DataSourceAutoConfiguration.class
+)
 @EnableWorker
 public class WorkerApplication {
 
