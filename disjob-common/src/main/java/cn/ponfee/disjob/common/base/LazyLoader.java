@@ -35,7 +35,7 @@ public class LazyLoader<T> implements Supplier<T> {
     private final Supplier<T> loader;
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private Optional<T> holder;
+    private volatile Optional<T> holder;
 
     private LazyLoader(Supplier<T> loader) {
         this.loader = Objects.requireNonNull(loader);
@@ -81,7 +81,7 @@ public class LazyLoader<T> implements Supplier<T> {
     // ------------------------------------------------------------------------private methods
 
     @SuppressWarnings("OptionalAssignedToNull")
-    private Optional<T> holder() {
+    private synchronized Optional<T> holder() {
         if (holder == null) {
             holder = Optional.ofNullable(loader.get());
         }

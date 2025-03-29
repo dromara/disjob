@@ -30,7 +30,6 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -51,7 +50,7 @@ public final class DestinationServerRestProxy {
                                                                              RetryProperties retry) {
         DestinationServerRestTemplate template = new DestinationServerRestTemplate(restTemplate, retry);
         String prefixPath = DiscoveryServerRestProxy.getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
-        InvocationHandler invocationHandler = new ServerInvocationHandler<>(interfaceCls, template, serverContextPath, prefixPath);
+        InvocationHandler invocationHandler = new ServerInvocationHandler<>(template, serverContextPath, prefixPath);
         T remoteServiceClient = ProxyUtils.create(invocationHandler, interfaceCls);
         return new DestinationServerClient<>(remoteServiceClient, localServiceProvider, localServer);
     }
@@ -87,16 +86,13 @@ public final class DestinationServerRestProxy {
     }
 
     private static class ServerInvocationHandler<S extends Server> implements InvocationHandler {
-        private final Class<?> interfaceCls;
         private final DestinationServerRestTemplate template;
         private final Function<S, String> serverContextPath;
         private final String prefixPath;
 
-        private ServerInvocationHandler(Class<?> interfaceCls,
-                                        DestinationServerRestTemplate template,
+        private ServerInvocationHandler(DestinationServerRestTemplate template,
                                         Function<S, String> serverContextPath,
                                         String prefixPath) {
-            this.interfaceCls = interfaceCls;
             this.template = template;
             this.serverContextPath = serverContextPath;
             this.prefixPath = prefixPath;
@@ -104,14 +100,12 @@ public final class DestinationServerRestProxy {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            DiscoveryServerRestProxy.Request req = DiscoveryServerRestProxy.buildRequest(interfaceCls, method, prefixPath);
+            DiscoveryServerRestProxy.Request req = DiscoveryServerRestProxy.buildRequest(method, prefixPath);
             Server destinationServer = SERVER_THREAD_LOCAL.get();
             @SuppressWarnings("unchecked")
             String contextPath = serverContextPath.apply((S) destinationServer);
             String urlPath = Strings.concatPath(contextPath, req.path);
-            Class<?> declaringClass = method.getDeclaringClass();
-            Type returnType = method.getGenericReturnType();
-            return template.invoke(declaringClass, destinationServer, urlPath, req.httpMethod, returnType, args);
+            return template.invoke(method, destinationServer, req.httpMethod, urlPath, args);
         }
     }
 

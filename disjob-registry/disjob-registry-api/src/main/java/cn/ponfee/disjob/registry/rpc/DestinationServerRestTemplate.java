@@ -18,9 +18,7 @@ package cn.ponfee.disjob.registry.rpc;
 
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.base.RetryProperties;
-import cn.ponfee.disjob.core.base.Server;
-import cn.ponfee.disjob.core.base.Supervisor;
+import cn.ponfee.disjob.core.base.*;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -31,6 +29,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Map;
@@ -78,27 +77,34 @@ final class DestinationServerRestTemplate {
     /**
      * Invoke remote server
      *
-     * @param declaringClass    the declaring class
+     * @param method            the method
      * @param destinationServer the destination server
      * @param httpMethod        the http method
-     * @param returnType        the return type
+     * @param urlPath           the url path
      * @param args              the arguments
      * @param <T>               return type
      * @return invoked remote http response
      * @throws Exception if occur exception
      */
-    <T> T invoke(Class<?> declaringClass, Server destinationServer, String path,
-                 HttpMethod httpMethod, Type returnType, Object... args) throws Exception {
+    <T> T invoke(Method method, Server destinationServer, HttpMethod httpMethod, String urlPath, Object... args) throws Exception {
         Map<String, String> authenticationHeaders = null;
         if (destinationServer instanceof Supervisor) {
-            // 1）`Worker`调用`Supervisor`都是用的`DiscoveryServerRestTemplate`，因此不会走到这里
-            // 2）`Supervisor`调用`Supervisor`是在`ExtendedSupervisorRpcService`接口中，未做认证
-            String expectCls = "cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService";
-            String actualCls = declaringClass.getName();
-            Assert.isTrue(expectCls.equals(actualCls), () -> "Unknown server rpc service: " + actualCls);
+            Class<?> declaringClass = method.getDeclaringClass();
+            if (declaringClass == SupervisorRpcService.class) {
+                // `Worker`调用`Supervisor`：调用`SupervisorRpcService#subscribeWorkerEvent`方法通知Supervisor
+                Assert.isTrue("subscribeWorkerEvent".equals(method.getName()),
+                    () -> "Unexpected method SupervisorRpcService#subscribeWorkerEvent: " + declaringClass + ", " + urlPath);
+                authenticationHeaders = Worker.local().createWorkerAuthenticationHeaders();
+            } else {
+                // `Supervisor`调用`Supervisor`：调用`ExtendedSupervisorRpcService`类中定义的方法[getMetrics,subscribeOperationEvent,...]
+                String expectCls = "cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService";
+                Assert.isTrue(expectCls.equals(declaringClass.getName()),
+                    () -> "Unexpected class ExtendedSupervisorRpcService: " + declaringClass + ", " + urlPath);
+            }
         }
 
-        String url = destinationServer.buildHttpUrlPrefix() + path;
+        String url = destinationServer.buildHttpUrlPrefix() + urlPath;
+        Type returnType = method.getGenericReturnType();
         Throwable ex = null;
         for (int i = 0; i <= retryMaxCount; i++) {
             try {
@@ -117,7 +123,7 @@ final class DestinationServerRestTemplate {
 
         String msg = (ex == null) ? null : ex.getMessage();
         if (StringUtils.isBlank(msg)) {
-            msg = "Invoke server rpc error: " + path;
+            msg = "Invoke server rpc error: " + urlPath;
         }
         throw new RpcInvokeException(msg, ex);
     }

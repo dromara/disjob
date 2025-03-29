@@ -27,7 +27,6 @@ import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.Discovery;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -82,7 +81,7 @@ import java.util.function.Predicate;
  */
 public final class DiscoveryServerRestProxy {
 
-    private static final ConcurrentMap<Pair<Class<?>, Method>, Request> METHOD_REQUEST_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Method, Request> METHOD_REQUEST_CACHE = new ConcurrentHashMap<>();
     private static final ThreadLocal<String> GROUP_THREAD_LOCAL = new NamedThreadLocal<>("discovery-group");
 
     /**
@@ -110,7 +109,7 @@ public final class DiscoveryServerRestProxy {
             // 远程调用：通过Discovery<D>来获取目标服务器
             DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoverServer, restTemplate, retry);
             String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
-            invocationHandler = new UngroupedInvocationHandler(interfaceCls, template, prefixPath);
+            invocationHandler = new UngroupedInvocationHandler(template, prefixPath);
         }
         return ProxyUtils.create(invocationHandler, interfaceCls);
     }
@@ -136,7 +135,7 @@ public final class DiscoveryServerRestProxy {
                                                                       RetryProperties retry) {
         DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoverServer, restTemplate, retry);
         String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
-        InvocationHandler groupedInvocationHandler = new GroupedInvocationHandler(interfaceCls, template, prefixPath);
+        InvocationHandler groupedInvocationHandler = new GroupedInvocationHandler(template, prefixPath);
         T remoteServiceClient = ProxyUtils.create(groupedInvocationHandler, interfaceCls);
         return new GroupedServerClient<>(localServiceProvider, remoteServiceClient, serverGroupMatcher);
     }
@@ -172,21 +171,19 @@ public final class DiscoveryServerRestProxy {
     }
 
     private abstract static class DiscoveryInvocationHandler implements InvocationHandler {
-        private final Class<?> interfaceCls;
         private final DiscoveryServerRestTemplate<?> template;
         private final String prefixPath;
 
-        private DiscoveryInvocationHandler(Class<?> interfaceCls, DiscoveryServerRestTemplate<?> template, String prefixPath) {
-            this.interfaceCls = interfaceCls;
+        private DiscoveryInvocationHandler(DiscoveryServerRestTemplate<?> template, String prefixPath) {
             this.template = template;
             this.prefixPath = prefixPath;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Request req = buildRequest(interfaceCls, method, prefixPath);
+            Request req = buildRequest(method, prefixPath);
             String group = getGroup();
-            return template.execute(group, req.path, req.httpMethod, method.getGenericReturnType(), args);
+            return template.execute(method, group, req.httpMethod, req.path, args);
         }
 
         /**
@@ -198,8 +195,8 @@ public final class DiscoveryServerRestProxy {
     }
 
     private static final class UngroupedInvocationHandler extends DiscoveryInvocationHandler {
-        private UngroupedInvocationHandler(Class<?> interfaceCls, DiscoveryServerRestTemplate<?> template, String prefixPath) {
-            super(interfaceCls, template, prefixPath);
+        private UngroupedInvocationHandler(DiscoveryServerRestTemplate<?> template, String prefixPath) {
+            super(template, prefixPath);
         }
 
         @Override
@@ -209,8 +206,8 @@ public final class DiscoveryServerRestProxy {
     }
 
     private static final class GroupedInvocationHandler extends DiscoveryInvocationHandler {
-        private GroupedInvocationHandler(Class<?> interfaceCls, DiscoveryServerRestTemplate<?> template, String prefixPath) {
-            super(interfaceCls, template, prefixPath);
+        private GroupedInvocationHandler(DiscoveryServerRestTemplate<?> template, String prefixPath) {
+            super(template, prefixPath);
         }
 
         @Override
@@ -219,11 +216,22 @@ public final class DiscoveryServerRestProxy {
         }
     }
 
-    static Request buildRequest(Class<?> interfaceCls, Method method, String prefixPath) {
-        return METHOD_REQUEST_CACHE.computeIfAbsent(Pair.of(interfaceCls, method), key -> {
-            RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(key.getRight(), RequestMapping.class);
+    static Request buildRequest(Method method, String prefixPath) {
+        // 如果是继承方式，两个子接口继承的`subscribeServerEvent`方法的prefixPath不一样，Map Key需要改为`Pair<Class<?>, Method>`
+        // SubscribeEventService {
+        //   void subscribeServerEvent(RegistryEventType eventType, Server server);
+        // }
+        //
+        // @RequestMapping("/worker/rpc")
+        // WorkerRpcService extends SubscribeEventService { }
+        //
+        // @RequestMapping("/supervisor/rpc")
+        // SupervisorRpcService extends SubscribeEventService { }
+        //
+        return METHOD_REQUEST_CACHE.computeIfAbsent(method, key -> {
+            RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(key, RequestMapping.class);
             if (mapping == null || ArrayUtils.isEmpty(mapping.method())) {
-                throw new IllegalStateException("Non http mapping method: " + prefixPath + ", " + method.toGenericString());
+                throw new IllegalStateException("Non http mapping method: " + key.toGenericString());
             }
 
             String suffixPath = getMappingPath(mapping);
@@ -234,7 +242,7 @@ public final class DiscoveryServerRestProxy {
                 .map(Enum::name)
                 .map(HttpMethod::valueOf)
                 .map(httpMethod -> new Request(urlPath, httpMethod))
-                .orElseThrow(() -> new IllegalStateException("Invalid http mapping method: " + urlPath + ", " + method.toGenericString()));
+                .orElseThrow(() -> new IllegalStateException("Invalid http mapping method: " + key.toGenericString()));
         });
     }
 
