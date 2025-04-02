@@ -68,7 +68,7 @@ import static org.mockito.Mockito.reset;
  */
 // 测试类(方法)要使用“@org.junit.jupiter.api.Test”来注解
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
-public abstract class MockitoTestBase {
+public abstract class SpringBootTestMockito {
 
     static {
         // Mock CoreUtils.getLocalHost返回`127.0.0.1`，支持在断网时能跑测试用例
@@ -86,8 +86,8 @@ public abstract class MockitoTestBase {
         mockedStaticCoreUtils.verify(CoreUtils::getLocalHost);
     }
 
-    // Only reset mock field which is defined in MockitoTestBase
-    private static final List<Field> MOCKED_FIELDS = FieldUtils.getAllFieldsList(MockitoTestBase.class)
+    // Only reset mock field which is defined in SpringBootTestMockito
+    private static final List<Field> MOCKED_FIELDS = FieldUtils.getAllFieldsList(SpringBootTestMockito.class)
         .stream()
         .filter(e -> !Modifier.isStatic(e.getModifiers()))
         .filter(e -> e.isAnnotationPresent(MockBean.class) || MockedStatic.class.isAssignableFrom(e.getType()))

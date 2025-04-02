@@ -143,7 +143,7 @@ public @interface MybatisDataSourceConfigurer {
             }
             String type = environment.getProperty(dataSourceConfigPrefixKey + ".type");
             if (StringUtils.isNotBlank(type) && !type.equals(dataSourceType.getName())) {
-                throw new UnsupportedOperationException("Not supported datasource type: " + type);
+                throw new UnsupportedOperationException("Only supported HikariDataSource type, but actual: " + type);
             }
             String name = environment.getProperty(dataSourceConfigPrefixKey + ".name");
             if (StringUtils.isNotBlank(name) && !name.equals(dataSourceName)) {

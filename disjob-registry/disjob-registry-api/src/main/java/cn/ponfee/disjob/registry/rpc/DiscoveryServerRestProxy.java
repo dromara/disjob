@@ -216,7 +216,7 @@ public final class DiscoveryServerRestProxy {
         }
     }
 
-    static Request buildRequest(Method method, String prefixPath) {
+    static Request buildRequest(final Method method, final String prefixPath) {
         // 如果是继承方式，两个子接口继承的`subscribeServerEvent`方法的prefixPath不一样，Map Key需要改为`Pair<Class<?>, Method>`
         // SubscribeEventService {
         //   void subscribeServerEvent(RegistryEventType eventType, Server server);

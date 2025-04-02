@@ -86,20 +86,18 @@ final class DestinationServerRestTemplate {
      * @return invoked remote http response
      * @throws Exception if occur exception
      */
-    <T> T invoke(Method method, Server destinationServer, HttpMethod httpMethod, String urlPath, Object... args) throws Exception {
+    <T> T invoke(Method method, Server destinationServer, HttpMethod httpMethod, String urlPath, Object[] args) throws Exception {
         Map<String, String> authenticationHeaders = null;
         if (destinationServer instanceof Supervisor) {
             Class<?> declaringClass = method.getDeclaringClass();
             if (declaringClass == SupervisorRpcService.class) {
-                // `Worker`调用`Supervisor`：调用`SupervisorRpcService#subscribeWorkerEvent`方法通知Supervisor
-                Assert.isTrue("subscribeWorkerEvent".equals(method.getName()),
-                    () -> "Unexpected method SupervisorRpcService#subscribeWorkerEvent: " + declaringClass + ", " + urlPath);
+                // Worker -> Supervisor：registry时调用`SupervisorRpcService#subscribeWorkerEvent`方法通知Supervisor
+                Assert.isTrue("subscribeWorkerEvent".equals(method.getName()), () -> "Unexpected method: " + method);
                 authenticationHeaders = Worker.local().createWorkerAuthenticationHeaders();
             } else {
-                // `Supervisor`调用`Supervisor`：调用`ExtendedSupervisorRpcService`类中定义的方法[getMetrics,subscribeOperationEvent,...]
+                // Supervisor -> Supervisor：调用`ExtendedSupervisorRpcService`类中定义的方法[getMetrics,subscribeOperationEvent,...]
                 String expectCls = "cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService";
-                Assert.isTrue(expectCls.equals(declaringClass.getName()),
-                    () -> "Unexpected class ExtendedSupervisorRpcService: " + declaringClass + ", " + urlPath);
+                Assert.isTrue(expectCls.equals(declaringClass.getName()), () -> "Unexpected subclass: " + declaringClass);
             }
         }
 

@@ -84,8 +84,8 @@ public final class SpringUtils {
         return annotation != null ? annotation : handlerMethod.getBeanType().getAnnotation(annotationType);
     }
 
-    public static <T extends Annotation> Set<String> findAnnotatedUrlPath(RequestMappingHandlerMapping mapping,
-                                                                          Class<T> annotationType) {
+    public static <T extends Annotation> Set<String> getAnnotatedUrlPath(RequestMappingHandlerMapping mapping,
+                                                                         Class<T> annotationType) {
         Set<String> urlPaths = new HashSet<>();
         mapping.getHandlerMethods().forEach((requestMappingInfo, handlerMethod) -> {
             if (getAnnotation(handlerMethod, annotationType) != null) {

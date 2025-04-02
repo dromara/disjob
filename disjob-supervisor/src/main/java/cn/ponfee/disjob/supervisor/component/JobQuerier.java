@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.supervisor.component;
 
-import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.enums.RunState;
@@ -118,10 +117,6 @@ public class JobQuerier {
     }
 
     public PageResponse<SchedInstanceResponse> queryInstanceForPage(SchedInstancePageRequest pageRequest) {
-        if (pageRequest.getEndTime() != null) {
-            pageRequest.setEndTime(Dates.endOfDay(pageRequest.getEndTime()));
-        }
-
         PageResponse<SchedInstanceResponse> pageResponse = pageRequest.query(
             instanceMapper::queryPageCount,
             instanceMapper::queryPageRecords,

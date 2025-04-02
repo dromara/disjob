@@ -18,6 +18,8 @@ package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
 import cn.ponfee.disjob.common.spring.ResourceScanner;
+import cn.ponfee.disjob.common.util.Enums;
+import cn.ponfee.disjob.core.base.JobCodeMsg;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Modifier;
@@ -66,6 +68,20 @@ public class EnumTest {
 
         assertNotNull(ENUM_MAP.get("TriggerType"));
         assertNull(ENUM_MAP.get("TriggerType$1"));
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test
+    public void testCheckDuplicated() {
+        Enums.checkDuplicated(JobCodeMsg.class, JobCodeMsg::getCode);
+        new ResourceScanner("cn/ponfee/disjob/**/*.class")
+            .scan4class(new Class<?>[]{IntValueEnum.class}, null)
+            .stream()
+            .filter(e -> e.isEnum() && !e.isAnonymousClass())
+            .forEach(cls -> {
+                System.out.println("Check duplicated value enum: " + cls);
+                Enums.checkDuplicated((Class<Enum>) cls, e -> ((IntValueEnum<?>) e).value());
+            });
     }
 
 }

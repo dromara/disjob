@@ -57,7 +57,7 @@ import java.util.Arrays;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 //@ContextConfiguration(classes = { XXX.class })
 //@ActiveProfiles({"DEV"})
-public abstract class SpringBootTestBase<T> extends MockitoTestBase implements ApplicationContextAware {
+public abstract class SpringBootTestBase<T> extends SpringBootTestMockito implements ApplicationContextAware {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 

@@ -75,7 +75,7 @@ final class DiscoveryServerRestTemplate<D extends Server> {
      * @return invoked remote http response
      * @throws Exception if occur exception
      */
-    <T> T execute(Method method, String group, HttpMethod httpMethod, String path, Object... args) throws Exception {
+    <T> T execute(Method method, String group, HttpMethod httpMethod, String path, Object[] args) throws Exception {
         List<D> servers = discoverServer.getDiscoveredServers(group);
         ServerRole discoveryServerRole = discoverServer.discoveryRole();
         if (CollectionUtils.isEmpty(servers)) {
@@ -90,9 +90,8 @@ final class DiscoveryServerRestTemplate<D extends Server> {
             serverContextPath = Supervisor.local().getWorkerContextPath(group);
         } else {
             // Worker 远程调用 Supervisor
-            Worker.Local localWorker = Worker.local();
-            serverContextPath = localWorker.getSupervisorContextPath();
-            authenticationHeaders = localWorker.createWorkerAuthenticationHeaders();
+            serverContextPath = Worker.local().getSupervisorContextPath();
+            authenticationHeaders = Worker.local().createWorkerAuthenticationHeaders();
         }
 
         Type returnType = method.getGenericReturnType();

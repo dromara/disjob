@@ -54,18 +54,23 @@ public enum RunState implements IntValueEnum<RunState> {
     ;
 
     /**
-     * state value
+     * State value
      */
     private final int value;
+
     /**
      * Whether is terminal state
      */
     private final boolean terminal;
+
     /**
      * Whether is failure state
      */
     private final boolean failure;
 
+    /**
+     * Description
+     */
     private final String desc;
 
     RunState(int value, boolean terminal, boolean failure, String desc) {

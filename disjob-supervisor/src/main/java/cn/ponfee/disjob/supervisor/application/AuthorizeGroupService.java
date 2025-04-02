@@ -18,7 +18,6 @@ package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
@@ -65,7 +64,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     public AuthorizeGroupService(JobQuerier jobQuerier) {
         this.jobQuerier = jobQuerier;
 
-        commonScheduledPool().scheduleWithFixedDelay(ThrowingRunnable.toCaught(jobGroupCache::cleanUp), 1, 1, TimeUnit.DAYS);
+        commonScheduledPool().scheduleWithFixedDelay(jobGroupCache::cleanUp, 1, 1, TimeUnit.DAYS);
     }
 
     public static Set<String> authorizeAndTruncateGroup(String user, Set<String> paramGroups) {

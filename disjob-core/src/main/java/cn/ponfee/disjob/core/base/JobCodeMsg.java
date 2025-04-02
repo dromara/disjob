@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.model.CodeMsg;
-import cn.ponfee.disjob.common.util.Enums;
 
 /**
  * Job code message definitions.
@@ -59,10 +58,6 @@ public enum JobCodeMsg implements CodeMsg {
     @Override
     public String getMsg() {
         return msg;
-    }
-
-    static {
-        Enums.checkDuplicated(JobCodeMsg.class, JobCodeMsg::getCode);
     }
 
 }

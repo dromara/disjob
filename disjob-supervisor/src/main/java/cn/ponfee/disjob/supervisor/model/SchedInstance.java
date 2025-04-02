@@ -242,11 +242,10 @@ public class SchedInstance extends BaseEntity {
         return StringUtils.isBlank(workflowCurNode) ? null : DAGNode.fromString(workflowCurNode);
     }
 
-    public SchedInstance fillUniqueFlag() {
+    public void fillUniqueFlag() {
         RunType type = RunType.of(runType);
         // Workflow node trigger time is not unique
         this.uniqueFlag = (type.isUniqueFlag() && !isWorkflowNode()) ? type.getUniqueFlag() : instanceId;
-        return this;
     }
 
     public void markTerminated(RunState runState, Date runEndTime) {

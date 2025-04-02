@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.core.alert;
 
+import com.google.common.math.LongMath;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ class AlerterTest {
     }
 
     @Test
-    void testCheck() {
+    void testCheck1() {
         assertThat(Arrays.stream(AlertType.values()).mapToInt(AlertType::value).reduce(0, (a, b) -> a ^ b)).isEqualTo(3);
         assertThat(IntStream.of(1, 2, 4, 8).reduce(0, (a, b) -> a ^ b)).isEqualTo(15);
         assertThat(IntStream.of(1).reduce(0, (a, b) -> a ^ b)).isOne();
@@ -81,6 +82,20 @@ class AlerterTest {
         assertThatThrownBy(() -> AlertType.check(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Invalid alert type val: null");
+    }
+
+    @Test
+    void testCheck2() {
+        // check the alert type value must be a power of 2 number
+        AlertType[] values = AlertType.values();
+        for (int i = 0; i < values.length; i++) {
+            int n = values[i].value();
+            System.out.println(i + " -> " + n);
+            assertThat(n).isGreaterThan(0);
+            assertThat(n & (n - 1)).isZero();
+            // 校验必须是连续的值：1, 2, 4, 8
+            assertThat(n).isEqualTo(LongMath.pow(2, i));
+        }
     }
 
 }

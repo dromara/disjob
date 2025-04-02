@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.core.alert;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
-import cn.ponfee.disjob.common.util.Enums;
 
 import java.util.Arrays;
 
@@ -72,18 +71,6 @@ public enum AlertType implements IntValueEnum<AlertType> {
         if (val == null || val < 0 || val > MAX_VAL) {
             throw new IllegalArgumentException("Invalid alert type val: " + val);
         }
-    }
-
-    static {
-        // check the alert type value must be a power of 2 number
-        for (AlertType e : values()) {
-            int n = e.value();
-            if (n < 1 || (n & (n - 1)) != 0) {
-                throw new Error("Invalid Alert type value definition: " + e);
-            }
-        }
-        // check not exists duplicated value
-        Enums.checkDuplicated(AlertType.class, AlertType::value);
     }
 
     private static final int MAX_VAL = Arrays.stream(values()).mapToInt(AlertType::value).reduce(0, (a, b) -> a ^ b);

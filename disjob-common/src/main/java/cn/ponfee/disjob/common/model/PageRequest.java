@@ -40,7 +40,7 @@ public class PageRequest extends ToJsonString implements Serializable {
 
     /**
      * Is whether page query.
-     * <p>如数据导出场景时，设置为`false`查询全部数据导出
+     * <p>如数据导出场景时，设置为`false`导出全部数据
      */
     private boolean paged = true;
 

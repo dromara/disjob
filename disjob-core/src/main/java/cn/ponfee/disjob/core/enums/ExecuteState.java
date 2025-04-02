@@ -102,6 +102,9 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
 
     ;
 
+    /**
+     * State value
+     */
     private final int value;
 
     /**
@@ -109,6 +112,9 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
      */
     private final RunState runState;
 
+    /**
+     * Description
+     */
     private final String desc;
 
     ExecuteState(int value, RunState runState, String desc) {

@@ -135,7 +135,7 @@ public class WorkerClient {
         destinationClient.call(worker, consumer.toFunction(null));
     }
 
-    // -----------------------------------------------------------------------------
+    // --------------------------------------------------------------default package methods
 
     boolean isAliveWorker(Worker worker) {
         return worker != null && discoverWorker.isDiscoveredServer(worker);

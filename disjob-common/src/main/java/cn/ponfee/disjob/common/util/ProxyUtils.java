@@ -131,9 +131,9 @@ public final class ProxyUtils {
                 case "annotationType":
                     return annotationType;
                 case "hashCode":
-                    return System.identityHashCode(proxy);
+                    return hashCode(proxy);
                 case "toString":
-                    return annotationType.getName() + "@" + proxy.hashCode();
+                    return annotationType.getName() + "@" + hashCode(proxy);
                 // 以下方法在`java.lang.Object`类中用了final修饰，不会被覆写，实际调用不会走进来
                 case "getClass":
                 case "notify":
@@ -144,6 +144,10 @@ public final class ProxyUtils {
                     Object value = (attributes == null) ? null : attributes.get(methodName);
                     return value == null ? method.getDefaultValue() : ObjectUtils.cast(value, method.getReturnType());
             }
+        }
+
+        private int hashCode(Object proxy) {
+            return System.identityHashCode(proxy);
         }
     }
 
