@@ -220,7 +220,7 @@
       <if test="instanceId != null">
         AND instance_id = #{instanceId}
       </if>
-      <if test="root and instanceId == null">
+      <if test="tree and instanceId == null">
         AND rnstance_id IS NULL
       </if>
       <if test="runType != null">

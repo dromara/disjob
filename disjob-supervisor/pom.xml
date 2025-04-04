@@ -51,7 +51,6 @@
       <artifactId>disjob-dispatch-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
-
     <!-- Draw DAG graph image: used by DAGUtils -->
     <dependency>
       <groupId>guru.nidi</groupId>

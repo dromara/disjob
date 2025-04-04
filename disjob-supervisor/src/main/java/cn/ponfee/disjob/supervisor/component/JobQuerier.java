@@ -123,7 +123,7 @@ public class JobQuerier {
             SchedJobConverter.INSTANCE::convert
         );
 
-        if (pageRequest.isRoot()) {
+        if (pageRequest.isTree()) {
             if (pageRequest.getInstanceId() != null) {
                 pageResponse.forEachRow(e -> e.setPnstanceId(null));
             }

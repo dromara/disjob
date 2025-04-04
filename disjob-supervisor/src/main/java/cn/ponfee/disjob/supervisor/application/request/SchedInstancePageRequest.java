@@ -40,7 +40,7 @@ public class SchedInstancePageRequest extends PageRequest {
     private Integer runState;
     private Date startTime;
     private Date endTime;
-    private boolean root;
+    private boolean tree;
 
     public void authorize(String user, AuthorizeGroupService authorizeGroupService) {
         Assert.isTrue(jobId != null || instanceId != null, "JobId和InstanceId请至少输入一项");

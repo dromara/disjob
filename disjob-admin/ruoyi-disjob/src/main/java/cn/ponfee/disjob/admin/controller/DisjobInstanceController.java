@@ -243,7 +243,7 @@ public class DisjobInstanceController extends BaseController {
         return request;
     }
 
-    private Object queryForPage(SchedInstancePageRequest request, boolean root, String resetSearch) {
+    private Object queryForPage(SchedInstancePageRequest request, boolean tree, String resetSearch) {
         if (StringUtils.isBlank(resetSearch)) {
             return TableDataInfo.empty();
         }
@@ -255,7 +255,7 @@ public class DisjobInstanceController extends BaseController {
             return AjaxResult.error(e.getMessage());
         }
 
-        request.setRoot(root);
+        request.setTree(tree);
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
         return Pagination.toTableDataInfo(schedJobService.queryInstanceForPage(request));
