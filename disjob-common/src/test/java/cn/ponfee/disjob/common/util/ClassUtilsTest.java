@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import cn.ponfee.disjob.common.base.Symbol;
 import org.apache.commons.io.HexDump;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,33 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Ponfee
  */
 public class ClassUtilsTest {
+
+    @Test
+    public void testNewInstance() {
+        Assertions.assertFalse(ClassUtils.newInstance(boolean.class));
+        Assertions.assertFalse(ClassUtils.newInstance(Boolean.class));
+
+        Assertions.assertEquals(Symbol.Char.ZERO, ClassUtils.newInstance(char.class));
+        Assertions.assertEquals(Symbol.Char.ZERO, ClassUtils.newInstance(Character.class));
+
+        Assertions.assertEquals((byte) 0, ClassUtils.newInstance(byte.class));
+        Assertions.assertEquals((byte) 0, ClassUtils.newInstance(Byte.class));
+
+        Assertions.assertEquals((short) 0, ClassUtils.newInstance(short.class));
+        Assertions.assertEquals((short) 0, ClassUtils.newInstance(Short.class));
+
+        Assertions.assertEquals(0, ClassUtils.newInstance(int.class));
+        Assertions.assertEquals(0, ClassUtils.newInstance(Integer.class));
+
+        Assertions.assertEquals(0L, ClassUtils.newInstance(long.class));
+        Assertions.assertEquals(0L, ClassUtils.newInstance(Long.class));
+
+        Assertions.assertEquals(new Float("0"), ClassUtils.newInstance(float.class));
+        Assertions.assertEquals(new Float("0"), ClassUtils.newInstance(Float.class));
+
+        Assertions.assertEquals(new Double("0"), ClassUtils.newInstance(double.class));
+        Assertions.assertEquals(new Double("0"), ClassUtils.newInstance(Double.class));
+    }
 
     @Test
     public void testGetClass() {

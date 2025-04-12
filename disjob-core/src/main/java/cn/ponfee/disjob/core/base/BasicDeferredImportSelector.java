@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.RpcControllerConfigurer;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -93,7 +94,7 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
             return new JacksonDateConfigurer.Primary(objectMapper);
         }
 
-        @ConditionalOnProperty(prefix = "disjob.controller.exception-handler", name = "enabled", havingValue = "true", matchIfMissing = true)
+        @ConditionalOnExpression("${disjob.controller.exception-handler.enabled:true}")
         @Order(0)
         @Bean
         public ControllerExceptionHandler controllerExceptionHandler() {

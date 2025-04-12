@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.base.Null;
+import cn.ponfee.disjob.common.base.Symbol;
 import cn.ponfee.disjob.common.collect.ArrayHashKey;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.tuple.Tuple2;
@@ -93,8 +94,8 @@ public final class ClassUtils {
     }
 
     public static Set<String> fieldDiff(Class<?> a, Class<?> b) {
-        Set<String> set1 = ClassUtils.listFields(a).stream().map(Field::getName).collect(Collectors.toSet());
-        Set<String> set2 = ClassUtils.listFields(b).stream().map(Field::getName).collect(Collectors.toSet());
+        Set<String> set1 = getFields(a).stream().map(Field::getName).collect(Collectors.toSet());
+        Set<String> set2 = getFields(b).stream().map(Field::getName).collect(Collectors.toSet());
         return Sets.symmetricDifference(set1, set2);
     }
 
@@ -104,9 +105,9 @@ public final class ClassUtils {
      * @param clazz the class
      * @return a list filled fields
      */
-    public static List<Field> listFields(Class<?> clazz) {
+    public static List<Field> getFields(Class<?> clazz) {
         if (clazz.isInterface() || clazz == Object.class) {
-            throw new IllegalArgumentException("Class cannot be interface or Object.class: " + clazz);
+            return Collections.emptyList();
         }
 
         List<Field> list = new ArrayList<>();
@@ -128,15 +129,15 @@ public final class ClassUtils {
     }
 
     /**
-     * Returns the static field, find in class pointer chain
+     * Returns the static field, get in class pointer chain
      *
      * @param clazz           the clazz
      * @param staticFieldName the static field name
      * @return static field object
      */
-    public static Field findStaticFieldIncludeSuperClass(Class<?> clazz, String staticFieldName) {
+    public static Field getStaticFieldIncludeSuperClass(Class<?> clazz, String staticFieldName) {
         if (clazz == Object.class) {
-            throw new IllegalArgumentException("Cannot be Object.class");
+            return null;
         }
 
         Exception firstOccurException = null;
@@ -194,6 +195,27 @@ public final class ClassUtils {
         return obj == null ? null : obj.getClass().getName();
     }
 
+    public static Class<?> findAnnotatedClass(Class<?> supClass, Class<?> subClass, Class<? extends Annotation> annClass) {
+        if (supClass == null || subClass == null || !supClass.isAssignableFrom(subClass)) {
+            return null;
+        }
+        Deque<Class<?>> stack = Collects.newArrayDeque(subClass);
+        while (!stack.isEmpty()) {
+            subClass = stack.pop();
+            if (subClass.isAnnotationPresent(annClass)) {
+                return subClass;
+            }
+            for (Class<?> cls : Collects.concat(subClass.getInterfaces(), subClass.getSuperclass())) {
+                if (cls != null && supClass.isAssignableFrom(cls)) {
+                    stack.push(cls);
+                }
+            }
+        }
+        return null;
+    }
+
+    // -------------------------------------------------------------------------------------------package path & class path
+
     /**
      * 包名称转目录路径名<p>
      * getPackagePath("cn.ponfee.commons.reflect")  ->  cn/ponfee/commons/reflect
@@ -219,188 +241,6 @@ public final class ClassUtils {
             return ""; // none package name
         }
         return getPackagePath(className.substring(0, className.lastIndexOf('.')));
-    }
-
-    public static Class<?> findAnnotatedClass(Class<?> supClass, Class<?> subClass, Class<? extends Annotation> annClass) {
-        if (supClass == null || subClass == null || !supClass.isAssignableFrom(subClass)) {
-            return null;
-        }
-        Deque<Class<?>> stack = Collects.newArrayDeque(subClass);
-        while (!stack.isEmpty()) {
-            subClass = stack.pop();
-            if (subClass.isAnnotationPresent(annClass)) {
-                return subClass;
-            }
-            for (Class<?> cls : Collects.concat(subClass.getInterfaces(), subClass.getSuperclass())) {
-                if (cls != null && supClass.isAssignableFrom(cls)) {
-                    stack.push(cls);
-                }
-            }
-        }
-        return null;
-    }
-
-    // -----------------------------------------------------------------------------constructor & instance
-
-    @SuppressWarnings("unchecked")
-    public static <T> Constructor<T> getConstructor(Class<T> type, Class<?>... parameterTypes) {
-        boolean noArgs = ArrayUtils.isEmpty(parameterTypes);
-        Object key = noArgs ? type : Tuple2.of(type, ArrayHashKey.of((Object[]) parameterTypes));
-        Constructor<T> constructor = (Constructor<T>) CONSTRUCTOR_CACHE.computeIfAbsent(key, k -> {
-            try {
-                return getConstructor0(type, parameterTypes);
-            } catch (Exception e) {
-                // No such constructor, use placeholder
-                LOG.warn("Get constructor occur error: {}", e.getMessage());
-                return Null.BROKEN_CONSTRUCTOR;
-            }
-        });
-        return constructor == Null.BROKEN_CONSTRUCTOR ? null : constructor;
-    }
-
-    public static <T> T newInstance(Constructor<T> constructor) {
-        return newInstance(constructor, null);
-    }
-
-    public static <T> T newInstance(Constructor<T> constructor, Object[] args) {
-        checkObjectArray(args);
-
-        if (!constructor.isAccessible()) {
-            constructor.setAccessible(true);
-        }
-        try {
-            return ArrayUtils.isEmpty(args) ? constructor.newInstance() : constructor.newInstance(args);
-        } catch (Exception e) {
-            return ExceptionUtils.rethrow(e);
-        }
-    }
-
-    public static <T> T newInstance(Class<T> type, Class<?>[] parameterTypes, Object[] args) {
-        checkObjectArray(args);
-        checkSameLength(parameterTypes, args);
-        if (ArrayUtils.isEmpty(parameterTypes)) {
-            // no args constructor
-            return newInstance(type, null);
-        }
-
-        Constructor<T> constructor = getConstructor(type, parameterTypes);
-        if (constructor == null) {
-            throw new IllegalArgumentException("No such constructor: " + type + toString(parameterTypes));
-        }
-        return newInstance(constructor, args);
-    }
-
-    public static <T> T newInstance(Class<T> type) {
-        return newInstance(type, null);
-    }
-
-    /**
-     * 泛型参数的构造函数需要使用 {{@link #newInstance(Class, Class[], Object[])}} <p>
-     * ClassUtils.newInstance(Tuple3.class, new Object[]{1, 2, 3}) <p>
-     * ClassUtils.newInstance(Tuple2.class, new Object[]{new String[]{"a", "b"}, new Integer[]{1, 2}}) <p>
-     *
-     * @param type the class
-     * @param args the args
-     * @param <T>  class type
-     * @return instance
-     */
-    public static <T> T newInstance(Class<T> type, Object[] args) {
-        checkObjectArray(args);
-        if (ArrayUtils.isEmpty(args)) {
-            Constructor<T> constructor = getConstructor(type);
-            return constructor != null ? newInstance(constructor, null) : ObjenesisHelper.newInstance(type);
-        }
-
-        Class<?>[] parameterTypes = parseParameterTypes(args);
-        Constructor<T> constructor = obtainConstructor(type, parameterTypes);
-        if (constructor == null) {
-            throw new IllegalArgumentException("Not found constructor: " + type + toString(parameterTypes));
-        }
-        return newInstance(constructor, args);
-    }
-
-    // -------------------------------------------------------------------------------------------method & invoke
-
-    public static Method getMethod(Object caller, String methodName, Class<?>... parameterTypes) {
-        Tuple2<Class<?>, Predicates> tuple = obtainClass(caller);
-        Class<?> type = tuple.a;
-        boolean noArgs = ArrayUtils.isEmpty(parameterTypes);
-        Object key = noArgs ? Tuple2.of(type, methodName) : Tuple3.of(type, methodName, ArrayHashKey.of((Object[]) parameterTypes));
-        Method method = METHOD_CACHE.computeIfAbsent(key, k -> {
-            try {
-                Method m = getMethod0(type, methodName, parameterTypes);
-                return (tuple.b.equals(Modifier.isStatic(m.getModifiers())) && !m.isSynthetic()) ? m : null;
-            } catch (Exception e) {
-                // No such method, use placeholder
-                LOG.info("Get method failed: {}", e.getMessage());
-                return Null.BROKEN_METHOD;
-            }
-        });
-        return method == Null.BROKEN_METHOD ? null : method;
-    }
-
-    public static <T> T invoke(Object caller, Method method) {
-        return invoke(caller, method, null);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> T invoke(Object caller, Method method, Object[] args) {
-        checkObjectArray(args);
-        if (!method.isAccessible()) {
-            method.setAccessible(true);
-        }
-        try {
-            return (T) (ArrayUtils.isEmpty(args) ? method.invoke(caller) : method.invoke(caller, args));
-        } catch (Exception e) {
-            return ExceptionUtils.rethrow(e);
-        }
-    }
-
-    public static <T> T invoke(Object caller, String methodName) {
-        return invoke(caller, methodName, (Class<?>[]) null, null);
-    }
-
-    public static <T> T invoke(Object caller, String methodName, Class<?>[] parameterTypes, Object[] args) {
-        checkObjectArray(args);
-        checkSameLength(parameterTypes, args);
-        Method method = getMethod(caller, methodName, parameterTypes);
-        if (method == null) {
-            throw new IllegalArgumentException("No such method: " + caller.getClass() + "#" + methodName + toString(parameterTypes));
-        }
-        return invoke(caller, method, args);
-    }
-
-    public static <T> T invoke(Object caller, String methodName, Object[] args) {
-        checkObjectArray(args);
-        if (ArrayUtils.isEmpty(args)) {
-            return invoke(caller, methodName, (Class<?>[]) null, null);
-        }
-
-        Class<?>[] parameterTypes = parseParameterTypes(args);
-        Method method = obtainMethod(caller, methodName, parameterTypes);
-        if (method == null) {
-            Class<?> clazz = (caller instanceof Class<?>) ? (Class<?>) caller : caller.getClass();
-            throw new IllegalArgumentException("Not found method: " + clazz + "#" + methodName + toString(parameterTypes));
-        }
-        return invoke(caller, method, args);
-    }
-
-    public static <T> T invoke(Object caller, String methodName, String jsonArgs, Class<?>... parameterTypes) {
-        Method method = ClassUtils.getMethod(caller, methodName, parameterTypes);
-        Object[] args = Jsons.parseMethodArgs(jsonArgs, method);
-        return invoke(caller, method, args);
-    }
-
-    public static Tuple2<Class<?>, Predicates> obtainClass(Object obj) {
-        if (obj instanceof Class<?> && obj != Class.class) {
-            // 静态方法
-            // 普通Class类实例(如String.class)：只处理其所表示类的静态方法，如“String.valueOf(1)”。不支持Class类中的实例方法，如“String.class.getName()”
-            return Tuple2.of((Class<?>) obj, Predicates.Y);
-        } else {
-            // 实例方法
-            // 对于Class.class对象：只处理Class类中的实例方法，如“Class.class.getName()”。不支持Class类中的静态方法，如“Class.forName("cn.ponfee.commons.base.tuple.Tuple0")”
-            return Tuple2.of(obj.getClass(), Predicates.N);
-        }
     }
 
     /**
@@ -441,17 +281,152 @@ public final class ClassUtils {
         return url == null ? null : Files.toFile(url).getAbsolutePath() + File.separator;
     }
 
-    // -------------------------------------------------------------------------------------------private methods
+    // -----------------------------------------------------------------------------constructor & newInstance
 
-    private static void checkSameLength(Object[] a, Object[] b) {
-        if (!ArrayUtils.isSameLength(a, b)) {
-            throw new IllegalArgumentException("Different array length: " + Arrays.toString(a) + ", " + Arrays.toString(b));
+    @SuppressWarnings("unchecked")
+    public static <T> Constructor<T> getConstructor(Class<T> type, Class<?>... parameterTypes) {
+        Object key = (parameterTypes.length == 0) ? type : Tuple2.of(type, ArrayHashKey.of((Object[]) parameterTypes));
+        Constructor<T> constructor = (Constructor<T>) CONSTRUCTOR_CACHE.computeIfAbsent(key, k -> {
+            try {
+                return getConstructor0(type, parameterTypes);
+            } catch (Exception e) {
+                // No such constructor, use placeholder
+                LOG.warn("Get constructor occur error: {}", e.getMessage());
+                return Null.BROKEN_CONSTRUCTOR;
+            }
+        });
+        return constructor == Null.BROKEN_CONSTRUCTOR ? null : constructor;
+    }
+
+    public static <T> T newInstance(Constructor<T> constructor, Object... args) {
+        if (!constructor.isAccessible()) {
+            constructor.setAccessible(true);
+        }
+        try {
+            return constructor.newInstance(args);
+        } catch (Exception e) {
+            return ExceptionUtils.rethrow(e);
         }
     }
 
-    private static void checkObjectArray(Object[] array) {
-        if (array != null && array.getClass() != Object[].class) {
-            throw new IllegalArgumentException("Args must Object[] type, but actual is " + array.getClass().getSimpleName());
+    /**
+     * ClassUtils.newInstance(Tuple3.class, 1, 2, 3) <br/>
+     * ClassUtils.newInstance(Tuple2.class, new String[]{"a", "b"}, new Integer[]{1, 2}) <br/>
+     *
+     * @param type the class
+     * @param args the args
+     * @param <T>  class type
+     * @return instance
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T newInstance(Class<T> type, Object... args) {
+        if (args.length == 0) {
+            if (Map.class == type) {
+                return (T) new HashMap<>(8);
+            }
+            if (Set.class == type) {
+                return (T) new HashSet<>();
+            }
+            if (Collection.class == type || List.class == type) {
+                return (T) new ArrayList<>();
+            }
+            if (Dictionary.class == type) {
+                return (T) new Hashtable<>();
+            }
+            if (boolean.class == type || Boolean.class == type) {
+                return (T) Boolean.FALSE;
+            }
+            if (char.class == type || Character.class == type) {
+                return (T) (Character) Symbol.Char.ZERO;
+            }
+            if (type.isPrimitive() || PrimitiveTypes.isWrapperType(type)) {
+                Class<?> wrapper = PrimitiveTypes.ofPrimitiveOrWrapper(type).wrapper();
+                return (T) newInstance(wrapper, new Class<?>[]{String.class}, new Object[]{"0"});
+            }
+
+            Constructor<T> constructor = getConstructor(type);
+            return constructor != null ? newInstance(constructor) : ObjenesisHelper.newInstance(type);
+        }
+
+        Class<?>[] parameterTypes = parseParameterTypes(args);
+        Constructor<T> constructor = obtainConstructor(type, parameterTypes);
+        if (constructor == null) {
+            throw new IllegalArgumentException("Not found constructor: " + type + toString(parameterTypes));
+        }
+        return newInstance(constructor, args);
+    }
+
+    public static <T> T newInstance(Class<T> type, Class<?>[] parameterTypes, Object[] args) {
+        Assert.isTrue(parameterTypes.length == args.length, "Inconsistent constructor parameter count.");
+        Constructor<T> constructor = getConstructor(type, parameterTypes);
+        if (constructor == null) {
+            throw new IllegalArgumentException("No such constructor: " + type + toString(parameterTypes));
+        }
+        return newInstance(constructor, args);
+    }
+
+    // -------------------------------------------------------------------------------------------method & invoke
+
+    public static Method getMethod(Object caller, String methodName, Class<?>... parameterTypes) {
+        Tuple2<Class<?>, Predicates> tuple = obtainClass(caller);
+        Class<?> type = tuple.a;
+        Object key = (parameterTypes.length == 0) ?
+            Tuple2.of(type, methodName) : Tuple3.of(type, methodName, ArrayHashKey.of((Object[]) parameterTypes));
+        Method method = METHOD_CACHE.computeIfAbsent(key, k -> {
+            try {
+                Method m = getMethod0(type, methodName, parameterTypes);
+                return (tuple.b.equals(Modifier.isStatic(m.getModifiers())) && !m.isSynthetic()) ? m : null;
+            } catch (Exception e) {
+                // No such method, use placeholder
+                LOG.info("Get method failed: {}", e.getMessage());
+                return Null.BROKEN_METHOD;
+            }
+        });
+        return method == Null.BROKEN_METHOD ? null : method;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(Object caller, Method method, Object... args) {
+        if (!method.isAccessible()) {
+            method.setAccessible(true);
+        }
+        try {
+            return (T) method.invoke(caller, args);
+        } catch (Exception e) {
+            return ExceptionUtils.rethrow(e);
+        }
+    }
+
+    public static <T> T invoke(Object caller, String methodName, Object... args) {
+        Class<?>[] parameterTypes = parseParameterTypes(args);
+        Method method = obtainMethod(caller, methodName, parameterTypes);
+        if (method == null) {
+            Class<?> clazz = (caller instanceof Class<?>) ? (Class<?>) caller : caller.getClass();
+            throw new IllegalArgumentException("Not found method: " + clazz + "#" + methodName + toString(parameterTypes));
+        }
+        return invoke(caller, method, args);
+    }
+
+    public static <T> T invoke(Object caller, String methodName, Class<?>[] parameterTypes, Object[] args) {
+        Assert.isTrue(parameterTypes.length == args.length, "Inconsistent method parameter count.");
+        Method method = getMethod(caller, methodName, parameterTypes);
+        if (method == null) {
+            throw new IllegalArgumentException("No such method: " + caller.getClass() + "#" + methodName + toString(parameterTypes));
+        }
+        return invoke(caller, method, args);
+    }
+
+    // -------------------------------------------------------------------------------------------private methods
+
+    private static Tuple2<Class<?>, Predicates> obtainClass(Object obj) {
+        if (obj instanceof Class<?> && obj != Class.class) {
+            // 静态方法
+            // 普通Class类实例(如String.class)：只处理其所表示类的静态方法，如“String.valueOf(1)”。不支持Class类中的实例方法，如“String.class.getName()”
+            return Tuple2.of((Class<?>) obj, Predicates.Y);
+        } else {
+            // 实例方法
+            // 对于Class.class对象：只处理Class类中的实例方法，如“Class.class.getName()”。不支持Class类中的静态方法，如“Class.forName("cn.ponfee.commons.base.tuple.Tuple0")”
+            return Tuple2.of(obj.getClass(), Predicates.N);
         }
     }
 
@@ -528,10 +503,10 @@ public final class ClassUtils {
             return null;
         }
         for (Method method : methods) {
-            boolean matches = method.getName().equals(methodName)
-                && !method.isSynthetic()
-                && flag.equals(Modifier.isStatic(method.getModifiers()))
-                && matches(method.getParameterTypes(), actualTypes);
+            boolean matches = method.getName().equals(methodName) &&
+                !method.isSynthetic() &&
+                flag.equals(Modifier.isStatic(method.getModifiers())) &&
+                matches(method.getParameterTypes(), actualTypes);
             if (matches) {
                 return method;
             }

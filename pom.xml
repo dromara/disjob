@@ -75,7 +75,7 @@
 
     <spring-boot.version>2.7.18</spring-boot.version>
     <mapstruct.version>1.6.3</mapstruct.version>
-    <guava.version>33.4.5-jre</guava.version>
+    <guava.version>33.4.7-jre</guava.version>
     <spotbugs.version>4.9.3</spotbugs.version>
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-io.version>2.18.0</commons-io.version>
@@ -254,7 +254,7 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.12</version>
+          <version>0.8.13</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

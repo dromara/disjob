@@ -83,7 +83,7 @@ public class EmbeddedH2DatabaseServer {
     }
 
     private static void testScript(JdbcTemplate jdbcTemplate) {
-        String scriptPath = MavenProjects.getProjectBaseDir() + "/src/main/DB/H2/H2_SCRIPT.sql";
+        String scriptPath = MavenProjects.getProjectBaseDir() + "/DB/H2/H2_SCRIPT.sql";
 
         // 加载脚本方式一：
         //jdbcTemplate.execute("RUNSCRIPT FROM '" + scriptPath + "'");

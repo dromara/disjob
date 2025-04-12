@@ -125,7 +125,7 @@ disjob                                        # 主项目①pom.xml
 > 已配置不同的端口可同时启动，可以在开发工具中运行Java main方法，也可通过`java -jar`命令运行构建好的jar包
 
 - [启动内嵌的本地Mysql & Redis](disjob-test/src/main/java/cn/ponfee/disjob/test/EmbeddedMysqlAndRedisServer.java)
-  - MacOS系统若报`MariaDB`的“[Library not loaded](disjob-test/src/main/DB/MariaDB/MariaDB.md)”错误时参考
+  - MacOS系统若报`MariaDB`的“[Library not loaded](disjob-test/DB/MariaDB/README.md)”错误时参考
   - 使用客户端工具连接mysql时，用户名为`root`，无需密码
   - 启动时已经自动执行了初始化的SQL脚本
   - 启动失败需要检查下端口是否被占用（mysql端口3306，redis端口6379）

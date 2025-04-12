@@ -77,7 +77,7 @@ public final class Jsons {
     /**
      * Object mapper support json5
      */
-    public static final ObjectMapper JSON5 = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL)
+    public static final ObjectMapper JSON5 = createObjectMapper(JsonInclude.Include.NON_NULL)
         .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES.mappedFeature())                    // 键和值：可以用单引号
         .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER.mappedFeature()) // 字符串值：可以通过转义换行符来跨越多行
         .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())          // 允许有未转义的控制符

@@ -48,11 +48,11 @@ public class MavenProjects {
     }
 
     public static byte[] getMainJavaFileAsBytes(Class<?> clazz) {
-        return Files.toByteArray(MavenProjects.getMainJavaFile(clazz));
+        return Files.toByteArray(getMainJavaFile(clazz));
     }
 
     public static String getMainJavaFileAsString(Class<?> clazz) {
-        return Files.toString(MavenProjects.getMainJavaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
+        return Files.toString(getMainJavaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 
     public static File getTestJavaFile(Class<?> clazz) {
@@ -60,11 +60,11 @@ public class MavenProjects {
     }
 
     public static byte[] getTestJavaFileAsBytes(Class<?> clazz) {
-        return Files.toByteArray(MavenProjects.getTestJavaFile(clazz));
+        return Files.toByteArray(getTestJavaFile(clazz));
     }
 
     public static String getTestJavaFileAsString(Class<?> clazz) {
-        return Files.toString(MavenProjects.getTestJavaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
+        return Files.toString(getTestJavaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 
     public static String getMainJavaPath(String basePackage) {
@@ -90,11 +90,11 @@ public class MavenProjects {
     }
 
     public static byte[] getMainScalaFileAsBytes(Class<?> clazz) {
-        return Files.toByteArray(MavenProjects.getMainScalaFile(clazz));
+        return Files.toByteArray(getMainScalaFile(clazz));
     }
 
     public static String getMainScalaFileAsString(Class<?> clazz) {
-        return Files.toString(MavenProjects.getMainScalaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
+        return Files.toString(getMainScalaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 
     public static File getTestScalaFile(Class<?> clazz) {
@@ -102,11 +102,11 @@ public class MavenProjects {
     }
 
     public static byte[] getTestScalaFileAsBytes(Class<?> clazz) {
-        return Files.toByteArray(MavenProjects.getTestScalaFile(clazz));
+        return Files.toByteArray(getTestScalaFile(clazz));
     }
 
     public static String getTestScalaFileAsString(Class<?> clazz) {
-        return Files.toString(MavenProjects.getTestScalaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
+        return Files.toString(getTestScalaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 
     public static String getMainScalaPath(String basePackage) {
@@ -164,7 +164,7 @@ public class MavenProjects {
     }
 
     public static byte[] getMainClassFileAsBytes(Class<?> clazz) {
-        return Files.toByteArray(MavenProjects.getMainClassFile(clazz));
+        return Files.toByteArray(getMainClassFile(clazz));
     }
 
     public static String getTestClassPath(String basePackage) {
@@ -176,7 +176,7 @@ public class MavenProjects {
     }
 
     public static byte[] getTestClassFileAsBytes(Class<?> clazz) {
-        return Files.toByteArray(MavenProjects.getTestClassFile(clazz));
+        return Files.toByteArray(getTestClassFile(clazz));
     }
 
 }

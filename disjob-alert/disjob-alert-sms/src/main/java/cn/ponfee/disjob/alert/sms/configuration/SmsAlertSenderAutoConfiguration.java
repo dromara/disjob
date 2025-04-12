@@ -23,8 +23,8 @@ import cn.ponfee.disjob.alert.sms.SmsAlertReadConfig;
 import cn.ponfee.disjob.alert.sms.SmsAlertSender;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
@@ -34,7 +34,7 @@ import org.springframework.core.Ordered;
  *
  * @author TJxiaobao
  */
-@ConditionalOnProperty(name = Alerter.ENABLED_KEY, havingValue = "true", matchIfMissing = true)
+@ConditionalOnExpression("${" + Alerter.ENABLED_KEY + ":true}")
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(SmsAlertSenderProperties.class)
 public class SmsAlertSenderAutoConfiguration {

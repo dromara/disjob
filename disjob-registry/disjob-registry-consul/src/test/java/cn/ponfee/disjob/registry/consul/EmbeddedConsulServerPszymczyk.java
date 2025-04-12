@@ -50,7 +50,7 @@ public final class EmbeddedConsulServerPszymczyk {
     }
 
     private static Path createConsulBinaryDownloadDirectory() throws IOException {
-        String path = MavenProjects.getProjectBaseDir() + "/src/bin/consul";
+        String path = MavenProjects.getProjectBaseDir() + "/bin/consul";
         return Files.mkdirIfNotExists(path).toPath();
     }
 

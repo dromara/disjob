@@ -40,6 +40,10 @@ public class SchedInstancePageRequest extends PageRequest {
     private Integer runState;
     private Date startTime;
     private Date endTime;
+
+    /**
+     * 是否展示树形结构
+     */
     private boolean tree;
 
     public void authorize(String user, AuthorizeGroupService authorizeGroupService) {

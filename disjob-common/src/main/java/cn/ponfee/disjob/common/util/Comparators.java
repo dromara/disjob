@@ -51,15 +51,15 @@ public final class Comparators {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static int compare(Object a, Object b) {
         if (a == b) {
-            return Comparators.EQ;
+            return EQ;
         }
         if (a == null) {
             // null last
-            return Comparators.GT;
+            return GT;
         }
         if (b == null) {
             // null last
-            return Comparators.LT;
+            return LT;
         }
 
         if ((a instanceof Comparable) && (b instanceof Comparable)) {
@@ -72,7 +72,7 @@ public final class Comparators {
 
         // Fields.addressOf
         int res = Integer.compare(System.identityHashCode(a.getClass()), System.identityHashCode(b.getClass()));
-        return res != Comparators.EQ ? res : Integer.compare(System.identityHashCode(a), System.identityHashCode(b));
+        return res != EQ ? res : Integer.compare(System.identityHashCode(a), System.identityHashCode(b));
     }
 
     public static <T extends Comparable<? super T>> int compareNullsFirst(T a, T b) {

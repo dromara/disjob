@@ -111,7 +111,7 @@ disjob                                        # Main project①pom.xml
 > Configured different ports, run the java main class in IDE, or run the built jar package with the `java -jar` command.
 
 - [Start the embedded local Mysql & Redis](disjob-test/src/main/java/cn/ponfee/disjob/test/EmbeddedMysqlAndRedisServer.java)
-    - Refer to this document if reports MariaDB "[Library not loaded](disjob-test/src/main/DB/MariaDB/MariaDB.md)" error on MacOSX
+    - Refer to this document if reports MariaDB "[Library not loaded](disjob-test/DB/MariaDB/README.md)" error on MacOSX
     - When connecting to mysql with a client tool, the username is `root`, no password is required
     - The initialization SQL script has been automatically executed at startup
 - [Start the Worker Java-main application](disjob-samples/disjob-samples-frameless-worker/src/main/java/cn/ponfee/disjob/samples/worker/WorkerFramelessMain.java)

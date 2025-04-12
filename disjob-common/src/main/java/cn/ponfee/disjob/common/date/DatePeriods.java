@@ -42,7 +42,7 @@ public enum DatePeriods {
     /**
      * 每毫秒的
      */
-    PER_MILLIS(ChronoUnit.MILLIS, 1),
+    PER_MILLISECOND(ChronoUnit.MILLIS, 1),
 
     /**
      * 每秒钟的
@@ -92,12 +92,12 @@ public enum DatePeriods {
     /**
      * 每十年的
      */
-    DECADES(ChronoUnit.DECADES, 1),
+    DECENNIAL(ChronoUnit.DECADES, 1),
 
     /**
      * 每百年的（世纪）
      */
-    CENTURIES(ChronoUnit.CENTURIES, 1),
+    CENTENNIAL(ChronoUnit.CENTURIES, 1),
 
     ;
 

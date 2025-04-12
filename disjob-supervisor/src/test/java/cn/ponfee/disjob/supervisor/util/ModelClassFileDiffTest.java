@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.application;
+package cn.ponfee.disjob.supervisor.util;
 
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobAddRequest;

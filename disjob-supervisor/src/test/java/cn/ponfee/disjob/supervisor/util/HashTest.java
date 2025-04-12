@@ -19,7 +19,6 @@ package cn.ponfee.disjob.supervisor.util;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.util.Bytes;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.supervisor.base.SpringContextTest;
 import com.google.common.math.IntMath;
@@ -44,14 +43,7 @@ import java.util.stream.IntStream;
  */
 public class HashTest {
 
-    private Integer get(TreeMap<String, Integer> treeMap, String key) {
-        Integer val = treeMap.get(key);
-        if (val != null) {
-            return val;
-        }
-        SortedMap<String, Integer> headMap = treeMap.headMap(key);
-        return headMap.isEmpty() ? treeMap.firstEntry().getValue() : treeMap.get(headMap.lastKey());
-    }
+    static final long round = 1_000_000L;
 
     @Test
     public void testConsistentHash() {
@@ -104,8 +96,6 @@ public class HashTest {
         Assertions.assertEquals(String.class, Class.forName("java.lang.String"));
     }
 
-    static long round = 1_000_000L;
-
     @Test
     public void testNexFloat() {
         for (long i = 0; i < round; i++) {
@@ -133,9 +123,8 @@ public class HashTest {
     @Test
     public void testExpression() {
         Assertions.assertEquals("cn/ponfee/disjob/supervisor/util", ClassUtils.getPackagePath(getClass()));
-
         int i = 9;
-        int num = i < 10 ? i * 2 : round(i / 0);
+        int num = i < 10 ? i * 2 : i / 0;
         Assertions.assertEquals(num, 18);
     }
 
@@ -149,27 +138,6 @@ public class HashTest {
         Assertions.assertTrue(Object.class.isAssignableFrom(String.class));
         Assertions.assertEquals(1, 1 ^ 0);
         Assertions.assertEquals(0, 1 ^ 1);
-    }
-
-    private int round(int rounding) {
-        throw new RuntimeException();
-    }
-
-    private static String uuid32(UUID uuid) {
-        return Bytes.toHex(uuid.getMostSignificantBits(), true)
-            + Bytes.toHex(uuid.getLeastSignificantBits(), true);
-    }
-
-    private static byte[] uuid(UUID uuid) {
-        byte[] value = new byte[16];
-        Bytes.put(uuid.getMostSignificantBits(), value, 0);
-        Bytes.put(uuid.getLeastSignificantBits(), value, 8);
-        return value;
-    }
-
-    @Test
-    public void testNet() {
-        System.out.println(NetUtils.getLocalHost());
     }
 
     @Test
@@ -190,6 +158,27 @@ public class HashTest {
         });
         System.out.println("------------1");
         Thread.sleep(200);
+    }
+
+    private static String uuid32(UUID uuid) {
+        return Bytes.toHex(uuid.getMostSignificantBits(), true)
+            + Bytes.toHex(uuid.getLeastSignificantBits(), true);
+    }
+
+    private static byte[] uuid(UUID uuid) {
+        byte[] value = new byte[16];
+        Bytes.put(uuid.getMostSignificantBits(), value, 0);
+        Bytes.put(uuid.getLeastSignificantBits(), value, 8);
+        return value;
+    }
+
+    private Integer get(TreeMap<String, Integer> treeMap, String key) {
+        Integer val = treeMap.get(key);
+        if (val != null) {
+            return val;
+        }
+        SortedMap<String, Integer> headMap = treeMap.headMap(key);
+        return headMap.isEmpty() ? treeMap.firstEntry().getValue() : treeMap.get(headMap.lastKey());
     }
 
 }

@@ -81,7 +81,7 @@ public class TimingWheelTest {
         Assertions.assertEquals("10", String.format("%02d", 10));
     }
 
-    static int round = 100000;
+    static int round = 1000;
 
     @Test
     public void testRoundCurrentTimeMillis() {

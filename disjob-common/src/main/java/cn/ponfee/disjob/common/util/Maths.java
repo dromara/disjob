@@ -70,13 +70,13 @@ public class Maths {
      *   c: ~(-1L << bits)
      *   d: Long.MAX_VALUE >>> (63 - bits)
      *
-     *  bitsMask(0)  -> 0                   -> 0000000000000000000000000000000000000000000000000000000000000000
-     *  bitsMask(1)  -> 1                   -> 0000000000000000000000000000000000000000000000000000000000000001
-     *  bitsMask(2)  -> 3                   -> 0000000000000000000000000000000000000000000000000000000000000011
-     *  bitsMask(10) -> 1023                -> 0000000000000000000000000000000000000000000000000000001111111111
-     *  bitsMask(20) -> 1048575             -> 0000000000000000000000000000000000000000000011111111111111111111
-     *  bitsMask(63) -> 9223372036854775807 -> 0111111111111111111111111111111111111111111111111111111111111111
-     *  bitsMask(64) -> -1                  -> 1111111111111111111111111111111111111111111111111111111111111111
+     *  bitsMask(0)  = 0                  : 0000000000000000000000000000000000000000000000000000000000000000
+     *  bitsMask(1)  = 1                  : 0000000000000000000000000000000000000000000000000000000000000001
+     *  bitsMask(2)  = 3                  : 0000000000000000000000000000000000000000000000000000000000000011
+     *  bitsMask(10) = 1023               : 0000000000000000000000000000000000000000000000000000001111111111
+     *  bitsMask(20) = 1048575            : 0000000000000000000000000000000000000000000011111111111111111111
+     *  bitsMask(63) = 9223372036854775807: 0111111111111111111111111111111111111111111111111111111111111111
+     *  bitsMask(64) = -1                 : 1111111111111111111111111111111111111111111111111111111111111111
      * </pre>
      *
      * @param bits the bit count
@@ -126,58 +126,64 @@ public class Maths {
         return result;
     }
 
-    public static int abs(int a) {
+    public static int abs(int n) {
         // Integer.MIN_VALUE & 0x7FFFFFFF = 0
-        return (a == Integer.MIN_VALUE) ? Integer.MAX_VALUE : (a < 0) ? -a : a;
+        if (n == Integer.MIN_VALUE) {
+            return Integer.MAX_VALUE;
+        }
+        return (n < 0) ? -n : n;
     }
 
-    public static long abs(long a) {
-        return (a == Long.MIN_VALUE) ? Long.MAX_VALUE : (a < 0) ? -a : a;
+    public static long abs(long n) {
+        if (n == Long.MIN_VALUE) {
+            return Long.MAX_VALUE;
+        }
+        return (n < 0) ? -n : n;
     }
 
-    // ------------------------------------------------------------------------int plus/minus
+    // ------------------------------------------------------------------------add & subtract
 
-    public static int plus(int a, int b) {
+    public static int add(int a, int b) {
         if (a > 0 && b > 0) {
             return Integer.MAX_VALUE - b < a ? Integer.MAX_VALUE : a + b;
-        } else if (a < 0 && b < 0) {
-            return Integer.MIN_VALUE - b > a ? Integer.MIN_VALUE : a + b;
-        } else {
-            return a + b;
         }
+        if (a < 0 && b < 0) {
+            return Integer.MIN_VALUE - b > a ? Integer.MIN_VALUE : a + b;
+        }
+        return a + b;
     }
 
-    public static int minus(int a, int b) {
+    public static int subtract(int a, int b) {
         if (a > 0 && b < 0) {
             return Integer.MAX_VALUE + b < a ? Integer.MAX_VALUE : a - b;
-        } else if (a < 0 && b > 0) {
-            return Integer.MIN_VALUE + b > a ? Integer.MIN_VALUE : a - b;
-        } else {
-            return a - b;
         }
+        if (a < 0 && b > 0) {
+            return Integer.MIN_VALUE + b > a ? Integer.MIN_VALUE : a - b;
+        }
+        return a - b;
     }
-
-    // ------------------------------------------------------------------------long plus/minus
 
     public static long add(long a, long b) {
         if (a > 0 && b > 0) {
             return Long.MAX_VALUE - b < a ? Long.MAX_VALUE : a + b;
-        } else if (a < 0 && b < 0) {
-            return Long.MIN_VALUE - b > a ? Long.MIN_VALUE : a + b;
-        } else {
-            return a + b;
         }
+        if (a < 0 && b < 0) {
+            return Long.MIN_VALUE - b > a ? Long.MIN_VALUE : a + b;
+        }
+        return a + b;
     }
 
     public static long subtract(long a, long b) {
         if (a > 0 && b < 0) {
             return Long.MAX_VALUE + b < a ? Long.MAX_VALUE : a - b;
-        } else if (a < 0 && b > 0) {
-            return Long.MIN_VALUE + b > a ? Long.MIN_VALUE : a - b;
-        } else {
-            return a - b;
         }
+        if (a < 0 && b > 0) {
+            return Long.MIN_VALUE + b > a ? Long.MIN_VALUE : a - b;
+        }
+        return a - b;
     }
+
+    // ------------------------------------------------------------------------gcd
 
     /**
      * Returns the greatest common divisor
@@ -190,11 +196,9 @@ public class Maths {
         if (a < 0 || b < 0) {
             throw new ArithmeticException();
         }
-
         if (a == 0 || b == 0) {
             return Math.abs(a - b);
         }
-
         for (int c; (c = a % b) != 0; ) {
             a = b;
             b = c;
@@ -213,7 +217,6 @@ public class Maths {
         for (int i = 1; i < array.length; i++) {
             result = gcd(result, array[i]);
         }
-
         return result;
     }
 

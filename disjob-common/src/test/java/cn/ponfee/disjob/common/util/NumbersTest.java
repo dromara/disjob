@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Numbers test
@@ -47,5 +48,38 @@ public class NumbersTest {
     public void testSlice() {
         Assertions.assertEquals("[4, 4, 3]", Arrays.toString(Numbers.slice(11, 3)));
     }
+
+
+    @Test
+    public void testFormat() {
+        Assertions.assertEquals("3.142", Numbers.format(Math.PI));
+        Assertions.assertEquals("314.16%", Numbers.percent(Math.PI, 2));
+
+        int i = 100;
+        try {
+            i = 1 / 0;
+        } catch (Exception e) {
+        }
+        Assertions.assertEquals(100, i);
+    }
+
+    @Test
+    public void testRandom() {
+        double min = 1.0D, max = 0.0D;
+        Random random = new Random();
+        for (int i = 0; i < 1000; i++) {
+            double r = random.nextDouble();
+            if (r < min) {
+                min = r;
+            }
+            if (r > max) {
+                max = r;
+            }
+        }
+
+        System.out.printf("Random min=%s, max=%s%n", Numbers.format(min, "#,##0.000000000"), Numbers.format(max, "#,##0.000000000"));
+        System.out.println(Numbers.format(min + max, "#,##0.000000000"));
+    }
+
 
 }

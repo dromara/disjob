@@ -23,9 +23,7 @@ import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.GroupInfoService;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
-import cn.ponfee.disjob.supervisor.base.DefaultGroupInfoService;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor.EnableSupervisorConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -69,12 +67,6 @@ public @interface EnableSupervisor {
     @EnableConfigurationProperties(SupervisorProperties.class)
     @ComponentScan(basePackageClasses = SupervisorStartup.class)
     class EnableSupervisorConfiguration {
-
-        @ConditionalOnMissingBean
-        @Bean
-        public GroupInfoService groupInfoService() {
-            return DefaultGroupInfoService.INSTANCE;
-        }
 
         @Bean
         public Supervisor.Local localSupervisor(WebServerApplicationContext webServerApplicationContext,

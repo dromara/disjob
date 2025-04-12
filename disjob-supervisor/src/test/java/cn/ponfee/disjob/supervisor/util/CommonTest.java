@@ -29,6 +29,11 @@ import cn.ponfee.disjob.core.enums.ShutdownStrategy;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Lists;
+import lombok.Getter;
+import lombok.Setter;
+import org.assertj.core.api.Condition;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +45,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Ponfee
@@ -283,6 +292,112 @@ public class CommonTest {
         cache.cleanUp();
         Assertions.assertEquals(1, cache.size());
         System.out.println(cache.stats());
+    }
+
+
+    @Test
+    public void testToMapHasNull() {
+        Assertions.assertThrows(
+            NullPointerException.class,
+            () -> Arrays.stream(new Tuple2[]{Tuple2.of("a", "123"), Tuple2.of("b", null)}).collect(Collectors.toMap(t -> t.a, t -> t.b, (v1, v2) -> v2))
+        );
+    }
+
+    @Test
+    public void testToMapNoneNull() {
+        Arrays.stream(new Tuple2[]{Tuple2.of("a", "123"), Tuple2.of("b", "abc")})
+            .collect(Collectors.toMap(t -> t.a, t -> t.b, (v1, v2) -> v2));
+    }
+
+    @Test
+    public void testIntStream() {
+        String mainThread = Thread.currentThread().getName();
+        System.out.println(mainThread);
+        System.out.println();
+        System.out.println("=================================");
+        System.out.println("Using Sequential Stream");
+        System.out.println("=================================");
+        int[] array = {1};
+        int length = array.length;
+        IntStream intArrStream = Arrays.stream(array);
+        intArrStream.forEach(s -> System.out.println(s + " " + Thread.currentThread().getName()));
+
+        System.out.println("\n");
+
+        System.out.println("=================================");
+        System.out.println("Using Parallel Stream");
+        System.out.println("=================================");
+        IntStream intParallelStream = Arrays.stream(array).parallel();
+        intParallelStream.forEach(s ->
+            {
+                System.out.println(s + " " + Thread.currentThread().getName());
+                if (length == 1) {
+                    Assertions.assertEquals(Thread.currentThread().getName(), mainThread);
+                }
+            }
+        );
+    }
+
+    @Test
+    public void test1() {
+        List<String> stringList = Lists.newArrayList("A", "B", "C");
+        assertThat(stringList).contains("A"); //true
+        assertThat(stringList).doesNotContain("D"); //true
+        assertThat(stringList).containsExactly("A", "B", "C"); //true
+    }
+
+    @Test
+    public void test2() {
+        List<String> stringList = Lists.newArrayList("A", "B", "C");
+        SoftAssertions softly = new SoftAssertions();
+        softly.assertThat(stringList).contains("A"); //true
+        softly.assertThat(stringList).containsExactly("A", "B", "C"); //true
+        // Don't forget to call SoftAssertions global verification!
+        softly.assertAll();
+    }
+
+    @Test
+    public void test3() {
+        Integer integer1 = 127;
+        Integer integer2 = 127;
+        Integer integer3 = 128;
+        Integer integer4 = 128;
+        assertEquals(integer1, integer2, "127 is same");
+        assertEquals(integer3, integer4, "128 is  equals");
+        assertNotSame(integer3, integer4, "128 is not same");
+
+        assertThat("").isEmpty();
+        assertThat("555").isNotEmpty();
+        assertThat("Gandalf the grey").containsAnyOf("grey", "black");
+
+        Person person = new Person("tom");
+
+        assertNotNull(person);
+        assertEquals(person, person);
+        assertSame(person, person);
+        assertInstanceOf(person.getClass(), person);
+
+        List<Person> list1 = Arrays.asList(person, new Person("test"));
+        List<Person> list2 = Arrays.asList(new Person("abc"), new Person("test"));
+        Condition<Person> condition1 = new Condition<>(list1::contains, "list1");
+        Condition<Person> condition2 = new Condition<>(list2::contains, "list2");
+        assertThat(person).is(anyOf(condition1, condition2));
+        assertThat(person).isNot(allOf(condition1, condition2));
+        assertThat(person).hasFieldOrProperty("name");
+        assertThat(person).hasFieldOrPropertyWithValue("name", "tom");
+    }
+
+    @Getter
+    @Setter
+    public static class Person {
+        String name;
+        int age;
+
+        public Person() { }
+
+        public Person(String name) {
+            this.name = name;
+        }
     }
 
 }

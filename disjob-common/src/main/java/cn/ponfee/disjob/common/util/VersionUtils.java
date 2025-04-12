@@ -18,17 +18,16 @@ package cn.ponfee.disjob.common.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
@@ -68,6 +67,7 @@ public final class VersionUtils {
             props.load(jarFile.getInputStream(jarEntry));
             return props.getProperty(VERSION);
         } catch (FileNotFoundException ignored) {
+            // e.g.: /Users/ponfee/scm/gitee/disjob/disjob-supervisor/target/classes/
             return "file".equals(url.getProtocol()) ? getLocalMavenPomVersion(url) : null;
         } catch (Exception ignored) {
             return null;
@@ -99,12 +99,10 @@ public final class VersionUtils {
         return jarEntry;
     }
 
+    /*
     private static String getLocalMavenPomVersion(URL url) {
-        try {
-            // e.g.: /Users/ponfee/scm/gitee/disjob/disjob-supervisor/target/classes/
-            String mavenPomFilePath = new File(url.toURI()).getParentFile().getParentFile().getAbsolutePath() + "/pom.xml";
-            @SuppressWarnings("all")
-            Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(mavenPomFilePath);
+        try (FileInputStream inputStream = new FileInputStream(getLocalMavenPomFile(url))) {
+            Document document = Files.parseToXmlDocument(inputStream);
             document.getDocumentElement().normalize();
             Element root = document.getDocumentElement();
             if (!"project".equals(root.getNodeName())) {
@@ -138,6 +136,25 @@ public final class VersionUtils {
             }
         }
         return null;
+    }
+    */
+
+    private static String getLocalMavenPomVersion(URL url) {
+        try (FileInputStream inputStream = new FileInputStream(getLocalMavenPomFile(url))) {
+            Document document = Files.parseToXmlDocument(inputStream);
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            String version = (String) xpath.evaluate("/project/version", document, XPathConstants.STRING);
+            if (StringUtils.isBlank(version)) {
+                version = (String) xpath.evaluate("/project/parent/version", document, XPathConstants.STRING);
+            }
+            return version;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static String getLocalMavenPomFile(URL url) throws Exception {
+        return new File(url.toURI()).getParentFile().getParentFile().getAbsolutePath() + "/pom.xml";
     }
 
 }

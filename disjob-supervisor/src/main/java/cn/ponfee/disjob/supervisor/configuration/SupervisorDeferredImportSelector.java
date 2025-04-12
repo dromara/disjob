@@ -18,6 +18,8 @@ package cn.ponfee.disjob.supervisor.configuration;
 
 import cn.ponfee.disjob.common.lock.DatabaseLockTemplate;
 import cn.ponfee.disjob.common.lock.LockTemplate;
+import cn.ponfee.disjob.core.base.GroupInfoService;
+import cn.ponfee.disjob.supervisor.base.DefaultGroupInfoService;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -42,6 +44,12 @@ class SupervisorDeferredImportSelector implements DeferredImportSelector {
     }
 
     private static class SupervisorDeferredConfiguration {
+
+        @ConditionalOnMissingBean
+        @Bean
+        public GroupInfoService groupInfoService() {
+            return DefaultGroupInfoService.INSTANCE;
+        }
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)

@@ -19,7 +19,7 @@ package cn.ponfee.disjob.alert.configuration;
 import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.core.base.GroupInfoService;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
@@ -29,7 +29,7 @@ import org.springframework.core.Ordered;
  *
  * @author Ponfee
  */
-@ConditionalOnProperty(name = Alerter.ENABLED_KEY, havingValue = "true", matchIfMissing = true)
+@ConditionalOnExpression("${" + Alerter.ENABLED_KEY + ":true}")
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(AlerterProperties.class)
 public class AlerterAutoConfiguration {

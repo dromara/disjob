@@ -294,9 +294,9 @@ public final class Numbers {
     /**
      * 向上转单位
      *
-     * @param value
-     * @param pow
-     * @return
+     * @param value the number value
+     * @param pow   the pow
+     * @return double value
      */
     public static double upper(double value, int pow) {
         return BigDecimal.valueOf(value * Math.pow(10, pow)).doubleValue();
@@ -333,10 +333,10 @@ public final class Numbers {
     /**
      * 百分比
      *
-     * @param numerator
-     * @param denominator
-     * @param scale
-     * @return
+     * @param numerator   the numerator
+     * @param denominator the denominator
+     * @param scale       the scale
+     * @return percent string value
      */
     public static String percent(double numerator, double denominator, int scale) {
         if (denominator == 0.0D) {
@@ -349,9 +349,9 @@ public final class Numbers {
     /**
      * 百分比
      *
-     * @param value
-     * @param scale
-     * @return
+     * @param value the value
+     * @param scale the scale
+     * @return percent string value
      */
     public static String percent(double value, int scale) {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
@@ -369,8 +369,8 @@ public final class Numbers {
     /**
      * 数字格式化
      *
-     * @param obj
-     * @return
+     * @param obj the object
+     * @return formatted string value
      */
     public static String format(Object obj) {
         return format(obj, "###,###.###");
@@ -379,9 +379,9 @@ public final class Numbers {
     /**
      * 数字格式化
      *
-     * @param obj
-     * @param format
-     * @return
+     * @param obj    the object
+     * @param format the format
+     * @return formatted string value
      */
     public static String format(Object obj, String format) {
         NumberFormat fmt = new DecimalFormat(format);
@@ -412,14 +412,6 @@ public final class Numbers {
         return nf.format(value);
     }
 
-    /**
-     * 区间取值
-     *
-     * @param value
-     * @param min
-     * @param max
-     * @return
-     */
     public static int bound(Integer value, int min, int max) {
         if (value == null || value < min) {
             return min;

@@ -34,7 +34,7 @@ import static cn.ponfee.disjob.test.db.DBUtils.*;
  * <pre>
  * MariaDB Server
  * SELECT VERSION()  ->  10.2.11-MariaDB
- * MacOS如果启动失败报"未找到openssl"错误，参考安装步骤：“/disjob-test/src/main/DB/MariaDB/MariaDB.md”
+ * MacOS如果启动失败报"未找到openssl"错误，参考安装步骤：“/disjob-test/DB/MariaDB/README.md”
  *
  * username: root
  * password: 无需密码

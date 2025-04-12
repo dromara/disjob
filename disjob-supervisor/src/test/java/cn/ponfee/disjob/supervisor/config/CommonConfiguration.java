@@ -26,16 +26,17 @@ import org.springframework.core.annotation.Order;
 @Configuration
 public class CommonConfiguration {
 
+    // 按文件代码顺序，string2先于string1执行
     @Bean
-    @Order(34)
-    public String string1() {
-        return "String-1";
+    @Order(2)
+    public String string2() {
+        return "String-2";
     }
 
     @Bean
-    @Order(14)
-    public String string2() {
-        return "String-2";
+    @Order(1)
+    public String string1() {
+        return "String-1";
     }
 
 }

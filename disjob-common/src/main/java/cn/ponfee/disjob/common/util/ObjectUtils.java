@@ -17,17 +17,19 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.collect.TypedDictionary;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.lang.reflect.Array;
 import java.text.ParseException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
@@ -37,20 +39,6 @@ import java.util.regex.Pattern;
  * @author Ponfee
  */
 public final class ObjectUtils {
-
-    /**
-     * Returns object toString
-     *
-     * @param obj the target object
-     * @return the string of object
-     */
-    public static String toString(Object obj) {
-        return toString(obj, "null");
-    }
-
-    public static String toString(Object obj, String defaultStr) {
-        return (obj == null) ? defaultStr : ToStringBuilder.reflectionToString(obj, ToStringStyle.JSON_STYLE);
-    }
 
     /**
      * 判断对象是否为空
@@ -90,16 +78,20 @@ public final class ObjectUtils {
     public static Object getValue(Object obj, String name) {
         if (obj == null) {
             return null;
-        } else if (obj instanceof Map) {
+        }
+        if (obj instanceof Map) {
             return ((Map<?, ?>) obj).get(name);
-        } else if (obj instanceof Dictionary) {
+        }
+        if (obj instanceof Dictionary) {
             return ((Dictionary<?, ?>) obj).get(name);
-        } else {
-            try {
-                return FieldUtils.readField(obj, name, true);
-            } catch (IllegalAccessException e) {
-                return ExceptionUtils.rethrow(e);
-            }
+        }
+        if (obj instanceof TypedDictionary) {
+            return ((TypedDictionary<?, ?>) obj).get(name);
+        }
+        try {
+            return FieldUtils.readField(obj, name, true);
+        } catch (IllegalAccessException e) {
+            return ExceptionUtils.rethrow(e);
         }
     }
 
@@ -133,9 +125,9 @@ public final class ObjectUtils {
         }
 
         if (type.isEnum()) {
-            return (value instanceof Number)
-                 ? type.getEnumConstants()[((Number) value).intValue()]
-                 : (T) EnumUtils.getEnumIgnoreCase((Class<Enum>) type, value.toString());
+            return (value instanceof Number) ?
+                type.getEnumConstants()[((Number) value).intValue()] :
+                (T) EnumUtils.getEnumIgnoreCase((Class<Enum>) type, value.toString());
         }
 
         if (Date.class == type) {
@@ -153,32 +145,7 @@ public final class ObjectUtils {
             }
         }
 
-        return ClassUtils.newInstance(type, new Object[]{value.toString()});
-    }
-
-    /**
-     * Returns a new instance of type
-     *
-     * @param type the type class
-     * @return a new instance
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T newInstance(Class<T> type) {
-        if (Map.class == type) {
-            return (T) new HashMap<>(8);
-        } else if (Set.class == type) {
-            return (T) new HashSet<>();
-        } else if (Collection.class == type || List.class == type) {
-            return (T) new ArrayList<>();
-        } else if (Dictionary.class == type) {
-            return (T) new Hashtable<>();
-        } else if (type.isPrimitive() || PrimitiveTypes.isWrapperType(type)) {
-            Class<?> wrapper = PrimitiveTypes.ofPrimitiveOrWrapper(type).wrapper();
-            // Boolean.parseBoolean("0") -> false
-            return (T) ClassUtils.newInstance(wrapper, new Class<?>[]{String.class}, new Object[]{"0"});
-        } else {
-            return ClassUtils.newInstance(type);
-        }
+        return ClassUtils.newInstance(type, value);
     }
 
     public static <T> void applyIfNotNull(T obj, Consumer<T> consumer) {
@@ -192,7 +159,7 @@ public final class ObjectUtils {
     /**
      * yyyyMMdd(HHmmss(SSS))
      */
-    private static final Pattern PATTERN_DATE = Pattern.compile(
+    private static final Pattern DATE_PATTERN = Pattern.compile(
         "^([1-9]\\d{3}((0[1-9]|1[012])(0[1-9]|1\\d|2[0-8])|(0[13456789]|1[012])(29|30)|(0[13578]|1[02])31)|(([2-9]\\d)(0[48]|[2468][048]|[13579][26])|(([2468][048]|[3579][26])00))0229)(([0-1][0-9]|2[0-3])([0-5][0-9])([0-5][0-9])(\\d{3})?)?$"
     );
 
@@ -203,7 +170,7 @@ public final class ObjectUtils {
      * @return if returns {@code true} then is a valid date pattern
      */
     private static boolean isDatePattern(String text) {
-        return text != null && PATTERN_DATE.matcher(text).matches();
+        return text != null && DATE_PATTERN.matcher(text).matches();
     }
 
     @SuppressWarnings("all")
@@ -321,10 +288,10 @@ public final class ObjectUtils {
             }
         };
 
-        private static final Map<Class<?>, PrimitiveOrWrapperConvertors> MAPPING =
+        static final Map<Class<?>, PrimitiveOrWrapperConvertors> MAPPING =
             Enums.toMap(PrimitiveOrWrapperConvertors.class, PrimitiveOrWrapperConvertors::type);
 
-        private final Class<?> type;
+        final Class<?> type;
 
         PrimitiveOrWrapperConvertors(Class<?> type) {
             this.type = type;
@@ -332,7 +299,7 @@ public final class ObjectUtils {
 
         abstract <T> T to(Object value);
 
-        public Class<?> type() {
+        Class<?> type() {
             return this.type;
         }
 

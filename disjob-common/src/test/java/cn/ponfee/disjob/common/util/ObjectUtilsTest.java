@@ -17,8 +17,16 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.dag.DAGNode;
+import cn.ponfee.disjob.common.spring.ResourceScanner;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * ClassUtils test
@@ -26,6 +34,14 @@ import org.junit.jupiter.api.Test;
  * @author Ponfee
  */
 public class ObjectUtilsTest {
+
+    @Test
+    public void testNewInstance() {
+        Assertions.assertNotNull(NetUtils.getLocalHost());
+        Assertions.assertTrue(Boolean.parseBoolean("True"));
+        Assertions.assertFalse(Boolean.parseBoolean("1"));
+        Assertions.assertFalse(Boolean.parseBoolean("0"));
+    }
 
     @Test
     public void testGetValue() {
@@ -40,6 +56,32 @@ public class ObjectUtilsTest {
         Assertions.assertTrue(max1 != max2);
         Assertions.assertTrue(max1 != max3);
         Assertions.assertTrue(max2 != max3);
+    }
+
+    @Test
+    @Disabled
+    public void testStaticFinalMethod() {
+        findStaticFinalMethod("cn/ponfee/disjob/common/**/*.class");
+        findStaticFinalMethod("cn/ponfee/disjob/core/**/*.class");
+        findStaticFinalMethod("cn/ponfee/disjob/registry/**/*.class");
+        findStaticFinalMethod("cn/ponfee/disjob/dispatch/**/*.class");
+        findStaticFinalMethod("cn/ponfee/disjob/worker/**/*.class");
+    }
+
+    private static void findStaticFinalMethod(String packageName) {
+        for (Class<?> clazz : new ResourceScanner(packageName).scan4class()) {
+            Set<Method> methods = new HashSet<>();
+            methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+            methods.addAll(Arrays.asList(clazz.getMethods()));
+            for (Method method : methods) {
+                if (Modifier.isStatic(method.getModifiers()) && Modifier.isFinal(method.getModifiers())) {
+                    String cname = method.getDeclaringClass().getName();
+                    if (!cname.contains("$") && cname.startsWith("cn.ponfee")) {
+                        System.err.println(clazz + "  " + method);
+                    }
+                }
+            }
+        }
     }
 
 }

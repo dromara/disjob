@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.util;
+package cn.ponfee.disjob.common.util;
 
-import cn.ponfee.disjob.common.util.Jsons;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

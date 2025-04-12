@@ -40,7 +40,6 @@
       <optional>true</optional>
     </dependency>
 
-
     <!-- embedded redis-->
     <dependency>
       <groupId>cn.ponfee</groupId>
