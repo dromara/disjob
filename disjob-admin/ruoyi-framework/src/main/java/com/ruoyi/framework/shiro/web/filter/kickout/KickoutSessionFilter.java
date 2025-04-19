@@ -25,7 +25,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 /**
- * 登录帐号控制过滤器
+ * 登录账号控制过滤器
  *
  * @author ruoyi
  */

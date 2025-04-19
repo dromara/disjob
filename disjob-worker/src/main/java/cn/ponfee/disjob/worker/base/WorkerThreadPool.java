@@ -37,7 +37,6 @@ import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import cn.ponfee.disjob.worker.executor.JobExecutor;
 import cn.ponfee.disjob.worker.executor.Savepoint;
 import cn.ponfee.disjob.worker.util.JobExecutorUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +65,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerThreadPool.class);
     private static final int ERROR_MSG_MAX_LENGTH = 2048;
-    private static final AtomicInteger NAMED_SEQ = new AtomicInteger(1);
+    private static final AtomicLong NAMED_SEQ = new AtomicLong(1);
 
     /**
      * Supervisor rpc client
@@ -396,7 +395,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     wt.setCurrentTask(task);
                     wt.execute(task);
                     map.put(task.getTaskId(), wt);
-                    LOG.info("Put active pool worker thread: {}, {}", task.getTaskId(), wt.getName());
+                    LOG.info("Put to active pool worker thread: {}, {}", task.getTaskId(), wt.getName());
                 } catch (Throwable e) {
                     wt.setCurrentTask(null);
                     throw e;
@@ -416,7 +415,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
                 wt.setCurrentTask(null);
                 map.remove(taskId);
-                LOG.info("Taken active pool worker thread: {}, {}", task.getTaskId(), wt.getName());
+                LOG.info("Taken from active pool worker thread: {}, {}", task.getTaskId(), wt.getName());
                 return Pair.of(wt, task);
             });
         }
@@ -432,7 +431,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
                 wt.setCurrentTask(null);
                 map.remove(task.getTaskId());
-                LOG.info("Removed active pool worker thread: {}, {}", task.getTaskId(), wt.getName());
+                LOG.info("Removed from active pool worker thread: {}, {}", task.getTaskId(), wt.getName());
                 return task;
             });
         }
@@ -473,7 +472,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         @Override
         public void save(String executeSnapshot) throws Exception {
-            if (StringUtils.length(executeSnapshot) > JobConstants.CLOB_MAXIMUM_LENGTH) {
+            if (executeSnapshot != null && executeSnapshot.length() > JobConstants.CLOB_MAXIMUM_LENGTH) {
                 throw new SavepointFailedException("Execution snapshot length too large: " + executeSnapshot.length());
             }
             if (!supervisorRpcClient.savepoint(taskId, worker, executeSnapshot)) {
@@ -526,7 +525,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         private void doStop() {
             toStop();
-            Threads.stopThread(this, 6000L);
+            Threads.stopThread(this, 5000L);
         }
 
         /**

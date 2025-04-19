@@ -29,7 +29,7 @@ import org.springframework.core.Ordered;
  *
  * @author Ponfee
  */
-@ConditionalOnExpression("${" + Alerter.ENABLED_KEY + ":true}")
+@ConditionalOnExpression(Alerter.ENABLED_KEY_EXPRESSION)
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(AlerterProperties.class)
 public class AlerterAutoConfiguration {

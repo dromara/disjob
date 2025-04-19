@@ -78,19 +78,10 @@ public class LocalDateTimeFormat {
         }
 
         int length = source.length();
-        /*
-        if (length >= 20 && JavaUtilDateFormat.isTSeparator(source) && source.endsWith("Z")) {
-            if (JavaUtilDateFormat.isCrossbar(source)) {
-                // example: 2022-07-18T15:11:11Z, 2022-07-18T15:11:11.Z, 2022-07-18T15:11:11.1Z, 2022-07-18T15:11:11.13Z, 2022-07-18T15:11:11.133Z
-                return LocalDateTime.ofInstant(Instant.parse(source), ZoneOffset.UTC);
-            } else {
-                // example: 2022/07/18T15:11:11Z, 2022/07/18T15:11:11.Z, 2022/07/18T15:11:11.1Z, 2022/07/18T15:11:11.13Z, 2022/07/18T15:11:11.133Z
-                source = length < 24 ? JavaUtilDateFormat.complete(source) : source.substring(0, source.length() - 1);
-                return LocalDateTime.parse(source, PATTERN_24);
-            }
-        }
-        */
         if (length >= 20 && source.endsWith("Z")) {
+            // example:
+            //   2022-07-18T15:11:11Z, 2022-07-18T15:11:11.Z, 2022-07-18T15:11:11.1Z, 2022-07-18T15:11:11.13Z, 2022-07-18T15:11:11.133Z
+            //   2022/07/18T15:11:11Z, 2022/07/18T15:11:11.Z, 2022/07/18T15:11:11.1Z, 2022/07/18T15:11:11.13Z, 2022/07/18T15:11:11.133Z
             if (length < 24) {
                 source = JavaUtilDateFormat.complete(source);
             }

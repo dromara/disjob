@@ -52,8 +52,7 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
     @EnableConfigurationProperties({HttpProperties.class, RetryProperties.class})
     private static class BasicDeferredConfiguration {
 
-        private static final String DATE_CONFIGURER_PREFIX = "disjob.jackson.date-configurer";
-        private static final String DATE_CONFIGURER_NAME = "mode";
+        private static final String DATE_CONFIGURER_KEY = "disjob.jackson.date-configurer.mode";
 
         /**
          * <pre>
@@ -82,13 +81,13 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
             return new RpcControllerConfigurer();
         }
 
-        @ConditionalOnProperty(prefix = DATE_CONFIGURER_PREFIX, name = DATE_CONFIGURER_NAME, havingValue = "multiple")
+        @ConditionalOnProperty(name = DATE_CONFIGURER_KEY, havingValue = "multiple")
         @Bean
         public JacksonDateConfigurer.Multiple multipleJacksonDateConfigurer(List<ObjectMapper> list) {
             return new JacksonDateConfigurer.Multiple(list);
         }
 
-        @ConditionalOnProperty(prefix = DATE_CONFIGURER_PREFIX, name = DATE_CONFIGURER_NAME, havingValue = "primary", matchIfMissing = true)
+        @ConditionalOnProperty(name = DATE_CONFIGURER_KEY, havingValue = "primary", matchIfMissing = true)
         @Bean
         public JacksonDateConfigurer.Primary primaryJacksonDateConfigurer(@Nullable ObjectMapper objectMapper) {
             return new JacksonDateConfigurer.Primary(objectMapper);

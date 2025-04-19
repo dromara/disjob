@@ -99,46 +99,6 @@ public final class VersionUtils {
         return jarEntry;
     }
 
-    /*
-    private static String getLocalMavenPomVersion(URL url) {
-        try (FileInputStream inputStream = new FileInputStream(getLocalMavenPomFile(url))) {
-            Document document = Files.parseToXmlDocument(inputStream);
-            document.getDocumentElement().normalize();
-            Element root = document.getDocumentElement();
-            if (!"project".equals(root.getNodeName())) {
-                return null;
-            }
-
-            // <project>
-            //   <version>1.0.0</version>
-            // </project>
-            Node node = getChildNode(root, VERSION);
-            if (node == null) {
-                // <project>
-                //   <parent>
-                //     <version>1.0.0</version>
-                //   </parent>
-                // </project>
-                node = Optional.ofNullable(getChildNode(root, "parent")).map(e -> getChildNode(e, VERSION)).orElse(null);
-            }
-            return node == null ? null : StringUtils.trim(node.getTextContent());
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    private static Node getChildNode(Node node, String childNodeName) {
-        NodeList childNodes = node.getChildNodes();
-        for (int i = 0, n = childNodes.getLength(); i < n; i++) {
-            Node childNode = childNodes.item(i);
-            if (childNodeName.equals(childNode.getNodeName())) {
-                return childNode;
-            }
-        }
-        return null;
-    }
-    */
-
     private static String getLocalMavenPomVersion(URL url) {
         try (FileInputStream inputStream = new FileInputStream(getLocalMavenPomFile(url))) {
             Document document = Files.parseToXmlDocument(inputStream);

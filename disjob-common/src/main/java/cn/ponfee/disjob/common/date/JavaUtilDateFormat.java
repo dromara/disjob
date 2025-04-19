@@ -306,12 +306,13 @@ public class JavaUtilDateFormat extends DateFormat {
     }
 
     // ------------------------------------------------------------------------package methods
+
     static boolean isCrossbar(String str) {
         return str.charAt(4) == '-';
     }
 
-    // 'T' literal is the date and time separator
     static boolean isTSeparator(String str) {
+        // 'T' literal is the date and time separator
         return str.charAt(10) == 'T';
     }
 

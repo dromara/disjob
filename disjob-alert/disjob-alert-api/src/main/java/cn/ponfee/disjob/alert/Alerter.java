@@ -54,9 +54,9 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
     public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".alert";
 
     /**
-     * Alert enabled key
+     * Alert enabled key expression
      */
-    public static final String ENABLED_KEY = KEY_PREFIX + ".enabled";
+    public static final String ENABLED_KEY_EXPRESSION = "${" + KEY_PREFIX + ".enabled:true}";
 
     /**
      * Alert sender config key prefix

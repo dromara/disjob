@@ -100,7 +100,7 @@ public final class GroovyUtils {
     public enum Evaluator {
 
         /**
-         * Groovy scrip closure
+         * Groovy script closure
          */
         CLOSURE() {
             final ConcurrentMap<String, Script> scripCache = new ConcurrentHashMap<>();

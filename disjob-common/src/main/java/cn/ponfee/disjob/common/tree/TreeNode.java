@@ -228,19 +228,6 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         return list;
     }
 
-    /*
-    // 递归方式DFS
-    public List<FlatNode<T, A>> flatDFS() {
-        List<FlatNode<T, A>> list = new ArrayList<>(treeNodeCount);
-        dfs(list);
-        return list;
-    }
-    private void dfs(List<FlatNode<T, A>> list) {
-        list.add(new FlatNode<>(this));
-        forEachChild(child -> child.dfs(list));
-    }
-    */
-
     // -----------------------------------------------------------CFS
 
     /**
@@ -264,19 +251,6 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         return list;
     }
 
-    /*
-    // 递归方式CFS
-    public List<FlatNode<T, A>> flatCFS() {
-        List<FlatNode<T, A>> list = Collects.newArrayList(treeNodeCount, new FlatNode<>(this));
-        cfs(list);
-        return list;
-    }
-    private void cfs(List<FlatNode<T, A>> list) {
-        forEachChild(child -> list.add(new FlatNode<>(child)));
-        forEachChild(child -> child.cfs(list));
-    }
-    */
-
     // -----------------------------------------------------------BFS
 
     /**
@@ -289,28 +263,6 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         traverse(node -> list.add(new FlatNode<>(node)));
         return list;
     }
-
-    /*
-    // 递归方式BFS
-    public List<FlatNode<T, A>> flatBFS() {
-        List<FlatNode<T, A>> list = new ArrayList<>(treeNodeCount);
-        Queue<TreeNode<T, A>> queue = Collects.newArrayDeque(this);
-        bfs(queue, list);
-        return list;
-    }
-    private void bfs(Queue<TreeNode<T, A>> queue, List<FlatNode<T, A>> list) {
-        int size = queue.size();
-        if (size == 0) {
-            return;
-        }
-        while (size-- > 0) {
-            TreeNode<T, A> node = Objects.requireNonNull(queue.poll());
-            list.add(new FlatNode<>(node));
-            node.forEachChild(queue::offer);
-        }
-        bfs(queue, list);
-    }
-    */
 
     // -----------------------------------------------------------other public methods
 

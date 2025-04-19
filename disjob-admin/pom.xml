@@ -42,7 +42,7 @@
     <pagehelper-spring-boot-starter.version>2.1.0</pagehelper-spring-boot-starter.version>
     <fastjson.version>1.2.83</fastjson.version>
     <oshi-core.version>6.8.0</oshi-core.version>
-    <commons-io.version>2.18.0</commons-io.version>
+    <commons-io.version>2.19.0</commons-io.version>
     <poi-ooxml.version>5.4.1</poi-ooxml.version>
     <velocity-engine-core.version>2.4.1</velocity-engine-core.version>
 

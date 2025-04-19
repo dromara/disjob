@@ -53,37 +53,6 @@ public final class MultiwayTreePrinter<T> {
         this.nodeChildren = nodeChildren;
     }
 
-    /*
-    // DFS递归方式
-    public void print(T root) throws IOException {
-        print(root, null, true);
-    }
-
-    private void print(T node, String indent, boolean isLast) throws IOException {
-        if (indent == null) {
-            indent = "";
-        } else {
-            output.append(indent);
-            if (isLast) {
-                output.append("└── ");
-                indent += "    ";
-            } else {
-                output.append("├── ");
-                indent += "│   ";
-            }
-        }
-        output.append(nodeLabel.apply(node)).append('\n');
-
-        // print children
-        List<T> children = nodeChildren.apply(node);
-        if (children != null) {
-            for (int i = 0, n = children.size() - 1; i <= n; i++) {
-                print(children.get(i), indent, i == n);
-            }
-        }
-    }
-    */
-
     public void print(T root) throws IOException {
         Deque<Tuple4<T, String, String, String>> stack = Collects.newArrayDeque(Tuple4.of(root, "", null, ""));
         while (!stack.isEmpty()) {

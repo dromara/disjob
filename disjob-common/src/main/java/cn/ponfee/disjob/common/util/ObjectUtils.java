@@ -50,14 +50,14 @@ public final class ObjectUtils {
         if (o == null) {
             return true;
         }
+        if (o.getClass().isArray()) {
+            return Array.getLength(o) == 0;
+        }
         if (o instanceof CharSequence) {
             return ((CharSequence) o).length() == 0;
         }
         if (o instanceof Collection) {
             return ((Collection<?>) o).isEmpty();
-        }
-        if (o.getClass().isArray()) {
-            return Array.getLength(o) == 0;
         }
         if (o instanceof Map) {
             return ((Map<?, ?>) o).isEmpty();

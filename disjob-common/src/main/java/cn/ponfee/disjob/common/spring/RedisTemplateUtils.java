@@ -75,7 +75,7 @@ public class RedisTemplateUtils {
      * @param numKeys       the number of keys
      * @param keysAndArgs   the keys and arguments
      * @param <T>           the return type
-     * @return scrip executed result
+     * @return script executed result
      * @see RedisTemplate#execute(RedisScript, List, Object...)
      * @see RedisTemplate#execute(RedisScript, RedisSerializer, RedisSerializer, List, Object...)
      */

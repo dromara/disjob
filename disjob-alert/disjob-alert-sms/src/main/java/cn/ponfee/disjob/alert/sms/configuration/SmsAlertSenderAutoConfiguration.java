@@ -34,7 +34,7 @@ import org.springframework.core.Ordered;
  *
  * @author TJxiaobao
  */
-@ConditionalOnExpression("${" + Alerter.ENABLED_KEY + ":true}")
+@ConditionalOnExpression(Alerter.ENABLED_KEY_EXPRESSION)
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(SmsAlertSenderProperties.class)
 public class SmsAlertSenderAutoConfiguration {
