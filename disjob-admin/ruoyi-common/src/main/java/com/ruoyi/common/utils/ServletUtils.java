@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 /**
  * 客户端工具类
@@ -25,6 +27,8 @@ public class ServletUtils
      * 定义移动端请求的所有可能类型
      */
     private static final String[] agent = { "Android", "iPhone", "iPod", "iPad", "Windows Phone", "MQQBrowser" };
+
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     /**
      * 获取String参数
@@ -214,4 +218,17 @@ public class ServletUtils
             return StringUtils.EMPTY;
         }
     }
+
+    /**
+     * 生成CSRF Token
+     *
+     * @return 解码后的内容
+     */
+    public static String generateToken()
+    {
+        byte[] bytes = new byte[32];
+        secureRandom.nextBytes(bytes);
+        return Base64.getEncoder().encodeToString(bytes);
+    }
+
 }

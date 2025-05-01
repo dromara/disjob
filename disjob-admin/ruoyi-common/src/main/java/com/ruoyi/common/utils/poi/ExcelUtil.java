@@ -51,6 +51,8 @@ public class ExcelUtil<T>
 {
     private static final Logger log = LoggerFactory.getLogger(ExcelUtil.class);
 
+    public static final String SEPARATOR = ",";
+
     public static final String FORMULA_REGEX_STR = "=|-|\\+|@";
 
     public static final String[] FORMULA_STR = { "=", "-", "+", "@" };
@@ -316,7 +318,7 @@ public class ExcelUtil<T>
             throw new IOException("文件sheet不存在");
         }
         boolean isXSSFWorkbook = !(wb instanceof HSSFWorkbook);
-        Map<String, PictureData> pictures;
+        Map<String, List<PictureData>> pictures;
         if (isXSSFWorkbook)
         {
             pictures = getSheetPictures07((XSSFSheet) sheet, (XSSFWorkbook) wb);
@@ -382,7 +384,7 @@ public class ExcelUtil<T>
                     if (String.class == fieldType)
                     {
                         String s = Convert.toStr(val);
-                        if (StringUtils.endsWith(s, ".0"))
+                        if (s.matches("^\\d+\\.0$"))
                         {
                             val = StringUtils.substringBefore(s, ".0");
                         }
@@ -460,16 +462,15 @@ public class ExcelUtil<T>
                         }
                         else if (ColumnType.IMAGE == attr.cellType() && StringUtils.isNotEmpty(pictures))
                         {
-                            PictureData image = pictures.get(row.getRowNum() + "_" + entry.getKey());
-                            if (image == null)
+                            StringBuilder propertyString = new StringBuilder();
+                            List<PictureData> images = pictures.get(row.getRowNum() + "_" + entry.getKey());
+                            for (PictureData picture : images)
                             {
-                                val = "";
+                                byte[] data = picture.getData();
+                                String fileName = FileUtils.writeImportBytes(data);
+                                propertyString.append(fileName).append(SEPARATOR);
                             }
-                            else
-                            {
-                                byte[] data = image.getData();
-                                val = FileUtils.writeImportBytes(data);
-                            }
+                            val = StringUtils.stripEnd(propertyString.toString(), SEPARATOR);
                         }
                         ReflectUtils.invokeSetter(entity, propertyName, val);
                     }
@@ -991,12 +992,15 @@ public class ExcelUtil<T>
         else if (ColumnType.IMAGE == attr.cellType())
         {
             ClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, (short) cell.getColumnIndex(), cell.getRow().getRowNum(), (short) (cell.getColumnIndex() + 1), cell.getRow().getRowNum() + 1);
-            String imagePath = Convert.toStr(value);
-            if (StringUtils.isNotEmpty(imagePath))
+            String propertyValue = Convert.toStr(value);
+            if (StringUtils.isNotEmpty(propertyValue))
             {
-                byte[] data = ImageUtils.getImage(imagePath);
-                getDrawingPatriarch(cell.getSheet()).createPicture(anchor,
-                        cell.getSheet().getWorkbook().addPicture(data, getImageType(data)));
+                List<String> imagePaths = StringUtils.str2List(propertyValue, SEPARATOR);
+                for (String imagePath : imagePaths)
+                {
+                    byte[] data = ImageUtils.getImage(imagePath);
+                    getDrawingPatriarch(cell.getSheet()).createPicture(anchor, cell.getSheet().getWorkbook().addPicture(data, getImageType(data)));
+                }
             }
         }
     }
@@ -1241,7 +1245,7 @@ public class ExcelUtil<T>
     public static String convertByExp(String propertyValue, String converterExp, String separator)
     {
         StringBuilder propertyString = new StringBuilder();
-        String[] convertSource = converterExp.split(",");
+        String[] convertSource = converterExp.split(SEPARATOR);
         for (String item : convertSource)
         {
             String[] itemArray = item.split("=");
@@ -1278,7 +1282,7 @@ public class ExcelUtil<T>
     public static String reverseByExp(String propertyValue, String converterExp, String separator)
     {
         StringBuilder propertyString = new StringBuilder();
-        String[] convertSource = converterExp.split(",");
+        String[] convertSource = converterExp.split(SEPARATOR);
         for (String item : convertSource)
         {
             String[] itemArray = item.split("=");
@@ -1704,22 +1708,20 @@ public class ExcelUtil<T>
      * @param workbook 工作簿对象
      * @return Map key:图片单元格索引（1_1）String，value:图片流PictureData
      */
-    public static Map<String, PictureData> getSheetPictures03(HSSFSheet sheet, HSSFWorkbook workbook)
+    public static Map<String, List<PictureData>> getSheetPictures03(HSSFSheet sheet, HSSFWorkbook workbook)
     {
-        Map<String, PictureData> sheetIndexPicMap = new HashMap<>();
+        Map<String, List<PictureData>> sheetIndexPicMap = new HashMap<>();
         List<HSSFPictureData> pictures = workbook.getAllPictures();
-        if (!pictures.isEmpty())
+        if (!pictures.isEmpty() && sheet.getDrawingPatriarch() != null)
         {
             for (HSSFShape shape : sheet.getDrawingPatriarch().getChildren())
             {
-                HSSFClientAnchor anchor = (HSSFClientAnchor) shape.getAnchor();
                 if (shape instanceof HSSFPicture)
                 {
                     HSSFPicture pic = (HSSFPicture) shape;
-                    int pictureIndex = pic.getPictureIndex() - 1;
-                    HSSFPictureData picData = pictures.get(pictureIndex);
+                    HSSFClientAnchor anchor = (HSSFClientAnchor) pic.getAnchor();
                     String picIndex = anchor.getRow1() + "_" + anchor.getCol1();
-                    sheetIndexPicMap.put(picIndex, picData);
+                    sheetIndexPicMap.computeIfAbsent(picIndex, k -> new ArrayList<>()).add(pic.getPictureData());
                 }
             }
         }
@@ -1733,16 +1735,15 @@ public class ExcelUtil<T>
      * @param workbook 工作簿对象
      * @return Map key:图片单元格索引（1_1）String，value:图片流PictureData
      */
-    public static Map<String, PictureData> getSheetPictures07(XSSFSheet sheet, XSSFWorkbook workbook)
+    public static Map<String, List<PictureData>> getSheetPictures07(XSSFSheet sheet, XSSFWorkbook workbook)
     {
-        Map<String, PictureData> sheetIndexPicMap = new HashMap<>();
+        Map<String, List<PictureData>> sheetIndexPicMap = new HashMap<>();
         for (POIXMLDocumentPart dr : sheet.getRelations())
         {
             if (dr instanceof XSSFDrawing)
             {
                 XSSFDrawing drawing = (XSSFDrawing) dr;
-                List<XSSFShape> shapes = drawing.getShapes();
-                for (XSSFShape shape : shapes)
+                for (XSSFShape shape : drawing.getShapes())
                 {
                     if (shape instanceof XSSFPicture)
                     {
@@ -1750,7 +1751,7 @@ public class ExcelUtil<T>
                         XSSFClientAnchor anchor = pic.getPreferredSize();
                         CTMarker ctMarker = anchor.getFrom();
                         String picIndex = ctMarker.getRow() + "_" + ctMarker.getCol();
-                        sheetIndexPicMap.put(picIndex, pic.getPictureData());
+                        sheetIndexPicMap.computeIfAbsent(picIndex, k -> new ArrayList<>()).add(pic.getPictureData());
                     }
                 }
             }

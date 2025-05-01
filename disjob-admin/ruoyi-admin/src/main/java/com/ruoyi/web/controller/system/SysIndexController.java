@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.List;
@@ -46,7 +47,7 @@ public class SysIndexController extends BaseController
 
     // 系统首页
     @GetMapping("/index")
-    public String index(ModelMap mmap)
+    public String index(ModelMap mmap, HttpServletRequest request)
     {
         // 取身份信息
         SysUser user = getSysUser();
@@ -82,6 +83,8 @@ public class SysIndexController extends BaseController
             }
         }
         String webIndex = "topnav".equalsIgnoreCase(indexStyle) ? "index-topnav" : "index";
+        // CSRF Token
+        request.getSession().setAttribute(ShiroConstants.CSRF_TOKEN, ServletUtils.generateToken());
         return webIndex;
     }
 
