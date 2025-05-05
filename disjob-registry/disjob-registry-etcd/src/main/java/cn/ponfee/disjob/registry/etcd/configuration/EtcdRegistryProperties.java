@@ -42,6 +42,16 @@ public class EtcdRegistryProperties extends AbstractRegistryProperties {
     private String endpoints = "localhost:2379";
 
     /**
+     * Auth user
+     */
+    private String user;
+
+    /**
+     * Auth password
+     */
+    private String password;
+
+    /**
      * Max inbound message size
      */
     private int maxInboundMessageSize = 100 * 1024 * 1024;

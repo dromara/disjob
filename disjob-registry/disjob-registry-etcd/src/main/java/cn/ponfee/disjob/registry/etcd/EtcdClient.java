@@ -26,6 +26,7 @@ import cn.ponfee.disjob.registry.etcd.configuration.EtcdRegistryProperties;
 import com.google.common.collect.ImmutableList;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
+import io.etcd.jetcd.ClientBuilder;
 import io.etcd.jetcd.Watch;
 import io.etcd.jetcd.cluster.Member;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
@@ -41,6 +42,7 @@ import io.etcd.jetcd.watch.WatchResponse;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -101,10 +103,7 @@ public class EtcdClient implements Closeable {
 
     public EtcdClient(EtcdRegistryProperties config) {
         this.config = config;
-        this.client = Client.builder()
-            .endpoints(config.endpoints())
-            .maxInboundMessageSize(config.getMaxInboundMessageSize())
-            .build();
+        this.client = buildClient(config);
         this.lastConnectState = isConnected();
 
         long periodMs = 3000;
@@ -285,8 +284,21 @@ public class EtcdClient implements Closeable {
 
     // ----------------------------------------------------------------private static classes & methods
 
-    private static ByteSequence utf8(String key) {
-        return ByteSequence.from(key, UTF_8);
+    private static ByteSequence utf8(String str) {
+        return ByteSequence.from(str, UTF_8);
+    }
+
+    private static Client buildClient(EtcdRegistryProperties config) {
+        ClientBuilder builder = Client.builder()
+            .endpoints(config.endpoints())
+            .maxInboundMessageSize(config.getMaxInboundMessageSize());
+        if (StringUtils.isNotEmpty(config.getUser())) {
+            builder.user(utf8(config.getUser()));
+        }
+        if (StringUtils.isNotEmpty(config.getPassword())) {
+            builder.user(utf8(config.getPassword()));
+        }
+        return builder.build();
     }
 
     private class EventListener implements Consumer<WatchResponse> {

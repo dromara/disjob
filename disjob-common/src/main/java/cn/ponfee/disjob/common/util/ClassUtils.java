@@ -431,7 +431,6 @@ public final class ClassUtils {
     }
 
     private static Class<?>[] parseParameterTypes(Object[] args) {
-        Assert.notEmpty(args, "Should be always non empty.");
         Class<?>[] parameterTypes = new Class<?>[args.length];
         for (int i = 0, n = args.length; i < n; i++) {
             parameterTypes[i] = (args[i] == null) ? null : args[i].getClass();
@@ -467,7 +466,6 @@ public final class ClassUtils {
 
     @SuppressWarnings("unchecked")
     private static <T> Constructor<T> obtainConstructor(Class<T> type, Class<?>[] actualTypes) {
-        Assert.notEmpty(actualTypes, "Should be always non empty.");
         Constructor<T> constructor = obtainConstructor((Constructor<T>[]) type.getConstructors(), actualTypes);
         if (constructor != null) {
             return constructor;
@@ -488,7 +486,6 @@ public final class ClassUtils {
     }
 
     private static Method obtainMethod(Object caller, String methodName, Class<?>[] actualTypes) {
-        Assert.notEmpty(actualTypes, "Should be always non empty.");
         Tuple2<Class<?>, Predicates> tuple = obtainClass(caller);
         Method method = obtainMethod(tuple.a.getMethods(), methodName, tuple.b, actualTypes);
         if (method != null) {
