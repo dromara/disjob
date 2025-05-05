@@ -62,7 +62,7 @@ public class LoopThread extends Thread {
 
     @Override
     public void run() {
-        LOG.info("Loop process thread begin.");
+        LOG.info("Loop thread begin.");
         if (delayMs > 0) {
             ThrowingRunnable.doChecked(() -> Thread.sleep(delayMs));
         }
@@ -71,14 +71,14 @@ public class LoopThread extends Thread {
                 action.run();
                 Thread.sleep(periodMs);
             } catch (InterruptedException e) {
-                LOG.warn("Loop process thread interrupted {}: {}", super.getName(), e.getMessage());
+                LOG.warn("Loop thread interrupted {}: {}", super.getName(), e.getMessage());
                 terminate();
                 break;
             } catch (Throwable e) {
-                LOG.error("Loop process thread error.", e);
+                LOG.error("Loop thread error.", e);
             }
         }
-        LOG.info("Loop process thread end.");
+        LOG.info("Loop thread end.");
     }
 
     @Override
@@ -86,7 +86,7 @@ public class LoopThread extends Thread {
         if (state.start()) {
             super.start();
         } else {
-            throw new IllegalStateException("Loop process thread already started.");
+            throw new IllegalStateException("Loop thread start failed, current state: " + state);
         }
     }
 
@@ -95,9 +95,8 @@ public class LoopThread extends Thread {
             // interrupt this thread sleep in run method
             ThrowingRunnable.doCaught(super::interrupt);
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
 }

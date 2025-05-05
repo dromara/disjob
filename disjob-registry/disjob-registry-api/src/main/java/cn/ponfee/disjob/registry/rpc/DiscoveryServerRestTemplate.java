@@ -66,16 +66,16 @@ final class DiscoveryServerRestTemplate<D extends Server> {
      * 1）如果响应的为非异常的http状态码，则返回结果都是null
      * 2）如果响应的为异常的http状态码，则会抛出HttpStatusCodeException
      *
-     * @param method     the method
-     * @param group      the group name
-     * @param httpMethod the http method
-     * @param path       the request mapping path
-     * @param args       the arguments
-     * @param <T>        return type
+     * @param method      the method
+     * @param group       the group name
+     * @param httpMethod  the http method
+     * @param servletPath the request mapping path
+     * @param args        the arguments
+     * @param <T>         return type
      * @return invoked remote http response
      * @throws Exception if occur exception
      */
-    <T> T execute(Method method, String group, HttpMethod httpMethod, String path, Object[] args) throws Exception {
+    <T> T execute(Method method, String group, HttpMethod httpMethod, String servletPath, Object[] args) throws Exception {
         List<D> servers = discoverServer.getDiscoveredServers(group);
         ServerRole discoveryServerRole = discoverServer.discoveryRole();
         if (CollectionUtils.isEmpty(servers)) {
@@ -95,13 +95,13 @@ final class DiscoveryServerRestTemplate<D extends Server> {
         }
 
         Type returnType = method.getGenericReturnType();
-        String urlPath = Strings.concatPath(serverContextPath, path);
+        String requestPath = Strings.concatPath(serverContextPath, servletPath);
         Throwable ex = null;
         int serverNumber = servers.size();
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
         for (int i = 0, n = Math.min(serverNumber, retryMaxCount); i <= n; i++) {
             Server server = servers.get((start + i) % serverNumber);
-            String url = server.buildHttpUrlPrefix() + urlPath;
+            String url = server.buildHttpUrlPrefix() + requestPath;
             try {
                 return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, args);
             } catch (Throwable e) {
@@ -118,7 +118,7 @@ final class DiscoveryServerRestTemplate<D extends Server> {
 
         String msg = (ex == null) ? null : ex.getMessage();
         if (StringUtils.isBlank(msg)) {
-            msg = "Invoke server rpc error: " + urlPath;
+            msg = "Invoke server rpc error: " + requestPath;
         }
         throw new RpcInvokeException(msg, ex);
     }

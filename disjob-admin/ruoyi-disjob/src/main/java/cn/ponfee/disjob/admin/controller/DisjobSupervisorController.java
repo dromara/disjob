@@ -25,20 +25,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * Supervisor info controller
+ * Disjob supervisor controller
  *
  * @author Ponfee
  */
 @Controller
-@RequestMapping("/" + SupervisorInfoController.PREFIX)
-public class SupervisorInfoController extends BaseController {
+@RequestMapping("/" + DisjobSupervisorController.PREFIX)
+public class DisjobSupervisorController extends BaseController {
 
     static final String PREFIX = "disjob/supervisor";
     private static final String PERMISSION_CODE = "disjob:supervisor:operate";
 
     private final ServerInvokeService serverInvokeService;
 
-    public SupervisorInfoController(ServerInvokeService serverInvokeService) {
+    public DisjobSupervisorController(ServerInvokeService serverInvokeService) {
         this.serverInvokeService = serverInvokeService;
     }
 

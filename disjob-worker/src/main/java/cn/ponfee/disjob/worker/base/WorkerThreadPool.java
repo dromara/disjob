@@ -335,8 +335,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private void stopTask(WorkerTask task, Operation ops, ExecuteState toState, String errorMsg) {
         Assert.notNull(ops, "Stop task operation cannot be null.");
         if (!task.updateOperation(ops, null)) {
-            // already stopped
-            LOG.info("Stop task conflict: {}, {}, {}", task.getTaskId(), ops, toState);
+            // stop failed
+            LOG.info("Stop task failed: {}, {}, {}", task.getTaskId(), ops, toState);
             return;
         }
 

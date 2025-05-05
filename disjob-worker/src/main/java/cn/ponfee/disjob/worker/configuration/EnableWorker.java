@@ -64,8 +64,7 @@ public @interface EnableWorker {
 
             Object[] args = {config.getGroup(), UuidUtils.uuid32(), host, port, workerToken, supervisorToken, supervisorContextPath};
             try {
-                // inject local worker: Worker.class.getDeclaredClasses()[0]
-                return ClassUtils.invoke(Class.forName(Worker.Local.class.getName()), "create", args);
+                return ClassUtils.invoke(Worker.Local.class, "create", args);
             } catch (Exception e) {
                 // cannot happen
                 throw new Error("Creates Worker.Local instance occur error.", e);

@@ -80,13 +80,13 @@ final class DestinationServerRestTemplate {
      * @param method            the method
      * @param destinationServer the destination server
      * @param httpMethod        the http method
-     * @param urlPath           the url path
+     * @param requestPath       the request path
      * @param args              the arguments
      * @param <T>               return type
      * @return invoked remote http response
      * @throws Exception if occur exception
      */
-    <T> T invoke(Method method, Server destinationServer, HttpMethod httpMethod, String urlPath, Object[] args) throws Exception {
+    <T> T invoke(Method method, Server destinationServer, HttpMethod httpMethod, String requestPath, Object[] args) throws Exception {
         Map<String, String> authenticationHeaders = null;
         if (destinationServer instanceof Supervisor) {
             Class<?> declaringClass = method.getDeclaringClass();
@@ -101,7 +101,7 @@ final class DestinationServerRestTemplate {
             }
         }
 
-        String url = destinationServer.buildHttpUrlPrefix() + urlPath;
+        String url = destinationServer.buildHttpUrlPrefix() + requestPath;
         Type returnType = method.getGenericReturnType();
         Throwable ex = null;
         for (int i = 0; i <= retryMaxCount; i++) {
@@ -121,7 +121,7 @@ final class DestinationServerRestTemplate {
 
         String msg = (ex == null) ? null : ex.getMessage();
         if (StringUtils.isBlank(msg)) {
-            msg = "Invoke server rpc error: " + urlPath;
+            msg = "Invoke server rpc error: " + requestPath;
         }
         throw new RpcInvokeException(msg, ex);
     }

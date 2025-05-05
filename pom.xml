@@ -75,9 +75,9 @@
 
     <spring-boot.version>2.7.18</spring-boot.version>
     <mapstruct.version>1.6.3</mapstruct.version>
-    <guava.version>33.4.7-jre</guava.version>
+    <guava.version>33.4.8-jre</guava.version>
     <spotbugs.version>4.9.3</spotbugs.version>
-    <commons-collections4.version>4.4</commons-collections4.version>
+    <commons-collections4.version>4.5.0</commons-collections4.version>
     <commons-io.version>2.19.0</commons-io.version>
     <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
     <curator-framework.version>5.8.0</curator-framework.version>
@@ -129,7 +129,7 @@
       <artifactId>lombok</artifactId>
       <scope>provided</scope>
     </dependency>
-    <!-- Generate annotated @Mapper interface implementation class -->
+    <!-- Generate implementation class for annotated mapstruct @Mapper interface -->
     <dependency>
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct-processor</artifactId>
@@ -141,17 +141,6 @@
       <artifactId>spring-boot-configuration-processor</artifactId>
       <scope>provided</scope>
     </dependency>
-    <!--
-     | 谨慎使用`spring-context-indexer`(经常会出现启动时报错的问题)：对于多模块项目，包含@Component的模块都需要在其pom中增加该依赖，否则启动会报错
-     | org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider#findCandidateComponents(String)
-     | org.springframework.context.index.CandidateComponentsIndexLoader#doLoadIndex(ClassLoader) -> "META-INF/spring.components"
-     | 在resources/spring.properties文件中配置忽略indexer：spring.index.ignore=true
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context-indexer</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    -->
 
     <!-- Test dependencies -->
     <dependency>

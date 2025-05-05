@@ -104,8 +104,8 @@ public final class DestinationServerRestProxy {
             Server destinationServer = SERVER_THREAD_LOCAL.get();
             @SuppressWarnings("unchecked")
             String contextPath = serverContextPath.apply((S) destinationServer);
-            String urlPath = Strings.concatPath(contextPath, req.path);
-            return template.invoke(method, destinationServer, req.httpMethod, urlPath, args);
+            String requestPath = Strings.concatPath(contextPath, req.servletPath);
+            return template.invoke(method, destinationServer, req.httpMethod, requestPath, args);
         }
     }
 

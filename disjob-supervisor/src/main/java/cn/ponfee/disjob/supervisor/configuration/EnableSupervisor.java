@@ -74,8 +74,8 @@ public @interface EnableSupervisor {
             int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
             Object[] args = {CoreUtils.getLocalHost(), port, groupInfoService};
             try {
-                // inject local supervisor: Supervisor.class.getDeclaredClasses()[0]
-                return ClassUtils.invoke(Class.forName(Supervisor.Local.class.getName()), "create", args);
+                // create local supervisor: Supervisor.class.getDeclaredClasses()[0]
+                return ClassUtils.invoke(Supervisor.Local.class, "create", args);
             } catch (Exception e) {
                 // cannot happen
                 throw new Error("Creates Supervisor.Local instance occur error.", e);

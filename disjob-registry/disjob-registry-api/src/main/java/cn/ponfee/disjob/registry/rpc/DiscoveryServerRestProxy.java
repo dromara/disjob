@@ -183,7 +183,7 @@ public final class DiscoveryServerRestProxy {
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             Request req = buildRequest(method, prefixPath);
             String group = getGroup();
-            return template.execute(method, group, req.httpMethod, req.path, args);
+            return template.execute(method, group, req.httpMethod, req.servletPath, args);
         }
 
         /**
@@ -235,23 +235,23 @@ public final class DiscoveryServerRestProxy {
             }
 
             String suffixPath = getMappingPath(mapping);
-            String urlPath = Strings.concatPath(prefixPath, suffixPath);
+            String servletPath = Strings.concatPath(prefixPath, suffixPath);
             return Arrays.stream(mapping.method())
                 .filter(Objects::nonNull)
                 .findAny()
                 .map(Enum::name)
                 .map(HttpMethod::valueOf)
-                .map(httpMethod -> new Request(urlPath, httpMethod))
+                .map(httpMethod -> new Request(servletPath, httpMethod))
                 .orElseThrow(() -> new IllegalStateException("Invalid http mapping method: " + key.toGenericString()));
         });
     }
 
     static class Request {
-        final String path;
+        final String servletPath;
         final HttpMethod httpMethod;
 
-        private Request(String path, HttpMethod httpMethod) {
-            this.path = path;
+        private Request(String servletPath, HttpMethod httpMethod) {
+            this.servletPath = servletPath;
             this.httpMethod = httpMethod;
         }
     }

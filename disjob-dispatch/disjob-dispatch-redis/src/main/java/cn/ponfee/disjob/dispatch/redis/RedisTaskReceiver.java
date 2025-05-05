@@ -98,20 +98,20 @@ public class RedisTaskReceiver extends TaskReceiver {
 
     @Override
     public void start() {
-        if (!state.start()) {
-            log.warn("Repeat call start method.");
-            return;
+        if (state.start()) {
+            this.receiveHeartbeatThread.start();
+        } else {
+            log.warn("Receiver start failed, current state: {}", state);
         }
-        this.receiveHeartbeatThread.start();
     }
 
     @Override
     public void stop() {
-        if (!state.stop()) {
-            log.warn("Repeat call stop method.");
-            return;
+        if (state.stop()) {
+            this.receiveHeartbeatThread.close();
+        } else {
+            log.warn("Receiver stop failed, current state: {}", state);
         }
-        this.receiveHeartbeatThread.close();
     }
 
     private static class ReceiveHeartbeatThread extends AbstractHeartbeatThread {

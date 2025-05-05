@@ -95,7 +95,7 @@ public class WorkerFramelessMain {
         }
     }
 
-    private static Worker.Local createLocalWorker(YamlProperties config, WorkerProperties workerProps) throws Exception {
+    private static Worker.Local createLocalWorker(YamlProperties config, WorkerProperties workerProps) {
         Object[] args = {
             workerProps.getGroup(),
             UuidUtils.uuid32(),
@@ -105,7 +105,7 @@ public class WorkerFramelessMain {
             workerProps.getSupervisorToken(),
             workerProps.getSupervisorContextPath()
         };
-        return ClassUtils.invoke(Class.forName(Worker.Local.class.getName()), "create", args);
+        return ClassUtils.invoke(Worker.Local.class, "create", args);
     }
 
     private static TaskReceiver createTaskReceiver(WorkerProperties props, Worker.Local localWorker) {

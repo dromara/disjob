@@ -126,6 +126,8 @@ public class ConsistentHash<T> {
     }
 
     /**
+     * Constructor
+     *
      * @param pNodes       collections of physical nodes
      * @param vNodeCount   number of virtual nodes
      * @param keyMapper    physical node mapping to string key function

@@ -63,7 +63,7 @@ public abstract class AlertEvent extends ToJsonString implements Serializable {
         return group + ":" + alertType;
     }
 
-    public static String formatDate(Date date) {
+    static String formatDate(Date date) {
         return (date == null) ? "" : Dates.format(date);
     }
 

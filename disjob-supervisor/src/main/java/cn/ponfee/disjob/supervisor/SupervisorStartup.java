@@ -66,7 +66,7 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
     @Override
     public void start() {
         if (!state.start()) {
-            LOG.warn("Supervisor already started.");
+            LOG.warn("Supervisor start failed, current state: {}", state);
             return;
         }
 
@@ -83,7 +83,7 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
     @Override
     public void stop() {
         if (!state.stop()) {
-            LOG.warn("Supervisor already Stopped.");
+            LOG.warn("Supervisor stop failed, current state: {}", state);
             return;
         }
 

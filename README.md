@@ -37,7 +37,7 @@ disjob                                        # 主项目①pom.xml
 ├── disjob-alert                              # 告警模块
 │   ├── disjob-alert-api                      # 告警的抽象接口层
 │   ├── disjob-alert-email                    # 邮件告警
-│   ├── disjob-alert-im                       # 即时通信告警(钉钉、企业微信、飞书等)
+│   ├── disjob-alert-im                       # 即时通讯告警(钉钉、企业微信、飞书等)
 │   └── disjob-alert-sms                      # 短信告警
 ├── disjob-bom                                # Maven项目bom模块
 ├── disjob-common                             # 公共的工具类模块
