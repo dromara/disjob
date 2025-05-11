@@ -87,13 +87,13 @@ public class DatesTest {
         Assertions.assertEquals("2020-01-03 15:23:45.321", format(minusYears(date, 3), DATEFULL_PATTERN));
 
         Assertions.assertEquals("2023-01-03 00:00:00.000", format(startOfDay(date), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-03 23:59:59.000", format(endOfDay(date), DATEFULL_PATTERN));
+        Assertions.assertEquals("2023-01-03 23:59:59.999", format(endOfDay(date), DATEFULL_PATTERN));
         Assertions.assertEquals("2023-01-02 00:00:00.000", format(startOfWeek(date), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-08 23:59:59.000", format(endOfWeek(date), DATEFULL_PATTERN));
+        Assertions.assertEquals("2023-01-08 23:59:59.999", format(endOfWeek(date), DATEFULL_PATTERN));
         Assertions.assertEquals("2023-01-01 00:00:00.000", format(startOfMonth(date), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-31 23:59:59.000", format(endOfMonth(date), DATEFULL_PATTERN));
+        Assertions.assertEquals("2023-01-31 23:59:59.999", format(endOfMonth(date), DATEFULL_PATTERN));
         Assertions.assertEquals("2023-01-01 00:00:00.000", format(startOfYear(date), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-12-31 23:59:59.000", format(endOfYear(date), DATEFULL_PATTERN));
+        Assertions.assertEquals("2023-12-31 23:59:59.999", format(endOfYear(date), DATEFULL_PATTERN));
 
         Assertions.assertEquals("2023-01-06 15:23:45.321", format(withDayOfWeek(date, 5), DATEFULL_PATTERN));
         Assertions.assertEquals("2023-01-02 15:23:45.321", format(withDayOfWeek(date, 1), DATEFULL_PATTERN));

@@ -22,6 +22,7 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -52,6 +53,17 @@ public class BytesTest {
             Assertions.assertArrayEquals(bytes1, bytes2);
             Assertions.assertEquals(value, Bytes.toLong(bytes1));
         }
+    }
+
+    @Test
+    public void testToString() {
+        Assertions.assertNull(Bytes.toString(null, StandardCharsets.UTF_8));
+        Assertions.assertEquals("", Bytes.toString(new byte[0], StandardCharsets.UTF_8));
+        Assertions.assertEquals("abc", Bytes.toString("abc".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
+
+        Assertions.assertNull(Bytes.toBytes((String) null, StandardCharsets.UTF_8));
+        Assertions.assertEquals(0, Bytes.toBytes("", StandardCharsets.UTF_8).length);
+        Assertions.assertArrayEquals("abc".getBytes(StandardCharsets.UTF_8), Bytes.toBytes("abc", StandardCharsets.UTF_8));
     }
 
 }

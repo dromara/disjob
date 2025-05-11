@@ -125,6 +125,16 @@ public final class Bytes {
         return builder.toString();
     }
 
+    // -----------------------------------------------------------------string
+
+    public static String toString(byte[] bytes, Charset charset) {
+        return bytes == null ? null : new String(bytes, charset);
+    }
+
+    public static byte[] toBytes(String str, Charset charset) {
+        return str == null ? null : str.getBytes(charset);
+    }
+
     // -----------------------------------------------------------------char array
 
     /**

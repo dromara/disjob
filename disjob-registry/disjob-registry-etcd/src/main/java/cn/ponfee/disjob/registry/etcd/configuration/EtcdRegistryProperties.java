@@ -23,6 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Etcd registry configuration properties.
@@ -50,6 +52,21 @@ public class EtcdRegistryProperties extends AbstractRegistryProperties {
      * Auth password
      */
     private String password;
+
+    /**
+     * Authority
+     */
+    private String authority;
+
+    /**
+     * Headers
+     */
+    private Map<String, Object> headers = new HashMap<>();
+
+    /**
+     * Auth headers
+     */
+    private Map<String, Object> authHeaders = new HashMap<>();
 
     /**
      * Max inbound message size

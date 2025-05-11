@@ -100,15 +100,28 @@ public class Collects {
         return IntStream.range(0, size).mapToObj(mapper).collect(Collectors.toList());
     }
 
-    public static <E, K> Map<K, E> toMap(List<E> list, Function<E, K> keyMapper) {
+    public static <E, K> Map<K, E> toMap(Collection<E> list, Function<E, K> keyMapper) {
         return toMap(list, keyMapper, Function.identity());
     }
 
-    public static <E, K, V> Map<K, V> toMap(List<E> list, Function<E, K> keyMapper, Function<E, V> valueMapper) {
+    public static <E, K, V> Map<K, V> toMap(Collection<E> list, Function<E, K> keyMapper, Function<E, V> valueMapper) {
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyMap();
         }
         return list.stream().collect(Collectors.toMap(keyMapper, valueMapper));
+    }
+
+    public static <K1, K2, V> Map<K2, V> convert(Map<K1, V> source, Function<K1, K2> keyMapper) {
+        return convert(source, keyMapper, Function.identity());
+    }
+
+    public static <K1, V1, K2, V2> Map<K2, V2> convert(Map<K1, V1> source, Function<K1, K2> keyMapper, Function<V1, V2> valueMapper) {
+        if (source == null) {
+            return null;
+        }
+        Map<K2, V2> target = new HashMap<>(source.size() * 2);
+        source.forEach((k1, v1) -> target.put(keyMapper.apply(k1), valueMapper.apply(v1)));
+        return target;
     }
 
     public static Properties toProperties(Map<String, String> map) {

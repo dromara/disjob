@@ -30,6 +30,7 @@ import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -647,15 +648,11 @@ public class Dates {
     }
 
     public static LocalDateTime startOfDay(LocalDateTime dateTime) {
-        return LocalDateTime.of(dateTime.toLocalDate(), LocalTime.MIN);
-        //return dateTime.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        return dateTime.with(LocalTime.MIN);
     }
 
     public static LocalDateTime endOfDay(LocalDateTime dateTime) {
-        // 若Mysql的datetime字段没有指定毫秒位数：
-        //   1）当毫秒数<500时会向下取整到秒
-        //   2）当毫秒数>=500时会向上取整到秒
-        return LocalDateTime.of(dateTime.toLocalDate(), LocalTime.of(23, 59, 59, /*999_999_999*/0));
+        return dateTime.with(LocalTime.MAX);
     }
 
     /**
@@ -667,7 +664,7 @@ public class Dates {
      * @return date of target zone id
      */
     public static Date zoneConvert(Date date, ZoneId sourceZone, ZoneId targetZone) {
-        if (date == null || sourceZone.equals(targetZone)) {
+        if (date == null || Objects.equals(sourceZone, targetZone)) {
             return date;
         }
         return Date.from(

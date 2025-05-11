@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.registry.etcd;
 
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
@@ -41,7 +42,9 @@ import io.etcd.jetcd.watch.WatchEvent;
 import io.etcd.jetcd.watch.WatchResponse;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
+import io.grpc.Metadata;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -53,6 +56,7 @@ import java.io.Closeable;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -288,15 +292,26 @@ public class EtcdClient implements Closeable {
         return ByteSequence.from(str, UTF_8);
     }
 
+    private static Metadata.Key<String> toMetadataKey(String str) {
+        return Metadata.Key.of(str, Metadata.ASCII_STRING_MARSHALLER);
+    }
+
     private static Client buildClient(EtcdRegistryProperties config) {
         ClientBuilder builder = Client.builder()
             .endpoints(config.endpoints())
+            .authority(config.getAuthority())
             .maxInboundMessageSize(config.getMaxInboundMessageSize());
         if (StringUtils.isNotEmpty(config.getUser())) {
             builder.user(utf8(config.getUser()));
         }
         if (StringUtils.isNotEmpty(config.getPassword())) {
-            builder.user(utf8(config.getPassword()));
+            builder.password(utf8(config.getPassword()));
+        }
+        if (MapUtils.isNotEmpty(config.getHeaders())) {
+            builder.headers(Collects.convert(config.getHeaders(), EtcdClient::toMetadataKey));
+        }
+        if (MapUtils.isNotEmpty(config.getAuthHeaders())) {
+            builder.authHeaders(Collects.convert(config.getAuthHeaders(), EtcdClient::toMetadataKey));
         }
         return builder.build();
     }

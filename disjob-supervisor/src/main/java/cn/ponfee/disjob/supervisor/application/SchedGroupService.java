@@ -183,7 +183,7 @@ public class SchedGroupService extends SingletonClassConstraint {
     }
 
     private static Map<String, DisjobGroup> toGroupMap(List<DisjobGroup> list) {
-        return Collects.toMap(list, DisjobGroup::getGroup, Function.identity());
+        return Collects.toMap(list, DisjobGroup::getGroup);
     }
 
     private static Map<String, ImmutableSet<String>> toUserMap(List<DisjobGroup> list) {

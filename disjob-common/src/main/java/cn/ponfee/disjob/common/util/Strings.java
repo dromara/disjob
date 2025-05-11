@@ -35,10 +35,6 @@ public final class Strings {
 
     private static final List<String> SQL_LIKE_LIST = ImmutableList.of("^", "$", "^$");
 
-    public static byte[] getBytes(String string, Charset charset) {
-        return string == null ? null : string.getBytes(charset);
-    }
-
     /**
      * <pre>
      * '?' Matches any single character.
@@ -93,20 +89,20 @@ public final class Strings {
     /**
      * 驼峰转为带分隔符名字，如驼峰转换为下划线：CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, camelCaseName);
      *
-     * @param camelcaseFormat the camelcase format
+     * @param camelCaseFormat the camel case format
      * @param separator       the separator character
      * @return separator format string
      * @see CaseFormat#to(CaseFormat, String)
      */
-    public static String toSeparatedFormat(String camelcaseFormat, char separator) {
-        if (StringUtils.isEmpty(camelcaseFormat)) {
-            return camelcaseFormat;
+    public static String toSeparatedFormat(String camelCaseFormat, char separator) {
+        if (StringUtils.isEmpty(camelCaseFormat)) {
+            return camelCaseFormat;
         }
 
-        StringBuilder result = new StringBuilder(camelcaseFormat.length() << 1);
-        result.append(Character.toLowerCase(camelcaseFormat.charAt(0)));
-        for (int i = 1, len = camelcaseFormat.length(); i < len; i++) {
-            char ch = camelcaseFormat.charAt(i);
+        StringBuilder result = new StringBuilder(camelCaseFormat.length() << 1);
+        result.append(Character.toLowerCase(camelCaseFormat.charAt(0)));
+        for (int i = 1, len = camelCaseFormat.length(); i < len; i++) {
+            char ch = camelCaseFormat.charAt(i);
             if (Character.isUpperCase(ch)) {
                 result.append(separator).append(Character.toLowerCase(ch));
             } else {
@@ -128,7 +124,7 @@ public final class Strings {
      *
      * @param separatedFormat the separated format
      * @param separator       the separator character
-     * @return camelcase format string
+     * @return camel case format string
      * @see CaseFormat#to(CaseFormat, String)
      */
     public static String toCamelCaseFormat(String separatedFormat, char separator) {
@@ -155,13 +151,6 @@ public final class Strings {
             throw new IllegalArgumentException("Text require non blank.");
         }
         return str;
-    }
-
-    public static String of(byte[] bytes, Charset charset) {
-        if (bytes == null) {
-            return null;
-        }
-        return new String(bytes, charset);
     }
 
     public static String concatSqlLike(String str) {
