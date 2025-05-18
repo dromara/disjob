@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -169,13 +168,6 @@ public final class Strings {
             str = str + "%";
         }
         return str;
-    }
-
-    public static String withSuffix(String str, String suffix) {
-        if (StringUtils.isEmpty(str) || str.endsWith(suffix)) {
-            return str;
-        }
-        return str + suffix;
     }
 
     /**

@@ -53,18 +53,20 @@ public class DAGUtils {
         MutableInt begin = new MutableInt('A');
         Map<String, String> map = new HashMap<>();
         for (EndpointPair<DAGNode> edge : DAGExpression.parse(expression).edges()) {
-            DAGNode s = edge.source(), t = edge.target();
-            String ls = s.getName(), lt = t.getName();
+            DAGNode sn = edge.source(); // source node
+            DAGNode tn = edge.target(); // target node
+            String sl = sn.getName();   // source label
+            String tl = tn.getName();   // target label
             if (thumb) {
-                if (!s.isStartOrEnd()) {
-                    ls = map.computeIfAbsent(ls, k -> String.valueOf((char) begin.getAndIncrement()));
+                if (!sn.isStartOrEnd()) {
+                    sl = map.computeIfAbsent(sl, k -> String.valueOf((char) begin.getAndIncrement()));
                 }
-                if (!t.isStartOrEnd()) {
-                    lt = map.computeIfAbsent(lt, k -> String.valueOf((char) begin.getAndIncrement()));
+                if (!tn.isStartOrEnd()) {
+                    tl = map.computeIfAbsent(tl, k -> String.valueOf((char) begin.getAndIncrement()));
                 }
             }
-            Node source = Factory.node(s.toString()).with(s.isStart() ? Shape.M_DIAMOND : Shape.RECTANGLE, Label.of(ls));
-            Node target = Factory.node(t.toString()).with(t.isEnd() ? Shape.M_SQUARE : Shape.RECTANGLE, Label.of(lt));
+            Node source = Factory.node(sn.toString()).with(sn.isStart() ? Shape.M_DIAMOND : Shape.RECTANGLE, Label.of(sl));
+            Node target = Factory.node(tn.toString()).with(tn.isEnd() ? Shape.M_SQUARE : Shape.RECTANGLE, Label.of(tl));
             graph.add(source.link(target));
         }
 

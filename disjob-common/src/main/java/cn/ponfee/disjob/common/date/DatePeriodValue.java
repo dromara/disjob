@@ -44,7 +44,7 @@ public class DatePeriodValue extends ToJsonString implements Serializable {
     private Date start;
 
     /**
-     * period step
+     * Period step
      */
     private int step = 1;
 

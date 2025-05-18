@@ -20,18 +20,18 @@ import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.junit.jupiter.api.Assertions;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.util.Assert;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.reset;
@@ -77,12 +77,12 @@ public abstract class SpringBootTestMockito {
 
         // Mock CoreUtils#getLocalHost(String)
         mockedStaticCoreUtils.when(() -> CoreUtils.getLocalHost(any())).thenReturn(localhostIp);
-        Assertions.assertEquals(localhostIp, CoreUtils.getLocalHost(null));
+        assertEquals(localhostIp, CoreUtils.getLocalHost(null));
         mockedStaticCoreUtils.verify(() -> CoreUtils.getLocalHost(any()));
 
         // Mock CoreUtils#getLocalHost()
         mockedStaticCoreUtils.when(CoreUtils::getLocalHost).thenReturn(localhostIp);
-        Assertions.assertEquals(localhostIp, CoreUtils.getLocalHost());
+        assertEquals(localhostIp, CoreUtils.getLocalHost());
         mockedStaticCoreUtils.verify(CoreUtils::getLocalHost);
     }
 
@@ -91,7 +91,7 @@ public abstract class SpringBootTestMockito {
         .stream()
         .filter(e -> !Modifier.isStatic(e.getModifiers()))
         .filter(e -> e.isAnnotationPresent(MockBean.class) || MockedStatic.class.isAssignableFrom(e.getType()))
-        .peek(e -> Assert.isTrue(Modifier.isProtected(e.getModifiers()), () -> "Mock field must protected: " + e.toGenericString()))
+        .peek(e -> assertTrue(Modifier.isProtected(e.getModifiers()), () -> "Mock field must be protected: " + e.toGenericString()))
         .collect(Collectors.toList());
 
     // --------------------------------------mock bean definition

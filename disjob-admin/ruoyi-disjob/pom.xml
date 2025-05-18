@@ -31,18 +31,6 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>ruoyi-system</artifactId>
     </dependency>
-
-    <!-- 引入`disjob-test`模块中的一些内置`JobExecutor`用于测试，实际开发中应去除此依赖 -->
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-test</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-id</artifactId>
@@ -55,7 +43,17 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-worker</artifactId>
     </dependency>
-
+    <!-- 引入`disjob-test`模块中的一些内置`JobExecutor`用于测试，实际开发中应去除此依赖 -->
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-test</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
     <!-- Registry: select one implementation for server registry -->
     <dependency>

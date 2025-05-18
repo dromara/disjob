@@ -16,9 +16,14 @@
 
 package cn.ponfee.disjob.common.util;
 
+import org.apache.commons.codec.binary.Hex;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,6 +66,22 @@ public class JsonsTest {
             "      #!/bin/sh \n" +
             "      echo \"hello shell!\"\n" +
             "    ");
+    }
+
+    @Test
+    public void testBigInteger() {
+        for (int i = 0; i < 1000; i++) {
+            BigInteger number = new BigInteger(ThreadLocalRandom.current().nextLong(Long.MAX_VALUE) + "");
+            Assertions.assertEquals(Numbers.toHex(number), toHex(number));
+        }
+    }
+
+    private static String toHex(BigInteger value) {
+        String hex = Hex.encodeHexString(value.toByteArray(), false);
+        if (Pattern.compile("^0+$").matcher(hex).matches()) {
+            return "0";
+        }
+        return hex.replaceFirst("^0*", "");
     }
 
 }

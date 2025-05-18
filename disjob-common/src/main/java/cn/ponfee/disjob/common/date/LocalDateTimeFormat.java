@@ -73,11 +73,11 @@ public class LocalDateTimeFormat {
     // --------------------------------------------------------------------------public methods
 
     public LocalDateTime parse(String source) {
-        if (source == null || source.length() == 0) {
+        int length;
+        if (source == null || (length = source.length()) == 0) {
             return null;
         }
 
-        int length = source.length();
         if (length >= 20 && source.endsWith("Z")) {
             // example:
             //   2022-07-18T15:11:11Z, 2022-07-18T15:11:11.Z, 2022-07-18T15:11:11.1Z, 2022-07-18T15:11:11.13Z, 2022-07-18T15:11:11.133Z

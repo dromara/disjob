@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Chars;
-import org.apache.commons.codec.binary.Hex;
 import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
@@ -555,7 +554,7 @@ public final class Numbers {
      * @return upper hex string
      */
     public static String toHex(BigInteger value) {
-        String hex = Hex.encodeHexString(value.toByteArray(), false);
+        String hex = Bytes.encodeHex(value.toByteArray(), false);
         if (ALL_ZERO_PATTERN.matcher(hex).matches()) {
             return "0";
         }

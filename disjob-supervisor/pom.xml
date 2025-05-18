@@ -17,7 +17,7 @@
   <url>https://github.com/dromara/disjob</url>
 
   <dependencies>
-    <!-- https://mapstruct.org/documentation/1.5/reference/html/ -->
+    <!-- https://mapstruct.org/documentation/stable/reference/html/ -->
     <dependency>
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct</artifactId>
