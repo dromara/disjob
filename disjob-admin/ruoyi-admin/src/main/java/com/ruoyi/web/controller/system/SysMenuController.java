@@ -141,6 +141,17 @@ public class SysMenuController extends BaseController
     }
 
     /**
+     * 保存菜单排序
+     */
+    @PostMapping("/updateSort")
+    @ResponseBody
+    public AjaxResult updateSort(@RequestParam String[] menuIds, @RequestParam String[] orderNums)
+    {
+        menuService.updateMenuSort(menuIds, orderNums);
+        return success();
+    }
+
+    /**
      * 选择菜单图标
      */
     @GetMapping("/icon")

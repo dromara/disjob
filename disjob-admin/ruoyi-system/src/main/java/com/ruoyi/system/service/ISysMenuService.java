@@ -131,6 +131,14 @@ public interface ISysMenuService
     int updateMenu(SysMenu menu);
 
     /**
+     * 保存菜单排序
+     *
+     * @param menuIds 菜单ID
+     * @param orderNums 排序ID
+     */
+    void updateMenuSort(String[] menuIds, String[] orderNums);
+
+    /**
      * 校验菜单名称是否唯一
      *
      * @param menu 菜单信息

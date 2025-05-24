@@ -5,12 +5,15 @@ import com.ruoyi.common.core.domain.Ztree;
 import com.ruoyi.common.core.domain.entity.SysMenu;
 import com.ruoyi.common.core.domain.entity.SysRole;
 import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.core.text.Convert;
+import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.mapper.SysMenuMapper;
 import com.ruoyi.system.mapper.SysRoleMenuMapper;
 import com.ruoyi.system.service.ISysMenuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -314,6 +317,32 @@ public class SysMenuServiceImpl implements ISysMenuService
     public int updateMenu(SysMenu menu)
     {
         return menuMapper.updateMenu(menu);
+    }
+
+    /**
+     * 保存菜单排序
+     *
+     * @param menuIds 菜单ID
+     * @param orderNums 排序ID
+     */
+    @Transactional
+    @Override
+    public void updateMenuSort(String[] menuIds, String[] orderNums)
+    {
+        try
+        {
+            for (int i = 0; i < menuIds.length; i++)
+            {
+                SysMenu menu = new SysMenu();
+                menu.setMenuId(Convert.toLong(menuIds[i]));
+                menu.setOrderNum(orderNums[i]);
+                menuMapper.updateMenuSort(menu);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new ServiceException("保存排序异常，请联系管理员：" + e.getMessage());
+        }
     }
 
     /**

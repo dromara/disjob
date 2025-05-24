@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -203,6 +204,10 @@ public class ReflectUtils
                     else if (cs[i] == boolean.class || cs[i] == Boolean.class)
                     {
                         args[i] = Convert.toBool(args[i]);
+                    }
+                    else if (cs[i] == BigDecimal.class)
+                    {
+                        args[i] = Convert.toBigDecimal(args[i]);
                     }
                 }
             }
