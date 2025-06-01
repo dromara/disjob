@@ -1,0 +1,6 @@
+# 当使用nacos作为注册中心时使用该配置，同时需要在“application.yml”配置文件的“spring.profiles.include”项中增加“registry-nacos”，即“spring.profiles.include: xxx,registry-nacos”
+disjob.registry.nacos:
+  namespace: disjob_registry
+  server-addr: localhost:8848
+  username: nacos
+  password: nacos
