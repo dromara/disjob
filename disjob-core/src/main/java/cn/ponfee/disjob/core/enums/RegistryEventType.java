@@ -37,8 +37,4 @@ public enum RegistryEventType {
         return this == REGISTER;
     }
 
-    public boolean isDeregister() {
-        return this == DEREGISTER;
-    }
-
 }

@@ -46,10 +46,8 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected final char separator;
-
     protected final ServerRole registryRole;
     protected final String registryRootPath;
-
     protected final ServerRole discoveryRole;
     protected final String discoveryRootPath;
     private final ServerDiscovery<D, R> serverDiscovery;
@@ -60,7 +58,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     protected final Set<R> registered = ConcurrentHashMap.newKeySet();
 
     /**
-     * Server registry state
+     * Registry center connection state
      */
     protected final TripleState state = TripleState.createStarted();
 

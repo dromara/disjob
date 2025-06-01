@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.registry;
 
-import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.base.Supervisor;
@@ -63,15 +62,11 @@ public enum ServerRole {
     }
 
     <S extends Server> S deserialize(String text) {
-        return ClassUtils.invoke(type(), "deserialize", new Object[]{text});
+        return (S) (isWorker() ? Worker.deserialize(text) : Supervisor.deserialize(text));
     }
 
     public boolean isWorker() {
         return this == WORKER;
-    }
-
-    public boolean isSupervisor() {
-        return this == SUPERVISOR;
     }
 
     static ServerRole of(Class<? extends Server> type) {
