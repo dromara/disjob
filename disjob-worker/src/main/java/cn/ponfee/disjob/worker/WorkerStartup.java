@@ -30,11 +30,11 @@ import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy;
 import cn.ponfee.disjob.worker.base.TimingWheelRotator;
 import cn.ponfee.disjob.worker.base.WorkerThreadPool;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**

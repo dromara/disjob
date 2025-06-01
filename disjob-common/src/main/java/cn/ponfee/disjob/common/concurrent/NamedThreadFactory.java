@@ -17,9 +17,9 @@
 package cn.ponfee.disjob.common.concurrent;
 
 import cn.ponfee.disjob.common.util.ObjectUtils;
+import jakarta.annotation.Nonnull;
 import org.slf4j.Logger;
 
-import javax.annotation.Nonnull;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 

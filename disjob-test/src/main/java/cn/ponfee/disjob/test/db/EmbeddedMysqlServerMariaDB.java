@@ -25,6 +25,7 @@ import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.commons.io.IOUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -97,10 +98,10 @@ public class EmbeddedMysqlServerMariaDB {
         System.out.println("Embedded maria db started!");
     }
 
-    private static String createDirectory(String name) throws IOException {
+    private static File createDirectory(String name) throws IOException {
         String dataDir = MavenProjects.getProjectBaseDir() + "/target/mariadb/" + name;
         Files.cleanOrMakeDir(dataDir);
-        return dataDir;
+        return new File(dataDir);
     }
 
 }
