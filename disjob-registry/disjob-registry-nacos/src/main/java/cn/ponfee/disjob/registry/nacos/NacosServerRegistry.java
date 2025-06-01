@@ -50,7 +50,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         NacosClient client0 = null;
         try {
             this.client = client0 = new NacosClient(config.toProperties(), groupName);
-            client.watch(discoveryRootPath, instances -> refreshDiscoveryServers(extract(instances)));
+            client.watch(discoveryRootPath, instances -> refreshDiscoveredServers(extract(instances)));
 
             log.info("Nacos server registry initialized: {}", client);
         } catch (Throwable t) {

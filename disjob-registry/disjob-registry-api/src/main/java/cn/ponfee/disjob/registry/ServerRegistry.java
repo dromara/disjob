@@ -86,18 +86,18 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     public abstract boolean isConnected();
 
     @Override
-    public final List<D> getDiscoveredServers(String group) {
-        return serverDiscovery.getServers(group);
+    public final List<D> getAliveServers(String group) {
+        return serverDiscovery.getAliveServers(group);
     }
 
     @Override
-    public final boolean hasDiscoveredServers() {
-        return serverDiscovery.hasServers();
+    public final boolean hasAliveServer() {
+        return serverDiscovery.hasAliveServer();
     }
 
     @Override
-    public final boolean isDiscoveredServer(D server) {
-        return serverDiscovery.isAlive(server);
+    public final boolean isAliveServer(D server) {
+        return serverDiscovery.isAliveServer(server);
     }
 
     /**
@@ -120,23 +120,23 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
 
     protected void publishServerEvent(RegistryEventType eventType, R rServer) {
         log.info("Publish server event: {}, {}", eventType, rServer);
-        serverDiscovery.notifyServers(eventType, rServer);
+        serverDiscovery.notify(eventType, rServer);
     }
 
     @Override
     public final void subscribeServerEvent(RegistryEventType eventType, D dServer) {
         log.info("Subscribe server event: {}, {}", eventType, dServer);
-        serverDiscovery.updateServers(eventType, dServer);
+        serverDiscovery.update(eventType, dServer);
     }
 
     /**
-     * Refresh discovery servers.
+     * Refresh discovered servers.
      *
      * @param list the list
      */
-    protected final void refreshDiscoveryServers(List<String> list) {
+    protected final void refreshDiscoveredServers(List<String> list) {
         List<D> servers = deserializeServers(list, discoveryRole);
-        serverDiscovery.refreshServers(servers);
+        serverDiscovery.refresh(servers);
         if (servers.isEmpty()) {
             log.warn("Not discovered available {}", discoveryRole);
         }

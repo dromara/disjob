@@ -226,7 +226,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                     Long currentIndex = response.getConsulIndex();
                     if (currentIndex != null && currentIndex > lastConsulIndex) {
                         lastConsulIndex = currentIndex;
-                        refreshDiscoveryServers(extract(response, discoveryRootPath));
+                        refreshDiscoveredServers(extract(response, discoveryRootPath));
                     }
                 } catch (Throwable t) {
                     log.error("Get consul health services occur error.", t);

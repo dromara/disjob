@@ -88,7 +88,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
-        if (workerClient.hasNotDiscoveredWorkers()) {
+        if (!workerClient.hasAliveWorker()) {
             logPrinter.execute();
             return true;
         }
@@ -117,9 +117,9 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private void processJob(SchedJob job, Date now, long maxNextTriggerTime) {
         try {
             // check has available workers
-            if (workerClient.hasNotDiscoveredWorkers(job.getGroup())) {
+            if (!workerClient.hasAliveWorker(job.getGroup())) {
                 updateNextScanTime(job, now, 60000L);
-                log.warn("Scan job not discovered worker: {}, {}", job.getJobId(), job.getGroup());
+                log.warn("Scan job none alive worker: {}, {}", job.getJobId(), job.getGroup());
                 return;
             }
             // 重新再计算一次nextTriggerTime

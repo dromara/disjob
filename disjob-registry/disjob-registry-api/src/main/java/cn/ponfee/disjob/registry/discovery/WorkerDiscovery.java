@@ -58,8 +58,10 @@ public final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
         );
     }
 
+    // ----------------------------------------------------------------write methods
+
     @Override
-    public synchronized void refreshServers(List<Worker> discoveredWorkers) {
+    public synchronized void refresh(List<Worker> discoveredWorkers) {
         if (CollectionUtils.isEmpty(discoveredWorkers)) {
             this.groupedWorkers = ImmutableMap.of();
         } else {
@@ -72,46 +74,41 @@ public final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
     }
 
     @Override
-    public synchronized void updateServers(RegistryEventType eventType, Worker worker) {
-        if (eventType.isRegister() && isAlive(worker)) {
-            return;
+    public synchronized void update(RegistryEventType eventType, Worker worker) {
+        // if register and not exists worker, or deregister and exists worker
+        if (eventType.isRegister() != isAliveServer(worker)) {
+            final ImmutableMap<String, ImmutableList<Worker>> map = groupedWorkers;
+            String group = worker.getGroup();
+            ImmutableMap.Builder<String, ImmutableList<Worker>> builder = ImmutableMap.builder();
+            map.forEach((k, v) -> builder.put(k, group.equals(k) ? merge(v, eventType, worker) : v));
+            if (!map.containsKey(group)) {
+                builder.put(group, ImmutableList.of(worker));
+            }
+            this.groupedWorkers = builder.build();
         }
-        if (eventType.isDeregister() && !isAlive(worker)) {
-            return;
-        }
-
-        final ImmutableMap<String, ImmutableList<Worker>> map = groupedWorkers;
-        String group = worker.getGroup();
-        ImmutableMap.Builder<String, ImmutableList<Worker>> builder = ImmutableMap.builder();
-        map.forEach((k, v) -> builder.put(k, group.equals(k) ? mergeServers(v, eventType, worker) : v));
-        if (!map.containsKey(group)) {
-            builder.put(group, ImmutableList.of(worker));
-        }
-        this.groupedWorkers = builder.build();
     }
 
     @Override
-    public List<Worker> getServers(String group) {
-        Assert.hasText(group, "Get discovery worker group cannot be null.");
+    void notify(Worker worker, RegistryEventType eventType, Supervisor supervisor) {
+        try {
+            SupervisorEventParam param = SupervisorEventParam.of(worker.getGroup(), eventType, supervisor);
+            workerRpcClient.invoke(worker, client -> client.subscribeSupervisorEvent(param));
+        } catch (Throwable t) {
+            log.error("Notify server error: {}, {}", worker, t.getMessage());
+        }
+    }
+
+    // ----------------------------------------------------------------read methods
+
+    @Override
+    public List<Worker> getAliveServers(String group) {
+        Assert.hasText(group, "Get alive workers group cannot be null.");
         List<Worker> workers = groupedWorkers.get(group);
         return workers == null ? Collections.emptyList() : workers;
     }
 
     @Override
-    public boolean hasServers() {
-        return !groupedWorkers.isEmpty();
-    }
-
-    @Override
-    public boolean isAlive(Worker worker) {
-        List<Worker> workers = groupedWorkers.get(worker.getGroup());
-        return workers != null && Collections.binarySearch(workers, worker) > -1;
-    }
-
-    // ----------------------------------------------------------------default package methods
-
-    @Override
-    List<Worker> getServers() {
+    List<Worker> getAliveServers() {
         Collection<ImmutableList<Worker>> values = groupedWorkers.values();
         List<Worker> list = new ArrayList<>(values.stream().mapToInt(Collection::size).sum());
         values.forEach(list::addAll);
@@ -119,13 +116,14 @@ public final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
     }
 
     @Override
-    void notifyServer(Worker worker, RegistryEventType eventType, Supervisor supervisor) {
-        try {
-            SupervisorEventParam param = SupervisorEventParam.of(worker.getGroup(), eventType, supervisor);
-            workerRpcClient.invoke(worker, client -> client.subscribeSupervisorEvent(param));
-        } catch (Throwable t) {
-            log.error("Notify server error: {}, {}", worker, t.getMessage());
-        }
+    public boolean hasAliveServer() {
+        return !groupedWorkers.isEmpty();
+    }
+
+    @Override
+    public boolean isAliveServer(Worker worker) {
+        final List<Worker> workers = groupedWorkers.get(worker.getGroup());
+        return workers != null && Collections.binarySearch(workers, worker) > -1;
     }
 
 }

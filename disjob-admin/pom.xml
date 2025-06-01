@@ -41,7 +41,7 @@
     <kaptcha.version>2.3.3</kaptcha.version>
     <pagehelper-spring-boot-starter.version>2.1.0</pagehelper-spring-boot-starter.version>
     <fastjson.version>1.2.83</fastjson.version>
-    <oshi-core.version>6.8.0</oshi-core.version>
+    <oshi-core.version>6.8.1</oshi-core.version>
     <poi-ooxml.version>5.4.1</poi-ooxml.version>
     <velocity-engine-core.version>2.4.1</velocity-engine-core.version>
 

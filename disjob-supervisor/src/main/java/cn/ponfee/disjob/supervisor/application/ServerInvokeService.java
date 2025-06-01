@@ -97,7 +97,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     public List<WorkerMetricsResponse> workers(String group) {
-        List<Worker> list = workerClient.getDiscoveredWorkers(group);
+        List<Worker> list = workerClient.getAliveWorkers(group);
         // 当前Supervisor同时也是Worker时，此Worker排到最前面
         list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Worker.local()) ? 0 : 1));
         return MultithreadExecutors.call(list, this::getWorkerMetrics, ThreadPoolExecutors.commonThreadPool());
@@ -120,12 +120,12 @@ public class ServerInvokeService extends SingletonClassConstraint {
     public void configureOneWorker(ConfigureOneWorkerRequest req) {
         Worker worker = req.toWorker();
         if (req.getAction() == Action.ADD_WORKER) {
-            List<Worker> workers = workerClient.getDiscoveredWorkers(req.getGroup());
+            List<Worker> workers = workerClient.getAliveWorkers(req.getGroup());
             if (workers != null && workers.stream().anyMatch(worker::matches)) {
                 throw new KeyExistsException("Worker already registered: " + worker);
             }
         } else {
-            List<Worker> workers = getRequiredDiscoveredWorkers(req.getGroup());
+            List<Worker> workers = getRequiredAliveWorkers(req.getGroup());
             if (!workers.contains(worker)) {
                 throw new KeyNotExistsException("Not found worker: " + worker);
             }
@@ -135,7 +135,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     public void configureAllWorker(ConfigureAllWorkerRequest req) {
-        List<Worker> workers = getRequiredDiscoveredWorkers(req.getGroup());
+        List<Worker> workers = getRequiredAliveWorkers(req.getGroup());
         Consumer<Worker> action = worker -> configureWorker(worker, req.getAction(), req.getData());
         MultithreadExecutors.run(workers, action, ThreadPoolExecutors.commonThreadPool());
     }
@@ -203,12 +203,12 @@ public class ServerInvokeService extends SingletonClassConstraint {
         return response;
     }
 
-    private List<Worker> getRequiredDiscoveredWorkers(String group) {
-        List<Worker> list = workerClient.getDiscoveredWorkers(group);
-        if (CollectionUtils.isEmpty(list)) {
+    private List<Worker> getRequiredAliveWorkers(String group) {
+        List<Worker> workers = workerClient.getAliveWorkers(group);
+        if (CollectionUtils.isEmpty(workers)) {
             throw new KeyNotExistsException("Group '" + group + "' not exists workers.");
         }
-        return list;
+        return workers;
     }
 
     private void verifyWorkerSignature(Worker worker) {

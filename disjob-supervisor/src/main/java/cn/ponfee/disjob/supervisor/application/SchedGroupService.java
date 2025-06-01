@@ -23,7 +23,6 @@ import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Functions;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.TokenType;
-import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
@@ -31,6 +30,7 @@ import cn.ponfee.disjob.supervisor.application.request.SchedGroupUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import cn.ponfee.disjob.supervisor.application.value.DisjobGroup;
 import cn.ponfee.disjob.supervisor.base.OperationEventType;
+import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper;
 import cn.ponfee.disjob.supervisor.exception.GroupNotFoundException;
@@ -66,15 +66,15 @@ public class SchedGroupService extends SingletonClassConstraint {
     private static final AtomicReference<Cache> CACHE = new AtomicReference<>(Cache.empty());
 
     private final SchedGroupMapper groupMapper;
-    private final Discovery<Worker> discoverWorker;
+    private final WorkerClient workerClient;
     private final ServerInvokeService serverInvokeService;
 
     public SchedGroupService(SchedGroupMapper groupMapper,
-                             Discovery<Worker> discoverWorker,
+                             WorkerClient workerClient,
                              ServerInvokeService serverInvokeService,
                              SupervisorProperties supervisorConf) {
         this.groupMapper = groupMapper;
-        this.discoverWorker = discoverWorker;
+        this.workerClient = workerClient;
         this.serverInvokeService = serverInvokeService;
 
         supervisorConf.check();
@@ -97,8 +97,8 @@ public class SchedGroupService extends SingletonClassConstraint {
     }
 
     public boolean delete(String user, String group) {
-        List<Worker> list = discoverWorker.getDiscoveredServers(group);
-        if (CollectionUtils.isNotEmpty(list)) {
+        List<Worker> workers = workerClient.getAliveWorkers(group);
+        if (CollectionUtils.isNotEmpty(workers)) {
             throw new KeyExistsException("Group '" + group + "' has registered workers, cannot delete.");
         }
         return Functions.doIfTrue(

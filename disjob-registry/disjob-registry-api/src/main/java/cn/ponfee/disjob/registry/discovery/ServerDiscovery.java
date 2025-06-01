@@ -42,55 +42,48 @@ public abstract class ServerDiscovery<D extends Server, R extends Server> {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    public abstract void refreshServers(List<D> servers);
+    // ----------------------------------------------------------------write methods
 
-    public abstract void updateServers(RegistryEventType eventType, D server);
+    public abstract void refresh(List<D> servers);
 
-    public abstract List<D> getServers(String group);
+    public abstract void update(RegistryEventType eventType, D server);
 
-    public abstract boolean hasServers();
-
-    public abstract boolean isAlive(D server);
-
-    public final void notifyServers(RegistryEventType eventType, R rServer) {
-        List<D> servers = getServers();
+    public final void notify(RegistryEventType eventType, R rServer) {
+        List<D> servers = getAliveServers();
         if (CollectionUtils.isEmpty(servers)) {
             return;
         }
-        int size = servers.size();
-        if (size == 1) {
-            notifyServer(servers.get(0), eventType, rServer);
+        if (servers.size() == 1) {
+            notify(servers.get(0), eventType, rServer);
             return;
         }
         ExecutorService threadPool = ThreadPoolExecutors.builder()
             .corePoolSize(1)
-            .maximumPoolSize(Math.min(size - 1, 100))
+            .maximumPoolSize(Math.min(servers.size() - 1, 100))
             .workQueue(new SynchronousQueue<>())
             .keepAliveTimeSeconds(60)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
             .threadFactory(NamedThreadFactory.builder().prefix("notify_server").uncaughtExceptionHandler(log).build())
             .build();
-        MultithreadExecutors.run(servers, dServer -> notifyServer(dServer, eventType, rServer), threadPool);
+        MultithreadExecutors.run(servers, dServer -> notify(dServer, eventType, rServer), threadPool);
         threadPool.shutdown();
     }
 
-    // ----------------------------------------------------------------default package methods
+    abstract void notify(D dServer, RegistryEventType eventType, R rServer);
 
-    abstract List<D> getServers();
+    // ----------------------------------------------------------------read methods
 
-    abstract void notifyServer(D dServer, RegistryEventType eventType, R rServer);
+    public abstract List<D> getAliveServers(String group);
 
-    /**
-     * Returns sorted ImmutableList
-     *
-     * @param servers the server list
-     * @return sorted ImmutableList
-     */
-    final ImmutableList<D> toSortedImmutableList(List<D> servers) {
-        return CollectionUtils.isEmpty(servers) ? ImmutableList.of() : toSortedImmutableList(servers.stream());
-    }
+    abstract List<D> getAliveServers();
 
-    final ImmutableList<D> mergeServers(ImmutableList<D> servers, RegistryEventType eventType, D server) {
+    public abstract boolean hasAliveServer();
+
+    public abstract boolean isAliveServer(D server);
+
+    // ----------------------------------------------------------------static methods
+
+    static <D extends Server> ImmutableList<D> merge(ImmutableList<D> servers, RegistryEventType eventType, D server) {
         Stream<D> stream;
         if (eventType.isRegister()) {
             stream = Stream.concat(servers.stream(), Stream.of(server));
@@ -100,7 +93,15 @@ public abstract class ServerDiscovery<D extends Server, R extends Server> {
         return toSortedImmutableList(stream);
     }
 
-    // -------------------------------------------------------------static methods
+    /**
+     * Returns sorted ImmutableList
+     *
+     * @param servers the server list
+     * @return sorted ImmutableList
+     */
+    static <D extends Server> ImmutableList<D> toSortedImmutableList(List<D> servers) {
+        return CollectionUtils.isEmpty(servers) ? ImmutableList.of() : toSortedImmutableList(servers.stream());
+    }
 
     public static <D extends Server> ImmutableList<D> toSortedImmutableList(Stream<D> stream) {
         return stream.sorted().collect(ImmutableList.toImmutableList());

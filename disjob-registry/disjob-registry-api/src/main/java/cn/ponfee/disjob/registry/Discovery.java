@@ -40,27 +40,27 @@ public interface Discovery<D extends Server> extends Closeable {
     }
 
     /**
-     * Gets grouped alive discovered servers.
+     * Gets alive discovered servers of group.
      *
-     * @param group the discovered interested group
-     * @return list of grouped alive discovered servers
+     * @param group the group
+     * @return list alive discovered servers of group
      */
-    List<D> getDiscoveredServers(String group);
+    List<D> getAliveServers(String group);
 
     /**
-     * Returns is whether discovered any server.
+     * Returns has alive server.
      *
-     * @return {@code true} if discovered at least one server.
+     * @return {@code true} if has least one server alive.
      */
-    boolean hasDiscoveredServers();
+    boolean hasAliveServer();
 
     /**
-     * Returns a boolean for the server is whether alive.
+     * Returns the server is whether alive.
      *
      * @param server the server
      * @return {@code true} if is alive
      */
-    boolean isDiscoveredServer(D server);
+    boolean isAliveServer(D server);
 
     /**
      * Subscribe server event

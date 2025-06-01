@@ -448,7 +448,7 @@ public class JobManager {
                 return false;
             }
             List<SchedTask> tasks = taskMapper.findBaseByInstanceId(instanceId);
-            if (tasks.stream().anyMatch(SchedTask::isWaiting) || workerClient.hasAliveExecutingTasks(tasks)) {
+            if (tasks.stream().anyMatch(SchedTask::isWaiting) || workerClient.hasAliveTask(tasks)) {
                 LOG.warn("Purge instance failed, has waiting or alive executing task: {}", tasks);
                 return false;
             }
@@ -634,7 +634,7 @@ public class JobManager {
     }
 
     private List<Tuple2<Worker, Long>> calculateWorkload(SchedJob job, SchedInstance instance) {
-        List<Worker> workers = workerClient.getDiscoveredWorkers(job.getGroup());
+        List<Worker> workers = workerClient.getAliveWorkers(job.getGroup());
         if (CollectionUtils.isEmpty(workers)) {
             LOG.error("Not found available worker for calculate workload: {}", job.getGroup());
             return Collections.emptyList();

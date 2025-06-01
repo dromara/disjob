@@ -96,7 +96,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
 
     private void process() {
         // check has available supervisors
-        if (!discoverSupervisor.hasDiscoveredServers()) {
+        if (!discoverSupervisor.hasAliveServer()) {
             logPrinter.execute();
             return;
         }

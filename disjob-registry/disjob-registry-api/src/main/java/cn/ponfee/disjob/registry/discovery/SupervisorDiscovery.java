@@ -52,6 +52,8 @@ public final class SupervisorDiscovery extends ServerDiscovery<Supervisor, Worke
         );
     }
 
+    // ----------------------------------------------------------------write methods
+
     /**
      * <pre>
      * synchronized的执行过程：
@@ -66,51 +68,49 @@ public final class SupervisorDiscovery extends ServerDiscovery<Supervisor, Worke
      * @param discoveredSupervisors the discovered supervisors
      */
     @Override
-    public synchronized void refreshServers(List<Supervisor> discoveredSupervisors) {
+    public synchronized void refresh(List<Supervisor> discoveredSupervisors) {
         this.supervisors = toSortedImmutableList(discoveredSupervisors);
     }
 
     @Override
-    public synchronized void updateServers(RegistryEventType eventType, Supervisor supervisor) {
-        if (eventType.isRegister() && isAlive(supervisor)) {
-            return;
+    public synchronized void update(RegistryEventType eventType, Supervisor supervisor) {
+        // if register and not exists supervisor, or deregister and exists supervisor
+        if (eventType.isRegister() != isAliveServer(supervisor)) {
+            this.supervisors = merge(supervisors, eventType, supervisor);
         }
-        if (eventType.isDeregister() && !isAlive(supervisor)) {
-            return;
-        }
-        this.supervisors = mergeServers(supervisors, eventType, supervisor);
     }
 
     @Override
-    public List<Supervisor> getServers(String group) {
-        Assert.isNull(group, "Get discovery supervisor group must be null.");
-        return supervisors;
-    }
-
-    @Override
-    public boolean hasServers() {
-        return !supervisors.isEmpty();
-    }
-
-    @Override
-    public boolean isAlive(Supervisor supervisor) {
-        return Collections.binarySearch(supervisors, supervisor) > -1;
-    }
-
-    // ----------------------------------------------------------------default package methods
-
-    @Override
-    List<Supervisor> getServers() {
-        return supervisors;
-    }
-
-    @Override
-    void notifyServer(Supervisor supervisor, RegistryEventType eventType, Worker worker) {
+    void notify(Supervisor supervisor, RegistryEventType eventType, Worker worker) {
         try {
             supervisorRpcClient.invoke(supervisor, client -> client.subscribeWorkerEvent(eventType, worker));
         } catch (Throwable t) {
             log.error("Notify server error: {}, {}", supervisor, t.getMessage());
         }
+    }
+
+    // ----------------------------------------------------------------read methods
+
+    @Override
+    public List<Supervisor> getAliveServers(String group) {
+        Assert.isNull(group, "Get alive supervisors group must be null.");
+        return supervisors;
+    }
+
+    @Override
+    List<Supervisor> getAliveServers() {
+        return supervisors;
+    }
+
+    @Override
+    public boolean hasAliveServer() {
+        return !supervisors.isEmpty();
+    }
+
+    @Override
+    public boolean isAliveServer(Supervisor supervisor) {
+        final List<Supervisor> list = supervisors;
+        return list != null && Collections.binarySearch(list, supervisor) > -1;
     }
 
 }

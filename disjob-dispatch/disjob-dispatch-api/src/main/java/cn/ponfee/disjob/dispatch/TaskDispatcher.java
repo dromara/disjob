@@ -160,7 +160,7 @@ public abstract class TaskDispatcher implements Startable {
     private void assignWorker(List<DispatchTaskParam> params) {
         DispatchTaskParam first = params.get(0);
         String group = first.group();
-        List<Worker> workers = discoverWorker.getDiscoveredServers(group);
+        List<Worker> workers = discoverWorker.getAliveServers(group);
         if (CollectionUtils.isEmpty(workers)) {
             log.error("Not found available [{}] worker for assign task.", group);
             return;

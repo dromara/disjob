@@ -64,11 +64,11 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     @SuppressWarnings("rawtypes")
     private static final RedisScript<List> QUERY_SCRIPT = RedisScript.of(
-        // ['-inf', '+inf'] on redis-windows 7.4.2 occur error: ERR min or max is not a float script
-        "redis.call('zremrangebyscore', KEYS[1], '-9223372036854775808', ARGV[1]);         \n" +
-        "local ret = redis.call('zrangebyscore', KEYS[1], ARGV[1], '9223372036854775807'); \n" +
-        "redis.call('pexpire', KEYS[1], ARGV[2]);                                          \n" +
-        "return ret;                                                                       \n" ,
+        // ['-inf', '+inf'] maybe occur redis bug: ERR min or max is not a float script
+        "redis.call('zremrangebyscore', KEYS[1], '-inf', ARGV[1]);          \n" +
+        "local ret = redis.call('zrangebyscore', KEYS[1], ARGV[1], '+inf'); \n" +
+        "redis.call('pexpire', KEYS[1], ARGV[2]);                           \n" +
+        "return ret;                                                        \n" ,
         List.class
     );
 
@@ -173,7 +173,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     @Override
     public void discoverServers() throws Throwable {
-        RetryTemplate.execute(() -> refreshDiscoveryServers(getServers(discoveryRedisKey)), 3, 1000L);
+        RetryTemplate.execute(() -> refreshDiscoveredServers(getServers(discoveryRedisKey)), 3, 1000L);
     }
 
     // ------------------------------------------------------------------Close
@@ -201,7 +201,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      */
     public void handleMessage(String message, String channel) {
         try {
-            log.info("Handle message begin: {}, {}", message, channel);
+            log.info("Handle message param: {}, {}", message, channel);
             String[] array = message.split(COLON, 2);
             RegistryEventType eventType = RegistryEventType.valueOf(array[0]);
             D server = deserializeServer(array[1], discoveryRole);

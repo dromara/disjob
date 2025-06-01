@@ -89,21 +89,21 @@ public class WorkerClient {
         );
     }
 
-    public List<Worker> getDiscoveredWorkers(String group) {
-        return discoverWorker.getDiscoveredServers(group);
+    public List<Worker> getAliveWorkers(String group) {
+        return discoverWorker.getAliveServers(group);
     }
 
-    public boolean hasNotDiscoveredWorkers(String group) {
-        return CollectionUtils.isEmpty(getDiscoveredWorkers(group));
+    public boolean hasAliveWorker(String group) {
+        return CollectionUtils.isNotEmpty(getAliveWorkers(group));
     }
 
-    public boolean hasNotDiscoveredWorkers() {
-        return !discoverWorker.hasDiscoveredServers();
+    public boolean hasAliveWorker() {
+        return discoverWorker.hasAliveServer();
     }
 
-    public boolean hasAliveExecutingTasks(List<SchedTask> tasks) {
-        return CollectionUtils.isNotEmpty(tasks)
-            && tasks.stream().filter(SchedTask::isExecuting).anyMatch(e -> isAliveWorker(e.worker()));
+    public boolean hasAliveTask(List<SchedTask> tasks) {
+        return CollectionUtils.isNotEmpty(tasks) &&
+            tasks.stream().anyMatch(e -> e.isExecuting() && isAliveWorker(e.worker()));
     }
 
     public boolean shouldRedispatch(SchedTask task) {
@@ -138,7 +138,7 @@ public class WorkerClient {
     // --------------------------------------------------------------default package methods
 
     boolean isAliveWorker(Worker worker) {
-        return worker != null && discoverWorker.isDiscoveredServer(worker);
+        return worker != null && discoverWorker.isAliveServer(worker);
     }
 
     void verifyJob(SchedJob job) throws JobException {
@@ -154,8 +154,8 @@ public class WorkerClient {
 
     List<SchedTask> splitJob(String group, long instanceId, SplitJobParam param,
                              IdGenerator idGenerator, int maximumSplitTaskSize) throws JobException {
-        List<Worker> workers = getDiscoveredWorkers(group);
-        Assert.state(!workers.isEmpty(), () -> "Not discovered worker for split job: " + group);
+        List<Worker> workers = getAliveWorkers(group);
+        Assert.notEmpty(workers, () -> "None alive worker for split job: " + group);
         int wCount = workers.size();
 
         param.setWorkerCount(wCount);

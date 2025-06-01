@@ -70,7 +70,7 @@
     <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <basicArgLine>-Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true</basicArgLine>
+    <basicArgLine>-Dfile.encoding=${file.encoding} -Djava.net.preferIPv4Stack=true</basicArgLine>
     <moduleExportsArgLine />
 
     <spring-boot.version>2.7.18</spring-boot.version>

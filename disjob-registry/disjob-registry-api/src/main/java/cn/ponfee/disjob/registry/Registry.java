@@ -44,18 +44,18 @@ public interface Registry<R extends Server> extends Closeable {
     void deregister(R server);
 
     /**
+     * Returns the registered servers.
+     *
+     * @return registered server list
+     */
+    List<R> getRegisteredServers();
+
+    /**
      * Returns registry server role.
      *
      * @return registry server role
      */
     ServerRole registryRole();
-
-    /**
-     * Gets alive registered servers.
-     *
-     * @return list of alive registered servers
-     */
-    List<R> getRegisteredServers();
 
     /**
      * Close registry.

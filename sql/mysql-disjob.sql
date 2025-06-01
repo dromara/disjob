@@ -138,8 +138,8 @@ CREATE TABLE `sched_task` (
 CREATE TABLE `sched_workflow` (
   `id`                    BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `wnstance_id`           BIGINT         UNSIGNED  NOT NULL                               COMMENT 'sched_instance.wnstance_id',
-  `pre_node`              VARCHAR(255)             NOT NULL                               COMMENT '前置任务节点(section:ordinal:name)',
-  `cur_node`              VARCHAR(255)             NOT NULL                               COMMENT '当前任务节点(section:ordinal:name)',
+  `pre_node`              VARCHAR(255)             NOT NULL                               COMMENT '前置任务节点(topology:ordinal:name)',
+  `cur_node`              VARCHAR(255)             NOT NULL                               COMMENT '当前任务节点(topology:ordinal:name)',
   `run_state`             TINYINT        UNSIGNED  NOT NULL                               COMMENT '运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；',
   `instance_id`           BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '当前执行的sched_instance.instance_id(失败重试时会更新为重试的instance_id)',
   `updated_at`            DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),

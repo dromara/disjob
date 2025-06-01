@@ -76,7 +76,7 @@ final class DiscoveryServerRestTemplate<D extends Server> {
      * @throws Exception if occur exception
      */
     <T> T execute(Method method, String group, HttpMethod httpMethod, String servletPath, Object[] args) throws Exception {
-        List<D> servers = discoverServer.getDiscoveredServers(group);
+        List<D> servers = discoverServer.getAliveServers(group);
         ServerRole discoveryServerRole = discoverServer.discoveryRole();
         if (CollectionUtils.isEmpty(servers)) {
             String errMsg = (group == null ? " " : " '" + group + "' ");

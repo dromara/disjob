@@ -67,7 +67,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
-        if (workerClient.hasNotDiscoveredWorkers()) {
+        if (!workerClient.hasAliveWorker()) {
             logPrinter.execute();
             return true;
         }
@@ -118,9 +118,9 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
             log.error("Scanned running state instance not found job: {}", instance.getJobId());
             return;
         }
-        // check is whether not discovered worker
-        if (workerClient.hasNotDiscoveredWorkers(job.getGroup())) {
-            log.error("Scanned running state instance not discovered worker: {}, {}", instance.getInstanceId(), job.getGroup());
+        // check the group is whether none alive worker
+        if (!workerClient.hasAliveWorker(job.getGroup())) {
+            log.error("Scanned running state instance none alive worker: {}, {}", instance.getInstanceId(), job.getGroup());
             return;
         }
         jobManager.redispatch(job, instance, redispatchingTasks);
@@ -143,7 +143,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
     private void processHasExecutingTask(SchedInstance instance, List<SchedTask> tasks) {
         // check has alive executing state task
-        if (workerClient.hasAliveExecutingTasks(tasks)) {
+        if (workerClient.hasAliveTask(tasks)) {
             return;
         }
         boolean purged = jobManager.purgeInstance(instance);

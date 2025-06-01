@@ -173,7 +173,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     @Override
     public void discoverServers() throws Throwable {
-        RetryTemplate.execute(() -> refreshDiscoveryServers(getServers(discoveryRoleName)), 3, 1000L);
+        RetryTemplate.execute(() -> refreshDiscoveredServers(getServers(discoveryRoleName)), 3, 1000L);
     }
 
     // ------------------------------------------------------------------Close

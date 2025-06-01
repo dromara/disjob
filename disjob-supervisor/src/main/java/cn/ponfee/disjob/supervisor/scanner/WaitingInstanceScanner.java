@@ -67,7 +67,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
-        if (workerClient.hasNotDiscoveredWorkers()) {
+        if (!workerClient.hasAliveWorker()) {
             logPrinter.execute();
             return true;
         }
@@ -116,9 +116,9 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             log.error("Scanned waiting state instance not found job: {}", instance.getJobId());
             return;
         }
-        // check is whether not discovered worker
-        if (workerClient.hasNotDiscoveredWorkers(job.getGroup())) {
-            log.error("Scanned waiting state instance not discovered worker: {}, {}", instance.getInstanceId(), job.getGroup());
+        // check the group is whether none alive worker
+        if (!workerClient.hasAliveWorker(job.getGroup())) {
+            log.error("Scanned waiting state instance none alive worker: {}, {}", instance.getInstanceId(), job.getGroup());
             return;
         }
         jobManager.redispatch(job, instance, redispatchingTasks);

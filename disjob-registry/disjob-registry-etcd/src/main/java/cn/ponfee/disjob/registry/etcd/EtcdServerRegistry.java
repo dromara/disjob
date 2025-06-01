@@ -80,7 +80,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
             client.createPersistentKey(registryRootPath, PLACEHOLDER_VALUE);
             createLeaseIdAndKeepAlive();
-            client.watch(discoveryRootPath, this::refreshDiscoveryServers);
+            client.watch(discoveryRootPath, this::refreshDiscoveredServers);
 
             long periodMs = Math.max(ttl / 4, 1) * 1000;
             this.keepAliveCheckThread = LoopThread.createStarted("etcd_keep_alive_check", periodMs, periodMs, this::keepAliveCheck);
@@ -142,7 +142,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
     @Override
     public void discoverServers() throws Exception {
-        refreshDiscoveryServers(client.getKeyChildren(discoveryRootPath));
+        refreshDiscoveredServers(client.getKeyChildren(discoveryRootPath));
     }
 
     // ------------------------------------------------------------------Close
