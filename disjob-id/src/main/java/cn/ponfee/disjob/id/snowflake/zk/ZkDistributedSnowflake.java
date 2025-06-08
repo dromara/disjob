@@ -25,6 +25,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Bytes;
 import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
+import jakarta.annotation.PreDestroy;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.curator.framework.CuratorFramework;
@@ -36,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import javax.annotation.PreDestroy;
 import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;

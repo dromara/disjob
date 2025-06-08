@@ -1,9 +1,8 @@
 package com.ruoyi.common.xss;
 
 import com.ruoyi.common.utils.html.EscapeUtil;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 
 /**
  * XSS过滤处理

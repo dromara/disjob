@@ -26,6 +26,7 @@ import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.Discovery;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -34,7 +35,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

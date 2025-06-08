@@ -22,11 +22,11 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.Discovery;
+import jakarta.annotation.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 

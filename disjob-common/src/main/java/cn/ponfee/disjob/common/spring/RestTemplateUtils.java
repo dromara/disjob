@@ -23,19 +23,20 @@ import cn.ponfee.disjob.common.util.Jsons;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
+import jakarta.annotation.Nullable;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustAllStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.ssl.SSLContexts;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.TrustAllStrategy;
+import org.apache.hc.core5.http.protocol.HttpContext;
+import org.apache.hc.core5.ssl.SSLContexts;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -53,7 +54,6 @@ import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
@@ -105,7 +105,7 @@ public class RestTemplateUtils {
     public static RestTemplate create(int connectTimeout, int readTimeout, MappingJackson2HttpMessageConverter messageConverter, Charset charset) {
         SSLContext sslContext = ThrowingSupplier.doChecked(() -> SSLContexts.custom().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build());
         CloseableHttpClient httpClient = HttpClients.custom()
-            .setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE))
+            .setConnectionManager(PoolingHttpClientConnectionManagerBuilder.create().setTlsSocketStrategy(new DefaultClientTlsStrategy(sslContext)).build())
             .build();
 
         //SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
