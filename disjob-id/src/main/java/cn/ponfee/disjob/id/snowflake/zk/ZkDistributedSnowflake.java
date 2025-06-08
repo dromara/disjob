@@ -27,13 +27,9 @@ import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
@@ -54,7 +50,7 @@ import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonSched
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Snowflake server based zookeeper
+ * Snowflake configuration based zookeeper
  *
  * <pre>
  * /snowflake/{bizTag}
@@ -77,6 +73,11 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
     private static final long HEARTBEAT_PERIOD_MS = 30000;
 
     private static final String SEP = "/";
+
+    /**
+     * Zookeeper client
+     */
+    private final CuratorFramework curatorFramework;
 
     /**
      * Server tag
@@ -103,17 +104,23 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
      */
     private final String workerIdPath;
 
-    private final CuratorFramework curator;
+    /**
+     * Assigned worker id
+     */
     private final int workerId;
+
+    /**
+     * Snowflake
+     */
     private final Snowflake snowflake;
 
     private volatile boolean closed = false;
 
-    public ZkDistributedSnowflake(ZkConfig zkConfig, String bizTag, String serverTag) {
-        this(zkConfig, bizTag, serverTag, 8, 14);
+    public ZkDistributedSnowflake(CuratorFramework curatorFramework, String bizTag, String serverTag) {
+        this(curatorFramework, bizTag, serverTag, 8, 14);
     }
 
-    public ZkDistributedSnowflake(ZkConfig zkConfig,
+    public ZkDistributedSnowflake(CuratorFramework curatorFramework,
                                   String bizTag,
                                   String serverTag,
                                   int workerIdBitLength,
@@ -122,6 +129,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
         Assert.isTrue(!serverTag.contains(SEP), () -> "Server tag cannot contains '/': " + serverTag);
         int len = workerIdBitLength + sequenceBitLength;
         Assert.isTrue(len <= 22, () -> "Bit length(sequence + worker) cannot greater than 22, but actual=" + len);
+        this.curatorFramework = curatorFramework;
         this.serverTag = serverTag;
         String snowflakeRootPath = "/snowflake/" + bizTag;
         this.serverTagParentPath = snowflakeRootPath + "/tag";
@@ -129,7 +137,6 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
         this.serverTagPath = serverTagParentPath + SEP + serverTag;
 
         try {
-            this.curator = createCuratorFramework(zkConfig);
             RetryTemplate.execute(() -> createPersistent(snowflakeRootPath), 3, 1000L);
             RetryTemplate.execute(() -> createPersistent(serverTagParentPath), 3, 1000L);
             RetryTemplate.execute(() -> createPersistent(workerIdParentPath), 3, 1000L);
@@ -149,7 +156,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             throw new Error("Zk snowflake server registry worker error.", e);
         }
 
-        curator.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(this));
+        curatorFramework.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(this));
 
         commonScheduledPool().scheduleWithFixedDelay(this::heartbeat, 0, HEARTBEAT_PERIOD_MS, TimeUnit.MILLISECONDS);
     }
@@ -163,14 +170,14 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
     @Override
     public void close() {
         closed = true;
-        ThrowingRunnable.doCaught(curator::close);
+        ThrowingRunnable.doCaught(curatorFramework::close);
     }
 
     // ------------------------------------------------------------------private methods
 
     private void createPersistent(String path) throws Exception {
         try {
-            curator.create().creatingParentsIfNeeded().forPath(path);
+            curatorFramework.create().creatingParentsIfNeeded().forPath(path);
             LOG.info("Created zk persistent path: {}", path);
         } catch (KeeperException.NodeExistsException ignored) {
             // ignored
@@ -178,7 +185,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
     }
 
     private void createEphemeral(String path, byte[] data) throws Exception {
-        curator.create()
+        curatorFramework.create()
             .creatingParentsIfNeeded()
             .withMode(CreateMode.EPHEMERAL)
             .forPath(path, data);
@@ -199,7 +206,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
 
     private void deletePath(String path) throws Exception {
         try {
-            curator.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
+            curatorFramework.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
             LOG.info("Deleted zk path: {}", path);
         } catch (KeeperException.NoNodeException ignored) {
             // ignored
@@ -207,16 +214,16 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
     }
 
     private boolean existsPath(String path) throws Exception {
-        return curator.checkExists().forPath(path) != null;
+        return curatorFramework.checkExists().forPath(path) != null;
     }
 
     private void updateData(String path, byte[] data) throws Exception {
-        curator.setData().forPath(path, data);
+        curatorFramework.setData().forPath(path, data);
     }
 
     private byte[] getData(String path) throws Exception {
         try {
-            return curator.getData().forPath(path);
+            return curatorFramework.getData().forPath(path);
         } catch (KeeperException.NoNodeException ignored) {
             return null;
         }
@@ -251,7 +258,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
 
     private int findUsableWorkerId(int workerIdMaxCount) throws Exception {
         // 捞取所有已注册的workerId
-        Set<Integer> usedWorkIds = curator.getChildren()
+        Set<Integer> usedWorkIds = curatorFramework.getChildren()
             .forPath(serverTagParentPath)
             .stream()
             .map(e -> serverTagParentPath + SEP + e)
@@ -337,34 +344,6 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             Assert.isTrue(serverTag.equals(data.server), () -> "Reconnected server tag was changed, expect=" + serverTag + ", actual=" + data.server);
             updateData(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
         }
-    }
-
-    private static CuratorFramework createCuratorFramework(ZkConfig config) throws InterruptedException {
-        RetryPolicy retryPolicy = new ExponentialBackoffRetry(
-            config.getBaseSleepTimeMs(),
-            config.getMaxRetries(),
-            config.getMaxSleepMs()
-        );
-
-        CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-            .connectString(config.getConnectString())
-            .connectionTimeoutMs(config.getConnectionTimeoutMs())
-            .sessionTimeoutMs(config.getSessionTimeoutMs())
-            .retryPolicy(retryPolicy);
-
-        String authorization = config.authorization();
-        if (authorization != null) {
-            builder.authorization("digest", authorization.getBytes());
-        }
-
-        CuratorFramework curatorFramework = builder.build();
-
-        curatorFramework.start();
-        boolean isStarted = curatorFramework.getState() == CuratorFrameworkState.STARTED;
-        Assert.state(isStarted, () -> "Snowflake curator framework not started: " + curatorFramework.getState());
-        boolean isConnected = curatorFramework.blockUntilConnected(5000, TimeUnit.MILLISECONDS);
-        Assert.state(isConnected, () -> "Snowflake curator framework not connected: " + curatorFramework.getState());
-        return curatorFramework;
     }
 
     private static class CuratorConnectionStateListener implements ConnectionStateListener {

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * Worker rpc service, provides for supervisor communication.
+ * Worker rpc service, provides for supervisor remote call worker
  *
  * @author Ponfee
  */

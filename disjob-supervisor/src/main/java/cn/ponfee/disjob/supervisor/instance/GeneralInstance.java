@@ -34,11 +34,11 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public class GeneralInstance extends TriggerInstance {
+class GeneralInstance extends TriggerInstance {
 
     private List<SchedTask> tasks;
 
-    protected GeneralInstance(JobManager jobManager, SchedJob job) {
+    GeneralInstance(JobManager jobManager, SchedJob job) {
         super(jobManager, job);
     }
 

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 /**
- * Extended SupervisorRpcService
+ * Extended SupervisorRpcService, provides for supervisor remote call other supervisor
  *
  * @author Ponfee
  */

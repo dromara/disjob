@@ -35,7 +35,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public final class SupervisorDiscovery extends ServerDiscovery<Supervisor, Worker> {
+final class SupervisorDiscovery extends ServerDiscovery<Supervisor, Worker> {
 
     private final DestinationServerClient<SupervisorRpcService, Supervisor> supervisorRpcClient;
 

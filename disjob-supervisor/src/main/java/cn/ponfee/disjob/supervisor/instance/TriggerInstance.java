@@ -40,7 +40,7 @@ public abstract class TriggerInstance {
 
     protected SchedInstance instance;
 
-    protected TriggerInstance(JobManager jobManager, SchedJob job) {
+    TriggerInstance(JobManager jobManager, SchedJob job) {
         this.jobManager = jobManager;
         this.job = job;
     }

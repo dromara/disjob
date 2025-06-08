@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 /**
- * Supervisor rpc service, provides for worker communication.
+ * Supervisor rpc service, provides for worker remote call supervisor
  *
  * @author Ponfee
  */

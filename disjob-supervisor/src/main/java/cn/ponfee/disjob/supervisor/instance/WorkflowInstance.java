@@ -46,12 +46,12 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-public class WorkflowInstance extends TriggerInstance {
+class WorkflowInstance extends TriggerInstance {
 
     private List<SchedWorkflow> workflows;
     private List<Tuple2<SchedInstance, List<SchedTask>>> nodes;
 
-    protected WorkflowInstance(JobManager jobManager, SchedJob job) {
+    WorkflowInstance(JobManager jobManager, SchedJob job) {
         super(jobManager, job);
     }
 

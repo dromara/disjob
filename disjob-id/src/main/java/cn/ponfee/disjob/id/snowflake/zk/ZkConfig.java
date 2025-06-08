@@ -18,6 +18,13 @@ package cn.ponfee.disjob.id.snowflake.zk;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.imps.CuratorFrameworkState;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.springframework.util.Assert;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -48,6 +55,28 @@ public class ZkConfig implements java.io.Serializable {
             return isEmpty(password) ? null : ":" + password;
         }
         return username + ":" + (isEmpty(password) ? "" : password);
+    }
+
+    public CuratorFramework createCuratorFramework() throws InterruptedException {
+        CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
+            .connectString(connectString)
+            .connectionTimeoutMs(connectionTimeoutMs)
+            .sessionTimeoutMs(sessionTimeoutMs)
+            .retryPolicy(new ExponentialBackoffRetry(baseSleepTimeMs, maxRetries, maxSleepMs));
+
+        String authorization = authorization();
+        if (authorization != null) {
+            builder.authorization("digest", authorization.getBytes());
+        }
+
+        CuratorFramework curatorFramework = builder.build();
+
+        curatorFramework.start();
+        boolean isStarted = curatorFramework.getState() == CuratorFrameworkState.STARTED;
+        Assert.state(isStarted, () -> "Snowflake curator framework not started: " + curatorFramework.getState());
+        boolean isConnected = curatorFramework.blockUntilConnected(5000, TimeUnit.MILLISECONDS);
+        Assert.state(isConnected, () -> "Snowflake curator framework not connected: " + curatorFramework.getState());
+        return curatorFramework;
     }
 
 }

@@ -65,7 +65,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     protected ServerRegistry(AbstractRegistryProperties config, RestTemplate restTemplate, char separator) {
         this.separator = separator;
 
-        String prefix = prune(config.getNamespace(), separator);
+        String prefix = concat(config.getNamespace(), separator);
 
         this.registryRole = ServerRole.of(GenericUtils.getActualTypeArgument(getClass(), 0));
         this.registryRootPath = prefix + registryRole.key();
@@ -164,7 +164,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
 
     // -------------------------------------------------------------------------------------private method
 
-    private static String prune(String namespace, char separator) {
+    private static String concat(String namespace, char separator) {
         if (StringUtils.isEmpty(namespace)) {
             return "";
         }

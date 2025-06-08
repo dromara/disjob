@@ -47,7 +47,7 @@ import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonSched
 import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
 
 /**
- * Snowflake worker configuration based database
+ * Snowflake configuration based database
  *
  * @author Ponfee
  */

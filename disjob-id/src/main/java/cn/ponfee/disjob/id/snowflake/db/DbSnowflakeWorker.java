@@ -28,14 +28,14 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DbSnowflakeWorker extends ToJsonString {
+class DbSnowflakeWorker extends ToJsonString {
 
     private String bizTag;
     private String serverTag;
     private Integer workerId;
     private Long heartbeatTime;
 
-    public boolean equals(String bizTag, String serverTag) {
+    boolean equals(String bizTag, String serverTag) {
         return this.bizTag.equals(bizTag)
             && this.serverTag.equals(serverTag);
     }

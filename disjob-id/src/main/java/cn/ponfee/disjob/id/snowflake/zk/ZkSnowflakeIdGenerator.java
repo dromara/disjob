@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.id.snowflake.db;
+package cn.ponfee.disjob.id.snowflake.zk;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.spring.SpringUtils;
-import cn.ponfee.disjob.id.snowflake.db.DbSnowflakeIdGenerator.DbSnowFlakeWorkerRegistrar;
+import cn.ponfee.disjob.id.snowflake.zk.ZkSnowflakeIdGenerator.ZkSnowFlakeWorkerRegistrar;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.curator.framework.CuratorFramework;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,33 +31,22 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.Assert;
 
 import java.lang.annotation.*;
 
 /**
- * <pre>
- * DbDistributedSnowflake IdGenerator spring configuration
- *
- * `@Import常见的6种用法
- *   1）普通类：bean名称为完整的类名
- *   2）@Configuration标注的类
- *   3）@ComponentScan标注的类
- *   4）ImportBeanDefinitionRegistrar接口类型
- *   5）ImportSelector接口类型：返回需要导入的类名数组，可以是任何普通类、配置类(如@Configuration/@Bean/@ComponentScan等标注的类)等
- *   6）DeferredImportSelector接口类型：ImportSelector的子接口，延迟导入并可以指定导入类的处理顺序
- * </pre>
+ * ZkDistributedSnowflake IdGenerator spring configuration
  *
  * @author Ponfee
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(DbSnowFlakeWorkerRegistrar.class)
-public @interface DbSnowflakeIdGenerator {
+@Import(ZkSnowFlakeWorkerRegistrar.class)
+public @interface ZkSnowflakeIdGenerator {
 
-    String jdbcTemplateRef() default "";
+    String curatorFrameworkRef() default "";
 
     String bizTag() default "disjob";
 
@@ -65,16 +55,16 @@ public @interface DbSnowflakeIdGenerator {
     int sequenceBitLength() default 14;
 
     /**
-     * Basic DbDistributedSnowflake
+     * Basic ZkDistributedSnowflake
      */
-    class BasicDbSnowflake extends DbDistributedSnowflake {
+    class BasicZkSnowflake extends ZkDistributedSnowflake {
 
-        BasicDbSnowflake(JdbcTemplate jdbcTemplate,
+        BasicZkSnowflake(CuratorFramework curatorFramework,
                          Object supervisor,
                          String bizTag,
                          int sequenceBitLength,
                          int workerIdBitLength) {
-            super(jdbcTemplate, bizTag, serializeSupervisor(supervisor), sequenceBitLength, workerIdBitLength);
+            super(curatorFramework, bizTag, serializeSupervisor(supervisor), sequenceBitLength, workerIdBitLength);
         }
 
         /**
@@ -99,34 +89,34 @@ public @interface DbSnowflakeIdGenerator {
     }
 
     /**
-     * Annotated DbDistributedSnowflake
+     * Annotated ZkDistributedSnowflake
      */
-    class AnnotatedDbSnowflake extends BasicDbSnowflake {
+    class AnnotatedZkSnowflake extends BasicZkSnowflake {
 
-        AnnotatedDbSnowflake(@Autowired JdbcTemplate jdbcTemplate, // use @Primary JdbcTemplate bean
+        AnnotatedZkSnowflake(@Autowired CuratorFramework curatorFramework, // use @Primary CuratorFramework bean
                              @Autowired @Qualifier(LOCAL_SUPERVISOR) Object supervisor,
                              String bizTag,
                              int sequenceBitLength,
                              int workerIdBitLength) {
-            super(jdbcTemplate, supervisor, bizTag, sequenceBitLength, workerIdBitLength);
+            super(curatorFramework, supervisor, bizTag, sequenceBitLength, workerIdBitLength);
         }
     }
 
-    class DbSnowFlakeWorkerRegistrar implements ImportBeanDefinitionRegistrar {
+    class ZkSnowFlakeWorkerRegistrar implements ImportBeanDefinitionRegistrar {
 
         @SuppressWarnings("NullableProblems")
         @Override
         public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-            DbSnowflakeIdGenerator config = SpringUtils.parseAnnotation(DbSnowflakeIdGenerator.class, importingClassMetadata);
-            String jdbcTemplateRef = config.jdbcTemplateRef();
+            ZkSnowflakeIdGenerator config = SpringUtils.parseAnnotation(ZkSnowflakeIdGenerator.class, importingClassMetadata);
+            String curatorFrameworkRef = config.curatorFrameworkRef();
             GenericBeanDefinition bd;
-            if (StringUtils.isBlank(jdbcTemplateRef)) {
-                bd = new AnnotatedGenericBeanDefinition(AnnotatedDbSnowflake.class);
+            if (StringUtils.isBlank(curatorFrameworkRef)) {
+                bd = new AnnotatedGenericBeanDefinition(AnnotatedZkSnowflake.class);
             } else {
                 bd = new GenericBeanDefinition();
-                bd.setBeanClass(BasicDbSnowflake.class);
-                bd.getConstructorArgumentValues().addIndexedArgumentValue(0, new RuntimeBeanReference(jdbcTemplateRef));
-                bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicDbSnowflake.LOCAL_SUPERVISOR));
+                bd.setBeanClass(BasicZkSnowflake.class);
+                bd.getConstructorArgumentValues().addIndexedArgumentValue(0, new RuntimeBeanReference(curatorFrameworkRef));
+                bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicZkSnowflake.LOCAL_SUPERVISOR));
             }
 
             bd.getConstructorArgumentValues().addIndexedArgumentValue(2, config.bizTag());

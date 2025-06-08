@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-public final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
+final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
 
     private final DestinationServerClient<WorkerRpcService, Worker> workerRpcClient;
 

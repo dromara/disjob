@@ -36,17 +36,14 @@
     <spring-boot.version>2.7.18</spring-boot.version>
     <shiro.version>1.13.0</shiro.version>
     <thymeleaf-extras-shiro.version>2.1.0</thymeleaf-extras-shiro.version>
-    <druid-spring-boot-starter.version>1.2.24</druid-spring-boot-starter.version>
+    <druid-spring-boot-starter.version>1.2.25</druid-spring-boot-starter.version>
     <UserAgentUtils.version>1.21</UserAgentUtils.version>
     <kaptcha.version>2.3.3</kaptcha.version>
     <pagehelper-spring-boot-starter.version>2.1.0</pagehelper-spring-boot-starter.version>
     <fastjson.version>1.2.83</fastjson.version>
-    <oshi-core.version>6.8.1</oshi-core.version>
+    <oshi-core.version>6.8.2</oshi-core.version>
     <poi-ooxml.version>5.4.1</poi-ooxml.version>
     <velocity-engine-core.version>2.4.1</velocity-engine-core.version>
-
-    <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-    <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -92,7 +89,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven-compiler-plugin.version}</version>
+        <version>3.10.1</version>
         <configuration>
           <encoding>${file.encoding}</encoding>
           <source>${java.version}</source>
