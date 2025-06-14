@@ -629,7 +629,7 @@
 	                            $td.prepend('<span class="treetable-expander ' + _icon + '"></span>');
 	                        }
                     	}
-                    	for (var int = 0; int < (lv - options.expandColumn); int++) {
+                    	for (var int = 1; int < (lv - options.expandColumn); int++) {
                             $td.prepend('<span class="treetable-indent"></span>')
                         }
                     }

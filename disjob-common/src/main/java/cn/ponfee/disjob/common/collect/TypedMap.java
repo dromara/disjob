@@ -34,6 +34,9 @@ public interface TypedMap<K, V> extends Map<K, V>, TypedDictionary<K, V> {
     V remove(Object key);
 
     @Override
+    V getOrDefault(Object key, V defaultValue);
+
+    @Override
     boolean containsKey(Object key);
 
     @Override

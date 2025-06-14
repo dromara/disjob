@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.alert.configuration;
+package cn.ponfee.disjob.alert.base;
 
 import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.alert.AlertType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;

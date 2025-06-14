@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:insert="~{include :: header('调度任务')}" />
+  <th:block th:insert="~{include :: header('Task list')}" />
 </head>
 <body class="gray-bg">
   <div class="container-div">
@@ -21,7 +21,7 @@
 
     $(function () {
       const options = {
-        data: [(${tasks})],
+        data: [(${list})],
         sidePagination: "client",
         showSearch: false,
         showRefresh: false,

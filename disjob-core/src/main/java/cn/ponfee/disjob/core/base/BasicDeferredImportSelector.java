@@ -34,7 +34,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 
 /**
- * Basic DeferredImportSelector
+ * Basic DeferredImportSelector, deferred create bean for customization
+ * <p>注：用在Springboot AutoConfiguration中无法达到推迟实例化的效果
  *
  * @author Ponfee
  */
@@ -46,9 +47,6 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
         return new String[]{BasicDeferredConfiguration.class.getName()};
     }
 
-    /**
-     * 推迟实例化，以支持用户使用自定义的Bean替代
-     */
     @EnableConfigurationProperties({HttpProperties.class, RetryProperties.class})
     private static class BasicDeferredConfiguration {
 

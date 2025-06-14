@@ -18,24 +18,35 @@ package cn.ponfee.disjob.common.model;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.collect.TypedDictionary;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.ToLongFunction;
 
 /**
+ * <pre>
  * Page request for pageable query
+ *
+ * 1、SpringMVC form表单嵌套对象传参(即Request Header “Content-Type=application/x-www-form-urlencoded”)：
+ *   1）普通对象：<input type="text" name="address.city" />
+ *   2）Map对象：<input type="text" name="params['city']" />
+ *
+ * 2、Mybatis xml中使用方式：#{params.city}
+ * </pre>
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class PageRequest extends ToJsonString implements Serializable {
+public class PageRequest extends ToJsonString implements TypedDictionary<String, Object>, Serializable {
     private static final long serialVersionUID = 2032344850017264330L;
 
     /**
@@ -58,6 +69,41 @@ public class PageRequest extends ToJsonString implements Serializable {
      * Sort string, for example: "updated_at desc, name asc"
      */
     private String sort;
+
+    /**
+     * Parameter of query condition
+     */
+    private Map<String, Object> params = new HashMap<>();
+
+    @Override
+    public Object get(Object key) {
+        return params.get(key);
+    }
+
+    @Override
+    public Object getOrDefault(Object key, Object defaultValue) {
+        return params.getOrDefault(key, defaultValue);
+    }
+
+    @Override
+    public Object put(String key, Object value) {
+        return params.put(key, value);
+    }
+
+    @Override
+    public Object remove(Object key) {
+        return params.remove(key);
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return params.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return params.containsValue(value);
+    }
 
     @Transient
     public long getOffset() {

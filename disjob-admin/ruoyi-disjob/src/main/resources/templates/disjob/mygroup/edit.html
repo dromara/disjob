@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:insert="~{include :: header('修改分组')}" />
+  <th:block th:insert="~{include :: header('Group edit')}" />
   <th:block th:insert="~{include :: bootstrap-tagsinput-css}" />
   <style>
     label {
@@ -22,27 +22,27 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="col-xs-2 control-label is-required" style="padding-right: 0;">Own User：</label>
+        <label class="col-xs-2 control-label is-required" style="padding-right: 0;">Own user：</label>
         <div class="col-xs-10">
           <input name="ownUser" th:field="*{ownUser}" class="form-control" type="text" autocomplete="off" required />
         </div>
       </div>
       <div class="form-group">
-        <label class="col-xs-2 control-label" style="padding-right: 0;">Dev Users：</label>
+        <label class="col-xs-2 control-label" style="padding-right: 0;">Dev users：</label>
         <div class="col-xs-10">
           <input type="text" name="devUsers" th:field="*{devUsers}" autocomplete="off" data-role="tagsinput" />
         </div>
       </div>
       <div class="form-group">
-        <label class="col-xs-2 control-label" style="padding-right: 0;">Alert Users：</label>
+        <label class="col-xs-2 control-label" style="padding-right: 0;">Alert recipients：</label>
         <div class="col-xs-10">
-          <input type="text" name="alertUsers" th:field="*{alertUsers}" autocomplete="off" data-role="tagsinput" />
+          <input type="text" name="alertRecipients" th:field="*{alertRecipients}" autocomplete="off" data-role="tagsinput" />
         </div>
       </div>
       <div class="form-group">
-        <label class="col-xs-2 control-label" style="padding-right: 0;">Webhook：</label>
+        <label class="col-xs-2 control-label" style="padding-right: 0;">Alert webhook：</label>
         <div class="col-xs-10">
-          <input name="webhook" th:field="*{webhook}" class="form-control" type="text" autocomplete="off" />
+          <input name="alert_webhook" th:field="*{alertWebhook}" class="form-control" type="text" autocomplete="off" />
         </div>
       </div>
       <div class="form-group">

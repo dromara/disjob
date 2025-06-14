@@ -189,7 +189,7 @@ public final class Strings {
             return Str.SLASH;
         }
 
-        path = path.replaceAll("[/\\s]+$", "").trim();
+        path = path.replaceAll("^[/\\s]+", Str.SLASH).replaceAll("[/\\s]+$", "");
         return path.startsWith(Str.SLASH) ? path : Str.SLASH + path;
     }
 

@@ -172,6 +172,8 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         count(buildPath);
     }
 
+    // -----------------------------------------------------------other public methods
+
     /**
      * Gets node by node id
      *
@@ -208,8 +210,6 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         return removed;
     }
 
-    // -----------------------------------------------------------DFS
-
     /**
      * 深度优先搜索DFS(Depth-First Search)：使用前序遍历
      * <p>Should be invoking after {@link #mount(List, boolean, boolean, Comparator)}
@@ -227,8 +227,6 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         }
         return list;
     }
-
-    // -----------------------------------------------------------CFS
 
     /**
      * <pre>
@@ -251,8 +249,6 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         return list;
     }
 
-    // -----------------------------------------------------------BFS
-
     /**
      * 广度优先遍历BFS(Breath-First Search)
      *
@@ -263,8 +259,6 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         traverse(node -> list.add(new FlatNode<>(node)));
         return list;
     }
-
-    // -----------------------------------------------------------other public methods
 
     public void forEachChild(Consumer<TreeNode<T, A>> childProcessor) {
         if (!children.isEmpty()) {

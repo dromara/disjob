@@ -25,20 +25,20 @@ import java.util.Set;
  */
 public interface GroupInfoService {
 
-    String getWorkerContextPath(String group);
-
     String getSupervisorToken(String group);
 
     String getWorkerToken(String group);
 
     String getUserToken(String group);
 
-    String getWebhook(String group);
-
     String getOwnUser(String group);
 
     Set<String> getDevUsers(String group);
 
-    Set<String> getAlertUsers(String group);
+    Set<String> getAlertRecipients(String group);
+
+    String getAlertWebhook(String group);
+
+    String getWorkerContextPath(String group);
 
 }

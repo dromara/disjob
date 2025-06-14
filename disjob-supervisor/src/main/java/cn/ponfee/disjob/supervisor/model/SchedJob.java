@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.supervisor.model;
 
+import cn.ponfee.disjob.alert.base.AlertType;
 import cn.ponfee.disjob.common.model.BaseEntity;
-import cn.ponfee.disjob.core.alert.AlertType;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.enums.*;
 import com.google.common.math.IntMath;

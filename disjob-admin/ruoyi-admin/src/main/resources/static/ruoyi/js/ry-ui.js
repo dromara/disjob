@@ -1258,7 +1258,7 @@ var table = {
             view: function(id){
                 table.set();
                 var url = table.options.viewUrl.replace("{id}", id);
-                $.modal.popupRight(table.options.modalName + "信息详情", url);
+                $.modal.popupRight(table.options.viewName || (table.options.modalName + "信息详情"), url);
             },
             // 保存信息 刷新表格
             save: function(url, data, callback) {

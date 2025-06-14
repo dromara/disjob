@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 <head>
-  <th:block th:insert="~{include :: header('管理分组')}" />
+  <th:block th:insert="~{include :: header('Group list')}" />
   <th:block th:insert="~{include :: bootstrap-editable-css}" />
   <th:block th:insert="~{include :: select2-css}" />
 </head>
@@ -32,9 +32,6 @@
         <a class="btn btn-success" onclick="add()" shiro:hasPermission="disjob:mggroup:operate">
           <i class="fa fa-plus"></i> 新增分组
         </a>
-        <a class="btn btn-primary single disabled" onclick="token()" shiro:hasPermission="disjob:mggroup:operate">
-          <i class="fa fa-edit"></i> 令牌管理
-        </a>
       </div>
 
       <div class="col-sm-12 select-table table-striped">
@@ -63,10 +60,6 @@
         rememberSelected: true,
         modalName: "分组",
         columns: [{
-          field: 'state',
-          checkbox: true
-        },
-        {
           field: 'group',
           title: '分组名称',
           formatter: function (value, row, index) {
@@ -113,6 +106,7 @@
             }
             const actions = [];
             actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='remove(&quot;" + row.group + "&quot;)'><i class='fa fa-trash'></i> 删除</a> ");
+            actions.push("<a class='btn btn-success btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='token(&quot;" + row.group + "&quot;)'><i class='fa fa-cogs'></i> 令牌</a> ");
             return '<a tabindex="0" class="btn btn-info btn-rounded btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
           }
         }]
@@ -151,24 +145,15 @@
       $.modal.open("新增" + table.options.modalName, $.operate.addUrl(), '460', '240');
     }
 
-    function token() {
-      /*
-      // 引入了“bootstrap-table-editable-js”，导致切换到其它菜单后再切回来时，提示未选择到行
-      const rows = $("#" + table.options.id).bootstrapTable('getSelections');
-      */
-      const rows = $.table.selectColumns("group");
-      if (rows.length !== 1) {
-        $.modal.alertWarning("请选择一条记录");
-        return;
-      }
-      const url = prefix + '/token?group=' + rows[0];
-      $.modal.open("令牌管理", url, '590', '345', null, ['复制', '关闭']);
-    }
-
     function remove(group) {
       $.modal.confirm("确定删除分组'" + group + "'吗？", function() {
         $.operate.post(table.options.removeUrl, { "group": group });
       });
+    }
+
+    function token(group) {
+      const url = prefix + '/token?group=' + group;
+      $.modal.open("令牌管理", url, '590', '345', null, ['复制', '关闭']);
     }
 
     function workers(group) {

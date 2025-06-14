@@ -16,11 +16,11 @@
 
 package cn.ponfee.disjob.alert.email;
 
+import cn.ponfee.disjob.alert.base.AlertEvent;
 import cn.ponfee.disjob.alert.email.configuration.EmailAlertSenderProperties;
+import cn.ponfee.disjob.alert.sender.AlertRecipientMapper;
 import cn.ponfee.disjob.alert.sender.AlertSender;
-import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.core.alert.AlertEvent;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -50,7 +50,7 @@ public class EmailAlertSender extends AlertSender {
     private final EmailAlertSenderProperties config;
     private final JavaMailSenderImpl sender;
 
-    public EmailAlertSender(EmailAlertSenderProperties config, UserRecipientMapper mapper) {
+    public EmailAlertSender(EmailAlertSenderProperties config, AlertRecipientMapper mapper) {
         super(CHANNEL, "Email", mapper);
         this.config = config;
         this.sender = createMailSender(config);
@@ -58,23 +58,23 @@ public class EmailAlertSender extends AlertSender {
     }
 
     @Override
-    protected void send(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
-        if (MapUtils.isEmpty(alertRecipients)) {
-            LOG.warn("Alert email recipients is empty.");
+    protected void send(AlertEvent alertEvent, Map<String, String> alertRecipientMap, String alertWebhook) {
+        if (MapUtils.isEmpty(alertRecipientMap)) {
+            LOG.warn("Alert email recipient map is empty.");
             return;
         }
         try {
             MimeMessage mimeMessage = sender.createMimeMessage();
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
             mimeMessageHelper.setFrom(config.getUsername());
-            mimeMessageHelper.setTo(buildRecipients(alertRecipients));
+            mimeMessageHelper.setTo(buildRecipients(alertRecipientMap));
             mimeMessageHelper.setSubject(alertEvent.buildTitle());
             mimeMessageHelper.setText(alertEvent.buildContent("<b>%s</b>%s<br/>"), true);
             mimeMessageHelper.setSentDate(new Date());
             sender.send(mimeMessage);
-            LOG.info("Alert event email send success: {}", alertRecipients.values());
+            LOG.info("Alert event email send success: {}", alertRecipientMap.values());
         } catch (Exception e) {
-            LOG.error("Alert event email send error: " + alertRecipients.values(), e);
+            LOG.error("Alert event email send error: " + alertRecipientMap.values(), e);
         }
     }
 

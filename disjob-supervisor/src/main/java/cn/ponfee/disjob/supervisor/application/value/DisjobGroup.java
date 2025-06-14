@@ -38,10 +38,10 @@ public class DisjobGroup {
     private final String workerToken;
     private final String userToken;
     private final String ownUser;
-    private final ImmutableSet<String> alertUsers;
     private final ImmutableSet<String> devUsers;
+    private final ImmutableSet<String> alertRecipients;
+    private final String alertWebhook;
     private final String workerContextPath;
-    private final String webhook;
 
     public DisjobGroup(SchedGroup o) {
         this.group             = o.getGroup();
@@ -50,9 +50,9 @@ public class DisjobGroup {
         this.userToken         = o.getUserToken();
         this.ownUser           = o.getOwnUser().trim();
         this.devUsers          = parse(o.getDevUsers());
-        this.alertUsers        = parse(o.getAlertUsers());
+        this.alertRecipients   = parse(o.getAlertRecipients());
+        this.alertWebhook      = o.getAlertWebhook();
         this.workerContextPath = Strings.trimPath(o.getWorkerContextPath());
-        this.webhook           = o.getWebhook();
     }
 
     // --------------------------------------------------------------private methods

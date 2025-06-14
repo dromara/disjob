@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:insert="~{include :: header('我的分组')}" />
+  <th:block th:insert="~{include :: header('Group list')}" />
   <th:block th:insert="~{include :: select2-css}" />
 </head>
 <body class="gray-bg">
@@ -52,9 +52,6 @@
         fixedNumber: 2,
         modalName: "分组",
         columns: [{
-          checkbox: true
-        },
-        {
           field: 'group',
           title: '分组名称',
           formatter: function (value, row, index) {
@@ -63,7 +60,7 @@
         },
         {
           field: 'workerContextPath',
-          title: 'Context-path',
+          title: 'Worker Context-path',
           cellStyle: function (value, row, index) {
             return { css: { "white-space": "nowrap" } }
           }
@@ -80,15 +77,15 @@
           }
         },
         {
-          field: 'alertUsers',
-          title: '告警人员',
+          field: 'alertRecipients',
+          title: '告警接收人',
           formatter: function (value, row, index) {
             return $.table.tooltip(value, 72, "open");
           }
         },
         {
-          field: 'webhook',
-          title: 'Webhook',
+          field: 'alertWebhook',
+          title: '告警webhook url',
           formatter: function (value, row, index) {
             return $.table.tooltip(value, 72, "open");
           }
@@ -134,7 +131,7 @@
     }
 
     function edit(group) {
-      $.modal.open("修改" + table.options.modalName, prefix + "/edit/" + group, '680', '430');
+      $.modal.open("修改" + table.options.modalName, prefix + "/edit/" + group, '770', '430');
     }
 
     function workers(group) {

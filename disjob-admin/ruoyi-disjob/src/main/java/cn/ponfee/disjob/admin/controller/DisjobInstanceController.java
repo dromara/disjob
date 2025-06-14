@@ -121,15 +121,15 @@ public class DisjobInstanceController extends BaseController {
     /**
      * Date等类型序列化会使用toString():
      * <pre>{@code
-     *  mmap.put("tasks", tasks);
-     *  data: [[${tasks}]]
+     *  mmap.put("list", list);
+     *  data: [[${list}]]
      * }</pre>
      *
      * <p>
      * 使用Json方式序列化:
      * <pre>{@code
-     *  mmap.put("tasks", Jsons.toJson(tasks));
-     *  data: [(${tasks})]
+     *  mmap.put("list", Jsons.toJson(list));
+     *  data: [(${list})]
      * }</pre>
      *
      * @param instanceId the instance id
@@ -137,13 +137,13 @@ public class DisjobInstanceController extends BaseController {
      * @return html page path
      */
     @RequiresPermissions(PERMISSION_CODE)
-    @GetMapping("/tasks/{instanceId}")
-    public String tasks(@PathVariable("instanceId") Long instanceId, ModelMap mmap) {
+    @GetMapping("/task/{instanceId}")
+    public String task(@PathVariable("instanceId") Long instanceId, ModelMap mmap) {
         authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
 
-        List<SchedTaskResponse> tasks = schedJobService.getInstanceTasks(instanceId);
-        mmap.put("tasks", Jsons.toJson(tasks));
-        return PREFIX + "/tasks";
+        List<SchedTaskResponse> list = schedJobService.getInstanceTasks(instanceId);
+        mmap.put("list", Jsons.toJson(list));
+        return PREFIX + "/task";
     }
 
     // -----------------------------------------------------------操作

@@ -6,7 +6,7 @@
 
   <sql id="Base_Column_List">
     `group`, own_user, supervisor_token, worker_token, user_token,
-    dev_users, alert_users, worker_context_path, webhook
+    dev_users, alert_recipients, alert_webhook, worker_context_path
   </sql>
 
   <sql id="Large_Column_List">
@@ -73,9 +73,9 @@
     UPDATE <include refid="Table_Name" />
     SET own_user = #{ownUser,jdbcType=VARCHAR},
         dev_users = #{devUsers,jdbcType=VARCHAR},
-        alert_users = #{alertUsers,jdbcType=VARCHAR},
+        alert_recipients = #{alertRecipients,jdbcType=VARCHAR},
+        alert_webhook = #{alertWebhook,jdbcType=VARCHAR},
         worker_context_path = #{workerContextPath,jdbcType=VARCHAR},
-        webhook = #{webhook,jdbcType=VARCHAR},
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}

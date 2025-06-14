@@ -35,11 +35,6 @@ public final class DefaultGroupInfoService implements GroupInfoService {
     private DefaultGroupInfoService() { }
 
     @Override
-    public String getWorkerContextPath(String group) {
-        return getGroup(group).getWorkerContextPath();
-    }
-
-    @Override
     public String getSupervisorToken(String group) {
         return getGroup(group).getSupervisorToken();
     }
@@ -55,11 +50,6 @@ public final class DefaultGroupInfoService implements GroupInfoService {
     }
 
     @Override
-    public String getWebhook(String group) {
-        return getGroup(group).getWebhook();
-    }
-
-    @Override
     public String getOwnUser(String group) {
         return getGroup(group).getOwnUser();
     }
@@ -70,8 +60,18 @@ public final class DefaultGroupInfoService implements GroupInfoService {
     }
 
     @Override
-    public Set<String> getAlertUsers(String group) {
-        return getGroup(group).getAlertUsers();
+    public Set<String> getAlertRecipients(String group) {
+        return getGroup(group).getAlertRecipients();
+    }
+
+    @Override
+    public String getAlertWebhook(String group) {
+        return getGroup(group).getAlertWebhook();
+    }
+
+    @Override
+    public String getWorkerContextPath(String group) {
+        return getGroup(group).getWorkerContextPath();
     }
 
 }

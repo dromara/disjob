@@ -65,8 +65,11 @@ public abstract class ServerDiscovery<D extends Server, R extends Server> {
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
             .threadFactory(NamedThreadFactory.builder().prefix("notify_server").uncaughtExceptionHandler(log).build())
             .build();
-        MultithreadExecutors.run(servers, dServer -> notify(dServer, eventType, rServer), threadPool);
-        threadPool.shutdown();
+        try {
+            MultithreadExecutors.run(servers, dServer -> notify(dServer, eventType, rServer), threadPool);
+        } finally {
+            threadPool.shutdown();
+        }
     }
 
     abstract void notify(D dServer, RegistryEventType eventType, R rServer);

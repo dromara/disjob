@@ -32,6 +32,11 @@ public interface TypedDictionary<K, V> {
 
     V get(Object key);
 
+    default V getOrDefault(Object key, V defaultValue) {
+        V value = get(key);
+        return value != null ? value : defaultValue;
+    }
+
     default V put(K key, V value) {
         throw new UnsupportedOperationException("Cannot suppoerted put key value operation.");
     }

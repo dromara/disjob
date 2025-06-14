@@ -5,8 +5,8 @@ disjob.alert:
   # 2、Alert alerter config
   alerter:
     type-channels-map:
+      NOTICE: [email, im]
       ALARM: [email, im, sms]
-      NOTICE: [im]
     send-thread-pool:
       core-pool-size: 2
       maximum-pool-size: 8

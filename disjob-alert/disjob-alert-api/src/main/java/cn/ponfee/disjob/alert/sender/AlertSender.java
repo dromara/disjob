@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.alert.sender;
 
+import cn.ponfee.disjob.alert.base.AlertEvent;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.core.alert.AlertEvent;
 import lombok.Getter;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,45 +49,45 @@ public abstract class AlertSender extends SingletonClassConstraint {
     private final String name;
 
     /**
-     * 把在页面中配置的alertUsers转为实际的渠道接收人（如邮箱地址、钉钉号、企业微信号、飞书账号、手机号等）
+     * 把在页面中配置的alertRecipients转为实际的渠道接收人（如邮箱地址、钉钉号、企业微信号、飞书账号、手机号等）
      */
-    private final UserRecipientMapper userRecipientMapper;
+    private final AlertRecipientMapper alertRecipientMapper;
 
-    protected AlertSender(String channel, String name, UserRecipientMapper mapper) {
+    protected AlertSender(String channel, String name, AlertRecipientMapper mapper) {
         Assert.hasText(channel, "Alert sender channel cannot be blank.");
         Assert.hasText(name, "Alert sender name cannot be blank.");
         this.channel = channel.trim();
         this.name = name.trim();
-        this.userRecipientMapper = Objects.requireNonNull(mapper);
+        this.alertRecipientMapper = Objects.requireNonNull(mapper);
         register(this);
     }
 
-    public final void send(AlertEvent alertEvent, Set<String> alertUsers, String webhook) {
-        Map<String, String> recipients = userRecipientMapper.mapping(alertUsers);
-        if (verify(recipients, webhook)) {
-            send(alertEvent, recipients, webhook);
+    public final void send(AlertEvent alertEvent, Set<String> alertRecipients, String alertWebhook) {
+        Map<String, String> alertRecipientMap = alertRecipientMapper.mapping(alertRecipients);
+        if (verify(alertRecipientMap, alertWebhook)) {
+            send(alertEvent, alertRecipientMap, alertWebhook);
         }
     }
 
     /**
-     * Verifies the recipients and webhook param
+     * Verifies the alert recipient map and webhook url param
      *
-     * @param recipients the recipients
-     * @param webhook    the webhook
+     * @param alertRecipientMap the alert recipient map
+     * @param alertWebhook      the alert webhook url
      * @return {@code true} is verified success
      */
-    protected boolean verify(Map<String, String> recipients, String webhook) {
-        return MapUtils.isNotEmpty(recipients) || StringUtils.isNotBlank(webhook);
+    protected boolean verify(Map<String, String> alertRecipientMap, String alertWebhook) {
+        return MapUtils.isNotEmpty(alertRecipientMap) || StringUtils.isNotBlank(alertWebhook);
     }
 
     /**
      * Sends the alert event by current message channel.
      *
-     * @param alertEvent      the alert event
-     * @param alertRecipients the alert recipients [user -> recipient]
-     * @param webhook         the webhook
+     * @param alertEvent        the alert event
+     * @param alertRecipientMap the alert recipient map[origin-recipient -> channel-recipient]
+     * @param alertWebhook      the alert webhook url
      */
-    protected abstract void send(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook);
+    protected abstract void send(AlertEvent alertEvent, Map<String, String> alertRecipientMap, String alertWebhook);
 
     // ------------------------------------------------------------------static methods
 

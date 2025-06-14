@@ -16,9 +16,9 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
+import cn.ponfee.disjob.alert.base.AlertInstanceEvent;
+import cn.ponfee.disjob.alert.base.AlertType;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.core.alert.AlertInstanceEvent;
-import cn.ponfee.disjob.core.alert.AlertType;
 import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import cn.ponfee.disjob.core.dag.PredecessorTask;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;

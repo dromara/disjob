@@ -16,10 +16,10 @@
 
 package cn.ponfee.disjob.alert.im;
 
+import cn.ponfee.disjob.alert.base.AlertEvent;
 import cn.ponfee.disjob.alert.im.configuration.ImAlertSenderProperties;
+import cn.ponfee.disjob.alert.sender.AlertRecipientMapper;
 import cn.ponfee.disjob.alert.sender.AlertSender;
-import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
-import cn.ponfee.disjob.core.alert.AlertEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
@@ -50,15 +50,15 @@ public class ImAlertSender extends AlertSender {
 
     private final ImAlertSenderProperties config;
 
-    public ImAlertSender(ImAlertSenderProperties config, UserRecipientMapper mapper) {
+    public ImAlertSender(ImAlertSenderProperties config, AlertRecipientMapper mapper) {
         super(CHANNEL, "Instant Messaging", mapper);
         this.config = config;
         LOG.info("Instant Messaging alert sender initialized: {}", config);
     }
 
     @Override
-    protected void send(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
-        if (StringUtils.isBlank(webhook)) {
+    protected void send(AlertEvent alertEvent, Map<String, String> alertRecipientMap, String alertWebhook) {
+        if (StringUtils.isBlank(alertWebhook)) {
             LOG.warn("Alert instant messaging webhook is empty.");
             return;
         }
@@ -69,22 +69,22 @@ public class ImAlertSender extends AlertSender {
         ImAlertSupplier supplier = config.getSupplier();
         try {
             String payload = buildPayload(title, message, supplier);
-            doPost(webhook, payload);
-            LOG.info("Alert event instant messaging sent success: {}, {}", supplier, webhook);
+            doPost(alertWebhook, payload);
+            LOG.info("Alert event instant messaging sent success: {}, {}", supplier, alertWebhook);
         } catch (Exception e) {
-            LOG.error("Alert event instant messaging sent error: " + supplier + ", " + webhook, e);
+            LOG.error("Alert event instant messaging sent error: " + supplier + ", " + alertWebhook, e);
         }
     }
 
     // -----------------------------------------------------------private methods
 
-    private void doPost(String webhook, String payload) throws Exception {
-        URL url = new URL(webhook);
+    private void doPost(String alertWebhook, String payload) throws Exception {
+        URL url = new URL(alertWebhook);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
-        log.info("Alert instant messaging webhook request: {}, {}", webhook, payload);
+        log.info("Alert instant messaging webhook request: {}, {}", alertWebhook, payload);
         try (OutputStream writeStream = connection.getOutputStream()) {
             writeStream.write(payload.getBytes(StandardCharsets.UTF_8));
         }

@@ -16,14 +16,14 @@
 
 package cn.ponfee.disjob.alert;
 
-import cn.ponfee.disjob.alert.configuration.AlerterProperties;
-import cn.ponfee.disjob.alert.configuration.AlerterProperties.SendRateLimit;
+import cn.ponfee.disjob.alert.base.AlertEvent;
+import cn.ponfee.disjob.alert.base.AlerterProperties;
+import cn.ponfee.disjob.alert.base.AlerterProperties.SendRateLimit;
 import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.SlidingWindow;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.disjob.core.alert.AlertEvent;
 import cn.ponfee.disjob.core.base.GroupInfoService;
 import cn.ponfee.disjob.core.base.JobConstants;
 import org.apache.commons.collections4.CollectionUtils;
@@ -64,9 +64,9 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
     public static final String SENDER_CONFIG_KEY_PREFIX = KEY_PREFIX + ".sender";
 
     /**
-     * Alert UserRecipientMapper spring bean name prefix
+     * AlertRecipientMapper spring bean name prefix
      */
-    public static final String USER_RECIPIENT_MAPPER_BEAN_NAME_PREFIX = KEY_PREFIX + ".user_recipient_mapper";
+    public static final String RECIPIENT_MAPPER_BEAN_NAME_PREFIX = KEY_PREFIX + ".recipient_mapper";
 
     /**
      * Logger
@@ -79,7 +79,7 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
     private final AlerterProperties config;
 
     /**
-     * 通过group获取告警接收人信息（alertUsers、webhook等）
+     * 通过group获取告警接收人信息（alertRecipients、alertWebhook等）
      */
     private final GroupInfoService groupInfoService;
 
@@ -140,26 +140,26 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
         if (ArrayUtils.isEmpty(channels)) {
             return;
         }
-        Set<String> alertUsers = groupInfoService.getAlertUsers(event.getGroup());
-        String webhook = groupInfoService.getWebhook(event.getGroup());
-        if (CollectionUtils.isEmpty(alertUsers) && StringUtils.isBlank(webhook)) {
+        Set<String> alertRecipients = groupInfoService.getAlertRecipients(event.getGroup());
+        String alertWebhook = groupInfoService.getAlertWebhook(event.getGroup());
+        if (CollectionUtils.isEmpty(alertRecipients) && StringUtils.isBlank(alertWebhook)) {
             return;
         }
         ThreadPoolExecutor executor = event.getAlertType().isAlarm() ? alarmAsyncExecutor : noticeAsyncExecutor;
-        executor.execute(new AlertTask(event, channels, alertUsers, webhook));
+        executor.execute(new AlertTask(event, channels, alertRecipients, alertWebhook));
     }
 
     private class AlertTask implements Runnable {
         private final AlertEvent event;
         private final String[] channels;
-        private final Set<String> alertUsers;
-        private final String webhook;
+        private final Set<String> alertRecipients;
+        private final String alertWebhook;
 
-        AlertTask(AlertEvent event, String[] channels, Set<String> alertUsers, String webhook) {
+        AlertTask(AlertEvent event, String[] channels, Set<String> alertRecipients, String alertWebhook) {
             this.event = event;
             this.channels = channels;
-            this.alertUsers = alertUsers;
-            this.webhook = webhook;
+            this.alertRecipients = alertRecipients;
+            this.alertWebhook = alertWebhook;
         }
 
         @Override
@@ -176,7 +176,7 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
 
             Arrays.stream(channels).map(AlertSender::get).filter(Objects::nonNull).forEach(sender -> {
                 try {
-                    sender.send(event, alertUsers, webhook);
+                    sender.send(event, alertRecipients, alertWebhook);
                 } catch (Throwable t) {
                     LOG.error("Alert event send error: " + event, t);
                 }

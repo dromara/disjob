@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.alert;
+package cn.ponfee.disjob.alert.base;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
 

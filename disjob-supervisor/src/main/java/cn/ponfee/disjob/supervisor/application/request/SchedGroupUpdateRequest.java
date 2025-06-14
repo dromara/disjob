@@ -39,9 +39,9 @@ public class SchedGroupUpdateRequest extends SchedGroupAddRequest {
     private static final long serialVersionUID = 7531416191031943146L;
 
     private String devUsers;
-    private String alertUsers;
+    private String alertRecipients;
+    private String alertWebhook;
     private String workerContextPath;
-    private String webhook;
     private int version;
 
     @Override
@@ -56,17 +56,17 @@ public class SchedGroupUpdateRequest extends SchedGroupAddRequest {
         Assert.hasText(group, "Group cannot be blank.");
         this.ownUser = SchedGroup.checkOwnUser(ownUser);
         this.devUsers = prune(devUsers);
-        this.alertUsers = prune(alertUsers);
+        this.alertRecipients = prune(alertRecipients);
+        this.alertWebhook = StringUtils.trim(alertWebhook);
         this.workerContextPath = Strings.trimPath(workerContextPath);
-        this.webhook = StringUtils.trim(webhook);
     }
 
-    private static String prune(String users) {
-        if (users == null) {
+    private static String prune(String str) {
+        if (str == null) {
             return null;
         }
 
-        return Arrays.stream(users.split(Str.COMMA))
+        return Arrays.stream(str.split(Str.COMMA))
             .filter(StringUtils::isNotBlank)
             .map(String::trim)
             .distinct()

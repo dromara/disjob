@@ -18,7 +18,7 @@ package cn.ponfee.disjob.alert.im.configuration;
 
 import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.alert.im.ImAlertSender;
-import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
+import cn.ponfee.disjob.alert.sender.AlertRecipientMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -37,17 +37,17 @@ import org.springframework.core.Ordered;
 @EnableConfigurationProperties(ImAlertSenderProperties.class)
 public class ImAlertSenderAutoConfiguration {
 
-    public static final String IM_USER_RECIPIENT_MAPPER_BEAN_NAME = Alerter.USER_RECIPIENT_MAPPER_BEAN_NAME_PREFIX + "." + ImAlertSender.CHANNEL;
+    public static final String IM_RECIPIENT_MAPPER_BEAN_NAME = Alerter.RECIPIENT_MAPPER_BEAN_NAME_PREFIX + "." + ImAlertSender.CHANNEL;
 
-    @ConditionalOnMissingBean(name = IM_USER_RECIPIENT_MAPPER_BEAN_NAME)
-    @Bean(IM_USER_RECIPIENT_MAPPER_BEAN_NAME)
-    public UserRecipientMapper imUserRecipientMapper() {
-        return new UserRecipientMapper();
+    @ConditionalOnMissingBean(name = IM_RECIPIENT_MAPPER_BEAN_NAME)
+    @Bean(IM_RECIPIENT_MAPPER_BEAN_NAME)
+    public AlertRecipientMapper imRecipientMapper() {
+        return new AlertRecipientMapper();
     }
 
     @Bean
     public ImAlertSender imAlertSender(ImAlertSenderProperties config,
-                                       @Qualifier(IM_USER_RECIPIENT_MAPPER_BEAN_NAME) UserRecipientMapper mapper) {
+                                       @Qualifier(IM_RECIPIENT_MAPPER_BEAN_NAME) AlertRecipientMapper mapper) {
         return new ImAlertSender(config, mapper);
     }
 

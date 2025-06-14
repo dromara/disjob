@@ -18,7 +18,7 @@
 package cn.ponfee.disjob.alert.sms.configuration;
 
 import cn.ponfee.disjob.alert.Alerter;
-import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
+import cn.ponfee.disjob.alert.sender.AlertRecipientMapper;
 import cn.ponfee.disjob.alert.sms.SmsAlertReadConfig;
 import cn.ponfee.disjob.alert.sms.SmsAlertSender;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,12 +39,12 @@ import org.springframework.core.Ordered;
 @EnableConfigurationProperties(SmsAlertSenderProperties.class)
 public class SmsAlertSenderAutoConfiguration {
 
-    public static final String SMS_USER_RECIPIENT_MAPPER_BEAN_NAME = Alerter.USER_RECIPIENT_MAPPER_BEAN_NAME_PREFIX + "." + SmsAlertSender.CHANNEL;
+    public static final String SMS_RECIPIENT_MAPPER_BEAN_NAME = Alerter.RECIPIENT_MAPPER_BEAN_NAME_PREFIX + "." + SmsAlertSender.CHANNEL;
 
-    @ConditionalOnMissingBean(name = SMS_USER_RECIPIENT_MAPPER_BEAN_NAME)
-    @Bean(SMS_USER_RECIPIENT_MAPPER_BEAN_NAME)
-    public UserRecipientMapper smsUserRecipientMapper() {
-        return new UserRecipientMapper();
+    @ConditionalOnMissingBean(name = SMS_RECIPIENT_MAPPER_BEAN_NAME)
+    @Bean(SMS_RECIPIENT_MAPPER_BEAN_NAME)
+    public AlertRecipientMapper smsRecipientMapper() {
+        return new AlertRecipientMapper();
     }
 
     @ConditionalOnMissingBean
@@ -54,7 +54,7 @@ public class SmsAlertSenderAutoConfiguration {
     }
 
     @Bean
-    public SmsAlertSender smsAlertSender(@Qualifier(SMS_USER_RECIPIENT_MAPPER_BEAN_NAME) UserRecipientMapper mapper) {
+    public SmsAlertSender smsAlertSender(@Qualifier(SMS_RECIPIENT_MAPPER_BEAN_NAME) AlertRecipientMapper mapper) {
         return new SmsAlertSender(mapper);
     }
 

@@ -16,12 +16,17 @@
 
 package cn.ponfee.disjob.supervisor.configuration;
 
+import cn.ponfee.disjob.alert.Alerter;
+import cn.ponfee.disjob.alert.base.AlerterProperties;
+import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.common.lock.DatabaseLockTemplate;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.base.GroupInfoService;
 import cn.ponfee.disjob.supervisor.base.DefaultGroupInfoService;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DeferredImportSelector;
@@ -67,6 +72,20 @@ class SupervisorDeferredImportSelector implements DeferredImportSelector {
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
         public LockTemplate scanTriggeringJobLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
             return new DatabaseLockTemplate(jdbcTemplate, SupervisorConstants.LOCK_SCAN_TRIGGERING_JOB);
+        }
+
+        @ConditionalOnExpression(Alerter.ENABLED_KEY_EXPRESSION)
+        @ConditionalOnBean(AlertSender.class)
+        @Bean
+        public AlerterProperties alerterProperties() {
+            return new AlerterProperties();
+        }
+
+        @ConditionalOnExpression(Alerter.ENABLED_KEY_EXPRESSION)
+        @ConditionalOnBean(AlertSender.class)
+        @Bean
+        public Alerter alerter(AlerterProperties alerterConfig, GroupInfoService groupInfoService) {
+            return new Alerter(alerterConfig, groupInfoService);
         }
     }
 

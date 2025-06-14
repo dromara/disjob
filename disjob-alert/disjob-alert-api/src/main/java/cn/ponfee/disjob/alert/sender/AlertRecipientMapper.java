@@ -23,26 +23,26 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * User recipient mapper
+ * Alert recipient mapper
  *
  * @author Ponfee
  */
-public class UserRecipientMapper {
+public class AlertRecipientMapper {
 
     /**
-     * Mapping the users to message channel recipients
+     * Converts job configured recipients to message channel recipients
      *
-     * @param users the users
-     * @return recipients Map[user, channel-user-identity]
+     * @param alertRecipients the alert recipients
+     * @return recipients Map[origin-recipient, channel-recipient]
      */
-    public Map<String, String> mapping(Set<String> users) {
-        if (users == null) {
+    public Map<String, String> mapping(Set<String> alertRecipients) {
+        if (alertRecipients == null) {
             return null;
         }
-        if (users.isEmpty()) {
+        if (alertRecipients.isEmpty()) {
             return Collections.emptyMap();
         }
-        return users.stream().collect(Collectors.toMap(Function.identity(), Function.identity()));
+        return alertRecipients.stream().collect(Collectors.toMap(Function.identity(), Function.identity()));
     }
 
 }

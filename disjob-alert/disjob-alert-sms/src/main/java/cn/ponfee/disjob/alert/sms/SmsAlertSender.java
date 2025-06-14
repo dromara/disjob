@@ -17,9 +17,9 @@
 
 package cn.ponfee.disjob.alert.sms;
 
+import cn.ponfee.disjob.alert.base.AlertEvent;
+import cn.ponfee.disjob.alert.sender.AlertRecipientMapper;
 import cn.ponfee.disjob.alert.sender.AlertSender;
-import cn.ponfee.disjob.alert.sender.UserRecipientMapper;
-import cn.ponfee.disjob.core.alert.AlertEvent;
 import org.apache.commons.collections4.MapUtils;
 import org.dromara.sms4j.api.SmsBlend;
 import org.dromara.sms4j.core.factory.SmsFactory;
@@ -40,21 +40,21 @@ public class SmsAlertSender extends AlertSender {
     public static final String CHANNEL = "sms";
     private static final Logger LOG = LoggerFactory.getLogger(SmsAlertSender.class);
 
-    public SmsAlertSender(UserRecipientMapper mapper) {
+    public SmsAlertSender(AlertRecipientMapper mapper) {
         super(CHANNEL, "Short Message Service", mapper);
         LOG.info("SMS alert sender initialized.");
     }
 
     @Override
-    protected void send(AlertEvent alertEvent, Map<String, String> alertRecipients, String webhook) {
-        if (MapUtils.isEmpty(alertRecipients)) {
+    protected void send(AlertEvent alertEvent, Map<String, String> alertRecipientMap, String alertWebhook) {
+        if (MapUtils.isEmpty(alertRecipientMap)) {
             LOG.warn("Alert sms phones is empty.");
             return;
         }
 
         SmsBlend smsBlend = SmsFactory.getSmsBlend();
         String message = alertEvent.buildTitle() + "\n" + alertEvent.buildContent("\t%s%s\n");
-        List<String> phones = alertRecipients.values().stream().distinct().collect(Collectors.toList());
+        List<String> phones = alertRecipientMap.values().stream().distinct().collect(Collectors.toList());
         try {
             smsBlend.massTexting(phones, message);
             LOG.info("Alert event sms send success: {}", phones);
