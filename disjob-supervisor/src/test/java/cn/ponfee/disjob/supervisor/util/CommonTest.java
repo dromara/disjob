@@ -21,6 +21,8 @@ import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Numbers;
+import cn.ponfee.disjob.common.util.TextBoxPrinter;
+import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
@@ -29,6 +31,8 @@ import cn.ponfee.disjob.core.enums.ShutdownStrategy;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,6 +48,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -259,9 +264,9 @@ public class CommonTest {
             .maximumSize(100)
             .expireAfterAccess(Duration.ofMillis(200))
             .build();
-        cache.put(1L,"a");
-        cache.put(2L,"b");
-        cache.put(3L,"c");
+        cache.put(1L, "a");
+        cache.put(2L, "b");
+        cache.put(3L, "c");
 
         Thread.sleep(100);
         cache.cleanUp();
@@ -273,27 +278,49 @@ public class CommonTest {
     }
 
     @Test
-    public void testCache2() throws InterruptedException {
-        Cache<Long, String> cache = CacheBuilder.newBuilder()
+    public void testCache2() throws InterruptedException, ExecutionException {
+        LoadingCache<Long, String> cache = CacheBuilder.newBuilder()
             .initialCapacity(10)
             .maximumSize(100)
             .expireAfterAccess(Duration.ofMillis(200))
-            .build();
-        cache.put(111L,"a");
-        cache.put(222L,"b");
-        cache.put(333L,"c");
+            .recordStats()
+            .build(new CacheLoader<Long, String>() {
+                @Override
+                public String load(Long key) {
+                    try {
+                        Thread.sleep(ThreadLocalRandom.current().nextInt(1000));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    return key.toString();
+                }
+            });
+        cache.put(111L, "a");
+        cache.put(222L, "b");
+        cache.put(333L, "c");
 
         Thread.sleep(100);
         cache.cleanUp();
         Assertions.assertEquals(3, cache.size());
+        System.out.println(CoreUtils.buildCacheStats(cache, "test"));
+        Assertions.assertNull(cache.getIfPresent(0L));
+        System.out.println(CoreUtils.buildCacheStats(cache, "test cache2cache1"));
         Assertions.assertEquals("a", cache.getIfPresent(111L));
+        System.out.println(CoreUtils.buildCacheStats(cache, "test cache3cache3"));
         Thread.sleep(130);
         Assertions.assertEquals(3, cache.size());
         cache.cleanUp();
         Assertions.assertEquals(1, cache.size());
-        System.out.println(cache.stats());
-    }
 
+        Assertions.assertEquals("123", cache.get(123L));
+        System.out.println(CoreUtils.buildCacheStats(cache, "test4"));
+
+        System.out.println();
+        System.out.println(TextBoxPrinter.print("abc"));
+        System.out.println(TextBoxPrinter.print("abc", "def"));
+        System.out.println(TextBoxPrinter.print("abc", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+
+    }
 
     @Test
     public void testToMapHasNull() {

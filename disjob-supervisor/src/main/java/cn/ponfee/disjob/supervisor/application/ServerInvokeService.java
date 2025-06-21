@@ -52,6 +52,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -140,13 +141,14 @@ public class ServerInvokeService extends SingletonClassConstraint {
         MultithreadExecutors.run(workers, action, ThreadPoolExecutors.commonThreadPool());
     }
 
-    public void publishOperationEvent(OperationEventType eventType, String data) {
+    public void publishOperationEvent(OperationEventType eventType, String eventData, boolean includeSelf) {
         try {
             List<Supervisor> supervisors = supervisorRegistry.getRegisteredServers()
                 .stream()
-                .filter(e -> !localSupervisor.equals(e))
+                .filter(e -> includeSelf || !localSupervisor.equals(e))
                 .collect(Collectors.toList());
-            Consumer<Supervisor> action = supervisor -> publishOperationEvent(supervisor, eventType, data);
+            final Date eventTime = new Date();
+            Consumer<Supervisor> action = supervisor -> publishOperationEvent(supervisor, eventType, eventTime, eventData);
             MultithreadExecutors.run(supervisors, action, ThreadPoolExecutors.commonThreadPool());
         } catch (Exception e) {
             LOG.error("Publish operation event to other supervisor error.", e);
@@ -227,9 +229,9 @@ public class ServerInvokeService extends SingletonClassConstraint {
         workerClient.invoke(worker, service -> service.configureWorker(param));
     }
 
-    private void publishOperationEvent(Supervisor supervisor, OperationEventType eventType, String data) {
+    private void publishOperationEvent(Supervisor supervisor, OperationEventType eventType, Date eventTime, String eventData) {
         RetryTemplate.executeQuietly(
-            () -> supervisorRpcClient.invoke(supervisor, service -> service.subscribeOperationEvent(eventType, data)),
+            () -> supervisorRpcClient.invoke(supervisor, service -> service.subscribeOperationEvent(eventType, eventTime, eventData)),
             1,
             2000
         );

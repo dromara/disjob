@@ -17,13 +17,16 @@
 package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.common.date.Dates;
+import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.supervisor.base.OperationEventType;
-import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,8 +44,8 @@ import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonSched
 public class OperationEventService extends SingletonClassConstraint {
 
     private static final Logger LOG = LoggerFactory.getLogger(OperationEventService.class);
-    private static final long PERIOD_MS = 5000L;
-    private static final Map<OperationEventType, MutableObject<String>> MAP = new ConcurrentHashMap<>();
+    private static final long PERIOD_MS = 3000L;
+    private static final Map<OperationEventType, Pair<Date, String>> MAP = new ConcurrentHashMap<>();
 
     private final SchedGroupService groupService;
 
@@ -53,10 +56,10 @@ public class OperationEventService extends SingletonClassConstraint {
         commonScheduledPool().scheduleWithFixedDelay(this::process, initialDelay, PERIOD_MS, TimeUnit.MILLISECONDS);
     }
 
-    public static void subscribe(OperationEventType eventType, String data) {
+    public static void subscribe(OperationEventType eventType, Date eventTime, String eventData) {
         if (eventType != null) {
             // add or update value
-            MAP.put(eventType, new MutableObject<>(data));
+            MAP.put(eventType, Pair.of(eventTime, eventData));
         }
     }
 
@@ -65,24 +68,29 @@ public class OperationEventService extends SingletonClassConstraint {
     private void process() {
         List<OperationEventType> list = new ArrayList<>(MAP.keySet());
         for (OperationEventType eventType : list) {
-            MutableObject<String> dataWrapper = MAP.remove(eventType);
-            if (dataWrapper != null) {
-                String data = dataWrapper.getValue();
+            Pair<Date, String> pair = MAP.remove(eventType);
+            if (pair != null) {
                 try {
-                    process(eventType, data);
-                    LOG.info("Process operation event success: {}, {}", eventType, data);
+                    process(eventType, pair.getLeft(), pair.getRight());
+                    LOG.info("Process operation event success: {}, {}", eventType, pair);
                 } catch (Throwable t) {
-                    LOG.error("Process operation event error: " + eventType + ", " + data, t);
+                    LOG.error("Process operation event error: " + eventType + ", " + pair, t);
                 }
             }
         }
     }
 
-    private void process(OperationEventType eventType, String data) {
+    private void process(OperationEventType eventType, Date eventTime, String eventData) {
+        boolean state = true;
         if (eventType == OperationEventType.REFRESH_GROUP) {
             groupService.refresh();
         } else {
+            state = false;
             LOG.error("Unsupported subscribe operation event type: {}", eventType);
+        }
+
+        if (state) {
+            Supervisor.local().updateLastSubscribedEvent(Dates.format(eventTime) + " - " + eventType);
         }
     }
 

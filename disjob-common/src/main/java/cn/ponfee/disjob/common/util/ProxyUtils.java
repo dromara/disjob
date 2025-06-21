@@ -139,7 +139,7 @@ public final class ProxyUtils {
                 case "notify":
                 case "notifyAll":
                 case "wait":
-                    throw new RuntimeException("Unexpected annotation method: " + method);
+                    throw new UnsupportedOperationException("Unexpected annotation method: " + method);
                 default:
                     Object value = (attributes == null) ? null : attributes.get(methodName);
                     return value == null ? method.getDefaultValue() : ObjectUtils.cast(value, method.getReturnType());

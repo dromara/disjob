@@ -20,6 +20,8 @@ import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.util.Date;
+
 /**
  * Extended SupervisorRpcService, provides for supervisor remote call other supervisor
  *
@@ -31,6 +33,6 @@ public interface ExtendedSupervisorRpcService extends SupervisorRpcService {
     SupervisorMetrics getMetrics();
 
     @PostMapping("/operation/event/subscribe")
-    void subscribeOperationEvent(OperationEventType eventType, String data);
+    void subscribeOperationEvent(OperationEventType eventType, Date eventTime, String eventData);
 
 }

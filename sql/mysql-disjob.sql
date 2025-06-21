@@ -160,7 +160,7 @@ CREATE TABLE `sched_group` (
   `dev_users`             VARCHAR(512)                       DEFAULT NULL                 COMMENT '开发人员(多个逗号分隔)',
   `alert_recipients`      VARCHAR(512)                       DEFAULT NULL                 COMMENT '告警接收人(多个逗号分隔)',
   `alert_webhook`         VARCHAR(255)                       DEFAULT NULL                 COMMENT '告警webhook url',
-  `worker_context_path`   VARCHAR(100)             NOT NULL  DEFAULT '/'                  COMMENT '该组下的Worker服务的context-path',
+  `worker_context_path`   VARCHAR(100)             NOT NULL  DEFAULT '/'                  COMMENT '该分组中Worker服务的context-path',
   `version`               INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
   `is_deleted`            BIGINT         UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '是否已删除：0-否；{id}-是(用id来解决因软删引起的唯一索引冲突问题)；',
   `updated_by`            VARCHAR(60)                        DEFAULT NULL                 COMMENT '更新人',

@@ -107,6 +107,7 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
         private static volatile Local instance = null;
 
         private final LocalDateTime startupTime;
+        private String lastSubscribedEvent;
 
         private Local(String host, int port) {
             super(host, port);
@@ -116,6 +117,14 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
 
         public final LocalDateTime getStartupTime() {
             return startupTime;
+        }
+
+        public final String getLastSubscribedEvent() {
+            return lastSubscribedEvent;
+        }
+
+        public final void updateLastSubscribedEvent(String lastSubscribedEvent) {
+            this.lastSubscribedEvent = lastSubscribedEvent;
         }
 
         /**

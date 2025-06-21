@@ -17,12 +17,15 @@
 package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.supervisor.application.ServerInvokeService;
+import cn.ponfee.disjob.supervisor.base.OperationEventType;
+import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
+import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.enums.BusinessType;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Disjob supervisor controller
@@ -47,6 +50,18 @@ public class DisjobSupervisorController extends BaseController {
     public String supervisor(ModelMap mmap) {
         mmap.put("list", serverInvokeService.supervisors());
         return PREFIX + "/supervisor";
+    }
+
+    /**
+     * 发布操作事件
+     */
+    @RequiresPermissions(PERMISSION_CODE)
+    @Log(title = "发布操作事件", businessType = BusinessType.UPDATE)
+    @PostMapping("/publish_operation_event")
+    @ResponseBody
+    public AjaxResult publishOperationEvent(@RequestParam("eventType") OperationEventType eventType) {
+        serverInvokeService.publishOperationEvent(eventType, null, true);
+        return AjaxResult.success("发布成功");
     }
 
 }

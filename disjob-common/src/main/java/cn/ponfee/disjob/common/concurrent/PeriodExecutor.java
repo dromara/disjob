@@ -16,6 +16,9 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * Period executor
  *
@@ -23,6 +26,7 @@ package cn.ponfee.disjob.common.concurrent;
  */
 public class PeriodExecutor {
 
+    private final Lock lock = new ReentrantLock();
     private final long periodMs;
     private final Runnable task;
 
@@ -35,9 +39,13 @@ public class PeriodExecutor {
     }
 
     public void execute() {
-        if (nextExecuteTimeMillis < System.currentTimeMillis()) {
-            renewTime();
-            task.run();
+        if (nextExecuteTimeMillis < System.currentTimeMillis() && lock.tryLock()) {
+            try {
+                renewTime();
+                task.run();
+            } finally {
+                lock.unlock();
+            }
         }
     }
 

@@ -29,6 +29,7 @@ import lombok.Setter;
 public class SupervisorMetricsResponse extends ServerMetricsResponse {
     private static final long serialVersionUID = 1128162112784547814L;
 
+    private String lastSubscribedEvent;
     private Boolean alsoWorker;
 
 }

@@ -18,16 +18,21 @@ package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.NetUtils;
+import cn.ponfee.disjob.common.util.TextBoxPrinter;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheStats;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_BOUND_SERVER_HOST;
@@ -124,6 +129,22 @@ public class CoreUtils {
             throw new IllegalArgumentException(name + " length exceed limit: " + length + " > " + maximumLength);
         }
         return str;
+    }
+
+    public static String buildCacheStats(Cache<?, ?> cache, String cacheName) {
+        CacheStats stats = cache.stats();
+        String title = "Cache analytics: " + cacheName;
+        String hitRate = (stats.requestCount() == 0) ? "-" : String.format("%.2f%%", stats.hitRate() * 100);
+        String loadExceptionRate = (stats.loadCount() == 0) ? "-" : String.format("%.2f%%", stats.loadExceptionRate() * 100);
+        String averageLoadPenalty = (stats.loadCount() == 0) ? "-" : Dates.formatDuration(TimeUnit.NANOSECONDS.toMillis((long) stats.averageLoadPenalty()));
+        String[] rows = {
+            "Cache size: " + cache.size(),
+            String.format("Hit rate: %s (%d/%d)", hitRate, stats.hitCount(), stats.requestCount()),
+            String.format("Load exception rate: %s (%d/%d)", loadExceptionRate, stats.loadExceptionCount(), stats.loadCount()),
+            "Average load penalty: " + averageLoadPenalty,
+            "Eviction count: " + stats.evictionCount()
+        };
+        return TextBoxPrinter.print(title, rows);
     }
 
     // ----------------------------------------------------------------------private methods

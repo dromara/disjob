@@ -19,8 +19,11 @@ package cn.ponfee.disjob.common.util;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.LongStream;
 
 /**
  * Numbers test
@@ -30,10 +33,51 @@ import java.util.Random;
 public class NumbersTest {
 
     @Test
+    public void testPercent() {
+        Assertions.assertEquals("-", (Numbers.percent(1.0, 0.0, 2)));
+        Assertions.assertEquals("-", Numbers.percent(0.0, 0.0, 2));
+        Assertions.assertEquals("0.00%", Numbers.percent(0.0, 1.0, 2));
+        Assertions.assertEquals("50.00%", Numbers.percent(1.0, 2.0, 2));
+    }
+
+    @Test
     public void testProrate() {
-        Assertions.assertEquals("[95, 3, 102]", Arrays.toString(Numbers.prorate(new int[]{43, 1, 47}, 200)));
-        Assertions.assertEquals("[29, 1, 31]", Arrays.toString(Numbers.prorate(new int[]{43, 1, 47}, 61)));
-        Assertions.assertEquals("[249, 249, 248, 2]", Arrays.toString(Numbers.prorate(new int[]{249, 249, 249, 3}, 748)));
+        Assertions.assertEquals("[123]", Arrays.toString(LongStream.rangeClosed(0, 0).map(x -> 123).toArray()));
+        Assertions.assertEquals("[29, 1, 31]", Arrays.toString(Numbers.prorate(new long[]{43, 1, 47}, 61)));
+        Assertions.assertEquals("[249, 249, 248, 2]", Arrays.toString(Numbers.prorate(new long[]{249, 249, 249, 3}, 748)));
+        Assertions.assertEquals("[-7, -4, -4, -2, -1, 0]", Arrays.toString(Numbers.prorate(new long[]{-75, -47, -42, -24, -7, -15}, -18)));
+
+        // 正数
+        for (int i = 0; i < 1000; i++) {
+            long[] array = LongStream.rangeClosed(0, ThreadLocalRandom.current().nextInt(17))
+                .map(e -> ThreadLocalRandom.current().nextLong(47))
+                .toArray();
+            long total = sum(array);
+            Assertions.assertEquals(total, sum(Numbers.prorate(array, total)));
+
+            long random = ThreadLocalRandom.current().nextLong(total + 1);
+            Assertions.assertEquals(total - random, sum(Numbers.prorate(array, total - random)));
+        }
+
+        // 负数
+        for (int i = 0; i < 1000; i++) {
+            long[] array = LongStream.rangeClosed(0, ThreadLocalRandom.current().nextInt(17))
+                .map(e -> -1 * ThreadLocalRandom.current().nextLong(47))
+                .toArray();
+            long total = sum(array);
+            Assertions.assertEquals(total, sum(Numbers.prorate(array, total)));
+
+            long random = ThreadLocalRandom.current().nextLong(-1 * total + 1);
+            Assertions.assertEquals(total + random, sum(Numbers.prorate(array, total + random)));
+        }
+
+        // 异常
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Numbers.prorate(null, 0));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Numbers.prorate(new long[]{}, 0));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Numbers.prorate(new long[]{1, 2, 3}, -1));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Numbers.prorate(new long[]{1, 2, 3}, 7));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Numbers.prorate(new long[]{-1, -2, -3}, 1));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Numbers.prorate(new long[]{-1, -2, -3}, -7));
     }
 
     @Test
@@ -81,5 +125,44 @@ public class NumbersTest {
         System.out.println(Numbers.format(min + max, "#,##0.000000000"));
     }
 
+    @Test
+    public void testParse() {
+        Assertions.assertThrows(NumberFormatException.class, () -> Long.parseLong(Float.toString(1.00f)));
+        Assertions.assertThrows(NumberFormatException.class, () -> Integer.parseInt(Long.toString(Long.MAX_VALUE)));
+        Assertions.assertEquals("9223372036854775807", BigInteger.valueOf(Long.MAX_VALUE).toString());
+
+        //Assertions.assertEquals(0.001f, Float.parseFloat(Double.toString(0.001D)));
+        //Assertions.assertEquals(Float.POSITIVE_INFINITY, Float.parseFloat(Double.toString(Double.MAX_VALUE)));
+        //Assertions.assertEquals(0.0, Float.parseFloat(Double.toString(Double.MIN_VALUE)));
+        //Assertions.assertEquals(3.4028235E38, Double.parseDouble(Float.toString(Float.MAX_VALUE)));
+        //Assertions.assertEquals(1.4E-45, Double.parseDouble(Float.toString(Float.MIN_VALUE)));
+
+        Assertions.assertNull(Numbers.toWrapChar(null));
+        Assertions.assertEquals('0', Numbers.toWrapChar('0'));
+        Assertions.assertEquals('a', Numbers.toWrapChar('a'));
+        Assertions.assertEquals('a', Numbers.toWrapChar("a"));
+
+        Assertions.assertTrue(Numbers.toWrapBoolean(true));
+        Assertions.assertFalse(Numbers.toWrapBoolean(false));
+        Assertions.assertNull(Numbers.toWrapBoolean(null));
+        Assertions.assertFalse(Numbers.toWrapBoolean("null"));
+
+        Assertions.assertNull(Numbers.toWrapInt("null"));
+        Assertions.assertNull(Numbers.toWrapInt("123.12"));
+        Assertions.assertEquals(123, Numbers.toWrapInt("123"));
+
+        Assertions.assertNull(Numbers.toWrapLong("null"));
+        Assertions.assertNull(Numbers.toWrapLong("123.12"));
+        Assertions.assertEquals(123, Numbers.toWrapLong("123"));
+
+        Assertions.assertNull(Numbers.toWrapFloat("null"));
+        Assertions.assertNull(Numbers.toWrapDouble("null"));
+        //Assertions.assertEquals(123.12f, Numbers.toWrapFloat("123.12"));
+        //Assertions.assertEquals(123.12d, Numbers.toWrapDouble("123.12"));
+    }
+
+    private static long sum(long... array) {
+        return LongStream.of(array).sum();
+    }
 
 }

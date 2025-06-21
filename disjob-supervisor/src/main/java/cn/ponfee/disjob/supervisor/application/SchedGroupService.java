@@ -43,12 +43,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonScheduledPool;
 import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
@@ -78,8 +81,10 @@ public class SchedGroupService extends SingletonClassConstraint {
         this.serverInvokeService = serverInvokeService;
 
         supervisorConf.check();
-        int periodSeconds = Math.max(supervisorConf.getGroupRefreshPeriodSeconds(), 30);
-        commonScheduledPool().scheduleWithFixedDelay(this::refresh, periodSeconds, periodSeconds, TimeUnit.SECONDS);
+        int periodMinutes = supervisorConf.getGroupRefreshPeriodMinutes();
+        if (periodMinutes > 0) {
+            commonScheduledPool().scheduleWithFixedDelay(this::refresh, periodMinutes, periodMinutes, TimeUnit.MINUTES);
+        }
         refresh();
     }
 
@@ -178,25 +183,7 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     private void refreshAndPublish() {
         refresh();
-        serverInvokeService.publishOperationEvent(OperationEventType.REFRESH_GROUP, null);
-    }
-
-    private static Map<String, DisjobGroup> toGroupMap(List<DisjobGroup> list) {
-        return Collects.toMap(list, DisjobGroup::getGroup);
-    }
-
-    private static Map<String, ImmutableSet<String>> toUserMap(List<DisjobGroup> list) {
-        return list.stream()
-            .flatMap(e -> {
-                Collection<String> users = e.getDevUsers();
-                if (!users.contains(e.getOwnUser())) {
-                    users = new ArrayList<>(1 + e.getDevUsers().size());
-                    users.add(e.getOwnUser());
-                    users.addAll(e.getDevUsers());
-                }
-                return users.stream().map(u -> Pair.of(u, e.getGroup()));
-            })
-            .collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, ImmutableSet.toImmutableSet())));
+        serverInvokeService.publishOperationEvent(OperationEventType.REFRESH_GROUP, null, false);
     }
 
     private static class Cache {
@@ -220,7 +207,11 @@ public class SchedGroupService extends SingletonClassConstraint {
 
         static Cache of(List<SchedGroup> groups) {
             List<DisjobGroup> list = groups.stream().map(DisjobGroup::new).collect(Collectors.toList());
-            return new Cache(toGroupMap(list), toUserMap(list));
+            Map<String, DisjobGroup> groupMap = Collects.toMap(list, DisjobGroup::getGroup);
+            Map<String, ImmutableSet<String>> userMap = list.stream()
+                .flatMap(e -> Stream.concat(e.getDevUsers().stream(), Stream.of(e.getOwnUser())).map(u -> Pair.of(u, e.getGroup())))
+                .collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, ImmutableSet.toImmutableSet())));
+            return new Cache(groupMap, userMap);
         }
 
         DisjobGroup getGroup(String group) {

@@ -19,11 +19,12 @@ package cn.ponfee.disjob.common.util;
 import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import com.google.common.base.Strings;
-import com.google.common.primitives.Chars;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -31,8 +32,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
@@ -53,10 +55,6 @@ public final class Numbers {
 
     private static final Pattern ALL_ZERO_PATTERN = Pattern.compile("^0+$");
 
-    public static final int     ZERO_INT     = 0;
-    public static final Integer ZERO_INTEGER = 0;
-    public static final byte    ZERO_BYTE    = 0x00;
-
     // --------------------------------------------------------------character convert
 
     public static char toChar(Object obj) {
@@ -65,24 +63,17 @@ public final class Numbers {
 
     public static char toChar(Object obj, char defaultVal) {
         Character value = toWrapChar(obj);
-        return value == null ? defaultVal : value;
+        return value != null ? value : defaultVal;
     }
 
     public static Character toWrapChar(Object obj) {
-        if (obj == null) {
-            return null;
-        } else if (obj instanceof Character) {
+        if (obj == null || obj instanceof Character) {
             return (Character) obj;
-        } else if (obj instanceof Number) {
-            return (char) ((Number) obj).intValue();
-        } else if (obj instanceof byte[]) {
-            return Chars.fromByteArray((byte[]) obj);
-        } else if (obj instanceof Boolean) {
-            return (char) (((boolean) obj) ? 0xFF : 0x00);
-        } else {
-            String str = obj.toString();
-            return str.length() == 1 ? str.charAt(0) : null;
         }
+        if (obj instanceof CharSequence && ((CharSequence) obj).length() == 1) {
+            return ((CharSequence) obj).charAt(0);
+        }
+        return null;
     }
 
     // -----------------------------------------------------------------boolean convert
@@ -93,19 +84,11 @@ public final class Numbers {
 
     public static boolean toBoolean(Object obj, boolean defaultVal) {
         Boolean value = toWrapBoolean(obj);
-        return value == null ? defaultVal : value;
+        return value != null ? value : defaultVal;
     }
 
     public static Boolean toWrapBoolean(Object obj) {
-        if (obj == null) {
-            return null;
-        } else if (obj instanceof Boolean) {
-            return (Boolean) obj;
-        } else if (obj instanceof Number) {
-            return ((Number) obj).byteValue() != ZERO_BYTE;
-        } else {
-            return Boolean.parseBoolean(obj.toString());
-        }
+        return (obj instanceof Boolean) ? (Boolean) obj : parse(obj, Boolean::parseBoolean);
     }
 
     // -----------------------------------------------------------------byte convert
@@ -115,22 +98,12 @@ public final class Numbers {
     }
 
     public static byte toByte(Object obj, byte defaultVal) {
-        if (obj instanceof Number) {
-            return ((Number) obj).byteValue();
-        }
-        Long value = parseLong(obj);
-        return value == null ? defaultVal : value.byteValue();
+        Byte value = toWrapByte(obj);
+        return value != null ? value : defaultVal;
     }
 
     public static Byte toWrapByte(Object obj) {
-        if (obj instanceof Byte) {
-            return (Byte) obj;
-        }
-        if (obj instanceof Number) {
-            return ((Number) obj).byteValue();
-        }
-        Long value = parseLong(obj);
-        return value == null ? null : value.byteValue();
+        return (obj instanceof Byte) ? (Byte) obj : parse(obj, Byte::parseByte);
     }
 
     // -----------------------------------------------------------------short convert
@@ -140,22 +113,12 @@ public final class Numbers {
     }
 
     public static short toShort(Object obj, short defaultVal) {
-        if (obj instanceof Number) {
-            return ((Number) obj).shortValue();
-        }
-        Long value = parseLong(obj);
-        return value == null ? defaultVal : value.shortValue();
+        Short value = toWrapShort(obj);
+        return value != null ? value : defaultVal;
     }
 
     public static Short toWrapShort(Object obj) {
-        if (obj instanceof Short) {
-            return (Short) obj;
-        }
-        if (obj instanceof Number) {
-            return ((Number) obj).shortValue();
-        }
-        Long value = parseLong(obj);
-        return value == null ? null : value.shortValue();
+        return (obj instanceof Short) ? (Short) obj : parse(obj, Short::parseShort);
     }
 
     // -----------------------------------------------------------------int convert
@@ -165,22 +128,12 @@ public final class Numbers {
     }
 
     public static int toInt(Object obj, int defaultVal) {
-        if (obj instanceof Number) {
-            return ((Number) obj).intValue();
-        }
-        Long value = parseLong(obj);
-        return value == null ? defaultVal : value.intValue();
+        Integer value = toWrapInt(obj);
+        return value != null ? value : defaultVal;
     }
 
     public static Integer toWrapInt(Object obj) {
-        if (obj instanceof Integer) {
-            return (Integer) obj;
-        }
-        if (obj instanceof Number) {
-            return ((Number) obj).intValue();
-        }
-        Long value = parseLong(obj);
-        return value == null ? null : value.intValue();
+        return (obj instanceof Integer) ? (Integer) obj : parse(obj, Integer::parseInt);
     }
 
     // -----------------------------------------------------------------long convert
@@ -190,21 +143,12 @@ public final class Numbers {
     }
 
     public static long toLong(Object obj, long defaultVal) {
-        if (obj instanceof Number) {
-            return ((Number) obj).longValue();
-        }
-        Long value = parseLong(obj);
-        return value == null ? defaultVal : value;
+        Long value = toWrapLong(obj);
+        return value != null ? value : defaultVal;
     }
 
     public static Long toWrapLong(Object obj) {
-        if (obj instanceof Long) {
-            return (Long) obj;
-        }
-        if (obj instanceof Number) {
-            return ((Number) obj).longValue();
-        }
-        return parseLong(obj);
+        return (obj instanceof Long) ? (Long) obj : parse(obj, Long::parseLong);
     }
 
     // -----------------------------------------------------------------float convert
@@ -214,22 +158,12 @@ public final class Numbers {
     }
 
     public static float toFloat(Object obj, float defaultVal) {
-        if (obj instanceof Number) {
-            return ((Number) obj).floatValue();
-        }
-        Double value = parseDouble(obj);
-        return value == null ? defaultVal : value.floatValue();
+        Float value = toWrapFloat(obj);
+        return value != null ? value : defaultVal;
     }
 
     public static Float toWrapFloat(Object obj) {
-        if (obj instanceof Float) {
-            return (Float) obj;
-        }
-        if (obj instanceof Number) {
-            return ((Number) obj).floatValue();
-        }
-        Double value = parseDouble(obj);
-        return value == null ? null : value.floatValue();
+        return (obj instanceof Float) ? (Float) obj : parse(obj, Float::parseFloat);
     }
 
     // -----------------------------------------------------------------double convert
@@ -239,21 +173,12 @@ public final class Numbers {
     }
 
     public static double toDouble(Object obj, double defaultVal) {
-        if (obj instanceof Number) {
-            return ((Number) obj).doubleValue();
-        }
-        Double value = parseDouble(obj);
-        return value == null ? defaultVal : value;
+        Double value = toWrapDouble(obj);
+        return value != null ? value : defaultVal;
     }
 
     public static Double toWrapDouble(Object obj) {
-        if (obj instanceof Double) {
-            return (Double) obj;
-        }
-        if (obj instanceof Number) {
-            return ((Number) obj).doubleValue();
-        }
-        return parseDouble(obj);
+        return (obj instanceof Double) ? (Double) obj : parse(obj, Double::parseDouble);
     }
 
     // ---------------------------------------------------------------------number format
@@ -305,19 +230,19 @@ public final class Numbers {
         return BigDecimal.valueOf(value * Math.pow(10, pow)).setScale(scale, RoundingMode.HALF_UP).doubleValue();
     }
 
-    public static long nullZero(Long value) {
+    public static long zeroIfNull(Long value) {
         return value == null ? 0 : value;
     }
 
-    public static Long zeroNull(long value) {
+    public static Long nullIfZero(long value) {
         return value == 0 ? null : value;
     }
 
-    public static int nullZero(Integer value) {
+    public static int zeroIfNull(Integer value) {
         return value == null ? 0 : value;
     }
 
-    public static Integer zeroNull(int value) {
+    public static Integer nullIfZero(int value) {
         return value == 0 ? null : value;
     }
 
@@ -332,17 +257,14 @@ public final class Numbers {
     /**
      * 百分比
      *
-     * @param numerator   the numerator
-     * @param denominator the denominator
-     * @param scale       the scale
+     * @param dividend the dividend
+     * @param divisor  the divisor
+     * @param scale    the scale
      * @return percent string value
      */
-    public static String percent(double numerator, double denominator, int scale) {
-        if (denominator == 0.0D) {
-            return "--";
-        }
-
-        return percent(numerator / denominator, scale);
+    public static String percent(double dividend, double divisor, int scale) {
+        double value = dividend / divisor;
+        return (Double.isInfinite(value) || Double.isNaN(value)) ? "-" : percent(value, scale);
     }
 
     /**
@@ -489,46 +411,50 @@ public final class Numbers {
             if (value == 0) {
                 break;
             }
-            result.add(Tuple2.of(last += 1, last += value - 1));
+            result.add(Tuple2.of(last += 1, last += (value - 1)));
         }
 
         return result;
     }
 
     /**
-     * Prorate the value for array
      * <pre>
-     *  prorate(new int[]{249, 249, 249, 3}, 748) = [249, 249, 248, 2]
-     *  prorate(new int[]{43, 1, 47}       , 61 ) = [29, 1, 31]
+     * Prorate the value for array
+     *  prorate(new long[]{249, 249, 249, 3}, 748) = [249, 249, 248, 2]
+     *  prorate(new long[]{43, 1, 47}       , 61 ) = [29, 1, 31]
      * </pre>
      *
      * @param array the array
      * @param value the value
      * @return prorate result
      */
-    public static int[] prorate(int[] array, int value) {
-        int[] result = new int[array.length];
-        if (array.length == 0 || value == 0) {
-            return result;
+    public static long[] prorate(long[] array, long value) {
+        // 校验数组不能为空
+        if (ArrayUtils.isEmpty(array)) {
+            throw new IllegalArgumentException("Prorate array cannot be empty.");
+        }
+        // 校验所有数值的正负符号必须一致，不能存在`a>0 && b<0`的情况
+        if (LongStream.of(array).filter(e -> e != 0).mapToObj(e -> e > 0).distinct().toArray().length > 1) {
+            throw new IllegalArgumentException("Prorate array value diff signum: " + Arrays.toString(array) + ", " + value);
+        }
+        // 校验value不能超出区间：[total, 0] or [0, total]
+        long total = LongStream.of(array).sum();
+        if (value < Math.min(total, 0) || value > Math.max(0, total)) {
+            throw new IllegalArgumentException("Prorate array less than value: " + Arrays.toString(array) + ", " + value);
         }
 
-        int total = IntStream.of(array).sum();
-        double rate;
-        int i = 0, n = array.length - 1;
-        for (; i < n; i++) {
-            // rate <= 1.0
-            rate = value / (double) total;
-            result[i] = Math.min((int) Math.ceil(array[i] * rate), value);
-            value -= result[i];
-            total -= array[i];
-
-            if (value == 0) {
-                break;
-            }
+        long[] result = new long[array.length];
+        long remainingValue = value;
+        long remainingTotal = total;
+        for (int i = 0; i < array.length; i++) {
+            long m = array[i];
+            long n = upDiv(remainingValue * m, remainingTotal);
+            result[i] = (m < 0) ? Math.max(m, n) : Math.min(n, m);
+            remainingValue -= result[i];
+            remainingTotal -= m;
         }
-
-        if (i == n) {
-            result[i] = value;
+        if (remainingValue != 0 || remainingTotal != 0) {
+            throw new IllegalArgumentException("Prorate array value has remain: " + Arrays.toString(array) + ", " + value);
         }
         return result;
     }
@@ -563,27 +489,25 @@ public final class Numbers {
 
     // -------------------------------------------------------private methods
 
-    private static Long parseLong(Object obj) {
+    private static <R> R parse(Object obj, Function<String, R> mapper) {
         if (obj == null) {
             return null;
         }
         try {
-            String val = obj.toString();
-            return val.indexOf('.') == -1 ? Long.parseLong(val) : (long) Double.parseDouble(val);
+            return mapper.apply(obj.toString());
         } catch (NumberFormatException ignored) {
             return null;
         }
     }
 
-    private static Double parseDouble(Object obj) {
-        if (obj == null) {
-            return null;
+    private static long upDiv(long dividend, long divisor) {
+        if (dividend == 0) {
+            return 0;
         }
-        try {
-            return Double.parseDouble(obj.toString());
-        } catch (NumberFormatException ignored) {
-            return null;
-        }
+        return new BigDecimal(dividend)
+            .divide(new BigDecimal(divisor), MathContext.DECIMAL128)
+            .setScale(0, RoundingMode.UP)
+            .longValue();
     }
 
 }

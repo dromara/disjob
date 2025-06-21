@@ -29,8 +29,8 @@ import lombok.Setter;
 
 import java.nio.ByteBuffer;
 
-import static cn.ponfee.disjob.common.util.Numbers.nullZero;
-import static cn.ponfee.disjob.common.util.Numbers.zeroNull;
+import static cn.ponfee.disjob.common.util.Numbers.nullIfZero;
+import static cn.ponfee.disjob.common.util.Numbers.zeroIfNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -82,7 +82,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
             .put((byte) operation.ordinal())      // 1: operation
             .putLong(taskId)                      // 8: taskId
             .putLong(instanceId)                  // 8: instanceId
-            .putLong(nullZero(wnstanceId))        // 8: wnstanceId
+            .putLong(zeroIfNull(wnstanceId))      // 8: wnstanceId
             .putLong(triggerTime)                 // 8: triggerTime
             .putLong(jobId)                       // 8: jobId
             .putInt(retryCount)                   // 4: retryCount
@@ -115,7 +115,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         param.setOperation(OPERATION_VALUES[buf.get()]);                                             //   1: operation
         param.setTaskId(buf.getLong());                                                              //   8: taskId
         param.setInstanceId(buf.getLong());                                                          //   8: instanceId
-        param.setWnstanceId(zeroNull(buf.getLong()));                                                //   8: wnstanceId
+        param.setWnstanceId(nullIfZero(buf.getLong()));                                              //   8: wnstanceId
         param.setTriggerTime(buf.getLong());                                                         //   8: triggerTime
         param.setJobId(buf.getLong());                                                               //   8: jobId
         param.setRetryCount(buf.getInt());                                                           //   4: retryCount

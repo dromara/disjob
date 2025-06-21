@@ -53,15 +53,8 @@ public interface TypedDictionary<K, V> {
         throw new UnsupportedOperationException("Cannot suppoerted contains value operation.");
     }
 
-    // --------------------------------------------------------object
-
     default V getRequired(K key) {
         return getRequired(key, Function.identity());
-    }
-
-    default V get(K key, V defaultVal) {
-        V value = get(key);
-        return value == null ? defaultVal : value;
     }
 
     // --------------------------------------------------------string
@@ -129,7 +122,12 @@ public interface TypedDictionary<K, V> {
     // --------------------------------------------------------------int
 
     default int getRequiredInt(K key) {
-        return getRequired(key, Numbers::toInt);
+        return getRequired(key, e -> {
+            if (e instanceof Integer) {
+                return (Integer) e;
+            }
+            return Integer.parseInt(e.toString());
+        });
     }
 
     default int getInt(K key, int defaultValue) {
@@ -151,7 +149,15 @@ public interface TypedDictionary<K, V> {
     // --------------------------------------------------------------long
 
     default long getRequiredLong(K key) {
-        return getRequired(key, Numbers::toLong);
+        return getRequired(key, e -> {
+            if (e instanceof Integer) {
+                return ((Integer) e).longValue();
+            }
+            if (e instanceof Long) {
+                return (Long) e;
+            }
+            return Long.parseLong(e.toString());
+        });
     }
 
     default long getLong(K key, long defaultValue) {
@@ -173,7 +179,12 @@ public interface TypedDictionary<K, V> {
     // --------------------------------------------------------------float
 
     default float getRequiredFloat(K key) {
-        return getRequired(key, Numbers::toFloat);
+        return getRequired(key, e -> {
+            if (e instanceof Float) {
+                return (Float) e;
+            }
+            return Float.parseFloat(e.toString());
+        });
     }
 
     default float getFloat(K key, float defaultValue) {
@@ -195,7 +206,15 @@ public interface TypedDictionary<K, V> {
     // --------------------------------------------------------------double
 
     default double getRequiredDouble(K key) {
-        return getRequired(key, Numbers::toDouble);
+        return getRequired(key, e -> {
+            if (e instanceof Float) {
+                return ((Float) e).doubleValue();
+            }
+            if (e instanceof Double) {
+                return (Double) e;
+            }
+            return Double.parseDouble(e.toString());
+        });
     }
 
     default double getDouble(K key, double defaultValue) {
@@ -220,9 +239,13 @@ public interface TypedDictionary<K, V> {
     default <R> R getRequired(K key, Function<V, R> mapper) {
         V value = get(key);
         if (value == null) {
-            throw new IllegalArgumentException("Not presented value of '" + key + "'");
+            throw new IllegalStateException("Not presented key: " + key);
         }
-        return mapper.apply(value);
+        R result = mapper.apply(value);
+        if (result == null) {
+            throw new IllegalStateException("Invalid key value: " + key + "=" + value);
+        }
+        return result;
     }
 
 }

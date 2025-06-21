@@ -82,9 +82,9 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     private int maximumProcessJobPoolSize = 10;
 
     /**
-     * Group data refresh period seconds.
+     * Group data refresh period minutes.
      */
-    private int groupRefreshPeriodSeconds = 120;
+    private int groupRefreshPeriodMinutes = 0;
 
     /**
      * Job scan failed count threshold.
@@ -106,7 +106,7 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
         Assert.isTrue(scanRunningInstancePeriodMs >= 30000, "Scan running instance period ms cannot less than 30000.");
         Assert.isTrue(shutdownTaskDelayResumeMs >= 60000, "Shutdown task delay resume ms cannot less than 60000.");
         Assert.isTrue(maximumProcessJobPoolSize > 0, "Maximum process job pool size must be greater than 0.");
-        Assert.isTrue(groupRefreshPeriodSeconds >= 30, "group refresh period seconds cannot less than 30s.");
+        Assert.isTrue(groupRefreshPeriodMinutes >= 0, "Refresh group period minutes cannot less than 0.");
         Assert.isTrue(jobScanFailedCountThreshold >= 0, "Job scan failed count threshold cannot less than 0.");
         Assert.isTrue(taskDispatchFailedCountThreshold >= 0, "Task dispatch failed count threshold cannot less than 0.");
     }

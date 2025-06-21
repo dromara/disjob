@@ -44,6 +44,11 @@ public class SupervisorMetrics extends ToJsonString implements Serializable {
     private Date startupTime;
 
     /**
+     * 最近的订阅事件
+     */
+    private String lastSubscribedEvent;
+
+    /**
      * 是否也是Worker角色
      */
     private boolean alsoWorker;

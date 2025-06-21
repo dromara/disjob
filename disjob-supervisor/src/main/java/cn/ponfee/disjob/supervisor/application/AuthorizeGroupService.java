@@ -18,6 +18,8 @@ package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
+import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
@@ -51,7 +53,6 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     public static final int SQL_GROUP_IN_MAX_SIZE = 20;
 
     private final JobQuerier jobQuerier;
-
     private final Cache<Long, String> jobGroupCache = CacheBuilder.newBuilder()
         .initialCapacity(1_000)
         .maximumSize(1_000_000)
@@ -59,11 +60,14 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
         // 当job被删除后便不再被使用，1天后没有访问会自动过期
         // 惰性过期策略：[被访问时判断过期则被删除] 或 [超过容量时使用LRU算法选择删除]
         .expireAfterAccess(Duration.ofDays(1))
+        .recordStats()
         .build();
+    @SuppressWarnings("all")
+    private final PeriodExecutor cacheStatsPrinter =
+        new PeriodExecutor(120_000, () -> LOG.info("\n\n" + CoreUtils.buildCacheStats(jobGroupCache, "Job group cache")));
 
     public AuthorizeGroupService(JobQuerier jobQuerier) {
         this.jobQuerier = jobQuerier;
-
         commonScheduledPool().scheduleWithFixedDelay(jobGroupCache::cleanUp, 1, 1, TimeUnit.DAYS);
     }
 
@@ -126,6 +130,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
 
     private String getJobGroup(Long jobId) {
         String group = jobGroupCache.getIfPresent(jobId);
+        cacheStatsPrinter.execute();
         if (group != null) {
             return group;
         }

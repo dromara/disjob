@@ -73,7 +73,7 @@ public class SchedGroup extends BaseEntity {
     private String alertWebhook;
 
     /**
-     * 该组下的Worker服务的context-path
+     * 该分组中Worker服务的context-path
      */
     private String workerContextPath;
 

@@ -36,6 +36,7 @@ import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -97,14 +98,15 @@ public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
         SupervisorMetrics metrics = new SupervisorMetrics();
         metrics.setVersion(JobConstants.DISJOB_VERSION);
         metrics.setStartupTime(Dates.toDate(localSupervisor.getStartupTime()));
+        metrics.setLastSubscribedEvent(localSupervisor.getLastSubscribedEvent());
         metrics.setAlsoWorker(Worker.local() != null);
         return metrics;
     }
 
     @SupervisorAuthentication(Subject.ANON)
     @Override
-    public void subscribeOperationEvent(OperationEventType eventType, String data) {
-        OperationEventService.subscribe(eventType, data);
+    public void subscribeOperationEvent(OperationEventType eventType, Date eventTime, String eventData) {
+        OperationEventService.subscribe(eventType, eventTime, eventData);
     }
 
 }

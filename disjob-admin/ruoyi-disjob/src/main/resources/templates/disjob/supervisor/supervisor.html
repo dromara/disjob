@@ -1,10 +1,16 @@
 <!DOCTYPE html>
-<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 <head>
   <th:block th:insert="~{include :: header('Supervisor list')}" />
 </head>
 <body class="gray-bg">
   <div class="container-div">
+    <div class="btn-group-sm" id="toolbar" role="group">
+      <a class="btn btn-success" onclick="publishOperationEvent()" shiro:hasPermission="disjob:supervisor:operate">
+        <i class="fa fa-send"></i> 发布操作事件
+      </a>
+    </div>
+
     <div class="row">
       <div class="col-sm-12 select-table table-striped">
         <table id="bootstrap-table"></table>
@@ -16,6 +22,8 @@
   <th:block th:insert="~{include :: bootstrap-table-fixed-columns-js}" />
 
   <script th:inline="javascript">
+    const prefix = ctx + "disjob/supervisor";
+
     $(function () {
       const options = {
         data: [[${list}]],
@@ -61,11 +69,42 @@
           cellStyle: function (value, row, index) {
             return { css: { "white-space": "nowrap" } }
           }
+        },
+        {
+          field: 'lastSubscribedEvent',
+          title: '最近的订阅事件',
+          cellStyle: function (value, row, index) {
+            return { css: { "white-space": "nowrap" } }
+          }
         }]
       };
 
       $.table.init(options);
     });
+
+    function publishOperationEvent() {
+      layer.open({
+        type: 1,
+        area: ['250px', '160px'],
+        title: '发布操作事件',
+        btn: ['确定', '取消'],
+        content: '<select class="form-control"><option value="REFRESH_GROUP">Refresh group data</option></select>',
+        skin: 'layui-layer-prompt',
+        resize: false,
+        success: function (layero, index) {
+          layero.find('select').focus();
+        },
+        yes: function (index, layero) {
+          const params = { "eventType": layero.find('select').val().trim() };
+          $.operate.post(prefix + "/publish_operation_event", params, function (result) {
+            if (result.code === 0) {
+              location.reload();
+              layer.close(index);
+            }
+          }, false);
+        }
+      });
+    }
   </script>
 
 </body>
