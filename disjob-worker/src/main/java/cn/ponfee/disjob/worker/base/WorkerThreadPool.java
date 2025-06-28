@@ -93,7 +93,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private final LinkedBlockingDeque<WorkerThread> idlePool = new LinkedBlockingDeque<>();
 
     /**
-     * Task execution task queue
+     * Task queue for pending execution
      */
     private final LinkedBlockingDeque<WorkerTask> taskQueue = new LinkedBlockingDeque<>();
 
@@ -227,11 +227,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
     /**
      * Stop(Pause or Cancel) specified task
      *
-     * @param stopParam the stops task param
+     * @param task the stops task
      */
-    private void stopTask(WorkerTask stopParam) {
-        Operation ops = stopParam.getOperation();
-        long taskId = stopParam.getTaskId();
+    private void stopTask(WorkerTask task) {
+        Operation ops = task.getOperation();
+        long taskId = task.getTaskId();
         Assert.isTrue(ops != null && ops.isNotTrigger(), () -> "Invalid stop operation: " + ops);
 
         if (threadPoolState.isStopped()) {
@@ -244,7 +244,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             LOG.warn("Not found executing task: {}, {}", taskId, ops);
             // 支持某些异常场景时手动结束任务（如断网数据库连接不上，任务执行结束后状态无法更新，一直停留在EXECUTING）：EXECUTING -> (PAUSED|CANCELED)
             // 但要注意可能存在的操作流程上的`ABA`问题：EXECUTING -> PAUSED -> WAITING -> EXECUTING -> (PAUSED|CANCELED)
-            stopTask(stopParam, ops, ops.name() + " aborted EXECUTING state task");
+            stopTask(task, ops, ops.name() + " aborted EXECUTING state task");
         } else {
             stopTask(pair, ops);
         }

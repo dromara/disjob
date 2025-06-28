@@ -49,26 +49,20 @@ public class NumbersTest {
 
         // 正数
         for (int i = 0; i < 1000; i++) {
-            long[] array = LongStream.rangeClosed(0, ThreadLocalRandom.current().nextInt(17))
-                .map(e -> ThreadLocalRandom.current().nextLong(47))
+            long[] array = LongStream.rangeClosed(0, ThreadLocalRandom.current().nextInt(47))
+                .map(e -> ThreadLocalRandom.current().nextLong(97))
                 .toArray();
-            long total = sum(array);
+            long total = ThreadLocalRandom.current().nextLong(sum(array) + 1);
             Assertions.assertEquals(total, sum(Numbers.prorate(array, total)));
-
-            long random = ThreadLocalRandom.current().nextLong(total + 1);
-            Assertions.assertEquals(total - random, sum(Numbers.prorate(array, total - random)));
         }
 
         // 负数
         for (int i = 0; i < 1000; i++) {
-            long[] array = LongStream.rangeClosed(0, ThreadLocalRandom.current().nextInt(17))
-                .map(e -> -1 * ThreadLocalRandom.current().nextLong(47))
+            long[] array = LongStream.rangeClosed(0, ThreadLocalRandom.current().nextInt(47))
+                .map(e -> -1 * ThreadLocalRandom.current().nextLong(97))
                 .toArray();
-            long total = sum(array);
+            long total = -1 * ThreadLocalRandom.current().nextLong(-1 * sum(array) + 1);
             Assertions.assertEquals(total, sum(Numbers.prorate(array, total)));
-
-            long random = ThreadLocalRandom.current().nextLong(-1 * total + 1);
-            Assertions.assertEquals(total + random, sum(Numbers.prorate(array, total + random)));
         }
 
         // 异常

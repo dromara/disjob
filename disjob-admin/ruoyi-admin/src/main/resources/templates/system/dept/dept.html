@@ -57,15 +57,13 @@
 		        code: "deptId",
 		        parentCode: "parentId",
 		        uniqueId: "deptId",
+            expandColumn: 0,
 		        url: prefix + "/list",
 		        createUrl: prefix + "/add/{id}",
 		        updateUrl: prefix + "/edit/{id}",
 		        removeUrl: prefix + "/remove/{id}",
 		        modalName: "部门",
-		        columns: [{
-                    field: 'selectItem', 
-                    radio: true
-                 },
+		        columns: [
                  {
 		            field: 'deptName',
 		            title: '部门名称',

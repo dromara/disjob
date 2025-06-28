@@ -23,7 +23,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -69,13 +68,6 @@ public class DBUtils {
         } catch (IOException e) {
             return ExceptionUtils.rethrow(e);
         }
-    }
-
-    public static String correctScriptForMariaDB(String script) {
-        return Arrays.stream(script.split("\n"))
-            // fix error: The MariaDB server is running with the --skip-grant-tables option so it cannot execute this statement
-            .filter(s -> !StringUtils.startsWithAny(s, "DROP USER ", "CREATE USER ", "GRANT ALL PRIVILEGES ON ", "FLUSH PRIVILEGES;"))
-            .collect(Collectors.joining("\n"));
     }
 
     public static void testNativeConnection(String driver, String url, String username, String password) throws Exception {

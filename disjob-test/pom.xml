@@ -64,6 +64,14 @@
       <artifactId>mysql</artifactId>
       <optional>true</optional>
     </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>commons-dbutils</groupId>
+      <artifactId>commons-dbutils</artifactId>
+      <version>1.8.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

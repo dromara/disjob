@@ -37,6 +37,11 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -7896732123210543684L;
 
     /**
+     * Enabled print banner
+     */
+    private boolean printBannerEnabled = true;
+
+    /**
      * Scan batch size
      */
     private int scanBatchSize = 200;

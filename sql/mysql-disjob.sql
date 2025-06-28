@@ -1,18 +1,9 @@
--- ----------------------------
--- DROP USER
--- ----------------------------
--- 语法：DROP USER 'username'@'host_name'，“%”表示删除所有主机中的该用户，默认为“%”
-DROP USER IF EXISTS 'disjob'@'%';
-FLUSH PRIVILEGES;
 SET NAMES utf8mb4;
-
+-- SET sql_mode="NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION";
 
 -- ----------------------------
 -- CREATE DATABASE
 -- ----------------------------
--- SET global validate_password_policy=LOW;
--- SET sql_mode="NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION";
--- DROP DATABASE IF EXISTS disjob;
 CREATE DATABASE IF NOT EXISTS disjob DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 USE disjob;
 
@@ -20,9 +11,14 @@ USE disjob;
 -- ----------------------------
 -- USER PRIVILEGES
 -- ----------------------------
--- GRANT ALL PRIVILEGES ON disjob.* TO 'disjob'@'%' IDENTIFIED BY 'disjob';
-CREATE USER 'disjob'@'%' IDENTIFIED BY 'disjob$123456';
-GRANT ALL PRIVILEGES ON disjob.* TO 'disjob'@'%' WITH GRANT OPTION;
+-- 1）DML语法删除用户：DELETE FROM mysql.user WHERE User='username'; (不推荐)
+-- 2）SQL命令删除用户：DROP USER IF EXISTS 'username'@'hostname';    (推荐，hostname默认为`%`，%表示`任何主机`但不包含localhost)
+-- 3）默认MySQL会将127.0.0.1反解析为localhost，因此连接时实际匹配的是`localhost`而非`%`，`SELECT CURRENT_USER()`返回的是localhost
+-- 4）在MySQL 8.0中`GRANT ... IDENTIFIED BY`语法已被废弃
+CREATE USER IF NOT EXISTS 'disjob'@'%' IDENTIFIED BY 'disjob$123456';
+CREATE USER IF NOT EXISTS 'disjob'@'localhost' IDENTIFIED BY 'disjob$123456';
+GRANT ALL PRIVILEGES ON disjob.* TO 'disjob'@'%';
+GRANT ALL PRIVILEGES ON disjob.* TO 'disjob'@'localhost';
 FLUSH PRIVILEGES;
 
 
@@ -227,7 +223,6 @@ INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_executor`, `job_sta
 
 INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`) VALUES (1003164910267351007, 1003164910267351000);
 INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`) VALUES (1003164910267351007, 1003164910267351006);
-
 
 
 COMMIT;

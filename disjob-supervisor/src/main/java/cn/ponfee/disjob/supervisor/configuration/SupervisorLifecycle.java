@@ -57,6 +57,7 @@ class SupervisorLifecycle implements SmartLifecycle {
         supervisorConf.check();
         this.supervisorStartup = new SupervisorStartup(
             localSupervisor,
+            supervisorConf,
             supervisorRegistry,
             taskDispatcher,
             new WaitingInstanceScanner(supervisorConf, jobManager, jobQuerier, workerClient, scanWaitingInstanceLocker),

@@ -120,26 +120,25 @@ public class PageRequest extends ToJsonString implements TypedDictionary<String,
                                                                Function<P, List<A>> queryRecords,
                                                                Function<A, B> mapper) {
         check();
-        P this0 = (P) this;
         long total;
         List<A> list;
         if (paged) {
-            total = queryCount.applyAsLong(this0);
+            total = queryCount.applyAsLong((P) this);
             correctPageNumber(total);
-            list = (total == 0) ? Collections.emptyList() : queryRecords.apply(this0);
+            list = (total == 0) ? Collections.emptyList() : queryRecords.apply((P) this);
         } else {
-            list = queryRecords.apply(this0);
+            list = queryRecords.apply((P) this);
             total = list.size();
         }
         List<B> rows = (mapper == null) ? (List<B>) list : Collects.convert(list, mapper);
-        return PageResponse.of(rows, total, this0);
+        return PageResponse.of(rows, total, this);
     }
 
     // ------------------------------------------------------------------------private methods
 
     private void check() {
-        int minPageSize = paged ? 1 : 0;
-        if (pageSize < minPageSize) {
+        int minimumPageSize = paged ? 1 : 0;
+        if (pageSize < minimumPageSize) {
             throw new IllegalArgumentException("Invalid page size value [" + pageSize + "].");
         }
     }

@@ -1,8 +1,3 @@
--- ----------------------------
--- DROP OBJECTS
--- ----------------------------
-DROP USER IF EXISTS 'disjob_admin'@'%';
-FLUSH PRIVILEGES;
 SET NAMES utf8mb4;
 
 -- ----------------------------
@@ -14,8 +9,10 @@ USE disjob_admin;
 -- ----------------------------
 -- USER PRIVILEGES
 -- ----------------------------
-CREATE USER 'disjob_admin'@'%' IDENTIFIED BY 'disjob_admin$123456';
-GRANT ALL PRIVILEGES ON disjob_admin.* TO 'disjob_admin'@'%' WITH GRANT OPTION;
+CREATE USER IF NOT EXISTS 'disjob_admin'@'%' IDENTIFIED BY 'disjob_admin$123456';
+CREATE USER IF NOT EXISTS 'disjob_admin'@'localhost' IDENTIFIED BY 'disjob_admin$123456';
+GRANT ALL PRIVILEGES ON disjob_admin.* TO 'disjob_admin'@'%';
+GRANT ALL PRIVILEGES ON disjob_admin.* TO 'disjob_admin'@'localhost';
 FLUSH PRIVILEGES;
 
 -- ----------------------------

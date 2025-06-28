@@ -99,15 +99,13 @@
                 parentCode: "${treeParentCode}",
                 expandColumn: "${expandColumn}",
                 uniqueId: "${pkColumn.javaField}",
+                expandColumn: 0,
                 url: prefix + "/list",
                 createUrl: prefix + "/add/{id}",
                 updateUrl: prefix + "/edit/{id}",
                 removeUrl: prefix + "/remove/{id}",
                 modalName: "${functionName}",
-                columns: [{
-                    field: 'selectItem',
-                    radio: true
-                },
+                columns: [
 #foreach($column in $columns)
 #set($dictType=$column.dictType)
 #set($javaField=$column.javaField)

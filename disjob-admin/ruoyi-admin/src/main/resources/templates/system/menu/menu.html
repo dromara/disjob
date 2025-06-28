@@ -64,15 +64,13 @@
 		        uniqueId: "menuId",
 		        expandAll: false,
 		        expandFirst: false,
+            expandColumn: 0,
 		        url: prefix + "/list",
 		        createUrl: prefix + "/add/{id}",
 		        updateUrl: prefix + "/edit/{id}",
 		        removeUrl: prefix + "/remove/{id}",
 		        modalName: "菜单",
-		        columns: [{
-                    field: 'selectItem', 
-                    radio: true
-                 },
+		        columns: [
                  {
 		            title: '菜单名称',
 		            field: 'menuName',

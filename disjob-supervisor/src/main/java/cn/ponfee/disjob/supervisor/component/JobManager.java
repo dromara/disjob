@@ -293,8 +293,7 @@ public class JobManager {
             String startRequestId = param.getStartRequestId();
             LOG.info("Task trace [{}] starting: {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
             Date now = new Date();
-            // 如果先`get`查一次然后`start`，最后再`get`查的话数据可能会被缓存，返回`runState=10`
-            // 若先`instanceMapper.lock(lockInstanceId)`，不会出现以上问题
+            // 如果先`get`查一次然后`start`，最后再`get`查会返回之前get时的一级缓存
             if (isNotAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), startRequestId, now))) {
                 if (!taskMapper.checkStartIdempotent(param.getTaskId(), param.getWorker(), startRequestId)) {
                     return StartTaskResult.failure("Start task failure.");

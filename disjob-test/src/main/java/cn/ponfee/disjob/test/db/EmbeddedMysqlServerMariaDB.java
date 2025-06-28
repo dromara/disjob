@@ -23,10 +23,13 @@ import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.test.db.DBUtils.*;
 
@@ -62,6 +65,7 @@ public class EmbeddedMysqlServerMariaDB {
     public static void start(int port) throws Exception {
         DBConfiguration configuration = DBConfigurationBuilder.newBuilder()
             .setPort(port) // OR, default: setPort(0); => autom. detect free port
+            .setSecurityDisabled(false)
             .setBaseDir(createDirectory("base"))
             .setDataDir(createDirectory("data"))
             .addArg("--user=root")
@@ -76,7 +80,7 @@ public class EmbeddedMysqlServerMariaDB {
         ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, db::stop);
         db.start();
         for (String script : DBUtils.loadScript()) {
-            db.source(IOUtils.toInputStream(DBUtils.correctScriptForMariaDB(script), StandardCharsets.UTF_8));
+            db.source(IOUtils.toInputStream(/*correctScriptForMariaDB(script)*/ script, StandardCharsets.UTF_8));
         }
 
         String jdbcUrl = "jdbc:mysql://localhost:" + port + "/" + DB_NAME;
@@ -101,6 +105,13 @@ public class EmbeddedMysqlServerMariaDB {
         String dataDir = MavenProjects.getProjectBaseDir() + "/target/mariadb/" + name;
         Files.cleanOrMakeDir(dataDir);
         return dataDir;
+    }
+
+    private static String correctScriptForMariaDB(String script) {
+        return Arrays.stream(script.split("\n"))
+            // fix error: The MariaDB server is running with the --skip-grant-tables option so it cannot execute this statement
+            .filter(s -> !StringUtils.startsWithAny(s, "DROP USER ", "CREATE USER ", "GRANT ALL PRIVILEGES ON ", "FLUSH PRIVILEGES;"))
+            .collect(Collectors.joining("\n"));
     }
 
 }

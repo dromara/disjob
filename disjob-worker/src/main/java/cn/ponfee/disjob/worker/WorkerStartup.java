@@ -47,6 +47,7 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
     private static final Logger LOG = LoggerFactory.getLogger(WorkerStartup.class);
 
     private final Worker.Local localWorker;
+    private final WorkerProperties workerConf;
     private final WorkerThreadPool workerThreadPool;
     private final TimingWheelRotator timingWheelRotator;
     private final TaskReceiver taskReceiver;
@@ -54,14 +55,14 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
     private final TripleState state = TripleState.create();
 
     public WorkerStartup(Worker.Local localWorker,
-                         WorkerProperties workerProperties,
+                         WorkerProperties workerConf,
                          RetryProperties retryProperties,
                          WorkerRegistry workerRegistry,
                          TaskReceiver taskReceiver,
                          RestTemplate restTemplate,
                          @Nullable SupervisorRpcService supervisorRpcService) {
         Objects.requireNonNull(localWorker, "Local worker cannot be null.");
-        Objects.requireNonNull(workerProperties, "Worker properties cannot be null.").check();
+        Objects.requireNonNull(workerConf, "Worker properties cannot be null.").check();
         Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
         Objects.requireNonNull(workerRegistry, "Server registry cannot be null.");
         Objects.requireNonNull(taskReceiver, "Task receiver cannot be null.");
@@ -75,10 +76,11 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
             retryProperties
         );
 
+        this.workerConf = workerConf;
         this.localWorker = localWorker;
         this.workerThreadPool = new WorkerThreadPool(
-            workerProperties.getMaximumPoolSize(),
-            workerProperties.getKeepAliveTimeSeconds(),
+            workerConf.getMaximumPoolSize(),
+            workerConf.getKeepAliveTimeSeconds(),
             supervisorRpcClient
         );
         this.timingWheelRotator = new TimingWheelRotator(
@@ -86,7 +88,7 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
             workerRegistry,
             taskReceiver.getTimingWheel(),
             workerThreadPool,
-            workerProperties.getProcessThreadPoolSize()
+            workerConf.getProcessThreadPoolSize()
         );
         this.taskReceiver = taskReceiver;
         this.workerRegistry = workerRegistry;
@@ -105,7 +107,7 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
         taskReceiver.start();
         ThrowingRunnable.doCaught(workerRegistry::discoverServers);
         workerRegistry.register(localWorker);
-        printBanner();
+        printBanner(workerConf.isPrintBannerEnabled());
         LOG.info("Worker start end: {}", localWorker);
     }
 
@@ -129,7 +131,10 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
     }
 
     @SuppressWarnings("all")
-    private static void printBanner() {
+    private static void printBanner(boolean enabled) {
+        if (!enabled) {
+            return;
+        }
         String bannerWorker = "Disjob worker banner\n\n" +
             "==================================================================================\n" +
             "      ___ _      _       _        __    __           _\n" +

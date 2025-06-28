@@ -44,6 +44,11 @@ public class WorkerProperties extends ToJsonString implements Serializable {
     private String group;
 
     /**
+     * Enabled print banner
+     */
+    private boolean printBannerEnabled = true;
+
+    /**
      * Worker timing wheel tick milliseconds.
      */
     private long timingWheelTickMs = 100;

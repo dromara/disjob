@@ -434,8 +434,8 @@ public final class Numbers {
             throw new IllegalArgumentException("Prorate array cannot be empty.");
         }
         // 校验所有数值的正负符号必须一致，不能存在`a>0 && b<0`的情况
-        if (LongStream.of(array).filter(e -> e != 0).mapToObj(e -> e > 0).distinct().toArray().length > 1) {
-            throw new IllegalArgumentException("Prorate array value diff signum: " + Arrays.toString(array) + ", " + value);
+        if (LongStream.of(array).filter(e -> e != 0).mapToObj(e -> e > 0).distinct().count() > 1) {
+            throw new IllegalArgumentException("Prorate array has diff signum: " + Arrays.toString(array) + ", " + value);
         }
         // 校验value不能超出区间：[total, 0] or [0, total]
         long total = LongStream.of(array).sum();
@@ -447,14 +447,9 @@ public final class Numbers {
         long remainingValue = value;
         long remainingTotal = total;
         for (int i = 0; i < array.length; i++) {
-            long m = array[i];
-            long n = upDiv(remainingValue * m, remainingTotal);
-            result[i] = (m < 0) ? Math.max(m, n) : Math.min(n, m);
+            result[i] = upDiv(remainingValue * array[i], remainingTotal);
             remainingValue -= result[i];
-            remainingTotal -= m;
-        }
-        if (remainingValue != 0 || remainingTotal != 0) {
-            throw new IllegalArgumentException("Prorate array value has remain: " + Arrays.toString(array) + ", " + value);
+            remainingTotal -= array[i];
         }
         return result;
     }
@@ -503,6 +498,9 @@ public final class Numbers {
     private static long upDiv(long dividend, long divisor) {
         if (dividend == 0) {
             return 0;
+        }
+        if ((dividend % divisor) == 0) {
+            return dividend / divisor;
         }
         return new BigDecimal(dividend)
             .divide(new BigDecimal(divisor), MathContext.DECIMAL128)

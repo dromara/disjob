@@ -16,6 +16,8 @@
 
 package cn.ponfee.disjob.common.util;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.io.IOException;
 import java.util.stream.Stream;
 
@@ -32,11 +34,10 @@ public class TextBoxPrinter {
         StringBuilder builder = new StringBuilder();
         try {
             print(builder, title, rows);
+            return builder.toString();
         } catch (IOException e) {
-            // cannot happen
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
-        return builder.toString();
     }
 
     public static void print(Appendable output, String title, String... rows) throws IOException {

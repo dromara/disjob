@@ -64,13 +64,6 @@ public final class DAGNode implements Serializable {
         this.name = name;
     }
 
-    public static DAGNode of(int topology, int ordinal, String name) {
-        Assert.isTrue(topology > 0, () -> "Topology must be greater than 0: " + topology);
-        Assert.isTrue(ordinal > 0, () -> "Ordinal must be greater than 0: " + ordinal);
-        Assert.hasText(name, () -> "Name cannot be blank: " + name);
-        return new DAGNode(topology, ordinal, name.trim());
-    }
-
     @Transient
     public boolean isStart() {
         return this.equals(START);
@@ -114,6 +107,13 @@ public final class DAGNode implements Serializable {
         return this.topology == topology
             && this.ordinal == ordinal
             && this.name.equals(name);
+    }
+
+    public static DAGNode of(int topology, int ordinal, String name) {
+        Assert.isTrue(topology > 0, () -> "Topology must be greater than 0: " + topology);
+        Assert.isTrue(ordinal > 0, () -> "Ordinal must be greater than 0: " + ordinal);
+        Assert.hasText(name, () -> "Name cannot be blank: " + name);
+        return new DAGNode(topology, ordinal, name.trim());
     }
 
     public static DAGNode fromString(String str) {
