@@ -16,18 +16,15 @@
 
 package cn.ponfee.disjob.registry.rpc;
 
-import cn.ponfee.disjob.common.base.RetryInvocationHandler;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingConsumer;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.util.ProxyUtils;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.Discovery;
 import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.core.NamedThreadLocal;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpMethod;
@@ -36,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -45,7 +43,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
 
 /**
- * Discovery server rest proxy
+ * Discovery grouped server rest proxy
  *
  * <p>{@link AnnotationUtils#findAnnotation(Class, Class)}
  * <p>在提供的类上查找指定注解的单个注解，如果注解不直接出现在提供的类上，则遍历其注解的元注解(如`@RpcController`上的元注解)、接口和超类。
@@ -79,39 +77,34 @@ import java.util.function.Predicate;
  *
  * @author Ponfee
  */
-public final class DiscoveryServerRestProxy {
+public final class DiscoveryGroupedServerRestProxy<T> {
 
     private static final ConcurrentMap<Method, Request> METHOD_REQUEST_CACHE = new ConcurrentHashMap<>();
-    private static final ThreadLocal<String> GROUP_THREAD_LOCAL = new NamedThreadLocal<>("discovery-group");
 
-    /**
-     * Creates ungrouped rpc service client proxy.
-     *
-     * @param interfaceCls         the interface class
-     * @param localServiceProvider the localServiceProvider
-     * @param discoverServer       the discoverServer
-     * @param restTemplate         the restTemplate
-     * @param retry                the retry config
-     * @param <T>                  interface type
-     * @param <D>                  discovery server type
-     * @return rpc service client proxy
-     */
-    public static <T, D extends Server> T create(Class<T> interfaceCls,
-                                                 @Nullable T localServiceProvider,
-                                                 Discovery<D> discoverServer,
-                                                 RestTemplate restTemplate,
-                                                 RetryProperties retry) {
-        InvocationHandler invocationHandler;
-        if (localServiceProvider != null) {
-            // 本地调用：使用动态代理来增加重试能力
-            invocationHandler = new RetryInvocationHandler(localServiceProvider, retry.getMaxCount(), retry.getBackoffPeriod());
-        } else {
-            // 远程调用：通过Discovery<D>来获取目标服务器
-            DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoverServer, restTemplate, retry);
-            String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
-            invocationHandler = new UngroupedInvocationHandler(template, prefixPath);
+    private final Constructor<T> constructor;
+    private final T localServiceProvider;
+    private final Predicate<String> localGroupMatcher;
+    private final DiscoveryServerRestTemplate<?> template;
+    private final String prefixPath;
+
+    private DiscoveryGroupedServerRestProxy(Constructor<T> constructor,
+                                            T localServiceProvider,
+                                            Predicate<String> localGroupMatcher,
+                                            DiscoveryServerRestTemplate<?> template,
+                                            String prefixPath) {
+        this.constructor = constructor;
+        this.localServiceProvider = localServiceProvider;
+        this.localGroupMatcher = localGroupMatcher;
+        this.template = template;
+        this.prefixPath = prefixPath;
+    }
+
+    public T group(String group) {
+        try {
+            return constructor.newInstance(new GroupedServerInvocationHandler(group));
+        } catch (Exception e) {
+            return ExceptionUtils.rethrow(e);
         }
-        return ProxyUtils.create(invocationHandler, interfaceCls);
     }
 
     /**
@@ -119,7 +112,7 @@ public final class DiscoveryServerRestProxy {
      *
      * @param interfaceCls         the interface class
      * @param localServiceProvider the localServiceProvider
-     * @param serverGroupMatcher   the serverGroupMatcher
+     * @param localGroupMatcher    the localGroupMatcher
      * @param discoverServer       the discoverServer
      * @param restTemplate         the restTemplate
      * @param retry                the retry config
@@ -127,96 +120,40 @@ public final class DiscoveryServerRestProxy {
      * @param <D>                  discovery server type
      * @return rpc service client proxy
      */
-    public static <T, D extends Server> GroupedServerClient<T> create(Class<T> interfaceCls,
-                                                                      @Nullable T localServiceProvider,
-                                                                      Predicate<String> serverGroupMatcher,
-                                                                      Discovery<D> discoverServer,
-                                                                      RestTemplate restTemplate,
-                                                                      RetryProperties retry) {
+    public static <T, D extends Server> DiscoveryGroupedServerRestProxy<T> of(Class<T> interfaceCls,
+                                                                              @Nullable T localServiceProvider,
+                                                                              Predicate<String> localGroupMatcher,
+                                                                              Discovery<D> discoverServer,
+                                                                              RestTemplate restTemplate,
+                                                                              RetryProperties retry) {
+        Constructor<T> constructor = ProxyUtils.getProxyConstructor(interfaceCls);
         DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoverServer, restTemplate, retry);
         String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
-        InvocationHandler groupedInvocationHandler = new GroupedInvocationHandler(template, prefixPath);
-        T remoteServiceClient = ProxyUtils.create(groupedInvocationHandler, interfaceCls);
-        return new GroupedServerClient<>(localServiceProvider, remoteServiceClient, serverGroupMatcher);
+        return new DiscoveryGroupedServerRestProxy<>(constructor, localServiceProvider, localGroupMatcher, template, prefixPath);
     }
 
-    public static final class GroupedServerClient<T> {
-        private final T localServiceProvider;
-        private final T remoteServiceClient;
-        private final Predicate<String> serverGroupMatcher;
+    // ------------------------------------------------------------------------others
 
-        private GroupedServerClient(T localServiceProvider, T remoteServiceClient, Predicate<String> serverGroupMatcher) {
-            this.localServiceProvider = localServiceProvider;
-            this.remoteServiceClient = remoteServiceClient;
-            this.serverGroupMatcher = serverGroupMatcher;
-        }
+    private class GroupedServerInvocationHandler implements InvocationHandler {
+        private final String group;
 
-        public <R, E extends Throwable> R call(String group, ThrowingFunction<T, R, E> function) throws E {
-            Objects.requireNonNull(group);
-            if (localServiceProvider != null && serverGroupMatcher.test(group)) {
-                return function.apply(localServiceProvider);
-            } else {
-                GROUP_THREAD_LOCAL.set(group);
-                try {
-                    return function.apply(remoteServiceClient);
-                } finally {
-                    GROUP_THREAD_LOCAL.remove();
-                }
-            }
-        }
-
-        public <E extends Throwable> void invoke(String group, ThrowingConsumer<T, E> consumer) throws E {
-            call(group, consumer.toFunction(null));
-        }
-    }
-
-    private abstract static class DiscoveryInvocationHandler implements InvocationHandler {
-        private final DiscoveryServerRestTemplate<?> template;
-        private final String prefixPath;
-
-        private DiscoveryInvocationHandler(DiscoveryServerRestTemplate<?> template, String prefixPath) {
-            this.template = template;
-            this.prefixPath = prefixPath;
+        private GroupedServerInvocationHandler(String group) {
+            this.group = Objects.requireNonNull(group);
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Request req = buildRequest(method, prefixPath);
-            String group = getGroup();
-            return template.execute(method, group, req.httpMethod, req.servletPath, args);
-        }
-
-        /**
-         * Returns server group
-         *
-         * @return group
-         */
-        protected abstract String getGroup();
-    }
-
-    private static final class UngroupedInvocationHandler extends DiscoveryInvocationHandler {
-        private UngroupedInvocationHandler(DiscoveryServerRestTemplate<?> template, String prefixPath) {
-            super(template, prefixPath);
-        }
-
-        @Override
-        protected String getGroup() {
-            return null;
-        }
-    }
-
-    private static final class GroupedInvocationHandler extends DiscoveryInvocationHandler {
-        private GroupedInvocationHandler(DiscoveryServerRestTemplate<?> template, String prefixPath) {
-            super(template, prefixPath);
-        }
-
-        @Override
-        protected String getGroup() {
-            return GROUP_THREAD_LOCAL.get();
+            if (localServiceProvider != null && localGroupMatcher.test(group)) {
+                return method.invoke(localServiceProvider, args);
+            } else {
+                Request req = buildRequest(method, prefixPath);
+                return template.execute(method, group, req.httpMethod, req.servletPath, args);
+            }
         }
     }
 
     static Request buildRequest(final Method method, final String prefixPath) {
+        //
         // 如果是继承方式，两个子接口继承的`subscribeServerEvent`方法的prefixPath不一样，Map Key需要改为`Pair<Class<?>, Method>`
         // SubscribeEventService {
         //   void subscribeServerEvent(RegistryEventType eventType, Server server);

@@ -80,7 +80,8 @@ public class EmbeddedMysqlServerMariaDB {
         ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, db::stop);
         db.start();
         for (String script : DBUtils.loadScript()) {
-            db.source(IOUtils.toInputStream(/*correctScriptForMariaDB(script)*/ script, StandardCharsets.UTF_8));
+            // script = correctScriptForMariaDB(script);
+            db.source(IOUtils.toInputStream(script, StandardCharsets.UTF_8), "root", null, null);
         }
 
         String jdbcUrl = "jdbc:mysql://localhost:" + port + "/" + DB_NAME;

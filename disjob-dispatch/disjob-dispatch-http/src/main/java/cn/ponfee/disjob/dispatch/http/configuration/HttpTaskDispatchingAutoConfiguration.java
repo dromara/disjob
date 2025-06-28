@@ -60,11 +60,9 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
     public TaskDispatcher taskDispatcher(ApplicationEventPublisher eventPublisher,
                                          SupervisorRegistry discoveryWorker,
                                          RetryProperties retry,
-                                         Supervisor.Local localSupervisor,
                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                          @Nullable TaskReceiver taskReceiver) {
-        return new HttpTaskDispatcher(
-            eventPublisher, discoveryWorker, retry, localSupervisor, restTemplate, (HttpTaskReceiver) taskReceiver);
+        return new HttpTaskDispatcher(eventPublisher, discoveryWorker, retry, restTemplate, (HttpTaskReceiver) taskReceiver);
     }
 
 }

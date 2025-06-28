@@ -29,8 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.annotation.*;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -43,8 +42,8 @@ class ProxyUtilsTest {
 
     @Test
     void testCreate() {
-        Object object = ProxyUtils.create((InvocationHandler) (proxy, method, args) -> null, WorkerRpcProvider.class);
-        Assertions.assertTrue(Proxy.isProxyClass(object.getClass()));
+        Object object = ProxyUtils.create((java.lang.reflect.InvocationHandler) (proxy, method, args) -> null, WorkerRpcProvider.class);
+        Assertions.assertTrue(java.lang.reflect.Proxy.isProxyClass(object.getClass()));
         Assertions.assertEquals("[interface cn.ponfee.disjob.worker.provider.WorkerRpcProvider]", Arrays.toString(object.getClass().getInterfaces()));
         Assertions.assertTrue(Object.class.isAssignableFrom(Object.class));
         Assertions.assertTrue(String.class.isAssignableFrom(String.class));
@@ -53,6 +52,36 @@ class ProxyUtilsTest {
         Assertions.assertEquals(0, Object.class.getInterfaces().length);
         Assertions.assertNull(Object.class.getSuperclass());
         Assertions.assertThrows(NullPointerException.class, () -> Object.class.isAssignableFrom(null));
+    }
+
+    @Test
+    void testGetProxyConstructorJdk() throws Exception {
+        Class<WorkerRpcService> cls = WorkerRpcService.class;
+        Class<WorkerRpcService> proxyClass = (Class<WorkerRpcService>) java.lang.reflect.Proxy.getProxyClass(cls.getClassLoader(), cls);
+
+        Assertions.assertTrue(java.lang.reflect.Proxy.class.isAssignableFrom(proxyClass));
+        Assertions.assertNotEquals(java.lang.reflect.Proxy.class, proxyClass);
+        Constructor<?>[] constructors = proxyClass.getConstructors();
+        Assertions.assertEquals(1, constructors.length);
+        Assertions.assertEquals(1, constructors[0].getParameterCount());
+        Assertions.assertEquals(java.lang.reflect.InvocationHandler.class, constructors[0].getParameterTypes()[0]);
+        System.out.println(Arrays.toString(constructors));
+        Assertions.assertEquals(constructors[0], proxyClass.getConstructor(java.lang.reflect.InvocationHandler.class));
+    }
+
+    @Test
+    void testGetProxyConstructorCglib() throws Exception {
+        Class<WorkerRpcService> cls = WorkerRpcService.class;
+        Class<WorkerRpcService> proxyClass = org.springframework.cglib.proxy.Proxy.getProxyClass(cls.getClassLoader(), new Class[]{cls});
+
+        Assertions.assertTrue(org.springframework.cglib.proxy.Proxy.class.isAssignableFrom(proxyClass));
+        Assertions.assertNotEquals(org.springframework.cglib.proxy.Proxy.class, proxyClass);
+        Constructor<?>[] constructors = proxyClass.getConstructors();
+        Assertions.assertEquals(1, constructors.length);
+        Assertions.assertEquals(1, constructors[0].getParameterCount());
+        Assertions.assertEquals(org.springframework.cglib.proxy.InvocationHandler.class, constructors[0].getParameterTypes()[0]);
+        System.out.println(Arrays.toString(constructors));
+        Assertions.assertEquals(constructors[0], proxyClass.getConstructor(org.springframework.cglib.proxy.InvocationHandler.class));
     }
 
     @Test

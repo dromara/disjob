@@ -26,7 +26,7 @@ import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.WorkerRegistry;
-import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy;
+import cn.ponfee.disjob.registry.rpc.DiscoveryUngroupedServerRestProxy;
 import cn.ponfee.disjob.worker.base.TimingWheelRotator;
 import cn.ponfee.disjob.worker.base.WorkerThreadPool;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
@@ -68,7 +68,7 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
         Objects.requireNonNull(taskReceiver, "Task receiver cannot be null.");
         Objects.requireNonNull(restTemplate, "Rest template cannot be null.");
 
-        SupervisorRpcService supervisorRpcClient = DiscoveryServerRestProxy.create(
+        SupervisorRpcService supervisorRpcClient = DiscoveryUngroupedServerRestProxy.create(
             SupervisorRpcService.class,
             supervisorRpcService,
             workerRegistry,

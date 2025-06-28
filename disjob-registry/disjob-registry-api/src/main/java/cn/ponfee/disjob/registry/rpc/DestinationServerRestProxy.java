@@ -16,96 +16,81 @@
 
 package cn.ponfee.disjob.registry.rpc;
 
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingConsumer;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.util.ProxyUtils;
-import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
-import org.springframework.core.NamedThreadLocal;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * Destination(Designated) server rest proxy
  *
  * @author Ponfee
  */
-public final class DestinationServerRestProxy {
+public final class DestinationServerRestProxy<T, S extends Server> {
 
-    private static final ThreadLocal<Server> SERVER_THREAD_LOCAL = new NamedThreadLocal<>("destination-server");
+    private final Constructor<T> constructor;
+    private final T localServiceProvider;
+    private final S localServer;
+    private final DestinationServerRestTemplate template;
+    private final String prefixPath;
 
-    public static <T, S extends Server> DestinationServerClient<T, S> create(Class<T> interfaceCls,
-                                                                             @Nullable T localServiceProvider,
-                                                                             @Nullable S localServer,
-                                                                             Function<S, String> serverContextPath,
-                                                                             RestTemplate restTemplate,
-                                                                             RetryProperties retry) {
+    private DestinationServerRestProxy(Constructor<T> constructor,
+                                       T localServiceProvider,
+                                       S localServer,
+                                       DestinationServerRestTemplate template,
+                                       String prefixPath) {
+        this.constructor = constructor;
+        this.localServiceProvider = localServiceProvider;
+        this.localServer = localServer;
+        this.template = template;
+        this.prefixPath = prefixPath;
+    }
+
+    public T destination(S destinationServer) {
+        try {
+            return constructor.newInstance(new DestinationServerInvocationHandler(destinationServer));
+        } catch (Exception e) {
+            return ExceptionUtils.rethrow(e);
+        }
+    }
+
+    public static <T, S extends Server> DestinationServerRestProxy<T, S> of(Class<T> interfaceCls,
+                                                                            @Nullable T localServiceProvider,
+                                                                            @Nullable S localServer,
+                                                                            RestTemplate restTemplate,
+                                                                            RetryProperties retry) {
+        Constructor<T> constructor = ProxyUtils.getProxyConstructor(interfaceCls);
         DestinationServerRestTemplate template = new DestinationServerRestTemplate(restTemplate, retry);
-        String prefixPath = DiscoveryServerRestProxy.getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
-        InvocationHandler invocationHandler = new ServerInvocationHandler<>(template, serverContextPath, prefixPath);
-        T remoteServiceClient = ProxyUtils.create(invocationHandler, interfaceCls);
-        return new DestinationServerClient<>(remoteServiceClient, localServiceProvider, localServer);
+        String prefixPath = DiscoveryGroupedServerRestProxy.getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
+        return new DestinationServerRestProxy<>(constructor, localServiceProvider, localServer, template, prefixPath);
     }
 
-    public static final class DestinationServerClient<T, S extends Server> {
-        private final T remoteServiceClient;
-        private final T localServiceProvider;
-        private final S localServer;
+    // ------------------------------------------------------------------------private class
 
-        private DestinationServerClient(T remoteServiceClient, T localServiceProvider, S localServer) {
-            this.remoteServiceClient = remoteServiceClient;
-            this.localServiceProvider = localServiceProvider;
-            this.localServer = localServer;
-        }
+    private class DestinationServerInvocationHandler implements InvocationHandler {
+        private final S destinationServer;
 
-        public <R, E extends Throwable> R call(S destinationServer, ThrowingFunction<T, R, E> function) throws E {
-            Objects.requireNonNull(destinationServer);
-            if (localServiceProvider != null && destinationServer.equals(localServer)) {
-                return function.apply(localServiceProvider);
-            } else {
-                SERVER_THREAD_LOCAL.set(destinationServer);
-                try {
-                    return function.apply(remoteServiceClient);
-                } finally {
-                    SERVER_THREAD_LOCAL.remove();
-                }
-            }
-        }
-
-        public <E extends Throwable> void invoke(S destinationServer, ThrowingConsumer<T, E> consumer) throws E {
-            call(destinationServer, consumer.toFunction(null));
-        }
-    }
-
-    private static class ServerInvocationHandler<S extends Server> implements InvocationHandler {
-        private final DestinationServerRestTemplate template;
-        private final Function<S, String> serverContextPath;
-        private final String prefixPath;
-
-        private ServerInvocationHandler(DestinationServerRestTemplate template,
-                                        Function<S, String> serverContextPath,
-                                        String prefixPath) {
-            this.template = template;
-            this.serverContextPath = serverContextPath;
-            this.prefixPath = prefixPath;
+        private DestinationServerInvocationHandler(S destinationServer) {
+            this.destinationServer = Objects.requireNonNull(destinationServer);
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            DiscoveryServerRestProxy.Request req = DiscoveryServerRestProxy.buildRequest(method, prefixPath);
-            Server destinationServer = SERVER_THREAD_LOCAL.get();
-            @SuppressWarnings("unchecked")
-            String contextPath = serverContextPath.apply((S) destinationServer);
-            String requestPath = Strings.concatPath(contextPath, req.servletPath);
-            return template.invoke(method, destinationServer, req.httpMethod, requestPath, args);
+            if (localServiceProvider != null && destinationServer.equals(localServer)) {
+                return method.invoke(localServiceProvider, args);
+            } else {
+                DiscoveryGroupedServerRestProxy.Request req = DiscoveryGroupedServerRestProxy.buildRequest(method, prefixPath);
+                return template.invoke(method, destinationServer, req.httpMethod, req.servletPath, args);
+            }
         }
     }
 

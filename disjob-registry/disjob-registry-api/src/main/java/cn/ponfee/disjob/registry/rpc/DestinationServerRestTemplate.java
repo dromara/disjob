@@ -18,6 +18,7 @@ package cn.ponfee.disjob.registry.rpc;
 
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.*;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
@@ -80,27 +81,34 @@ final class DestinationServerRestTemplate {
      * @param method            the method
      * @param destinationServer the destination server
      * @param httpMethod        the http method
-     * @param requestPath       the request path
+     * @param servletPath       the servlet path
      * @param args              the arguments
      * @param <T>               return type
      * @return invoked remote http response
      * @throws Exception if occur exception
      */
-    <T> T invoke(Method method, Server destinationServer, HttpMethod httpMethod, String requestPath, Object[] args) throws Exception {
+    <T> T invoke(Method method, Server destinationServer, HttpMethod httpMethod, String servletPath, Object[] args) throws Exception {
         Map<String, String> authenticationHeaders = null;
+
+        String serverContextPath;
         if (destinationServer instanceof Supervisor) {
             Class<?> declaringClass = method.getDeclaringClass();
             if (declaringClass == SupervisorRpcService.class) {
                 // Worker -> Supervisor：registry时调用`SupervisorRpcService#subscribeWorkerEvent`方法通知Supervisor
                 Assert.isTrue("subscribeWorkerEvent".equals(method.getName()), () -> "Unexpected method: " + method);
                 authenticationHeaders = Worker.local().createWorkerAuthenticationHeaders();
+                serverContextPath = Worker.local().getSupervisorContextPath();
             } else {
                 // Supervisor -> Supervisor：调用`ExtendedSupervisorRpcService`类中定义的方法[getMetrics,subscribeOperationEvent,...]
                 String expectCls = "cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService";
                 Assert.isTrue(expectCls.equals(declaringClass.getName()), () -> "Unexpected subclass: " + declaringClass);
+                serverContextPath = Supervisor.local().getContextPath();
             }
+        } else {
+            serverContextPath = Supervisor.local().getWorkerContextPath(((Worker) destinationServer).getGroup());
         }
 
+        String requestPath = Strings.concatPath(serverContextPath, servletPath);
         String url = destinationServer.buildHttpUrlPrefix() + requestPath;
         Type returnType = method.getGenericReturnType();
         Throwable ex = null;

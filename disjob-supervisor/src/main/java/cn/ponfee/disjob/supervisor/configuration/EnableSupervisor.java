@@ -18,12 +18,14 @@ package cn.ponfee.disjob.supervisor.configuration;
 
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
+import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.BasicDeferredImportSelector;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.GroupInfoService;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor.EnableSupervisorConfiguration;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -70,9 +72,11 @@ public @interface EnableSupervisor {
 
         @Bean
         public Supervisor.Local localSupervisor(WebServerApplicationContext webServerApplicationContext,
+                                                ServerProperties serverProperties,
                                                 GroupInfoService groupInfoService) {
             int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
-            Object[] args = {CoreUtils.getLocalHost(), port, groupInfoService};
+            String contextPath = Strings.trimPath(serverProperties.getServlet().getContextPath());
+            Object[] args = {CoreUtils.getLocalHost(), port, contextPath, groupInfoService};
             try {
                 // create local supervisor: Supervisor.class.getDeclaredClasses()[0]
                 return ClassUtils.invoke(Supervisor.Local.class, "create", args);

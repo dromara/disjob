@@ -18,6 +18,7 @@ package cn.ponfee.disjob.worker.util;
 
 import cn.ponfee.disjob.common.tuple.Tuple4;
 import cn.ponfee.disjob.common.util.MavenProjects;
+import cn.ponfee.disjob.common.util.TextBoxPrinter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections4.MapUtils;
@@ -33,9 +34,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -85,22 +84,18 @@ public class ProcessUtilsTest {
         stopwatch.stop();
 
         String dependencyTree = output.toString(StandardCharsets.UTF_8.name());
-        String line = "───────────────────────────────────────────────────────────────────────────────";
         System.out.println("\n\n");
         System.out.println(dependencyTree);
+        System.out.println("\n");
+        System.out.println("───────────────────────────────────────────────────────────────────────────────");
         System.out.println("\n\n");
-        System.out.println(line);
-        System.out.println("Total time: " + stopwatch);
-        System.out.println(line);
-        System.out.println("Conflict jar version");
-        System.out.println(line);
-        String result = parseConflictedJarVersion(dependencyTree);
-        if (StringUtils.isBlank(result)) {
-            System.out.println("Not conflicted version jar");
-        } else {
-            System.out.println(result);
+
+        String title = "Conflict jar version, total time: " + stopwatch;
+        String[] conflicts = parseConflictedJarVersion(dependencyTree);
+        if (conflicts.length == 0) {
+            conflicts = new String[]{"Not found conflicted version jar."};
         }
-        System.out.println(line);
+        TextBoxPrinter.print(System.out, title, conflicts);
     }
 
     // ------------------------------------------------------------------------------private methods
@@ -163,8 +158,8 @@ public class ProcessUtilsTest {
         executor.execute(CommandLine.parse(command), environment);
     }
 
-    private static String parseConflictedJarVersion(String text) {
-        StringBuilder builder = new StringBuilder();
+    private static String[] parseConflictedJarVersion(String text) {
+        List<String> conflicts = new ArrayList<>();
         Arrays.stream(text.split("\n"))
             .filter(e -> StringUtils.startsWithAny(e, "[INFO] +- ", "[INFO] |  "))
             .map(s -> s.replaceAll("^\\[INFO] ", "").replaceAll("^\\W+", "").trim())
@@ -178,11 +173,10 @@ public class ProcessUtilsTest {
             .filter(e -> e.getValue().size() > 1)
             .filter(e -> e.getValue().stream().noneMatch(x -> StringUtils.endsWithAny(x.d, "-x86_64", "-aarch_64")))
             .forEach(e -> {
-                builder.append(e.getKey()).append("\n");
-                e.getValue().forEach(x -> builder.append("    " + x.a + ":" + x.b + ":" + x.c + ":" + x.d + "\n"));
+                conflicts.add(e.getKey());
+                e.getValue().forEach(x -> conflicts.add("    " + x.a + ":" + x.b + ":" + x.c + ":" + x.d));
             });
-        builder.setLength(builder.length() - 1);
-        return builder.toString();
+        return conflicts.toArray(new String[0]);
     }
 
 }

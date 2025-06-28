@@ -23,7 +23,6 @@ import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dto.worker.SupervisorEventParam;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
-import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections4.CollectionUtils;
@@ -40,7 +39,7 @@ import java.util.stream.Collectors;
  */
 final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
 
-    private final DestinationServerClient<WorkerRpcService, Worker> workerRpcClient;
+    private final DestinationServerRestProxy<WorkerRpcService, Worker> workerRpcProxy;
 
     /**
      * Map<group, List<Worker>>
@@ -48,13 +47,8 @@ final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
     private volatile ImmutableMap<String, ImmutableList<Worker>> groupedWorkers = ImmutableMap.of();
 
     WorkerDiscovery(RestTemplate restTemplate) {
-        this.workerRpcClient = DestinationServerRestProxy.create(
-            WorkerRpcService.class,
-            null,
-            null,
-            worker -> Supervisor.local().getWorkerContextPath(worker.getGroup()),
-            restTemplate,
-            RetryProperties.none()
+        this.workerRpcProxy = DestinationServerRestProxy.of(
+            WorkerRpcService.class, null, null, restTemplate, RetryProperties.none()
         );
     }
 
@@ -92,7 +86,7 @@ final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
     void notify(Worker worker, RegistryEventType eventType, Supervisor supervisor) {
         try {
             SupervisorEventParam param = SupervisorEventParam.of(worker.getGroup(), eventType, supervisor);
-            workerRpcClient.invoke(worker, client -> client.subscribeSupervisorEvent(param));
+            workerRpcProxy.destination(worker).subscribeSupervisorEvent(param);
         } catch (Throwable t) {
             log.error("Notify server error: {}, {}", worker, t.getMessage());
         }

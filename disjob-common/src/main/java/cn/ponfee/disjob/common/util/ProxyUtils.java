@@ -16,16 +16,17 @@
 
 package cn.ponfee.disjob.common.util;
 
+import cn.ponfee.disjob.common.base.CombinedInvocationHandler;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.AdvisedSupport;
 import org.springframework.aop.support.AopUtils;
-import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.util.Assert;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Map;
 
 /**
@@ -39,13 +40,13 @@ public final class ProxyUtils {
      * Creates proxy instance based jdk
      *
      * @param invocationHandler the jdk invocation handler
-     * @param interfaces        the interface class array
+     * @param cls               the interface class array
      * @param <T>               the interface type
      * @return jdk proxy instance
      */
     @SuppressWarnings("unchecked")
-    public static <T> T create(java.lang.reflect.InvocationHandler invocationHandler, Class<?>... interfaces) {
-        return (T) Proxy.newProxyInstance(interfaces[0].getClassLoader(), interfaces, invocationHandler);
+    public static <T> T create(java.lang.reflect.InvocationHandler invocationHandler, Class<?>... cls) {
+        return (T) java.lang.reflect.Proxy.newProxyInstance(cls[0].getClassLoader(), cls, invocationHandler);
     }
 
     /**
@@ -53,16 +54,16 @@ public final class ProxyUtils {
      * <p>需要默认的无参构造函数
      *
      * @param invocationHandler the spring cglib invocation handler
-     * @param superClass        the super class
+     * @param superCls          the super class
      * @param <T>               the super class type
      * @return cglib proxy instance
      */
     @SuppressWarnings("unchecked")
-    public static <T> T create(org.springframework.cglib.proxy.InvocationHandler invocationHandler, Class<?> superClass) {
-        return (T) Enhancer.create(superClass, invocationHandler);
+    public static <T> T create(org.springframework.cglib.proxy.InvocationHandler invocationHandler, Class<?> superCls) {
+        return (T) org.springframework.cglib.proxy.Enhancer.create(superCls, invocationHandler);
     }
 
-    public static <T, H extends java.lang.reflect.InvocationHandler & org.springframework.cglib.proxy.InvocationHandler> T create(H invocationHandler, Class<?> cls) {
+    public static <T> T create(CombinedInvocationHandler invocationHandler, Class<?> cls) {
         if (cls.isInterface()) {
             return create((java.lang.reflect.InvocationHandler) invocationHandler, cls);
         } else {
@@ -71,8 +72,24 @@ public final class ProxyUtils {
     }
 
     @SuppressWarnings("unchecked")
+    public static <T> Constructor<T> getProxyConstructor(Class<T> cls) {
+        try {
+            // Spring的这种方式也是必须为interface类
+            // Class<T> proxyClass = org.springframework.cglib.proxy.Proxy.getProxyClass(cls.getClassLoader(), new Class[]{cls});
+            // Constructor<T> proxyConstructor = proxyClass.getConstructor(org.springframework.cglib.proxy.InvocationHandler.class);
+
+            Class<T> proxyClass = (Class<T>) java.lang.reflect.Proxy.getProxyClass(cls.getClassLoader(), cls);
+            Constructor<T> proxyConstructor = proxyClass.getConstructor(java.lang.reflect.InvocationHandler.class);
+            proxyConstructor.setAccessible(true);
+            return proxyConstructor;
+        } catch (Exception e) {
+            return ExceptionUtils.rethrow(e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     public static <A extends Annotation> A create(Class<A> annotationType, Map<String, Object> attributes) {
-        return (A) Proxy.newProxyInstance(
+        return (A) java.lang.reflect.Proxy.newProxyInstance(
             annotationType.getClassLoader(),
             new Class<?>[]{annotationType},
             new AnnotationInvocationHandler(annotationType, attributes)

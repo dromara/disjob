@@ -106,13 +106,24 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
     public abstract static class Local extends Supervisor {
         private static volatile Local instance = null;
 
+        private final String contextPath;
         private final LocalDateTime startupTime;
         private String lastSubscribedEvent;
 
-        private Local(String host, int port) {
+        private Local(String host, int port, String contextPath) {
             super(host, port);
             SingletonClassConstraint.constrain(Local.class);
+            this.contextPath = contextPath;
             this.startupTime = LocalDateTime.now();
+        }
+
+        /**
+         * Get supervisor context-path, use for supervisor call other supervisor
+         *
+         * @return supervisor context-path
+         */
+        public String getContextPath() {
+            return contextPath;
         }
 
         public final LocalDateTime getStartupTime() {
@@ -170,12 +181,13 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
          */
         public abstract boolean verifyWorkerSignatureToken(String group, String workerSignatureToken);
 
-        private static synchronized Local create(final String host, final int port, final GroupInfoService groupInfoService) {
+        private static synchronized Local create(final String host, final int port, final String contextPath,
+                                                 final GroupInfoService groupInfoService) {
             if (instance != null) {
                 throw new Error("Local supervisor already created.");
             }
 
-            instance = new Local(host, port) {
+            instance = new Local(host, port, contextPath) {
                 @Override
                 public String getWorkerContextPath(String group) {
                     return groupInfoService.getWorkerContextPath(group);

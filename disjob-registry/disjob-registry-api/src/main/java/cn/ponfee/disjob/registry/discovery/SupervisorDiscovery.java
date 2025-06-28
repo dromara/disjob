@@ -22,7 +22,6 @@ import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
-import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import com.google.common.collect.ImmutableList;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
@@ -37,18 +36,13 @@ import java.util.List;
  */
 final class SupervisorDiscovery extends ServerDiscovery<Supervisor, Worker> {
 
-    private final DestinationServerClient<SupervisorRpcService, Supervisor> supervisorRpcClient;
+    private final DestinationServerRestProxy<SupervisorRpcService, Supervisor> supervisorRpcProxy;
 
     private volatile ImmutableList<Supervisor> supervisors = ImmutableList.of();
 
     SupervisorDiscovery(RestTemplate restTemplate) {
-        this.supervisorRpcClient = DestinationServerRestProxy.create(
-            SupervisorRpcService.class,
-            null,
-            null,
-            supervisor -> Worker.local().getSupervisorContextPath(),
-            restTemplate,
-            RetryProperties.none()
+        this.supervisorRpcProxy = DestinationServerRestProxy.of(
+            SupervisorRpcService.class, null, null, restTemplate, RetryProperties.none()
         );
     }
 
@@ -83,7 +77,7 @@ final class SupervisorDiscovery extends ServerDiscovery<Supervisor, Worker> {
     @Override
     void notify(Supervisor supervisor, RegistryEventType eventType, Worker worker) {
         try {
-            supervisorRpcClient.invoke(supervisor, client -> client.subscribeWorkerEvent(eventType, worker));
+            supervisorRpcProxy.destination(supervisor).subscribeWorkerEvent(eventType, worker);
         } catch (Throwable t) {
             log.error("Notify server error: {}, {}", supervisor, t.getMessage());
         }
