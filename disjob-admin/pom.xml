@@ -39,7 +39,7 @@
     <druid-spring-boot-starter.version>1.2.25</druid-spring-boot-starter.version>
     <UserAgentUtils.version>1.21</UserAgentUtils.version>
     <kaptcha.version>2.3.3</kaptcha.version>
-    <pagehelper-spring-boot-starter.version>2.1.0</pagehelper-spring-boot-starter.version>
+    <pagehelper-spring-boot-starter.version>2.1.1</pagehelper-spring-boot-starter.version>
     <fastjson.version>1.2.83</fastjson.version>
     <oshi-core.version>6.8.2</oshi-core.version>
     <poi-ooxml.version>5.4.1</poi-ooxml.version>

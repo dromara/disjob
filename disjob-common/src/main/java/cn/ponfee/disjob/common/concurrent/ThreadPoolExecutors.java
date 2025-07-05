@@ -311,7 +311,7 @@ public final class ThreadPoolExecutors {
     }
 
     private static ThreadPoolExecutor makeCommonThreadPoolExecutor() {
-        int poolSize = getCommonPoolSize(DISJOB_COMMON_THREAD_POOL_SIZE, 8);
+        int poolSize = getCommonPoolSize(DISJOB_COMMON_THREAD_POOL_SIZE, 4);
         final ThreadPoolExecutor threadPool = ThreadPoolExecutors.builder()
             .corePoolSize(poolSize)
             .maximumPoolSize(poolSize)
@@ -326,7 +326,7 @@ public final class ThreadPoolExecutors {
     }
 
     private static ScheduledThreadPoolExecutor makeCommonScheduledPoolExecutor() {
-        int poolSize = getCommonPoolSize(DISJOB_COMMON_SCHEDULED_POOL_SIZE, 16);
+        int poolSize = getCommonPoolSize(DISJOB_COMMON_SCHEDULED_POOL_SIZE, 2);
         // 1、是一个固定大小的线程池使用`corePoolSize`线程个数和无界队列，内部的`maximumPoolSize`设置实际无作用
         // 2、由于使用的是无界的任务队列`DelayedWorkQueue`，这意味着任务队列理论上不会满，因此拒绝策略通常不会触发
         NamedThreadFactory threadFactory = NamedThreadFactory.builder().prefix("disjob_common_scheduled_pool").daemon(true).build();
@@ -336,11 +336,11 @@ public final class ThreadPoolExecutors {
         return scheduledPool;
     }
 
-    private static int getCommonPoolSize(String configKey, int minimumSize) {
+    private static int getCommonPoolSize(String configKey, int coreProcessorFactor) {
         String configSize = SystemUtils.getConfig(configKey);
         int coreSize = Runtime.getRuntime().availableProcessors();
-        int poolSize = Numbers.bound(Numbers.toInt(configSize, coreSize * 2), minimumSize, MAX_CAP);
-        LOG.info("Configured {}: [{}, {}] -> {}", configKey, configSize, coreSize, poolSize);
+        int poolSize = Numbers.bound(Numbers.toInt(configSize, coreSize * coreProcessorFactor), 16, MAX_CAP);
+        LOG.info("Configured common poll size {}: [{}, {}] -> {}", configKey, configSize, coreSize, poolSize);
         return poolSize;
     }
 

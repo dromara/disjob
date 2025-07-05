@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.registry.rpc;
 
-import cn.ponfee.disjob.common.base.RetryInvocationHandler;
 import cn.ponfee.disjob.common.util.ProxyUtils;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
@@ -28,6 +27,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 /**
  * Discovery ungrouped server rest proxy
@@ -55,24 +55,36 @@ public final class DiscoveryUngroupedServerRestProxy {
                                                  RetryProperties retry) {
         InvocationHandler invocationHandler;
         if (localServiceProvider != null) {
-            // 本地调用：使用动态代理来增加重试能力
-            invocationHandler = new RetryInvocationHandler(localServiceProvider, retry.getMaxCount(), retry.getBackoffPeriod());
+            invocationHandler = new UngroupedServerLocalInvocationHandler<>(localServiceProvider);
         } else {
-            // 远程调用：通过Discovery<D>来获取目标服务器
             DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoverServer, restTemplate, retry);
-            String prefixPath = DiscoveryGroupedServerRestProxy.getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
-            invocationHandler = new UngroupedServerInvocationHandler<>(template, prefixPath);
+            RequestMapping requestMapping = AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class);
+            String prefixPath = DiscoveryGroupedServerRestProxy.getMappingPath(requestMapping);
+            invocationHandler = new UngroupedServerRemoteInvocationHandler<>(template, prefixPath);
         }
         return ProxyUtils.create(invocationHandler, interfaceCls);
     }
 
-    // ------------------------------------------------------------------------others
+    // ------------------------------------------------------------------------private class
 
-    private static class UngroupedServerInvocationHandler<D extends Server> implements InvocationHandler {
+    private static class UngroupedServerLocalInvocationHandler<T> implements InvocationHandler {
+        private final T localServiceProvider;
+
+        private UngroupedServerLocalInvocationHandler(T localServiceProvider) {
+            this.localServiceProvider = Objects.requireNonNull(localServiceProvider);
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            return method.invoke(localServiceProvider, args);
+        }
+    }
+
+    private static class UngroupedServerRemoteInvocationHandler<D extends Server> implements InvocationHandler {
         private final DiscoveryServerRestTemplate<D> template;
         private final String prefixPath;
 
-        private UngroupedServerInvocationHandler(DiscoveryServerRestTemplate<D> template, String prefixPath) {
+        private UngroupedServerRemoteInvocationHandler(DiscoveryServerRestTemplate<D> template, String prefixPath) {
             this.template = template;
             this.prefixPath = prefixPath;
         }

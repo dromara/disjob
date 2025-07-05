@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.registry.discovery;
 
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
-import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
@@ -29,8 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
 import java.util.stream.Stream;
 
 /**
@@ -49,27 +46,8 @@ public abstract class ServerDiscovery<D extends Server, R extends Server> {
     public abstract void update(RegistryEventType eventType, D server);
 
     public final void notify(RegistryEventType eventType, R rServer) {
-        List<D> servers = getAliveServers();
-        if (CollectionUtils.isEmpty(servers)) {
-            return;
-        }
-        if (servers.size() == 1) {
-            notify(servers.get(0), eventType, rServer);
-            return;
-        }
-        ExecutorService threadPool = ThreadPoolExecutors.builder()
-            .corePoolSize(1)
-            .maximumPoolSize(Math.min(servers.size() - 1, 100))
-            .workQueue(new SynchronousQueue<>())
-            .keepAliveTimeSeconds(60)
-            .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
-            .threadFactory(NamedThreadFactory.builder().prefix("notify_server").uncaughtExceptionHandler(log).build())
-            .build();
-        try {
-            MultithreadExecutors.run(servers, dServer -> notify(dServer, eventType, rServer), threadPool);
-        } finally {
-            threadPool.shutdown();
-        }
+        MultithreadExecutors.run(
+            getAliveServers(), e -> notify(e, eventType, rServer), ThreadPoolExecutors.commonThreadPool());
     }
 
     abstract void notify(D dServer, RegistryEventType eventType, R rServer);

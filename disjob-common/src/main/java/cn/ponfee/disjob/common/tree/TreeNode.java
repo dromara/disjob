@@ -145,7 +145,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
      * Mount these nodes append to this tree
      *
      * @param list                   节点列表
-     * @param ignoreIsolated         是否忽略孤立的节点
+     * @param ignoreIsolated         是否忽略孤立的节点，如果为false且存在孤立的节点则会抛出异常
      * @param buildPath              是否构建节点路径（比较耗资源）
      * @param siblingNodesComparator 兄弟节点间的排序比较器
      */

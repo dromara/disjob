@@ -70,7 +70,8 @@ public final class DestinationServerRestProxy<T, S extends Server> {
                                                                             RetryProperties retry) {
         Constructor<T> constructor = ProxyUtils.getProxyConstructor(interfaceCls);
         DestinationServerRestTemplate template = new DestinationServerRestTemplate(restTemplate, retry);
-        String prefixPath = DiscoveryGroupedServerRestProxy.getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
+        RequestMapping requestMapping = AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class);
+        String prefixPath = DiscoveryGroupedServerRestProxy.getMappingPath(requestMapping);
         return new DestinationServerRestProxy<>(constructor, localServiceProvider, localServer, template, prefixPath);
     }
 

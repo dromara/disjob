@@ -22,10 +22,12 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.ProxyUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.annotation.*;
@@ -52,6 +54,36 @@ class ProxyUtilsTest {
         Assertions.assertEquals(0, Object.class.getInterfaces().length);
         Assertions.assertNull(Object.class.getSuperclass());
         Assertions.assertThrows(NullPointerException.class, () -> Object.class.isAssignableFrom(null));
+    }
+
+    @Test
+    void testCreateCglibClass() {
+        // class
+        Class<?> cls = SchedJob.class;
+        org.springframework.cglib.proxy.InvocationHandler invocationHandler = (proxy, method, args) -> null;
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> org.springframework.cglib.proxy.Proxy.newProxyInstance(cls.getClassLoader(), new Class[]{ cls}, invocationHandler))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("class cn.ponfee.disjob.supervisor.model.SchedJob is not an interface");
+
+        Object proxyInstance = Enhancer.create(cls, invocationHandler);
+        org.assertj.core.api.Assertions.assertThat(proxyInstance.getClass().getSuperclass()).isEqualTo(cls);
+    }
+
+    @Test
+    void testCreateCglibInterface() {
+        // class
+        Class<?> cls = WorkerRpcProvider.class;
+        org.springframework.cglib.proxy.InvocationHandler invocationHandler = (proxy, method, args) -> null;
+
+        Object proxyInstance1 = org.springframework.cglib.proxy.Proxy.newProxyInstance(cls.getClassLoader(), new Class[]{cls}, invocationHandler);
+        org.assertj.core.api.Assertions.assertThat(proxyInstance1.getClass().getSuperclass().getSuperclass()).isEqualTo(org.springframework.cglib.proxy.Proxy.class);
+        org.assertj.core.api.Assertions.assertThat(proxyInstance1.getClass().getSuperclass().getSuperclass().getSuperclass()).isEqualTo(Object.class);
+
+        Object proxyInstance2 = Enhancer.create(cls, invocationHandler);
+        System.out.println(proxyInstance2.getClass());
+        org.assertj.core.api.Assertions.assertThat(proxyInstance2.getClass().toString()).startsWith("class cn.ponfee.disjob.worker.provider.WorkerRpcProvider$$EnhancerByCGLIB$$");
+        org.assertj.core.api.Assertions.assertThat(proxyInstance2.getClass().getSuperclass()).isEqualTo(Object.class);
     }
 
     @Test

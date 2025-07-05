@@ -69,19 +69,13 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
         Objects.requireNonNull(restTemplate, "Rest template cannot be null.");
 
         SupervisorRpcService supervisorRpcClient = DiscoveryUngroupedServerRestProxy.create(
-            SupervisorRpcService.class,
-            supervisorRpcService,
-            workerRegistry,
-            restTemplate,
-            retryProperties
+            SupervisorRpcService.class, supervisorRpcService, workerRegistry, restTemplate, retryProperties
         );
 
         this.workerConf = workerConf;
         this.localWorker = localWorker;
         this.workerThreadPool = new WorkerThreadPool(
-            workerConf.getMaximumPoolSize(),
-            workerConf.getKeepAliveTimeSeconds(),
-            supervisorRpcClient
+            workerConf.getMaximumPoolSize(), workerConf.getKeepAliveTimeSeconds(), supervisorRpcClient
         );
         this.timingWheelRotator = new TimingWheelRotator(
             supervisorRpcClient,

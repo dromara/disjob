@@ -75,8 +75,15 @@ public class MariaDBTest {
     public void test1() throws Exception {
         testQuery("localhost", "root", "", DB_NAME);
         testQuery("127.0.0.1", "root", "", DB_NAME);
-        createConnection("localhost", DEV_USER, "");
-        createConnection("127.0.0.1", DEV_USER, "");
+
+        Assertions.assertThat(qr.query(createConnection("localhost", "root", ""), "SELECT CURRENT_USER()", new ColumnListHandler<>()).toString())
+            .isEqualTo("[root@localhost]");
+        Assertions.assertThat(qr.query(createConnection("127.0.0.1", "root", ""), "SELECT CURRENT_USER()", new ColumnListHandler<>()).toString())
+            .isEqualTo("[root@localhost]");
+        Assertions.assertThat(qr.query(createConnection("localhost", DEV_USER, ""), "SELECT CURRENT_USER()", new ColumnListHandler<>()).toString())
+            .isEqualTo("[@localhost]");
+        Assertions.assertThat(qr.query(createConnection("127.0.0.1", DEV_USER, ""), "SELECT CURRENT_USER()", new ColumnListHandler<>()).toString())
+            .isEqualTo("[@localhost]");
 
         Assertions.assertThatThrownBy(() -> createConnection("127.0.0.1", DEV_USER, "", DB_NAME))
             .isInstanceOf(SQLSyntaxErrorException.class)

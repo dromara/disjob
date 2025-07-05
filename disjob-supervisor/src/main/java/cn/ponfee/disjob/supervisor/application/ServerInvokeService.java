@@ -229,9 +229,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     private void publishOperationEvent(Supervisor supervisor, OperationEventType eventType, Date eventTime, String eventData) {
         RetryTemplate.executeQuietly(
-            () -> supervisorRpcProxy.destination(supervisor).subscribeOperationEvent(eventType, eventTime, eventData),
-            1,
-            2000
+            () -> supervisorRpcProxy.destination(supervisor).subscribeOperationEvent(eventType, eventTime, eventData), 1, 2000
         );
     }
 

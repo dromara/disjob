@@ -60,6 +60,10 @@ public final class ProxyUtils {
      */
     @SuppressWarnings("unchecked")
     public static <T> T create(org.springframework.cglib.proxy.InvocationHandler invocationHandler, Class<?> superCls) {
+        // org.springframework.cglib.proxy.Proxy的这种方式必须为interface
+        // return (T) org.springframework.cglib.proxy.Proxy.newProxyInstance(superCls[0].getClassLoader(), superCls, invocationHandler);
+
+        // org.springframework.cglib.proxy.Enhancer的这种方式同时支持class、interface
         return (T) org.springframework.cglib.proxy.Enhancer.create(superCls, invocationHandler);
     }
 
@@ -74,7 +78,7 @@ public final class ProxyUtils {
     @SuppressWarnings("unchecked")
     public static <T> Constructor<T> getProxyConstructor(Class<T> cls) {
         try {
-            // Spring的这种方式也是必须为interface类
+            // org.springframework.cglib.proxy.Proxy的这种方式必须为interface
             // Class<T> proxyClass = org.springframework.cglib.proxy.Proxy.getProxyClass(cls.getClassLoader(), new Class[]{cls});
             // Constructor<T> proxyConstructor = proxyClass.getConstructor(org.springframework.cglib.proxy.InvocationHandler.class);
 

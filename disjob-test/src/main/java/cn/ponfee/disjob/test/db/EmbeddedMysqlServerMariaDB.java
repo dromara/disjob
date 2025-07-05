@@ -65,21 +65,21 @@ public class EmbeddedMysqlServerMariaDB {
     public static void start(int port) throws Exception {
         DBConfiguration configuration = DBConfigurationBuilder.newBuilder()
             .setPort(port) // OR, default: setPort(0); => autom. detect free port
-            .setSecurityDisabled(false)
+            .setSecurityDisabled(false) // 是否“--skip-grant-tables”，默认为true(即启用跳过权限验证)，这里设置为false
+            //.addArg("--user=xxx") // 以操作系统的xxx用户身份启动mysqld服务(慎用root用户)：base/bin/mysqld --user=xxx
             .setBaseDir(createDirectory("base"))
             .setDataDir(createDirectory("data"))
-            .addArg("--user=root")
             .addArg("--character-set-server=utf8mb4")
             .addArg("--collation-server=utf8mb4_bin")
-            //.addArg("--default-character-set=utf8mb4")
-            //.addArg("--skip-grant-tables") // 默认就是skip-grant-tables
             .build();
 
+        // 安装mariadb: base/bin/mysql_install_db
         DB db = DB.newEmbeddedDB(configuration);
         System.out.println("Embedded maria db starting...");
         ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, db::stop);
         db.start();
         for (String script : DBUtils.loadScript()) {
+            // 以数据库的root用户身份连接mysql：base/bin/mysql -h xxx -u root -p
             // script = correctScriptForMariaDB(script);
             db.source(IOUtils.toInputStream(script, StandardCharsets.UTF_8), "root", null, null);
         }
