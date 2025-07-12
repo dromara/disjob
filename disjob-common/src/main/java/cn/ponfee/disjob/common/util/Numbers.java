@@ -24,7 +24,6 @@ import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -496,16 +495,7 @@ public final class Numbers {
     }
 
     private static long upDiv(long dividend, long divisor) {
-        if (dividend == 0) {
-            return 0;
-        }
-        if ((dividend % divisor) == 0) {
-            return dividend / divisor;
-        }
-        return new BigDecimal(dividend)
-            .divide(new BigDecimal(divisor), MathContext.DECIMAL128)
-            .setScale(0, RoundingMode.UP)
-            .longValue();
+        return dividend == 0 ? 0 : Maths.upDiv(dividend, divisor);
     }
 
 }

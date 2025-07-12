@@ -28,6 +28,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
@@ -43,11 +44,11 @@ public class NodePathTest {
     @Test
     public void testNew() {
         Assertions.assertEquals("[]", new NodePath<>().toString());
-        Assertions.assertEquals("[1]", new NodePath<>(1).toString());
-        Assertions.assertEquals("[1, 2, 3]", new NodePath<>(1, 2, 3).toString());
+        Assertions.assertEquals("[1]", new NodePath<>(Collections.singletonList(1)).toString());
+        Assertions.assertEquals("[1, 2, 3]", new NodePath<>(Arrays.asList(1, 2, 3)).toString());
         Assertions.assertEquals("[1, 2, 3]", new NodePath<>(Arrays.asList(1, 2, 3)).toString());
         Assertions.assertEquals("[1]", new NodePath<>(new NodePath<>(), 1).toString());
-        Assertions.assertEquals("[0, 1, 2]", new NodePath<>(new NodePath<>(0, 1), 2).toString());
+        Assertions.assertEquals("[0, 1, 2]", new NodePath<>(new NodePath<>(Arrays.asList(0, 1)), 2).toString());
     }
 
     @Test
@@ -55,8 +56,8 @@ public class NodePathTest {
         JsonId root = new JsonId(null, "root", 0);
         JsonId parent = new JsonId(root, "parent", 1);
         JsonId child = new JsonId(parent, "child", 1);
-        NodePath<JsonId> npRoot = new NodePath<>(root);
-        NodePath<JsonId> npParent = new NodePath<>(root, parent);
+        NodePath<JsonId> npRoot = new NodePath<>(Collections.singletonList(root));
+        NodePath<JsonId> npParent = new NodePath<>(Arrays.asList(root, parent));
         NodePath<JsonId> npChild = new NodePath<>(npParent, child);
 
         Assertions.assertEquals("[root, parent, child]", child.toNodePath(JsonId::getName).toString());

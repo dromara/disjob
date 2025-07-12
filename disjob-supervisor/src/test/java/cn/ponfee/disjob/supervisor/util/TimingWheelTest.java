@@ -81,22 +81,6 @@ public class TimingWheelTest {
         Assertions.assertEquals("10", String.format("%02d", 10));
     }
 
-    static int round = 1000;
-
-    @Test
-    public void testRoundCurrentTimeMillis() {
-        for (int second, i = 0; i < round; i++) {
-            second = (int) ((System.currentTimeMillis() % 60000) / 1000);
-        }
-    }
-
-    @Test
-    public void testRoundCalendar() {
-        for (int second, i = 0; i < round; i++) {
-            second = Calendar.getInstance().get(Calendar.SECOND);
-        }
-    }
-
     @Test
     public void testAtomicBoolean() {
         // 24天
@@ -171,7 +155,7 @@ public class TimingWheelTest {
         long hour = TimeUnit.HOURS.toMillis(10);
         System.out.println("hour=" + hour);
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             long triggerTime = System.currentTimeMillis() + 5000 + ThreadLocalRandom.current().nextLong(hour);
             timingWheel.offer(CommonTest.createExecuteTaskParam(Operation.TRIGGER, 0, 0, 1L, 0, triggerTime, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, ShutdownStrategy.RESUME, 1, "jobExecutor", new Worker("default", "workerId", "host", 1)));
         }

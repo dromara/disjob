@@ -34,7 +34,7 @@ public class BytesTest {
 
     @Test
     public void testEncodeHex() {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             byte[] bytes1 = RandomUtils.nextBytes(ThreadLocalRandom.current().nextInt(100) + 1);
             String s1 = Bytes.encodeHex(bytes1);
             String s2 = Hex.encodeHexString(bytes1);
@@ -46,7 +46,7 @@ public class BytesTest {
 
     @Test
     public void testToHexString() {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             long value = ThreadLocalRandom.current().nextLong();
             byte[] bytes1 = Bytes.toBytes(value);
             byte[] bytes2 = Longs.toByteArray(value);

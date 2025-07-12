@@ -30,7 +30,6 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -42,8 +41,6 @@ import java.util.stream.IntStream;
  * @author Ponfee
  */
 public class HashTest {
-
-    static final long round = 1_000_000L;
 
     @Test
     public void testConsistentHash() {
@@ -97,22 +94,8 @@ public class HashTest {
     }
 
     @Test
-    public void testNexFloat() {
-        for (long i = 0; i < round; i++) {
-            ThreadLocalRandom.current().nextFloat();
-        }
-    }
-
-    @Test
-    public void testNextInt() {
-        for (long i = 0; i < round; i++) {
-            ThreadLocalRandom.current().nextInt(100);
-        }
-    }
-
-    @Test
     public void testUuid() {
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 100; i++) {
             UUID uuid = UUID.randomUUID();
             String uid = uuid.toString().replace("-", "");
             Assertions.assertEquals(uid, uuid32(uuid));

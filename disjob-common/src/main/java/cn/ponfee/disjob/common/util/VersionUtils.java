@@ -86,7 +86,7 @@ public final class VersionUtils {
     }
 
     private static JarEntry getJarEntry(JarFile jarFile, String groupId, String artifactId) {
-        if (groupId == null || artifactId == null) {
+        if (StringUtils.isEmpty(groupId) || StringUtils.isEmpty(artifactId)) {
             return null;
         }
         String pathFormat = "META-INF/maven/%s/%s/pom.properties";

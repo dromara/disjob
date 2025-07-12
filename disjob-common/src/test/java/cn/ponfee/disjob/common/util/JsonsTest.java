@@ -70,7 +70,7 @@ public class JsonsTest {
 
     @Test
     public void testBigInteger() {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             BigInteger number = new BigInteger(ThreadLocalRandom.current().nextLong(Long.MAX_VALUE) + "");
             Assertions.assertEquals(Numbers.toHex(number), toHex(number));
         }

@@ -129,56 +129,109 @@ public class Maths {
     public static int abs(int n) {
         // Integer.MIN_VALUE & 0x7FFFFFFF = 0
         if (n == Integer.MIN_VALUE) {
-            return Integer.MAX_VALUE;
+            throw new ArithmeticException("Numeric overflow in min int abs value.");
         }
         return (n < 0) ? -n : n;
     }
 
     public static long abs(long n) {
         if (n == Long.MIN_VALUE) {
-            return Long.MAX_VALUE;
+            throw new ArithmeticException("Numeric overflow in min long abs value.");
         }
         return (n < 0) ? -n : n;
+    }
+
+    /**
+     * <pre>
+     * upDiv( 7,  3)  =   3
+     * upDiv(-7,  3)  =  -3
+     * upDiv( 7, -3)  =  -3
+     * upDiv(-7, -3)  =   3
+     * upDiv(10,  5)  =   2
+     * upDiv( 1,  1)  =   1
+     * upDiv(-1,  2)  =  -1
+     * upDiv( 1, -2)  =  -1
+     * upDiv( 0,  5)  =   0
+     * upDiv( 0, -5)  =   0
+     * upDiv( 5, -1)  =  -5
+     * upDiv(-5,  1)  =  -5
+     * upDiv( 1,  3)  =   1
+     * upDiv(-1,  3)  =  -1
+     * upDiv( 2,  3)  =   1
+     * upDiv(-2,  3)  =  -1
+     *
+     * upDiv(x, y)        : 向远于零方向取整
+     * downDiv(x, y)      : 向近于零方向取整
+     * ceilDiv(x, y)      : 向正无穷方向取整
+     * Math.floorDiv(x, y): 向负无穷方向取整
+     * </pre>
+     *
+     * @param x the numerator
+     * @param y the denominator
+     * @return the quotient of up zero
+     */
+    public static long upDiv(long x, long y) {
+        long q = x / y;
+        long r = x % y;
+
+        if (r == 0) {
+            return q;
+        }
+        return q + ((x ^ y) >= 0 ? 1 : -1);
+    }
+
+    public static long downDiv(long x, long y) {
+        return x / y;
+    }
+
+    public static long ceilDiv(long x, long y) {
+        long q = x / y;
+        long r = x % y;
+
+        if (r == 0) {
+            return q;
+        }
+        return (x ^ y) >= 0 ? q + 1 : q;
     }
 
     // ------------------------------------------------------------------------add & subtract
 
     public static int add(int a, int b) {
-        if (a > 0 && b > 0) {
-            return Integer.MAX_VALUE - b < a ? Integer.MAX_VALUE : a + b;
+        if (a > 0 && b > 0 && Integer.MAX_VALUE - b < a) {
+            throw new ArithmeticException("Addition overflow int positive number: " + a + " + " + b);
         }
-        if (a < 0 && b < 0) {
-            return Integer.MIN_VALUE - b > a ? Integer.MIN_VALUE : a + b;
+        if (a < 0 && b < 0 && Integer.MIN_VALUE - b > a) {
+            throw new ArithmeticException("Addition overflow int negative number: " + a + " + " + b);
         }
         return a + b;
     }
 
     public static int subtract(int a, int b) {
-        if (a > 0 && b < 0) {
-            return Integer.MAX_VALUE + b < a ? Integer.MAX_VALUE : a - b;
+        if (a > 0 && b < 0 && Integer.MAX_VALUE + b < a) {
+            throw new ArithmeticException("Subtraction overflow int positive number: " + a + " - " + b);
         }
-        if (a < 0 && b > 0) {
-            return Integer.MIN_VALUE + b > a ? Integer.MIN_VALUE : a - b;
+        if (a < 0 && b > 0 && Integer.MIN_VALUE + b > a) {
+            throw new ArithmeticException("Subtraction overflow int negative number: " + a + " - " + b);
         }
         return a - b;
     }
 
     public static long add(long a, long b) {
-        if (a > 0 && b > 0) {
-            return Long.MAX_VALUE - b < a ? Long.MAX_VALUE : a + b;
+        if (a > 0 && b > 0 && Long.MAX_VALUE - b < a) {
+            throw new ArithmeticException("Addition overflow long positive number: " + a + " + " + b);
         }
-        if (a < 0 && b < 0) {
-            return Long.MIN_VALUE - b > a ? Long.MIN_VALUE : a + b;
+        if (a < 0 && b < 0 && Long.MIN_VALUE - b > a) {
+            throw new ArithmeticException("Addition overflow long negative number: " + a + " + " + b);
         }
         return a + b;
     }
 
     public static long subtract(long a, long b) {
-        if (a > 0 && b < 0) {
-            return Long.MAX_VALUE + b < a ? Long.MAX_VALUE : a - b;
+        if (a > 0 && b < 0 && Long.MAX_VALUE + b < a) {
+            throw new ArithmeticException("Subtraction overflow long positive number: " + a + " - " + b);
         }
-        if (a < 0 && b > 0) {
-            return Long.MIN_VALUE + b > a ? Long.MIN_VALUE : a - b;
+        if (a < 0 && b > 0 && Long.MIN_VALUE + b > a) {
+            throw new ArithmeticException("Subtraction overflow long negative number: " + a + " - " + b);
         }
         return a - b;
     }
@@ -194,7 +247,7 @@ public class Maths {
      */
     public static int gcd(int a, int b) {
         if (a < 0 || b < 0) {
-            throw new ArithmeticException();
+            throw new ArithmeticException("Calculate gcd unsupported positive number.");
         }
         if (a == 0 || b == 0) {
             return Math.abs(a - b);

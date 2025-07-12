@@ -242,8 +242,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         Pair<WorkerThread, WorkerTask> pair = activePool.takeThread(taskId, null, ops);
         if (pair == null) {
             LOG.warn("Not found executing task: {}, {}", taskId, ops);
-            // 支持某些异常场景时手动结束任务（如断网数据库连接不上，任务执行结束后状态无法更新，一直停留在EXECUTING）：EXECUTING -> (PAUSED|CANCELED)
-            // 但要注意可能存在的操作流程上的`ABA`问题：EXECUTING -> PAUSED -> WAITING -> EXECUTING -> (PAUSED|CANCELED)
+            // 某些异常场景导致任务状态更新失败停留在EXECUTING且任务已从线程池中移除，在此处修复状态：EXECUTING -> (PAUSED|CANCELED)
             stopTask(task, ops, ops.name() + " aborted EXECUTING state task");
         } else {
             stopTask(pair, ops);

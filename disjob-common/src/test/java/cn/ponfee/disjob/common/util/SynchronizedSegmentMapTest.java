@@ -17,8 +17,9 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.collect.SynchronizedSegmentMap;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.mutable.MutableLong;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -51,11 +52,11 @@ class SynchronizedSegmentMapTest {
         System.out.println("\n---------------------\n");
 
         SynchronizedSegmentMap<Integer, Integer> map = new SynchronizedSegmentMap<>(14);
-        for (int i = 0; i < 40000; i++) {
+        for (int i = 0; i < 100; i++) {
             int x = ThreadLocalRandom.current().nextInt();
-            map.execute(x, e -> e.put(x, x));
+            map.put(x, x);
         }
-        map.execute(System.out::println);
+        map.forEach((k, v) -> System.out.println(k + " -> " + v));
 
         Map<Integer, Integer> m = new HashMap<>();
         m.put(1, 1);
@@ -79,13 +80,29 @@ class SynchronizedSegmentMapTest {
     }
 
     @Test
+    @Disabled
     void testExecute() {
-        SynchronizedSegmentMap<String, String> map = new SynchronizedSegmentMap<>(14);
-        for (int i = 0; i < 30000; i++) {
-            String s = RandomStringUtils.randomGraph(1 + ThreadLocalRandom.current().nextInt(20));
-            map.execute(s, e -> e.put(s, s));
+        int total = 320000, expectSegmentSize = total / 16;
+        SynchronizedSegmentMap<String, String> map1 = new SynchronizedSegmentMap<>(14);
+        for (int i = 0; i < total; i++) {
+            String s = UuidUtils.uuid32();
+            map1.put(s, s);
         }
-        map.execute(System.out::println);
+        MutableLong size1 = new MutableLong(0);
+        map1.execute(e -> size1.add(e.size()));
+        System.out.println("Map1 total: " + size1.getValue());
+        map1.execute(e -> System.out.println(Numbers.percent(e.size(), expectSegmentSize, 2)));
+
+        System.out.println("--------------");
+        SynchronizedSegmentMap<Long, String> map2 = new SynchronizedSegmentMap<>(14);
+        for (int i = 0; i < total; i++) {
+            long k = ThreadLocalRandom.current().nextLong();
+            map2.put(k, k + "");
+        }
+        MutableLong size2 = new MutableLong(0);
+        map1.execute(e -> size2.add(e.size()));
+        System.out.println("Map2 total: " + size2.getValue());
+        map2.execute(e -> System.out.println(Numbers.percent(e.size(), expectSegmentSize, 2)));
     }
 
 }

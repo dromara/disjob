@@ -18,7 +18,6 @@ package cn.ponfee.disjob.common.tree;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,12 +33,6 @@ public final class NodePath<T extends Serializable & Comparable<T>>
 
     public NodePath() {
         // Note: For help deserialization(jackson)
-    }
-
-    @SafeVarargs
-    public NodePath(T... path) {
-        super(path.length);
-        super.addAll(Arrays.asList(path));
     }
 
     public NodePath(List<T> path) {

@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -45,8 +44,6 @@ import static cn.ponfee.disjob.common.date.Dates.*;
  * @author Ponfee
  */
 public class DatesTest {
-
-    static int round = 1_000;
 
     @Test
     public void test() throws ParseException {
@@ -112,24 +109,6 @@ public class DatesTest {
         Assertions.assertEquals(15, daysBetween(JavaUtilDateFormat.DEFAULT.parse("2023-05-21 15:23:45"), JavaUtilDateFormat.DEFAULT.parse("2023-06-05 15:23:45")));
 
         Assertions.assertEquals("45 23 15 3 1 ? 2023", toCronExpression(JavaUtilDateFormat.DEFAULT.parse(str)));
-    }
-
-    @Test
-    public void testSimpleDateFormat() {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        Date date = new Date();
-        for (int i = 0; i < round; i++) {
-            format.format(date);
-        }
-    }
-
-    @Test
-    public void testFastDateFormat() {
-        FastDateFormat format = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
-        Date date = new Date();
-        for (int i = 0; i < round; i++) {
-            format.format(date);
-        }
     }
 
     @Test
