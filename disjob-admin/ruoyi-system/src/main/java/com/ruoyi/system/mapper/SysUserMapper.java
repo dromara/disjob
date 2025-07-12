@@ -1,6 +1,7 @@
 package com.ruoyi.system.mapper;
 
 import com.ruoyi.common.core.domain.entity.SysUser;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -98,6 +99,16 @@ public interface SysUserMapper
      * @return 结果
      */
     int updateUser(SysUser user);
+
+    /**
+     * 修改用户头像
+     *
+     * @param userId 用户ID
+     * @param avatar 头像地址
+     * @return 结果
+     */
+    int updateUserAvatar(@Param("userId") Long userId, @Param("avatar") String avatar);
+
 
     /**
      * 新增用户信息

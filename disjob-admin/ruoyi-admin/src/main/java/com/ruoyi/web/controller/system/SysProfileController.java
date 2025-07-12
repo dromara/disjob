@@ -10,6 +10,7 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
+import com.ruoyi.common.utils.file.FileUtils;
 import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.framework.shiro.service.SysPasswordService;
 import com.ruoyi.system.service.ISysUserService;
@@ -153,16 +154,21 @@ public class SysProfileController extends BaseController
     @ResponseBody
     public AjaxResult updateAvatar(@RequestParam("avatarfile") MultipartFile file)
     {
-        SysUser currentUser = getSysUser();
         try
         {
             if (!file.isEmpty())
             {
-                String avatar = FileUploadUtils.upload(RuoYiConfig.getAvatarPath(), file, MimeTypeUtils.IMAGE_EXTENSION);
-                currentUser.setAvatar(avatar);
-                if (userService.updateUserInfo(currentUser) > 0)
+                SysUser currentUser = getSysUser();
+                String avatar = FileUploadUtils.upload(RuoYiConfig.getAvatarPath(), file, MimeTypeUtils.IMAGE_EXTENSION, true);
+                if (userService.updateUserAvatar(currentUser.getUserId(), avatar))
                 {
-                    setSysUser(userService.selectUserById(currentUser.getUserId()));
+                    String oldAvatar = currentUser.getAvatar();
+                    if (StringUtils.isNotEmpty(oldAvatar))
+                    {
+                        FileUtils.deleteFile(RuoYiConfig.getProfile() + FileUtils.stripPrefix(oldAvatar));
+                    }
+                    currentUser.setAvatar(avatar);
+                    setSysUser(currentUser);
                     return success();
                 }
             }
@@ -174,4 +180,5 @@ public class SysProfileController extends BaseController
             return error(e.getMessage());
         }
     }
+
 }

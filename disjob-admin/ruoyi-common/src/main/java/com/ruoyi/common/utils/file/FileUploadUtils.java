@@ -99,8 +99,28 @@ public class FileUploadUtils
      * @throws InvalidExtensionException 文件校验异常
      */
     public static String upload(String baseDir, MultipartFile file, String[] allowedExtension)
-            throws FileSizeLimitExceededException, IOException, FileNameLengthLimitExceededException,
-            InvalidExtensionException
+        throws FileSizeLimitExceededException, IOException, FileNameLengthLimitExceededException,
+        InvalidExtensionException
+    {
+        return upload(baseDir, file, allowedExtension, false);
+    }
+
+    /**
+     * 文件上传
+     *
+     * @param baseDir 相对应用的基目录
+     * @param file 上传的文件
+     * @param useCustomNaming 系统自定义文件名
+     * @param allowedExtension 上传文件类型
+     * @return 返回上传成功的文件名
+     * @throws FileSizeLimitExceededException 如果超出最大大小
+     * @throws FileNameLengthLimitExceededException 文件名太长
+     * @throws IOException 比如读写文件出错时
+     * @throws InvalidExtensionException 文件校验异常
+     */
+    public static String upload(String baseDir, MultipartFile file, String[] allowedExtension, boolean useCustomNaming)
+        throws FileSizeLimitExceededException, IOException, FileNameLengthLimitExceededException,
+        InvalidExtensionException
     {
         int fileNameLength = Objects.requireNonNull(file.getOriginalFilename()).length();
         if (fileNameLength > FileUploadUtils.DEFAULT_FILE_NAME_LENGTH)
@@ -110,7 +130,7 @@ public class FileUploadUtils
 
         assertAllowed(file, allowedExtension);
 
-        String fileName = extractFilename(file);
+        String fileName = useCustomNaming ? uuidFilename(file) : extractFilename(file);
 
         String absPath = getAbsoluteFile(baseDir, fileName).getAbsolutePath();
         file.transferTo(Paths.get(absPath));
@@ -118,11 +138,19 @@ public class FileUploadUtils
     }
 
     /**
-     * 编码文件名
+     * 编码文件名(日期格式目录 + 原文件名 + 序列值 + 后缀)
      */
-    public static String extractFilename(MultipartFile file) {
-        String baseName = FilenameUtils.getBaseName(file.getOriginalFilename());
-        return StringUtils.format("{}/{}_{}.{}", DateUtils.datePath(), baseName, StringUtils.uuid32(), getExtension(file));
+    public static String extractFilename(MultipartFile file)
+    {
+        return StringUtils.format("{}/{}_{}.{}", DateUtils.datePath(), FilenameUtils.getBaseName(file.getOriginalFilename()), StringUtils.uuid32(), getExtension(file));
+    }
+
+    /**
+     * 编编码文件名(日期格式目录 + UUID + 后缀)
+     */
+    public static String uuidFilename(MultipartFile file)
+    {
+        return StringUtils.format("{}/{}.{}", DateUtils.datePath(), StringUtils.uuid32(), getExtension(file));
     }
 
     public static File getAbsoluteFile(String uploadDir, String fileName) throws IOException

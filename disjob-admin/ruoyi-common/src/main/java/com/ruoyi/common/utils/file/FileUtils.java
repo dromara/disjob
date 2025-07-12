@@ -1,6 +1,7 @@
 package com.ruoyi.common.utils.file;
 
 import com.ruoyi.common.config.RuoYiConfig;
+import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.StringUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -95,6 +96,17 @@ public class FileUtils
             IOUtils.close(fos);
         }
         return FileUploadUtils.getPathFileName(uploadDir, pathName);
+    }
+
+    /**
+     * 移除路径中的请求前缀片段
+     *
+     * @param filePath 文件路径
+     * @return 移除后的文件路径
+     */
+    public static String stripPrefix(String filePath)
+    {
+        return StringUtils.substringAfter(filePath, Constants.RESOURCE_PREFIX);
     }
 
     /**
