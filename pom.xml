@@ -68,9 +68,9 @@
     <guava.version>33.4.8-jre</guava.version>
     <spotbugs.version>4.9.3</spotbugs.version>
     <commons-collections4.version>4.5.0</commons-collections4.version>
-    <commons-io.version>2.19.0</commons-io.version>
+    <commons-io.version>2.20.0</commons-io.version>
     <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
-    <curator-framework.version>5.8.0</curator-framework.version>
+    <curator-framework.version>5.9.0</curator-framework.version>
   </properties>
 
   <dependencyManagement>

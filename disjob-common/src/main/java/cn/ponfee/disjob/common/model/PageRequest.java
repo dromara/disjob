@@ -46,6 +46,7 @@ import java.util.function.ToLongFunction;
  */
 @Getter
 @Setter
+@SuppressWarnings("SuspiciousMethodCalls")
 public class PageRequest extends ToJsonString implements TypedDictionary<String, Object>, Serializable {
     private static final long serialVersionUID = 2032344850017264330L;
 
@@ -110,27 +111,27 @@ public class PageRequest extends ToJsonString implements TypedDictionary<String,
         return (long) (pageNumber - 1) * pageSize;
     }
 
-    public <P extends PageRequest, A> PageResponse<A> query(ToLongFunction<P> queryCount,
-                                                            Function<P, List<A>> queryRecord) {
-        return query(queryCount, queryRecord, null);
+    public <P extends PageRequest, A> PageResponse<A> query(ToLongFunction<P> countQuerier,
+                                                            Function<P, List<A>> recordQuerier) {
+        return query(countQuerier, recordQuerier, null);
     }
 
     @SuppressWarnings("unchecked")
-    public <P extends PageRequest, A, B> PageResponse<B> query(ToLongFunction<P> queryCount,
-                                                               Function<P, List<A>> queryRecords,
-                                                               Function<A, B> mapper) {
+    public <P extends PageRequest, A, B> PageResponse<B> query(ToLongFunction<P> countQuerier,
+                                                               Function<P, List<A>> recordQuerier,
+                                                               Function<A, B> recordMapper) {
         check();
         long total;
         List<A> list;
         if (paged) {
-            total = queryCount.applyAsLong((P) this);
+            total = countQuerier.applyAsLong((P) this);
             correctPageNumber(total);
-            list = (total == 0) ? Collections.emptyList() : queryRecords.apply((P) this);
+            list = (total == 0) ? Collections.emptyList() : recordQuerier.apply((P) this);
         } else {
-            list = queryRecords.apply((P) this);
+            list = recordQuerier.apply((P) this);
             total = list.size();
         }
-        List<B> rows = (mapper == null) ? (List<B>) list : Collects.convert(list, mapper);
+        List<B> rows = (recordMapper == null) ? (List<B>) list : Collects.convert(list, recordMapper);
         return PageResponse.of(rows, total, this);
     }
 

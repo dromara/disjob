@@ -81,7 +81,7 @@ public class EmbeddedMysqlServerMariaDB {
         for (String script : DBUtils.loadScript()) {
             // 以数据库的root用户身份连接mysql：base/bin/mysql -h xxx -u root -p
             // script = correctScriptForMariaDB(script);
-            db.source(IOUtils.toInputStream(script, StandardCharsets.UTF_8), "root", null, null);
+            db.source(IOUtils.toInputStream(script, StandardCharsets.UTF_8), "root", "", null);
         }
 
         String jdbcUrl = "jdbc:mysql://localhost:" + port + "/" + DB_NAME;

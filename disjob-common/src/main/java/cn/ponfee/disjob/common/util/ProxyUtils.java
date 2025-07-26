@@ -40,7 +40,7 @@ public final class ProxyUtils {
      * Creates proxy instance based jdk
      *
      * @param invocationHandler the jdk invocation handler
-     * @param cls               the interface class array
+     * @param cls               the interface classes
      * @param <T>               the interface type
      * @return jdk proxy instance
      */

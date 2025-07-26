@@ -65,7 +65,7 @@ public final class SpringUtils {
         return new InputStreamResource(new ByteArrayInputStream(bytes));
     }
 
-    public static int getActualWebServerPort(WebServerApplicationContext webServerApplicationContext) {
+    public static int getWebServerPort(WebServerApplicationContext webServerApplicationContext) {
         Integer port = webServerApplicationContext.getEnvironment().getProperty(SPRING_BOOT_SERVER_PORT, Integer.class);
         if (port != null && port > 0) {
             return port;

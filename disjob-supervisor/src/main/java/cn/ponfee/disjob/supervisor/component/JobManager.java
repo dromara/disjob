@@ -195,8 +195,8 @@ public class JobManager {
         if (job.isNeedUpdateExecutor()) {
             workerClient.verifyJob(job);
         }
-        Long jobId0 = jobMapper.getJobId(job.getGroup(), job.getJobName());
-        if (jobId0 != null && !jobId0.equals(job.getJobId())) {
+        Long jobId = jobMapper.getJobId(job.getGroup(), job.getJobName());
+        if (jobId != null && !jobId.equals(job.getJobId())) {
             throw new IllegalArgumentException("Exists job name: " + job.getJobName());
         }
 

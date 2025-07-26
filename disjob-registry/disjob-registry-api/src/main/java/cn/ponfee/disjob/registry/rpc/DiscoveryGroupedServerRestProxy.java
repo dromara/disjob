@@ -86,6 +86,7 @@ public final class DiscoveryGroupedServerRestProxy<T> {
     private final Predicate<String> localGroupMatcher;
     private final DiscoveryServerRestTemplate<?> template;
     private final String prefixPath;
+    private final ConcurrentMap<String, T> groupedServerInvocationHandlerCache = new ConcurrentHashMap<>();
 
     private DiscoveryGroupedServerRestProxy(Constructor<T> constructor,
                                             T localServiceProvider,
@@ -100,11 +101,13 @@ public final class DiscoveryGroupedServerRestProxy<T> {
     }
 
     public T group(String group) {
-        try {
-            return constructor.newInstance(new GroupedServerInvocationHandler(group));
-        } catch (Exception e) {
-            return ExceptionUtils.rethrow(e);
-        }
+        return groupedServerInvocationHandlerCache.computeIfAbsent(group, key -> {
+            try {
+                return constructor.newInstance(new GroupedServerInvocationHandler(key));
+            } catch (Exception e) {
+                return ExceptionUtils.rethrow(e);
+            }
+        });
     }
 
     /**

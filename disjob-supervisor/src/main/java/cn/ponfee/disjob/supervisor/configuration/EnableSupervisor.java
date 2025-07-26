@@ -74,7 +74,7 @@ public @interface EnableSupervisor {
         public Supervisor.Local localSupervisor(WebServerApplicationContext webServerApplicationContext,
                                                 ServerProperties serverProperties,
                                                 GroupInfoService groupInfoService) {
-            int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
+            int port = SpringUtils.getWebServerPort(webServerApplicationContext);
             String contextPath = Strings.trimPath(serverProperties.getServlet().getContextPath());
             Object[] args = {CoreUtils.getLocalHost(), port, contextPath, groupInfoService};
             try {

@@ -60,7 +60,7 @@ public @interface EnableWorker {
             String workerToken = config.getWorkerToken();
             String supervisorToken = config.getSupervisorToken();
             String supervisorContextPath = config.getSupervisorContextPath();
-            int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
+            int port = SpringUtils.getWebServerPort(webServerApplicationContext);
 
             Object[] args = {config.getGroup(), UuidUtils.uuid32(), host, port, workerToken, supervisorToken, supervisorContextPath};
             try {

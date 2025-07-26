@@ -247,7 +247,7 @@ public class Maths {
      */
     public static int gcd(int a, int b) {
         if (a < 0 || b < 0) {
-            throw new ArithmeticException("Calculate gcd unsupported positive number.");
+            throw new ArithmeticException("Calculate gcd unsupported negative number.");
         }
         if (a == 0 || b == 0) {
             return Math.abs(a - b);

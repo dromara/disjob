@@ -19,6 +19,7 @@ package cn.ponfee.disjob.test.util;
 import ch.vorburger.mariadb4j.DB;
 import ch.vorburger.mariadb4j.DBConfiguration;
 import ch.vorburger.mariadb4j.DBConfigurationBuilder;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
@@ -65,8 +66,10 @@ public class MariaDBTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
-        this.db.stop();
+    public void tearDown() {
+        if (this.db != null) {
+            ThrowingRunnable.doCaught(this.db::stop);
+        }
         this.db = null;
         this.port = null;
     }
