@@ -194,8 +194,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
         return String.format(format, maximumPoolSize, workerThreadCounter.get(), activePool.size(), idlePool.size(), taskQueue.size(), completedTaskCounter.get());
     }
 
-    WorkerMetrics.ThreadPoolMetrics metrics() {
-        WorkerMetrics.ThreadPoolMetrics metrics = new WorkerMetrics.ThreadPoolMetrics();
+    WorkerMetrics.WorkerThreadPoolMetrics metrics() {
+        WorkerMetrics.WorkerThreadPoolMetrics metrics = new WorkerMetrics.WorkerThreadPoolMetrics();
         metrics.setClosed(threadPoolState.isStopped());
         metrics.setKeepAliveTime(TimeUnit.NANOSECONDS.toSeconds(keepAliveTime));
         metrics.setMaximumPoolSize(maximumPoolSize);

@@ -249,7 +249,7 @@
         <!-- https://www.mojohaus.org/flatten-maven-plugin/flatten-mojo.html -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
-        <version>1.7.0</version>
+        <version>1.7.2</version>
         <configuration>
           <updatePomFile>true</updatePomFile>
           <flattenMode>resolveCiFriendliesOnly</flattenMode>

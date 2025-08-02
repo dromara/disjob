@@ -21,7 +21,7 @@ import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Numbers;
-import cn.ponfee.disjob.common.util.TextBoxPrinter;
+import cn.ponfee.disjob.common.util.TablePrinter;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
@@ -45,6 +45,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -302,24 +303,50 @@ public class CommonTest {
         Thread.sleep(100);
         cache.cleanUp();
         Assertions.assertEquals(3, cache.size());
-        System.out.println(CoreUtils.buildCacheStats(cache, "test"));
+        System.out.println(CoreUtils.buildCacheStats(cache, "test") + "\n");
         Assertions.assertNull(cache.getIfPresent(0L));
-        System.out.println(CoreUtils.buildCacheStats(cache, "test cache2cache1"));
+        System.out.println(CoreUtils.buildCacheStats(cache, "test cache2cache1") + "\n");
         Assertions.assertEquals("a", cache.getIfPresent(111L));
-        System.out.println(CoreUtils.buildCacheStats(cache, "test cache3cache3"));
+        System.out.println(CoreUtils.buildCacheStats(cache, "test cache3cache3") + "\n");
         Thread.sleep(130);
         Assertions.assertEquals(3, cache.size());
         cache.cleanUp();
         Assertions.assertEquals(1, cache.size());
 
         Assertions.assertEquals("123", cache.get(123L));
-        System.out.println(CoreUtils.buildCacheStats(cache, "test4"));
+        System.out.println(CoreUtils.buildCacheStats(cache, "test4") + "\n");
+    }
 
+    @Test
+    public void testTablePrint() {
+        String[] headers = {"ID", "Name", "Age", "City"};
+        List<String[]> rows = new ArrayList<>();
+        rows.add(new String[]{"1", "Alice", "25", "Beijing"});
+        rows.add(new String[]{"2", "Bob", "30", ""});
+        rows.add(new String[]{"3", "Charlie", "35", "Guangzhou"});
+        rows.add(new String[]{"4", "Diana", "28", "Shenzhen"});
+        rows.add(new String[]{"5", "tomeabcdeeafd", "28", "Shenzhenaaaaaaaaaa"});
+
+        System.out.println("\n-----------------------FULL-----------------------\n");
+
+        System.out.println(TablePrinter.FULL.print(headers, rows));
         System.out.println();
-        System.out.println(TextBoxPrinter.print("abc"));
-        System.out.println(TextBoxPrinter.print("abc", "def"));
-        System.out.println(TextBoxPrinter.print("abc", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+        System.out.println(TablePrinter.FULL.print(headers, rows));
+        System.out.println();
+        System.out.println(TablePrinter.FULL.print(null, rows));
+        System.out.println();
+        System.out.println(TablePrinter.FULL.print(headers, Collections.emptyList()));
 
+
+        System.out.println("\n-----------------------HALF-----------------------\n");
+
+        System.out.println(TablePrinter.HALF.print(headers, rows));
+        System.out.println();
+        System.out.println(TablePrinter.HALF.print(headers, rows));
+        System.out.println();
+        System.out.println(TablePrinter.HALF.print(null, rows));
+        System.out.println();
+        System.out.println(TablePrinter.HALF.print(headers, Collections.emptyList()));
     }
 
     @Test

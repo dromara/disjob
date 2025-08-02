@@ -18,7 +18,7 @@ package cn.ponfee.disjob.worker.util;
 
 import cn.ponfee.disjob.common.tuple.Tuple4;
 import cn.ponfee.disjob.common.util.MavenProjects;
-import cn.ponfee.disjob.common.util.TextBoxPrinter;
+import cn.ponfee.disjob.common.util.TablePrinter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections4.MapUtils;
@@ -90,12 +90,12 @@ public class ProcessUtilsTest {
         System.out.println("───────────────────────────────────────────────────────────────────────────────");
         System.out.println("\n\n");
 
-        String title = "Conflict jar version, total time: " + stopwatch;
-        String[] conflicts = parseConflictedJarVersion(dependencyTree);
-        if (conflicts.length == 0) {
-            conflicts = new String[]{"Not found conflicted version jar."};
+        String[] headers = {"Conflict jar version, total time: " + stopwatch};
+        List<String> conflicts = parseConflictedJarVersion(dependencyTree);
+        if (conflicts.isEmpty()) {
+            conflicts.add("Not found conflicted version jar.");
         }
-        TextBoxPrinter.print(System.out, title, conflicts);
+        TablePrinter.FULL.print(System.out, headers, conflicts.stream().map(e -> new String[]{e}).collect(Collectors.toList()));
     }
 
     // ------------------------------------------------------------------------------private methods
@@ -158,7 +158,7 @@ public class ProcessUtilsTest {
         executor.execute(CommandLine.parse(command), environment);
     }
 
-    private static String[] parseConflictedJarVersion(String text) {
+    private static List<String> parseConflictedJarVersion(String text) {
         List<String> conflicts = new ArrayList<>();
         Arrays.stream(text.split("\n"))
             .filter(e -> StringUtils.startsWithAny(e, "[INFO] +- ", "[INFO] |  "))
@@ -176,7 +176,7 @@ public class ProcessUtilsTest {
                 conflicts.add(e.getKey());
                 e.getValue().forEach(x -> conflicts.add("    " + x.a + ":" + x.b + ":" + x.c + ":" + x.d));
             });
-        return conflicts.toArray(new String[0]);
+        return conflicts;
     }
 
 }

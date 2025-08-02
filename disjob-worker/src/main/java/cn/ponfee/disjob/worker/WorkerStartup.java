@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.concurrent.TripleState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.util.TablePrinter;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
@@ -35,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -129,18 +132,21 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
         if (!enabled) {
             return;
         }
-        String bannerWorker = "Disjob worker banner\n\n" +
-            "==================================================================================\n" +
-            "      ___ _      _       _        __    __           _\n" +
-            "     /   (_)___ (_) ___ | |__    / / /\\ \\ \\___  _ __| | _____ _ __\n" +
-            "    / /\\ / / __|| |/ _ \\| '_ \\   \\ \\/  \\/ / _ \\| '__| |/ / _ \\ '__|\n" +
-            "   / /_//| \\__ \\| | (_) | |_) |   \\  /\\  / (_) | |  |   <  __/ |\n" +
-            "  /___,' |_|___// |\\___/|_.__/     \\/  \\/ \\___/|_|  |_|\\_\\___|_|\n" +
-            "              |__/\n\n" +
-            "  Worker : " + Worker.local() + "\n" +
-            "  Version: " + JobConstants.DISJOB_VERSION + "\n" +
-            "==================================================================================\n";
-        LOG.info(bannerWorker);
+
+        List<String> banner = Arrays.asList(
+            "",
+            "     ___ _      _       _        __    __           _ ",
+            "    /   (_)___ (_) ___ | |__    / / /\\ \\ \\___  _ __| | _____ _ __ ",
+            "   / /\\ / / __|| |/ _ \\| '_ \\   \\ \\/  \\/ / _ \\| '__| |/ / _ \\ '__| ",
+            "  / /_//| \\__ \\| | (_) | |_) |   \\  /\\  / (_) | |  |   <  __/ | ",
+            " /___,' |_|___// |\\___/|_.__/     \\/  \\/ \\___/|_|  |_|\\_\\___|_| ",
+            "             |__/ ",
+            "",
+            " Worker : " + Worker.local() + " ",
+            " Version: " + JobConstants.DISJOB_VERSION + " ",
+            ""
+        );
+        LOG.info("Disjob worker banner\n\n{}\n", TablePrinter.HALF.print(null, banner));
     }
 
 }

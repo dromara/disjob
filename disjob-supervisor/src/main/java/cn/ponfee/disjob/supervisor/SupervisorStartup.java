@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.concurrent.TripleState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.util.TablePrinter;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
@@ -30,6 +31,9 @@ import cn.ponfee.disjob.supervisor.scanner.TriggeringJobScanner;
 import cn.ponfee.disjob.supervisor.scanner.WaitingInstanceScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
@@ -112,18 +116,21 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
         if (!enabled) {
             return;
         }
-        String bannerSupervisor = "Disjob supervisor banner\n\n" +
-            "==================================================================================\n" +
-            "      ___ _      _       _        __                             _\n" +
-            "     /   (_)___ (_) ___ | |__    / _\\_   _ _ __   ___ _ ____   _(_)___  ___  _ __\n" +
-            "    / /\\ / / __|| |/ _ \\| '_ \\   \\ \\| | | | '_ \\ / _ \\ '__\\ \\ / / / __|/ _ \\| '__|\n" +
-            "   / /_//| \\__ \\| | (_) | |_) |  _\\ \\ |_| | |_) |  __/ |   \\ V /| \\__ \\ (_) | |\n" +
-            "  /___,' |_|___// |\\___/|_.__/   \\__/\\__,_| .__/ \\___|_|    \\_/ |_|___/\\___/|_|\n" +
-            "              |__/                        |_|\n\n" +
-            "  Supervisor: " + Supervisor.local() + "\n" +
-            "  Version   : " + JobConstants.DISJOB_VERSION + "\n" +
-            "==================================================================================\n";
-        LOG.info(bannerSupervisor);
+
+        List<String> banner = Arrays.asList(
+            "",
+            "     ___ _      _       _        __                             _ ",
+            "    /   (_)___ (_) ___ | |__    / _\\_   _ _ __   ___ _ ____   _(_)___  ___  _ __ ",
+            "   / /\\ / / __|| |/ _ \\| '_ \\   \\ \\| | | | '_ \\ / _ \\ '__\\ \\ / / / __|/ _ \\| '__| ",
+            "  / /_//| \\__ \\| | (_) | |_) |  _\\ \\ |_| | |_) |  __/ |   \\ V /| \\__ \\ (_) | | ",
+            " /___,' |_|___// |\\___/|_.__/   \\__/\\__,_| .__/ \\___|_|    \\_/ |_|___/\\___/|_| ",
+            "             |__/                        |_| ",
+            "",
+            " Supervisor: " + Supervisor.local() + " ",
+            " Version   : " + JobConstants.DISJOB_VERSION + " ",
+            ""
+        );
+        LOG.info("Disjob supervisor banner\n\n{}\n", TablePrinter.HALF.print(null, banner));
     }
 
 }

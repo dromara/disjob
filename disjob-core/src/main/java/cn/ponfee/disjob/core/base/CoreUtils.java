@@ -23,7 +23,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.NetUtils;
-import cn.ponfee.disjob.common.util.TextBoxPrinter;
+import cn.ponfee.disjob.common.util.TablePrinter;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheStats;
 import com.google.common.collect.Interner;
@@ -32,6 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -133,18 +135,18 @@ public class CoreUtils {
 
     public static String buildCacheStats(Cache<?, ?> cache, String cacheName) {
         CacheStats stats = cache.stats();
-        String title = "Cache analytics: " + cacheName;
+        String header = "Cache analytics: " + cacheName;
         String hitRate = (stats.requestCount() == 0) ? "-" : String.format("%.2f%%", stats.hitRate() * 100);
         String loadExceptionRate = (stats.loadCount() == 0) ? "-" : String.format("%.2f%%", stats.loadExceptionRate() * 100);
         String averageLoadPenalty = (stats.loadCount() == 0) ? "-" : Dates.formatDuration(TimeUnit.NANOSECONDS.toMillis((long) stats.averageLoadPenalty()));
-        String[] rows = {
+        List<String> rows = Arrays.asList(
             "Cache size: " + cache.size(),
             String.format("Hit rate: %s (%d/%d)", hitRate, stats.hitCount(), stats.requestCount()),
             String.format("Load exception rate: %s (%d/%d)", loadExceptionRate, stats.loadExceptionCount(), stats.loadCount()),
             "Average load penalty: " + averageLoadPenalty,
             "Eviction count: " + stats.evictionCount()
-        };
-        return TextBoxPrinter.print(title, rows);
+        );
+        return TablePrinter.HALF.print(header, rows);
     }
 
     // ----------------------------------------------------------------------private methods

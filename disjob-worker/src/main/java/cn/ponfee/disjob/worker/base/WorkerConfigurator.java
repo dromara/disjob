@@ -47,7 +47,7 @@ public class WorkerConfigurator {
         metrics.setAlsoSupervisor(Supervisor.local() != null);
         metrics.setJvmThreadActiveCount(Thread.activeCount());
         if (workerThreadPool != null) {
-            metrics.setThreadPool(workerThreadPool.metrics());
+            metrics.setWorkerThreadPoolMetrics(workerThreadPool.metrics());
         }
         metrics.setSignature(localWorker.createWorkerSignatureToken());
         return metrics;

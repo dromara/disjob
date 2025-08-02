@@ -36,7 +36,7 @@ public interface ServerMetricsConverter {
 
     SupervisorMetricsResponse convert(SupervisorMetrics source);
 
-    @Mapping(target = ".", source = "threadPool")
+    @Mapping(target = ".", source = "workerThreadPoolMetrics")
     WorkerMetricsResponse convert(WorkerMetrics source);
 
 }

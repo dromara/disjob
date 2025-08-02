@@ -209,7 +209,7 @@ public @interface MybatisDataSourceConfigurer {
 
         // ----------------------------------------------------------------------------------------private methods
 
-        private BeanDefinitionBuilder newBeanDefinitionBuilder(Class<?> beanType, boolean primary) {
+        private static BeanDefinitionBuilder newBeanDefinitionBuilder(Class<?> beanType, boolean primary) {
             BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(beanType);
             builder.setPrimary(primary);
             builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);

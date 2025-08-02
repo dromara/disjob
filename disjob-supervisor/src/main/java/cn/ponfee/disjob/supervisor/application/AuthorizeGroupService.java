@@ -64,7 +64,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
         .build();
     @SuppressWarnings("all")
     private final PeriodExecutor cacheStatsPrinter =
-        new PeriodExecutor(120_000, () -> LOG.info("\n\n" + CoreUtils.buildCacheStats(jobGroupCache, "Job group cache")));
+        new PeriodExecutor(120_000, () -> LOG.info("\n\n{}\n", CoreUtils.buildCacheStats(jobGroupCache, "Job group cache")));
 
     public AuthorizeGroupService(JobQuerier jobQuerier) {
         this.jobQuerier = jobQuerier;

@@ -61,7 +61,7 @@ public class WorkerMetrics extends ToJsonString implements Serializable {
     /**
      * Worker线程池指标情况
      */
-    private ThreadPoolMetrics threadPool;
+    private WorkerThreadPoolMetrics workerThreadPoolMetrics;
 
     /**
      * Worker signature
@@ -70,7 +70,7 @@ public class WorkerMetrics extends ToJsonString implements Serializable {
 
     @Getter
     @Setter
-    public static class ThreadPoolMetrics extends ToJsonString implements Serializable {
+    public static class WorkerThreadPoolMetrics extends ToJsonString implements Serializable {
         private static final long serialVersionUID = -7745918336704886916L;
 
         private boolean closed;
