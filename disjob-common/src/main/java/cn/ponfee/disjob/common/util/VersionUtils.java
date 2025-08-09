@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import cn.ponfee.disjob.common.collect.Collects;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 
@@ -25,6 +26,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -47,25 +49,25 @@ public final class VersionUtils {
     }
 
     public static String getVersion(Class<?> cls, String groupId, String artifactId) {
-        String implementationVersion = cls.getPackage().getImplementationVersion();
-        if (StringUtils.isNotBlank(implementationVersion)) {
-            return implementationVersion;
+        String version = cls.getPackage().getImplementationVersion();
+        if (StringUtils.isNotBlank(version)) {
+            return version;
         }
 
         URL url = cls.getProtectionDomain().getCodeSource().getLocation();
         try (JarFile jarFile = getJarFile(url)) {
-            implementationVersion = jarFile.getManifest().getMainAttributes().getValue(Name.IMPLEMENTATION_VERSION);
-            if (StringUtils.isNotBlank(implementationVersion)) {
-                return implementationVersion;
+            version = jarFile.getManifest().getMainAttributes().getValue(Name.IMPLEMENTATION_VERSION);
+            if (StringUtils.isNotBlank(version)) {
+                return version;
             }
 
-            JarEntry jarEntry = getJarEntry(jarFile, groupId, artifactId);
-            if (jarEntry == null) {
-                return null;
+            version = getPomPropertiesVersion(jarFile, groupId, artifactId);
+            if (StringUtils.isNotBlank(version)) {
+                return version;
             }
-            Properties props = new Properties();
-            props.load(jarFile.getInputStream(jarEntry));
-            return props.getProperty(VERSION);
+
+            String jarFileName = Collects.getLast(url.toURI().getPath().split("[/\\\\]"));
+            return Collects.getLast(jarFileName.replaceAll("\\.jar$", "").split("-"));
         } catch (FileNotFoundException ignored) {
             // e.g.: /Users/ponfee/scm/gitee/disjob/disjob-supervisor/target/classes/
             return "file".equals(url.getProtocol()) ? getLocalMavenPomVersion(url) : null;
@@ -85,18 +87,24 @@ public final class VersionUtils {
         }
     }
 
-    private static JarEntry getJarEntry(JarFile jarFile, String groupId, String artifactId) {
+    private static String getPomPropertiesVersion(JarFile jarFile, String groupId, String artifactId) throws IOException {
         if (StringUtils.isEmpty(groupId) || StringUtils.isEmpty(artifactId)) {
             return null;
         }
         String pathFormat = "META-INF/maven/%s/%s/pom.properties";
         // e.g.: META-INF/maven/com.google.guava/guava/pom.properties
-        JarEntry jarEntry = jarFile.getJarEntry(String.format(pathFormat, groupId, artifactId));
-        if (jarEntry == null) {
+        JarEntry pomPropertiesEntry = jarFile.getJarEntry(String.format(pathFormat, groupId, artifactId));
+        if (pomPropertiesEntry == null) {
             // e.g.: META-INF/maven/com/google/guava/guava/pom.properties
-            jarEntry = jarFile.getJarEntry(String.format(pathFormat, groupId.replace('.', '/'), artifactId));
+            pomPropertiesEntry = jarFile.getJarEntry(String.format(pathFormat, groupId.replace('.', '/'), artifactId));
         }
-        return jarEntry;
+        if (pomPropertiesEntry == null) {
+            return null;
+        }
+
+        Properties props = new Properties();
+        props.load(jarFile.getInputStream(pomPropertiesEntry));
+        return props.getProperty(VERSION);
     }
 
     private static String getLocalMavenPomVersion(URL url) {

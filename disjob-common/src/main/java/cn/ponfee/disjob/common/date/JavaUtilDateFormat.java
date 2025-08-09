@@ -55,7 +55,7 @@ public class JavaUtilDateFormat extends DateFormat {
     /**
      * 日期时间戳：秒/毫秒
      */
-    static final Pattern TIMESTAMP_PATTERN = Pattern.compile("^0|[1-9]\\d*$");
+    static final Pattern TIMESTAMP_PATTERN = Pattern.compile("^(0|[1-9]\\d*)$");
 
     static final FastDateFormat PATTERN_11 = FastDateFormat.getInstance("yyyyMM");
     static final FastDateFormat PATTERN_12 = FastDateFormat.getInstance("yyyy-MM");

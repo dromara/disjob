@@ -21,20 +21,34 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
- * Workflow dag predecessor instance
+ * Workflow task
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class PredecessorInstance extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = 422243686633743869L;
+public class WorkflowTask extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -4625053001297718912L;
 
-    private long instanceId;
-    private String curNode;
-    private List<PredecessorTask> tasks;
+    /**
+     * 任务ID
+     */
+    private long taskId;
 
+    /**
+     * 当前任务序号(从1开始)
+     */
+    private int taskNo;
+
+    /**
+     * 任务总数量
+     */
+    private int taskCount;
+
+    /**
+     * 保存的执行快照数据
+     */
+    private String executeSnapshot;
 }

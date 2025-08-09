@@ -16,9 +16,9 @@
 
 package cn.ponfee.disjob.worker.util;
 
+import cn.ponfee.disjob.common.base.TablePrinter;
 import cn.ponfee.disjob.common.tuple.Tuple4;
 import cn.ponfee.disjob.common.util.MavenProjects;
-import cn.ponfee.disjob.common.util.TablePrinter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections4.MapUtils;

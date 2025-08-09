@@ -27,9 +27,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @MybatisDataSourceConfigurer(
     mapperLocations = "classpath*:cn/ponfee/disjob/supervisor/disjob_admin/xml/*.xml",
-    basePackages = {"cn.ponfee.disjob.supervisor.disjob_admin", "abc"},
+    basePackages = {"cn.ponfee.disjob.supervisor.disjob_admin", "cn.ponfee.disjob.unknown"},
     basePackageClasses = UserMapperTest.class,
-    typeAliasesPackage = "cn.ponfee.not.exists",
+    typeAliasesPackage = "cn.ponfee.disjob.nonexistent",
     defaultFetchSize = 99
 )
 public class AdminDataSourceConfig /*extends cn.ponfee.disjob.common.spring.AbstractMybatisDataSourceConfig*/ {

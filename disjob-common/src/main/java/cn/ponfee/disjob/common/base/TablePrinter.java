@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.common.util;
+package cn.ponfee.disjob.common.base;
 
 import cn.ponfee.disjob.common.collect.Collects;
 import com.google.common.base.Strings;
@@ -39,35 +39,35 @@ public enum TablePrinter {
     /**
      * 全角
      */
-    FULL("┌", "┬", "┐", "└", "┴", "┘", "├", "┼", "┤", "─", "│"),
+    FULL("┌", "┬", "┐", "├", "┼", "┤", "└", "┴", "┘", "─", "│"),
 
     ;
 
     private final String tl; // top left
     private final String tc; // top center
     private final String tr; // top right
+    private final String ml; // middle left
+    private final String mc; // middle center
+    private final String mr; // middle right
     private final String bl; // bottom left
     private final String bc; // bottom center
     private final String br; // bottom right
-    private final String ml; // middle left
-    private final String mm; // middle-middle (cross)
-    private final String mr; // middle right
     private final String hr; // horizontal
     private final String vr; // vertical
 
     TablePrinter(String tl, String tc, String tr,
+                 String ml, String mc, String mr,
                  String bl, String bc, String br,
-                 String ml, String mm, String mr,
                  String hr, String vr) {
         this.tl = tl;
         this.tc = tc;
         this.tr = tr;
+        this.ml = ml;
+        this.mc = mc;
+        this.mr = mr;
         this.bl = bl;
         this.bc = bc;
         this.br = br;
-        this.ml = ml;
-        this.mm = mm;
-        this.mr = mr;
         this.hr = hr;
         this.vr = vr;
     }
@@ -110,10 +110,10 @@ public enum TablePrinter {
         if (!rows.isEmpty()) {
             if (withHeader) {
                 // print middle border: ├──┼──┤
-                printBorder(output, colLines, ml, mm, mr, true);
+                printBorder(output, colLines, ml, mc, mr, true);
             }
             for (String[] row : rows) {
-                // print row: │ row    │
+                // print row: │ row       │
                 printRow(output, colLines, row, false);
             }
         }

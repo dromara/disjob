@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.spring.MybatisDataSourceConfigurer.MybatisDataSou
 import cn.ponfee.disjob.common.util.Strings;
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
@@ -241,7 +242,8 @@ public @interface MybatisDataSourceConfigurer {
 
             try {
                 List<Resource> resources = new ArrayList<>();
-                for (String mapperLocation : mapperLocations) {
+                // Sets.newHashSet(mapperLocations): remove duplicates
+                for (String mapperLocation : Sets.newHashSet(mapperLocations)) {
                     resources.addAll(Arrays.asList(new PathMatchingResourcePatternResolver().getResources(mapperLocation)));
                 }
                 return resources.toArray(new Resource[0]);

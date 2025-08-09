@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.core.base;
 
+import cn.ponfee.disjob.common.base.TablePrinter;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.date.Dates;
@@ -23,7 +24,6 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.NetUtils;
-import cn.ponfee.disjob.common.util.TablePrinter;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheStats;
 import com.google.common.collect.Interner;

@@ -19,8 +19,8 @@ package cn.ponfee.disjob.supervisor.base;
 import cn.ponfee.disjob.alert.base.AlertInstanceEvent;
 import cn.ponfee.disjob.alert.base.AlertType;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.core.dag.PredecessorInstance;
-import cn.ponfee.disjob.core.dag.PredecessorTask;
+import cn.ponfee.disjob.core.dag.WorkflowInstance;
+import cn.ponfee.disjob.core.dag.WorkflowTask;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
@@ -44,11 +44,11 @@ import java.util.List;
  */
 public final class ModelConverter {
 
-    public static PredecessorInstance toPredecessorInstance(SchedWorkflow workflow, List<SchedTask> tasks) {
-        PredecessorInstance instance = new PredecessorInstance();
+    public static WorkflowInstance toWorkflowInstance(SchedWorkflow workflow, List<SchedTask> tasks) {
+        WorkflowInstance instance = new WorkflowInstance();
         instance.setInstanceId(workflow.getInstanceId());
         instance.setCurNode(workflow.getCurNode());
-        instance.setTasks(Collects.convert(tasks, ModelConverter::toPredecessorTask));
+        instance.setTasks(Collects.convert(tasks, ModelConverter::toWorkflowTask));
         return instance;
     }
 
@@ -70,7 +70,7 @@ public final class ModelConverter {
     }
 
     public static SplitJobParam toSplitJobParam(SchedJob job, SchedInstance instance,
-                                                List<PredecessorInstance> predecessorInstances) {
+                                                List<WorkflowInstance> predecessorInstances) {
         Assert.isTrue(JobType.of(job.getJobType()).isWorkflow(), "Job must be workflow.");
         Assert.isTrue(instance.isWorkflowNode(), () -> "Split job must be node instance: " + instance);
         String curJobExecutor = instance.parseWorkflowCurNode().getName();
@@ -112,8 +112,8 @@ public final class ModelConverter {
 
     // ----------------------------------------------------------------------private methods
 
-    private static PredecessorTask toPredecessorTask(SchedTask source) {
-        PredecessorTask target = new PredecessorTask();
+    private static WorkflowTask toWorkflowTask(SchedTask source) {
+        WorkflowTask target = new WorkflowTask();
         target.setTaskId(source.getTaskId());
         target.setTaskNo(source.getTaskNo());
         target.setTaskCount(source.getTaskCount());
@@ -122,7 +122,7 @@ public final class ModelConverter {
     }
 
     private static SplitJobParam toSplitJobParam(SchedJob job, int retriedCount, String jobExecutor,
-                                                 List<PredecessorInstance> predecessorInstances) {
+                                                 List<WorkflowInstance> predecessorInstances) {
         SplitJobParam param = new SplitJobParam();
         param.fillSupervisorAuthenticationToken(job.getGroup());
         param.setJobExecutor(jobExecutor);

@@ -52,16 +52,24 @@ import static org.mockito.Mockito.reset;
  * 4、Mockito官方建议优先考虑使用when(...).thenReturn(...)，而不是doReturn(...).when(...)
  *
  * 5、Mockito语法：
- *   When/Then: when(yourMethod()).thenReturn(5); when(yourMethod()).thenThrow();
- *   Do/When: doReturn(7).when(yourMock.fizzBuzz()); doThrow(Throwable).when(yourMethod());
- *   Given/Will: given(yourMethod()).willThrow(OutOfMemoryException.class);
- *   Will/Given/Do: willReturn(any()).given(yourMethod()).doNothing();
- *   Verify/Do: verify(yourMethod()).doThrow(SomeException.class);
+ *   When/Then:
+ *     1）when(yourMock.yourMethod()).thenReturn(yourReturnValue);
+ *     2）when(yourMock.yourMethod()).thenThrow();
+ *   Do/When:
+ *     1）doReturn(yourReturnValue).when(yourMock).yourMethod();
+ *     2）doNothing().when(yourMock).yourMethod();
+ *     3）doThrow(Throwable).when(yourMock).yourMethod();
+ *   Given/Will:
+ *     1）given(yourMethod()).willThrow(OutOfMemoryException.class);
+ *   Will/Given/Do:
+ *     1）willReturn(any()).given(yourMethod()).doNothing();
+ *   Verify/Do:
+ *     1）verify(yourMethod()).doThrow(SomeException.class);
  *
  * 6、MockedStatic<A> mockedStatic = Mockito.mockStatic(A.class)
- *    when...thenReturn后调用静态方法返回mock结果
- *    reset()后调用静态方法都返回null，会重置verify上下文
- *    close()后调用静态方法返回正常且不能再使用`mockedStatic`对象
+ *    1）when...thenReturn后调用静态方法返回mock结果
+ *    2）reset()后调用静态方法都返回null，会重置verify上下文
+ *    3）close()后调用静态方法返回正常且不能再使用`mockedStatic`对象
  * </pre>
  *
  * @author Ponfee
@@ -117,7 +125,6 @@ public abstract class SpringBootTestMockito {
                     throw new RuntimeException("Mocked object cannot be null: " + field.toGenericString());
                 } else if (mockedObj instanceof MockedStatic) {
                     ((MockedStatic<?>) mockedObj).close();
-                    //((MockedStatic<?>) mockedObj).reset();
                 } else {
                     reset(mockedObj);
                 }

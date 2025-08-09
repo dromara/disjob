@@ -110,12 +110,12 @@ public class DAGExpression {
     /**
      * DAGNode pattern, for example `1:1:A`
      */
-    private static final Pattern JSON_ITEM_PATTERN = Pattern.compile("^\\d+:\\d+:(\\s*\\S+\\s*)+$");
+    private static final Pattern JSON_ITEM_PATTERN = Pattern.compile("^\\d+:\\d+:\\s*\\S+.*$");
 
     /**
      * Thumb split plain expression pattern
      */
-    private static final Pattern THUMB_SPLIT_PATTERN = Pattern.compile("(->)|(,)|(\\()|(\\))|(;)");
+    private static final Pattern THUMB_SPLIT_PATTERN = Pattern.compile("->|[;,()]");
 
     private static final String SEP_TOPOLOGY = ";";
     private static final String SEP_STAGE = "->";

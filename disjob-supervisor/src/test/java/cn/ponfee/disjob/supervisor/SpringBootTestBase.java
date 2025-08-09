@@ -82,7 +82,7 @@ public abstract class SpringBootTestBase<T> extends SpringBootTestMockito implem
 
     /**
      * 在当前测试类的所有测试方法之前执行一次，必须是void返回类型且不能为private，可以按junit jupiter的规范带上参数
-     * <p>超类的`@BeforeAll`方法将在当前类的方法之前运行，除非它们在当前类中被遮蔽(shadowed)
+     * <p>父类的`@BeforeAll`方法会被子类继承(除非被子类隐藏hidden或重写overridden)，且父类的执行顺序优先于子类
      * <p>`beforeClass`与`beforeAllMethod`不存在固定的先后执行顺序(实际是按照方法名的ascii码顺序)
      */
     /*

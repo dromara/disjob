@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.dag.PredecessorTask;
+import cn.ponfee.disjob.core.dag.WorkflowTask;
 import cn.ponfee.disjob.worker.executor.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
@@ -60,7 +60,7 @@ public class PrimeAccumulateJobExecutor extends JobExecutor {
         private long taskId;
         private long primeCount;
 
-        public static Param of(PredecessorTask task) {
+        public static Param of(WorkflowTask task) {
             Param param = new Param();
             param.setTaskId(task.getTaskId());
             param.setPrimeCount(Jsons.fromJson(task.getExecuteSnapshot(), PrimeCountJobExecutor.ExecuteSnapshot.class).getCount());

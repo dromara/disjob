@@ -32,7 +32,7 @@ import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.dag.PredecessorInstance;
+import cn.ponfee.disjob.core.dag.WorkflowInstance;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
@@ -889,7 +889,7 @@ public class JobManager {
             // re-split job
             SplitJobParam splitJobParam;
             if (failed.isWorkflow()) {
-                List<PredecessorInstance> list = loadWorkflowPredecessorInstances(job, failed.getWnstanceId(), failed.getInstanceId());
+                List<WorkflowInstance> list = loadWorkflowPredecessorInstances(job, failed.getWnstanceId(), failed.getInstanceId());
                 splitJobParam = ModelConverter.toSplitJobParam(job, retry, list);
             } else {
                 splitJobParam = ModelConverter.toSplitJobParam(job, retry);
@@ -1112,7 +1112,7 @@ public class JobManager {
         int row = workflowMapper.update(wnstanceId, workflow.getCurNode(), RunState.RUNNING.value(), nextInstanceId, RS_WAITING, null);
         assertHasAffectedRow(row, () -> "Start workflow node failed: " + workflow);
 
-        List<PredecessorInstance> list = predecessors.isEmpty() ? null : loadWorkflowPredecessorInstances(job, wnstanceId, nextInstanceId);
+        List<WorkflowInstance> list = predecessors.isEmpty() ? null : loadWorkflowPredecessorInstances(job, wnstanceId, nextInstanceId);
         SplitJobParam splitJobParam = ModelConverter.toSplitJobParam(job, nextInstance, list);
         List<SchedTask> tasks = splitJob(job.getGroup(), nextInstanceId, splitJobParam);
 
@@ -1151,7 +1151,7 @@ public class JobManager {
         return false;
     }
 
-    private List<PredecessorInstance> loadWorkflowPredecessorInstances(SchedJob job, long wnstanceId, Long instanceId) {
+    private List<WorkflowInstance> loadWorkflowPredecessorInstances(SchedJob job, long wnstanceId, Long instanceId) {
         List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
         SchedWorkflow curWorkflow = workflows.stream().filter(e -> instanceId.equals(e.getInstanceId())).findAny().orElse(null);
         Assert.state(curWorkflow != null, () -> "Not found current workflow node: " + wnstanceId + ", " + instanceId);
@@ -1174,7 +1174,7 @@ public class JobManager {
                 instanceIds.forEach(t -> tasks.addAll(taskMapper.findLargeByInstanceIdAndStates(t, ES_COMPLETED)));
             }
             tasks.sort(SchedTask.TASK_NO_COMPARATOR);
-            return ModelConverter.toPredecessorInstance(e, tasks);
+            return ModelConverter.toWorkflowInstance(e, tasks);
         });
     }
 

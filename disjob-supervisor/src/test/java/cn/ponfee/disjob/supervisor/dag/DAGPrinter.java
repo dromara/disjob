@@ -32,28 +32,28 @@ import java.io.IOException;
 public class DAGPrinter {
 
     public static void main(String[] args) throws Exception {
-        drawGraph("A", "dag0.png");
-        drawGraph("A -> B,C,D", "dag1.png");
-        drawGraph("A,B,C -> D", "dag2.png");
-        drawGraph("A -> B,C,D -> E", "dag3.png");
-        drawGraph("A -> B,C -> E,(F->G) -> H", "dag4.png");
-        drawGraph("A -> (B->C->D),(A->F) -> G,H,X -> J ; A->Y", "dag5.png");
-        drawGraph("ALoader -> (BMap->CMap->DMap),(AMap->FMap) -> GShuffle,HShuffle,XShuffle -> JReduce ; A->Y", "dag6.png");
-        drawGraph("A->B,C,(D->E)->D,F->G", "dag7.png");
-        drawGraph("A -> B -> (D->E->F),    (C-> (G-> (H->I),J -> K), (L->M))    -> Z", "dag8.png");
-        drawGraph("A -> (B->C), (D->E->F), ( G -> (H->I->(J,K)),(L->M) -> N ) -> Z", "dag9.png");
+        drawGraph("A", "dag01.png");
+        drawGraph("A -> B,C,D", "dag02.png");
+        drawGraph("A,B,C -> D", "dag03.png");
+        drawGraph("A -> B,C,D -> E", "dag04.png");
+        drawGraph("A -> B,C -> E,(F->G) -> H", "dag05.png");
+        drawGraph("A -> (B->C->D),(A->F) -> G,H,X -> J ; A->Y", "dag06.png");
+        drawGraph("ALoader -> (BMap->CMap->DMap),(AMap->FMap) -> GShuffle,HShuffle,XShuffle -> JReduce ; A->Y", "dag07.png");
+        drawGraph("A->B,C,(D->E)->D,F->G", "dag08.png");
+        drawGraph("[\"A->C\",\"A->D\",\"B->D\",\"B->E\"]", "dag09.png");
+        drawGraph("[\"1:1:A->1:1:C\", \"1:1:A->1:1:D\", \"1:1:B->1:1:D\", \"1:1:B->1:1:E\"]", "dag10.png");
+        drawGraph("A->B,C,D",                 "dag11.png");
+        drawGraph("A->B->C,D",                "dag12.png");
+        drawGraph("A->B->C->D->G;A->E->F->G", "dag13.png");
+        drawGraph("A->(B->C->D),(E->F)->G",   "dag14.png");
+        drawGraph("A->B->C,D,E;A->H->I,J,K",  "dag15.png");
+        drawGraph("A->(B->C,D,E),(H->I,J,K)", "dag16.png");
+        drawGraph("A,B,C->D",                 "dag17.png");
 
-        drawGraph("A->B,C,D",                 "10.png");
-        drawGraph("A->B->C,D",                "20.png");
-        drawGraph("A->B->C->D->G;A->E->F->G", "30.png");
-        drawGraph("A->(B->C->D),(E->F)->G",   "31.png");
-        drawGraph("A->B->C,D,E;A->H->I,J,K",  "40.png");
-        drawGraph("A->(B->C,D,E),(H->I,J,K)", "41.png");
-        drawGraph("A,B,C->D",                 "50.png");
-
-        drawGraph("[\"A->C\",\"A->D\",\"B->D\",\"B->E\"]", "json-graph1.png");
-        drawGraph("[\"A -> B\",\"B -> D\",\"D -> E\",\"E -> F\",\"F -> Z\",\"B -> C\",\"C -> G\",\"G -> H\",\"H -> I\",\"I -> K\",\"K -> Z\",\"G -> J\",\"J -> K\",\"C -> L\",\"L -> M\",\"M -> Z\"]", "json-graph2.png");
-        drawGraph("[\"A -> B\",\"B -> C\",\"C -> Z\",\"A -> D\",\"D -> E\",\"E -> F\",\"F -> Z\",\"A -> G\",\"G -> H\",\"H -> I\",\"I -> J\",\"J -> N\",\"I -> K\",\"K -> N\",\"G -> L\",\"L -> M\",\"M -> N\",\"N -> Z\"]", "json-graph3.png");
+        drawGraph("A -> B -> (D->E->F), ( C -> (G -> (H->I),J -> K), (L->M) ) -> Z", "dag20.png");
+        drawGraph("[\"A -> B\",\"B -> D\",\"D -> E\",\"E -> F\",\"F -> Z\",\"B -> C\",\"C -> G\",\"G -> H\",\"H -> I\",\"I -> K\",\"K -> Z\",\"G -> J\",\"J -> K\",\"C -> L\",\"L -> M\",\"M -> Z\"]", "dag21.png");
+        drawGraph("A -> (B->C), (D->E->F), ( G -> (H->I->J,K),(L->M) -> N ) -> Z", "dag22.png");
+        drawGraph("[\"A -> B\",\"B -> C\",\"C -> Z\",\"A -> D\",\"D -> E\",\"E -> F\",\"F -> Z\",\"A -> G\",\"G -> H\",\"H -> I\",\"I -> J\",\"J -> N\",\"I -> K\",\"K -> N\",\"G -> L\",\"L -> M\",\"M -> N\",\"N -> Z\"]", "dag23.png");
     }
 
     private static void drawGraph(String expr, String fileName) throws IOException {
