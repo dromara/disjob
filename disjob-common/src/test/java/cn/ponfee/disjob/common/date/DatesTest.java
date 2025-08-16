@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +45,15 @@ import static cn.ponfee.disjob.common.date.Dates.*;
  * @author Ponfee
  */
 public class DatesTest {
+
+    @Test
+    public void testInstance() {
+        String date = "1970-01-01T00:00:00Z";
+        Assertions.assertEquals(date, Instant.from(DateTimeFormatter.ISO_INSTANT.parse(date)).toString());
+        Assertions.assertEquals(date, Instant.ofEpochSecond(0).toString());
+        Assertions.assertEquals(date, Instant.ofEpochMilli(0).toString());
+        Assertions.assertEquals(date, Instant.ofEpochSecond(0, 0).toString());
+    }
 
     @Test
     public void test() throws ParseException {

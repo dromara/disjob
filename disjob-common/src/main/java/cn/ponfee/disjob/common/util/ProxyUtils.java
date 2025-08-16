@@ -91,6 +91,14 @@ public final class ProxyUtils {
         }
     }
 
+    /**
+     * Creates proxied annotation type object
+     *
+     * @param annotationType the annotation type
+     * @param attributes     the attribute map
+     * @param <A>            annotation type
+     * @return proxied annotation type object
+     */
     @SuppressWarnings("unchecked")
     public static <A extends Annotation> A create(Class<A> annotationType, Map<String, Object> attributes) {
         return (A) java.lang.reflect.Proxy.newProxyInstance(
@@ -101,9 +109,12 @@ public final class ProxyUtils {
     }
 
     /**
-     * Returns the proxy target object
+     * <pre>
+     * 获取原始对象(被代理的对象)，如：`Service`中的方法加了`@Transactional`注解，`Controller`中引用的`Service`实际是代理对象，
+     * 可以使用`getTargetObject`获取真实的`Service`对象
+     * </pre>
      *
-     * @param object the object
+     * @param object the proxy object
      * @return target object
      * @throws Exception if occur exception
      */

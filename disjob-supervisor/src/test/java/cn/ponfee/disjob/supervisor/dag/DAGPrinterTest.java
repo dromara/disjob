@@ -16,22 +16,33 @@
 
 package cn.ponfee.disjob.supervisor.dag;
 
-import cn.ponfee.disjob.common.util.Files;
+import cn.ponfee.disjob.common.dag.DAGExpression;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * DAG printer
+ * DAG printer test
  *
  * @author Ponfee
  */
-public class DAGPrinter {
+@Disabled
+class DAGPrinterTest {
 
-    public static void main(String[] args) throws Exception {
+    private static final String BASE_DIR = MavenProjects.getProjectBaseDir() + "/target/dag/";
+
+    @Test
+    void testPrint() throws Exception {
+        File baseDir = new File(BASE_DIR);
+        FileUtils.deleteDirectory(baseDir);
+        FileUtils.forceMkdir(baseDir);
+
         drawGraph("A", "dag01.png");
         drawGraph("A -> B,C,D", "dag02.png");
         drawGraph("A,B,C -> D", "dag03.png");
@@ -50,17 +61,21 @@ public class DAGPrinter {
         drawGraph("A->(B->C,D,E),(H->I,J,K)", "dag16.png");
         drawGraph("A,B,C->D",                 "dag17.png");
 
-        drawGraph("A -> B -> (D->E->F), ( C -> (G -> (H->I),J -> K), (L->M) ) -> Z", "dag20.png");
-        drawGraph("[\"A -> B\",\"B -> D\",\"D -> E\",\"E -> F\",\"F -> Z\",\"B -> C\",\"C -> G\",\"G -> H\",\"H -> I\",\"I -> K\",\"K -> Z\",\"G -> J\",\"J -> K\",\"C -> L\",\"L -> M\",\"M -> Z\"]", "dag21.png");
-        drawGraph("A -> (B->C), (D->E->F), ( G -> (H->I->J,K),(L->M) -> N ) -> Z", "dag22.png");
-        drawGraph("[\"A -> B\",\"B -> C\",\"C -> Z\",\"A -> D\",\"D -> E\",\"E -> F\",\"F -> Z\",\"A -> G\",\"G -> H\",\"H -> I\",\"I -> J\",\"J -> N\",\"I -> K\",\"K -> N\",\"G -> L\",\"L -> M\",\"M -> N\",\"N -> Z\"]", "dag23.png");
+        String dag20 = "A -> B -> (D->E->F), ( C -> (G -> (H->I),J -> K), (L->M) ) -> Z";
+        String dag21 = "[\"A -> B\",\"B -> D\",\"D -> E\",\"E -> F\",\"F -> Z\",\"B -> C\",\"C -> G\",\"G -> H\",\"H -> I\",\"I -> K\",\"K -> Z\",\"G -> J\",\"J -> K\",\"C -> L\",\"L -> M\",\"M -> Z\"]";
+        Assertions.assertEquals(DAGExpression.parse(dag20), DAGExpression.parse(dag21));
+        drawGraph(dag20, "dag20.png");
+        drawGraph(dag21, "dag21.png");
+
+        String dag30 = "A -> (B->C), (D->E->F), ( G -> (H->I->J,K),(L->M) -> N ) -> Z";
+        String dag31 = "[\"A -> B\",\"B -> C\",\"C -> Z\",\"A -> D\",\"D -> E\",\"E -> F\",\"F -> Z\",\"A -> G\",\"G -> H\",\"H -> I\",\"I -> J\",\"J -> N\",\"I -> K\",\"K -> N\",\"G -> L\",\"L -> M\",\"M -> N\",\"N -> Z\"]";
+        Assertions.assertEquals(DAGExpression.parse(dag30), DAGExpression.parse(dag31));
+        drawGraph(dag30, "dag30.png");
+        drawGraph(dag31, "dag31.png");
     }
 
     private static void drawGraph(String expr, String fileName) throws IOException {
-        File file = new File(MavenProjects.getProjectBaseDir() + "/target/dag/" + fileName);
-        FileUtils.deleteQuietly(file);
-        Files.mkdirIfNotExists(file.getParentFile());
-        DAGUtils.drawImage(expr, false, 2000, new FileOutputStream(file));
+        DAGUtils.drawImage(expr, false, 2000, new FileOutputStream(BASE_DIR + fileName));
     }
 
 }

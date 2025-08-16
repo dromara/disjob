@@ -23,7 +23,6 @@ import org.w3c.dom.Document;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -66,8 +65,12 @@ public final class VersionUtils {
                 return version;
             }
 
-            String jarFileName = Collects.getLast(url.toURI().getPath().split("[/\\\\]"));
-            return Collects.getLast(jarFileName.replaceAll("\\.jar$", "").split("-"));
+            // extract jar file base name: `/path/xxx.jar!/` or `/path/xxx.jar`  =>  `xxx`
+            String jarFileName = Collects.getLast(url.getPath().replaceAll("(?:\\.jar!/|\\.jar)$", "").split("[/\\\\]"));
+            if (StringUtils.isNotBlank(artifactId) && jarFileName.startsWith(artifactId + "-")) {
+                return jarFileName.substring(artifactId.length() + 1);
+            }
+            return Collects.getLast(jarFileName.split("-"));
         } catch (FileNotFoundException ignored) {
             // e.g.: /Users/ponfee/scm/gitee/disjob/disjob-supervisor/target/classes/
             return "file".equals(url.getProtocol()) ? getLocalMavenPomVersion(url) : null;
@@ -81,9 +84,10 @@ public final class VersionUtils {
     private static JarFile getJarFile(URL url) throws Exception {
         URLConnection connection = url.openConnection();
         if (connection instanceof JarURLConnection) {
+            // 对于springboot的url为`file:/path/xxx.jar!/BOOT-INF/lib/commons-lang3-3.12.0.jar!/`
             return ((JarURLConnection) connection).getJarFile();
         } else {
-            return new JarFile(new File(url.toURI()));
+            return new JarFile(Files.toFile(url));
         }
     }
 
@@ -121,8 +125,8 @@ public final class VersionUtils {
         }
     }
 
-    private static String getLocalMavenPomFile(URL url) throws Exception {
-        return new File(url.toURI()).getParentFile().getParentFile().getAbsolutePath() + "/pom.xml";
+    private static String getLocalMavenPomFile(URL url) {
+        return Files.toFile(url).getParentFile().getParentFile().getAbsolutePath() + "/pom.xml";
     }
 
 }

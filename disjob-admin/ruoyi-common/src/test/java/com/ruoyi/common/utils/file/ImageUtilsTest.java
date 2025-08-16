@@ -30,7 +30,7 @@ public class ImageUtilsTest {
 
     public static void main(String[] args) throws Exception {
         URL url = Thread.currentThread().getContextClassLoader().getResource("");
-        String path = new File(url.toURI()).getParentFile().getParentFile().getAbsolutePath() + "/target/dag/test.png";
+        String path = new File(url.toURI()).getParentFile().getParentFile().getAbsolutePath() + "/target/image/test.png";
         File file = new File(path);
         FileUtils.deleteQuietly(file);
         file.getParentFile().mkdirs();

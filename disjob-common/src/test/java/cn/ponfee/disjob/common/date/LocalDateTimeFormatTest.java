@@ -20,10 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
@@ -238,6 +235,12 @@ public class LocalDateTimeFormatTest {
         date = LocalDateTime.ofInstant(Instant.parse(dateString), ZoneOffset.ofHours(8));
         assertEquals(date.toString(), "2022-07-18T23:11:11.133");
         System.out.println(LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")));
+
+        System.out.println(DateTimeFormatter.ISO_INSTANT.parse("2000-01-01T01:23:45.123456789Z"));
+        System.out.println(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+        System.out.println(DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now()));
+        System.out.println(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now()));
+        System.out.println(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(OffsetDateTime.now()));
     }
 
     @Test

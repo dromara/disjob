@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.common.util;
 
-import cn.ponfee.disjob.common.exception.Throwables;
 import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
@@ -364,7 +363,12 @@ public final class Files {
     }
 
     public static File toFile(URL url) {
-        return new File(Throwables.ThrowingSupplier.doChecked(url::toURI));
+        try {
+            return new File(url.toURI());
+        } catch (Exception e) {
+            // return new File(url.getPath());
+            return ExceptionUtils.rethrow(e);
+        }
     }
 
     public static Document parseToXmlDocument(InputStream inputStream) throws Exception {

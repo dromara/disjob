@@ -46,18 +46,12 @@ final class DestinationServerRestTemplate {
     private static final Logger LOG = LoggerFactory.getLogger(DestinationServerRestTemplate.class);
 
     private static final Set<HttpStatus> RETRYABLE_HTTP_STATUS = ImmutableSet.of(
-        // 4xx
+        // 4xx：408、429
         HttpStatus.REQUEST_TIMEOUT,
-        //HttpStatus.CONFLICT,
-        //HttpStatus.LOCKED,
-        //HttpStatus.FAILED_DEPENDENCY,
-        HttpStatus.TOO_EARLY,
-        //HttpStatus.PRECONDITION_REQUIRED,
         HttpStatus.TOO_MANY_REQUESTS,
 
-        // 5xx
-        // 500：Supervisor内部组件超时(如数据库超时)等场景
-        //HttpStatus.INTERNAL_SERVER_ERROR,
+        // 5xx：502、503、504、509
+        //HttpStatus.INTERNAL_SERVER_ERROR, // 500：服务器端内部请求外部服务超时导致异常，如：数据库连接超时等
         HttpStatus.BAD_GATEWAY,
         HttpStatus.SERVICE_UNAVAILABLE,
         HttpStatus.GATEWAY_TIMEOUT,

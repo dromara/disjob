@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
@@ -132,10 +131,6 @@ public class Worker extends Server implements Comparable<Worker> {
     }
 
     // --------------------------------------------------------static method
-
-    public static Worker deserialize(byte[] bytes, Charset charset) {
-        return deserialize(new String(bytes, charset));
-    }
 
     /**
      * Deserialize from string.

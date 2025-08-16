@@ -31,12 +31,11 @@ public class TreeTraitMap<T extends Serializable & Comparable<T>, A>
     extends LinkedHashMap<String, Object> implements TreeTrait<T, A, TreeTraitMap<T, A>> {
 
     private static final long serialVersionUID = -5799393887664198242L;
-    public static final String DEFAULT_CHILDREN_KEY = "children";
 
     private final String childrenKey;
 
     public TreeTraitMap() {
-        this(DEFAULT_CHILDREN_KEY);
+        this("children");
     }
 
     public TreeTraitMap(String childrenKey) {

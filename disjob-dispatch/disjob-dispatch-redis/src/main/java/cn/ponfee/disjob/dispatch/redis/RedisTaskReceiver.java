@@ -138,7 +138,7 @@ public class RedisTaskReceiver extends TaskReceiver {
                 return true;
             }
             for (byte[] bytes : received) {
-                redisTaskReceiver.receive(ExecuteTaskParam.deserialize(bytes));
+                redisTaskReceiver.receive(RedisTaskUtils.deserialize(bytes));
             }
             return received.size() < JobConstants.PROCESS_BATCH_SIZE;
         }
@@ -149,7 +149,7 @@ public class RedisTaskReceiver extends TaskReceiver {
         private final RedisKeyRenewal redisKeyRenewal;
 
         private GroupedWorker(Worker worker, RedisTemplate<String, String> redisTemplate) {
-            byte[] key = RedisTaskDispatchingUtils.buildTaskDispatchKey(worker).getBytes();
+            byte[] key = RedisTaskUtils.buildTaskDispatchKey(worker).getBytes();
             this.keysAndArgs = new byte[][]{key, LIST_POP_BATCH_SIZE_BYTES};
             this.redisKeyRenewal = new RedisKeyRenewal(redisTemplate, key);
         }

@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.dispatch;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.common.util.Bytes;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
 import cn.ponfee.disjob.core.enums.JobType;
@@ -26,12 +25,6 @@ import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.enums.ShutdownStrategy;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.nio.ByteBuffer;
-
-import static cn.ponfee.disjob.common.util.Numbers.nullIfZero;
-import static cn.ponfee.disjob.common.util.Numbers.zeroIfNull;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Task execute parameter.
@@ -42,7 +35,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Setter
 public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel.Timing<ExecuteTaskParam> {
     private static final long serialVersionUID = -6493747747321536680L;
-    private static final Operation[] OPERATION_VALUES = Operation.values();
 
     private Operation operation;
     private long taskId;
@@ -62,72 +54,6 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
     @Override
     public long timing() {
         return triggerTime;
-    }
-
-    /**
-     * Serialize to string
-     *
-     * @return string of serialized result
-     */
-    @SuppressWarnings("all")
-    public byte[] serialize() {
-        byte[] authTokenBytes = Bytes.toBytes(super.getSupervisorAuthenticationToken(), UTF_8);
-        byte[] workerBytes = worker.serialize().getBytes(UTF_8);
-        byte[] jobExecutorBytes = jobExecutor.getBytes(UTF_8);
-
-        int authTokenBytesLength = (authTokenBytes == null) ? -1 : authTokenBytes.length;
-        int length = 64 + Math.max(0, authTokenBytesLength) + workerBytes.length + jobExecutorBytes.length;
-
-        ByteBuffer buffer = ByteBuffer.allocate(length)
-            .put((byte) operation.ordinal())      // 1: operation
-            .putLong(taskId)                      // 8: taskId
-            .putLong(instanceId)                  // 8: instanceId
-            .putLong(zeroIfNull(wnstanceId))      // 8: wnstanceId
-            .putLong(triggerTime)                 // 8: triggerTime
-            .putLong(jobId)                       // 8: jobId
-            .putInt(retryCount)                   // 4: retryCount
-            .putInt(retriedCount)                 // 4: retriedCount
-            .put((byte) jobType.value())          // 1: jobType
-            .put((byte) routeStrategy.value())    // 1: routeStrategy
-            .put((byte) shutdownStrategy.value()) // 1: shutdownStrategy
-            .putInt(executeTimeout);              // 4: executeTimeout
-        buffer.putInt(authTokenBytesLength);      // 4: supervisorAuthenticationToken byte array length
-        Bytes.put(buffer, authTokenBytes);        // x: byte array of supervisorAuthenticationToken data
-        buffer.putInt(workerBytes.length);        // 4: worker byte array length int value
-        buffer.put(workerBytes);                  // x: byte array of worker data
-        buffer.put(jobExecutorBytes);             // x: byte array of jobExecutor data
-
-        // buffer.flip(): unnecessary do flip
-        return buffer.array();
-    }
-
-    /**
-     * Deserialize from string.
-     *
-     * @param bytes the serialized byte array
-     * @return TaskParam of deserialized result
-     */
-    @SuppressWarnings("all")
-    public static ExecuteTaskParam deserialize(byte[] bytes) {
-        ByteBuffer buf = ByteBuffer.wrap(bytes);
-
-        ExecuteTaskParam param = new ExecuteTaskParam();
-        param.setOperation(OPERATION_VALUES[buf.get()]);                                             //   1: operation
-        param.setTaskId(buf.getLong());                                                              //   8: taskId
-        param.setInstanceId(buf.getLong());                                                          //   8: instanceId
-        param.setWnstanceId(nullIfZero(buf.getLong()));                                              //   8: wnstanceId
-        param.setTriggerTime(buf.getLong());                                                         //   8: triggerTime
-        param.setJobId(buf.getLong());                                                               //   8: jobId
-        param.setRetryCount(buf.getInt());                                                           //   4: retryCount
-        param.setRetriedCount(buf.getInt());                                                         //   4: retriedCount
-        param.setJobType(JobType.of(buf.get()));                                                     //   1: jobType
-        param.setRouteStrategy(RouteStrategy.of(buf.get()));                                         //   1: routeStrategy
-        param.setShutdownStrategy(ShutdownStrategy.of(buf.get()));                                   //   1: shutdownStrategy
-        param.setExecuteTimeout(buf.getInt());                                                       //   4: executeTimeout
-        param.setSupervisorAuthenticationToken(Bytes.toString(Bytes.get(buf, buf.getInt()), UTF_8)); // 4+x: supervisorAuthenticationToken
-        param.setWorker(Worker.deserialize(Bytes.get(buf, buf.getInt()), UTF_8));                    // 4+x: worker
-        param.setJobExecutor(Bytes.toString(Bytes.remained(buf), UTF_8));                            //   x: jobExecutorBytes
-        return param;
     }
 
 }

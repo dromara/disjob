@@ -62,9 +62,10 @@ public class RedisTaskDispatcher extends TaskDispatcher {
     protected final boolean doDispatch(ExecuteTaskParam param) {
         Worker worker = param.getWorker();
         // push to remote worker
-        String key = RedisTaskDispatchingUtils.buildTaskDispatchKey(worker);
+        String key = RedisTaskUtils.buildTaskDispatchKey(worker);
         // ret: return list length after call redis rpush command
-        Long ret = redisTemplate.execute((RedisCallback<Long>) conn -> conn.rPush(key.getBytes(), param.serialize()));
+        Long ret = redisTemplate.execute(
+            (RedisCallback<Long>) conn -> conn.rPush(key.getBytes(), RedisTaskUtils.serialize(param)));
 
         // renew redis key ttl
         workerRenewMap.computeIfAbsent(key, k -> new RedisKeyRenewal(redisTemplate, key)).renewIfNecessary();

@@ -60,6 +60,12 @@ class VersionUtilsTest {
 
         //System.out.println(IOUtils.toString(url.toURI(), StandardCharsets.UTF_8));
         //System.out.println(FileUtils.readFileToString(new File(url.toURI()), StandardCharsets.UTF_8));
+
+        String regex = "(?:\\.jar!/|\\.jar)$";
+        Assertions.assertEquals("file:/path/springboot-xxx.jar!/BOOT-INF/lib/commons-lang3-3.12.0", "file:/path/springboot-xxx.jar!/BOOT-INF/lib/commons-lang3-3.12.0.jar!/".replaceAll(regex, ""));
+        Assertions.assertEquals("file:/path/springboot-xxx.jar!/BOOT-INF/lib/commons-lang3-3.12.0", "file:/path/springboot-xxx.jar!/BOOT-INF/lib/commons-lang3-3.12.0.jar".replaceAll(regex, ""));
+        Assertions.assertEquals("file:/path/springboot-xxx.jar!/BOOT-INF/lib/commons-lang3-3.12.0!/", "file:/path/springboot-xxx.jar!/BOOT-INF/lib/commons-lang3-3.12.0!/.jar".replaceAll(regex, ""));
+        Assertions.assertEquals("file:/path/springboot-xxx.jar!/BOOT-INF/lib/commons-lang3-3.12.0.!/jar", "file:/path/springboot-xxx.jar!/BOOT-INF/lib/commons-lang3-3.12.0.!/jar".replaceAll(regex, ""));
     }
 
 }

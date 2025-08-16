@@ -33,9 +33,9 @@ import java.util.Date;
 public abstract class BaseEntity extends ToJsonString implements java.io.Serializable {
     private static final long serialVersionUID = -7150065349727498445L;
 
+    public static final Comparator<BaseEntity> ID_COMPARATOR         = Comparator.comparing(BaseEntity::getId);
     public static final Comparator<BaseEntity> UPDATED_AT_COMPARATOR = Comparator.comparing(BaseEntity::getUpdatedAt);
     public static final Comparator<BaseEntity> CREATED_AT_COMPARATOR = Comparator.comparing(BaseEntity::getCreatedAt);
-    public static final Comparator<BaseEntity> ID_COMPARATOR = Comparator.comparing(BaseEntity::getId);
 
     /**
      * 自增主键ID

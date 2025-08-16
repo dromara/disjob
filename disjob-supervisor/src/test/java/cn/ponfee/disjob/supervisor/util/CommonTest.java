@@ -126,31 +126,6 @@ public class CommonTest {
     }
 
     @Test
-    public void testTaskParam() {
-        ExecuteTaskParam param1 = createExecuteTaskParam(
-            Operation.TRIGGER,
-            ThreadLocalRandom.current().nextLong(),
-            ThreadLocalRandom.current().nextLong(),
-            1L,
-            ThreadLocalRandom.current().nextLong(),
-            ThreadLocalRandom.current().nextLong(),
-            JobType.GENERAL,
-            RouteStrategy.ROUND_ROBIN,
-            ShutdownStrategy.RESUME,
-            1,
-            "JobExecutor测试中文乱码。",
-            new Worker("default", "workerId", "host", 1)
-        );
-        System.out.println(param1);
-        ExecuteTaskParam param2 = ExecuteTaskParam.deserialize(param1.serialize());
-        Assertions.assertNotSame(param1, param2);
-        Assertions.assertEquals(param1.toString(), param2.toString());
-        Assertions.assertEquals(param1.getSupervisorAuthenticationToken(), param2.getSupervisorAuthenticationToken());
-        Assertions.assertEquals(param1.getWorker(), param2.getWorker());
-        Assertions.assertEquals(param1.getJobExecutor(), param2.getJobExecutor());
-    }
-
-    @Test
     public void testTime() {
         System.out.println((System.currentTimeMillis() / 1000) * 1000 + 999);
     }

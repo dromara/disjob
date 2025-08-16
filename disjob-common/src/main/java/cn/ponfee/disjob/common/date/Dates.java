@@ -38,10 +38,13 @@ import java.util.concurrent.ThreadLocalRandom;
  * <p><a href="https://segmentfault.com/a/1190000039047353">Java处理GMT/UTC日期时间</a>
  *
  * <pre>
+ * UTC本身不包含时区偏移（即偏移量为0，实际上就是UTC+0）
+ * UTC时间格式：2000-01-01T01:23:45.123456789Z，其中Z表示`Zulu Time`，Z等价于`+00:00`
+ *
  * 时区：
  *   LocalDateTime：无时区
- *   Date(UTC0)：表示自格林威治时间(GMT)1970年1月1日0点经过指定的毫秒数后的时间点
- *   Instant(UTC0)：同Date
+ *   Date(UTC+0)：表示自格林威治时间(GMT)1970年1月1日0点经过指定的毫秒数后的时间点
+ *   Instant(UTC+0)：同Date
  *   ZonedDateTime：自带时区
  *
  * ZoneId子类：ZoneRegion、ZoneOffset
