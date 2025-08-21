@@ -115,7 +115,7 @@
     <dependency>
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct-processor</artifactId>
-      <version>${mapstruct.version}</version>
+      <version>1.18.30</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
