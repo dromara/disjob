@@ -33,7 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -171,15 +171,15 @@ public class Worker extends Server implements Comparable<Worker> {
     public abstract static class Local extends Worker {
         private static volatile Local instance = null;
 
-        private final LocalDateTime startupTime;
+        private final Instant startupTime;
 
         private Local(String group, String workerId, String host, int port) {
             super(group, workerId, host, port);
             SingletonClassConstraint.constrain(Local.class);
-            this.startupTime = LocalDateTime.now();
+            this.startupTime = Instant.now();
         }
 
-        public final LocalDateTime getStartupTime() {
+        public final Instant getStartupTime() {
             return startupTime;
         }
 

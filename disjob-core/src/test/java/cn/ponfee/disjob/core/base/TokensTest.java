@@ -30,12 +30,11 @@ public class TokensTest {
 
     @Test
     public void test() {
-        String tokenPlain = "1878f0158782423f9306e7d4c70c999c";
+        String tokenKey = "1878f0158782423f9306e7d4c70c999c";
         String group = "app-test";
-        String tokenSecret = Tokens.createAuthentication(tokenPlain, TokenType.user, group);
+        String tokenSecret = Tokens.createAuthentication(tokenKey, TokenType.user, group);
         System.out.println(tokenSecret);
-        boolean state = Tokens.verifyAuthentication(tokenSecret, tokenPlain, TokenType.user, group);
-        assertThat(state).isTrue();
+        assertThat(Tokens.verifyAuthentication(tokenSecret, tokenKey, TokenType.user, group)).isTrue();
     }
 
 }

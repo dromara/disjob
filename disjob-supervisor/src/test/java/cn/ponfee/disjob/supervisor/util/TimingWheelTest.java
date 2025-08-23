@@ -28,7 +28,6 @@ import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -72,9 +71,7 @@ public class TimingWheelTest {
     public void testTimeHour() {
         System.out.println((System.currentTimeMillis() % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)); // 要"+8"时区
         System.out.println(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
-        System.out.println(LocalDateTime.now().getHour());
-        Assertions.assertEquals("1970-01-01 08:00:00", Dates.format(Dates.ofTimeMillis(0L)));
-        Assertions.assertEquals(LocalDateTime.now().getHour(), Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+        Assertions.assertEquals("1970-01-01 08:00:00", Dates.format(new Date(0L)));
         Assertions.assertEquals(2, String.format("%02d", Calendar.getInstance().get(Calendar.HOUR_OF_DAY)).length());
         Assertions.assertEquals("00", String.format("%02d", 0));
         Assertions.assertEquals("06", String.format("%02d", 6));
@@ -90,7 +87,7 @@ public class TimingWheelTest {
         Date date = new Date();
         int second = (int) ((date.getTime() % 60000) / 1000);
         System.out.println("second: " + second);
-        Assertions.assertEquals((int) ((date.getTime() % 60000) / 1000), Dates.toLocalDateTime(date).getSecond());
+        Assertions.assertEquals((int) ((date.getTime() % 60000) / 1000), date.getSeconds());
 
         long currentTimeMillis = System.currentTimeMillis();
         long maxTiming = (System.currentTimeMillis() / 1000) * 1000 + 999;

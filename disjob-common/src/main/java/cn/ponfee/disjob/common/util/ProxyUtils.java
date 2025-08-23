@@ -110,8 +110,8 @@ public final class ProxyUtils {
 
     /**
      * <pre>
-     * 获取原始对象(被代理的对象)，如：`Service`中的方法加了`@Transactional`注解，`Controller`中引用的`Service`实际是代理对象，
-     * 可以使用`getTargetObject`获取真实的`Service`对象
+     * 获取原始对象(被代理的对象)，如：`Service`中的方法加了`@Transactional`注解，`Controller`中被注入的`Service`实际是代理对象，
+     * 可以使用`getTargetObject`获取原始的`Service`对象
      * </pre>
      *
      * @param object the proxy object

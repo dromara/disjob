@@ -16,11 +16,12 @@
 
 package cn.ponfee.disjob.worker.base;
 
-import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
+
+import java.util.Date;
 
 /**
  * Worker configurator
@@ -43,7 +44,7 @@ public class WorkerConfigurator {
         WorkerMetrics metrics = new WorkerMetrics();
         metrics.setVersion(JobConstants.DISJOB_VERSION);
         metrics.setWorkerId(localWorker.getWorkerId());
-        metrics.setStartupTime(Dates.toDate(localWorker.getStartupTime()));
+        metrics.setStartupTime(Date.from(localWorker.getStartupTime()));
         metrics.setAlsoSupervisor(Supervisor.local() != null);
         metrics.setJvmThreadActiveCount(Thread.activeCount());
         if (workerThreadPool != null) {

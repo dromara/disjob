@@ -16,12 +16,11 @@
 
 package cn.ponfee.disjob.common.date;
 
-import cn.ponfee.disjob.common.base.Symbol.Char;
-
-import javax.annotation.concurrent.ThreadSafe;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Convert to {@code java.time.LocalDateTime}, none zone offset.
@@ -30,32 +29,38 @@ import java.util.Date;
  * <p>线程安全
  *
  * @author Ponfee
- * @see JavaUtilDateFormat#parseToLocalDateTime(String)
  */
-@ThreadSafe
 public class LocalDateTimeFormat {
 
-    static final DateTimeFormatter PATTERN_01 = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    /**
+     * Datetime formatter for datetime compact pattern
+     */
+    public static final DateTimeFormatter DATETIME_COMPACT_FORMATTER = DateTimeFormatter.ofPattern(Dates.DATETIME_COMPACT_PATTERN);
 
-    static final DateTimeFormatter PATTERN_11 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    static final DateTimeFormatter PATTERN_12 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-    static final DateTimeFormatter PATTERN_13 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-    static final DateTimeFormatter PATTERN_14 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss");
+    /**
+     * Datetime formatter for datetime milli compact pattern
+     */
+    public static final DateTimeFormatter DATETIME_MILLI_COMPACT_FORMATTER = DateTimeFormatter.ofPattern(Dates.DATETIME_MILLI_COMPACT_PATTERN);
 
-    static final DateTimeFormatter PATTERN_21 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-    static final DateTimeFormatter PATTERN_22 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
-    static final DateTimeFormatter PATTERN_23 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-    static final DateTimeFormatter PATTERN_24 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSS");
-
-    static final DateTimeFormatter PATTERN_31 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS'Z'");
-    static final DateTimeFormatter PATTERN_32 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS'Z'");
-    static final DateTimeFormatter PATTERN_33 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-    static final DateTimeFormatter PATTERN_34 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSS'Z'");
+    /**
+     * Timestamp regex pattern
+     */
+    public static final Pattern TIMESTAMP_PATTERN = Pattern.compile("^(0|[1-9]\\d*)$");
 
     /**
      * The default date format with yyyy-MM-dd HH:mm:ss
      */
-    public static final LocalDateTimeFormat DEFAULT = new LocalDateTimeFormat("yyyy-MM-dd HH:mm:ss");
+    public static final LocalDateTimeFormat DEFAULT = new LocalDateTimeFormat(Dates.DATETIME_PATTERN);
+
+    /**
+     * For {@link Date#toString()} "EEE MMM dd HH:mm:ss zzz yyyy" format
+     */
+    private static final Pattern CST_PATTERN = Pattern.compile("^(Sun|Mon|Tue|Wed|Thu|Fri|Sat) [A-Z][a-z]{2} \\d{2} \\d{2}:\\d{2}:\\d{2} CST \\d{4}$");
+
+    /**
+     * For {@code java.util.Date#toString}
+     */
+    private static final DateTimeFormatter CST_FORMATTER = DateTimeFormatter.ofPattern(Dates.DATE_TO_STRING_PATTERN, Locale.ROOT);
 
     /**
      * 兜底解析器
@@ -78,69 +83,109 @@ public class LocalDateTimeFormat {
             return null;
         }
 
-        if (length >= 20 && source.endsWith("Z")) {
-            // example:
-            //   2022-07-18T15:11:11Z, 2022-07-18T15:11:11.Z, 2022-07-18T15:11:11.1Z, 2022-07-18T15:11:11.13Z, 2022-07-18T15:11:11.133Z
-            //   2022/07/18T15:11:11Z, 2022/07/18T15:11:11.Z, 2022/07/18T15:11:11.1Z, 2022/07/18T15:11:11.13Z, 2022/07/18T15:11:11.133Z
-            if (length < 24) {
-                source = JavaUtilDateFormat.complete(source);
-            }
-            if (JavaUtilDateFormat.isTSeparator(source)) {
-                return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_33 : PATTERN_34);
-            } else {
-                return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_31 : PATTERN_32);
-            }
-        }
-
         switch (length) {
             case 8:
                 // yyyyMMdd
-                return LocalDateTime.parse(source + "000000", PATTERN_01);
+                return LocalDate.parse(source, DateTimeFormatter.BASIC_ISO_DATE).atStartOfDay();
             case 10:
-                char c = source.charAt(4);
-                if (c == Char.HYPHEN) {
-                    // yyyy-MM-dd
-                    return LocalDateTime.parse(source + " 00:00:00", PATTERN_11);
-                } else if (c == Char.SLASH) {
-                    // yyyy/MM/dd
-                    return LocalDateTime.parse(source + " 00:00:00", PATTERN_12);
-                } else if (JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher(source).matches()) {
-                    // long string(length 10) of second unix timestamp(e.g. 1640966400)
-                    return Dates.toLocalDateTime(new Date(Long.parseLong(source) * 1000));
+                char literal = source.charAt(4);
+                if (literal == '-' || literal == '/') {
+                    // yyyy-MM-dd, yyyy/MM/dd
+                    return LocalDate.parse(standardizeIsoDate(source)).atStartOfDay();
+                }
+                if (isTimestamp(source)) {
+                    // 10位数字的unix时间戳，如：1640966400
+                    return Instant.ofEpochSecond(Long.parseLong(source)).atZone(ZoneId.systemDefault()).toLocalDateTime();
                 }
                 break;
             case 13:
-                if (JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher(source).matches()) {
-                    // long string(length 13) of millisecond unix timestamp(e.g. 1640966400000)
-                    return Dates.toLocalDateTime(new Date(Long.parseLong(source)));
+                if (isTimestamp(source)) {
+                    // 13位数字的毫秒时间戳，如：1640966400000
+                    return Instant.ofEpochMilli(Long.parseLong(source)).atZone(ZoneId.systemDefault()).toLocalDateTime();
                 }
                 break;
             case 14:
-                return LocalDateTime.parse(source, PATTERN_01);
-            case 19:
-                if (JavaUtilDateFormat.isTSeparator(source)) {
-                    return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_13 : PATTERN_14);
-                } else {
-                    return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_11 : PATTERN_12);
-                }
-            case 23:
-                if (JavaUtilDateFormat.isTSeparator(source)) {
-                    return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_23 : PATTERN_24);
-                } else {
-                    return LocalDateTime.parse(source, JavaUtilDateFormat.isCrossbar(source) ? PATTERN_21 : PATTERN_22);
-                }
+                // yyyyMMddHHmmss
+                return LocalDateTime.parse(source, DATETIME_COMPACT_FORMATTER);
+            case 17:
+                // yyyyMMddHHmmssSSS
+                return LocalDateTime.parse(source, DATETIME_MILLI_COMPACT_FORMATTER);
             default:
                 break;
+        }
+
+        if (isCst(source)) {
+            // Thu Jan 01 00:00:00 CST 1970
+            return LocalDateTime.parse(source, CST_FORMATTER);
+        }
+
+        if (length >= 19) {
+            if (source.endsWith("Z")) {
+                // yyyy-MM-dd'T'HH:mm:ss.SSS'Z' -> 2000-01-01T00:00:00.000Z
+                return parseToInstant(source).atZone(ZoneId.systemDefault()).toLocalDateTime();
+            } else if (source.contains("+")) {
+                // yyyy-MM-dd'T'HH:mm:ss.SSSXXX -> 2000-01-01T00:00:00.000+08:00
+                return parseToOffsetDateTime(source).toLocalDateTime();
+            } else {
+                // yyyy-MM-dd'T'HH:mm:ss.SSS    -> 2000-01-01T00:00:00.000
+                return parseToLocalDateTime(source);
+            }
         }
 
         return LocalDateTime.parse(source, backstopFormat);
     }
 
     public String format(LocalDateTime dateTime) {
-        if (dateTime == null) {
-            return null;
+        return dateTime == null ? null : backstopFormat.format(dateTime);
+    }
+
+    // ----------------------------------------------------------------------static methods
+
+    static Instant parseToInstant(String str) {
+        return Instant.parse(standardizeIsoDateTime(str));
+    }
+
+    static OffsetDateTime parseToOffsetDateTime(String str) {
+        return OffsetDateTime.parse(standardizeIsoDateTime(str));
+    }
+
+    static LocalDateTime parseToLocalDateTime(String str) {
+        return LocalDateTime.parse(standardizeIsoDateTime(str));
+    }
+
+    static String standardizeIsoDateTime(String str) {
+        if (str.charAt(4) == '-' && str.charAt(10) == 'T') {
+            return str;
         }
-        return backstopFormat.format(dateTime);
+        // yyyy/MM/dd HH:mm:ss  ->  yyyy-MM-ddTHH:mm:ss
+        char[] chars = str.toCharArray();
+        chars[4] = '-';
+        chars[7] = '-';
+        chars[10] = 'T';
+        return new String(chars);
+    }
+
+    static String standardizeIsoDate(String str) {
+        if (str.charAt(4) == '-') {
+            return str;
+        }
+        // yyyy/MM/dd  ->  yyyy-MM-dd
+        char[] chars = str.toCharArray();
+        chars[4] = '-';
+        chars[7] = '-';
+        return new String(chars);
+    }
+
+    static boolean isTimestamp(String str) {
+        return TIMESTAMP_PATTERN.matcher(str).matches();
+    }
+
+    static boolean isCst(String str) {
+        return str.length() == 28 && CST_PATTERN.matcher(str).matches();
+    }
+
+    static LocalDateTime cstToLocalDateTime(String str) {
+        return LocalDateTime.parse(str, CST_FORMATTER);
     }
 
 }

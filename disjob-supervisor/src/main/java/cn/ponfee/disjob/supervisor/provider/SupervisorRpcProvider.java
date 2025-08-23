@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.supervisor.provider;
 
-import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
@@ -97,7 +96,7 @@ public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
     public SupervisorMetrics getMetrics() {
         SupervisorMetrics metrics = new SupervisorMetrics();
         metrics.setVersion(JobConstants.DISJOB_VERSION);
-        metrics.setStartupTime(Dates.toDate(localSupervisor.getStartupTime()));
+        metrics.setStartupTime(Date.from(localSupervisor.getStartupTime()));
         metrics.setLastSubscribedEvent(localSupervisor.getLastSubscribedEvent());
         metrics.setAlsoWorker(Worker.local() != null);
         return metrics;

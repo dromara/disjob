@@ -55,7 +55,8 @@ public class EmbeddedMysqlServerTestcontainers {
     public static void main(String[] args) throws Exception {
         DockerImageName dockerImage = DockerImageName.parse("mysql:8.4.3").asCompatibleSubstituteFor("mysql");
         try (MySQLContainer<?> mySqlContainer = new MySQLContainer<>(dockerImage)
-            //.withConfigurationOverride("mysql_conf_override") // resource file: “resources/mysql_conf_override/my.cnf”
+            // resource file: “resources/mysql_conf_override/my.cnf”
+            .withConfigurationOverride("mysql_conf_override")
             .withPrivilegedMode(true)
             .withUsername("root")
             .withPassword("")

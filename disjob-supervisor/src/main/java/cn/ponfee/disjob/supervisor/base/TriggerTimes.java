@@ -54,7 +54,7 @@ public final class TriggerTimes {
      */
     public static Long computeNextTriggerTime(SchedJob job, Date now) {
         Assert.notNull(now, "Compute next trigger time 'now' cannot be null.");
-        Date last = Dates.ofTimeMillis(job.getLastTriggerTime());
+        Date last = (job.getLastTriggerTime() != null) ? new Date(job.getLastTriggerTime()) : null;
         Date next = computeNextTriggerTime0(job, last, now);
         if (last != null && next != null && !next.after(last)) {
             throw new IllegalStateException("Next trigger time must be after last: " + last + ", " + last);

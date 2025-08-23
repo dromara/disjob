@@ -169,7 +169,7 @@ public enum DatePeriods {
 
         @Override
         public String toString() {
-            return JavaUtilDateFormat.PATTERN_51.format(begin) + " ~ " + JavaUtilDateFormat.PATTERN_51.format(end);
+            return Dates.DATETIME_MILLI_FORMAT.format(begin) + " ~ " + Dates.DATETIME_MILLI_FORMAT.format(end);
         }
     }
 

@@ -57,6 +57,7 @@ import org.springframework.util.Assert;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.lang.annotation.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -109,6 +110,8 @@ public @interface MybatisDataSourceConfigurer {
     int defaultFetchSize() default 100;
 
     int defaultStatementTimeout() default 25;
+
+    boolean utcInstantTypeHandler() default false;
 
     boolean primary() default false;
 
@@ -263,6 +266,10 @@ public @interface MybatisDataSourceConfigurer {
             configuration.setDefaultFetchSize(config.defaultFetchSize());
             // 超时时间，它决定数据库驱动等待数据库响应的秒数：默认null
             configuration.setDefaultStatementTimeout(config.defaultStatementTimeout());
+            if (config.utcInstantTypeHandler()) {
+                // 注册自定义的`Java Instant`与`Mysql datetime`之间的转换器
+                configuration.getTypeHandlerRegistry().register(Instant.class, new UtcInstantTypeHandler());
+            }
             return configuration;
         }
     }

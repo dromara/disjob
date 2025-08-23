@@ -47,7 +47,7 @@ public class TriggerTimeUtilsTest {
 
         Assertions.assertTrue(CronExpression.isValidExpression("43 31 14 31 5 ? 2022"));
 
-        Date date = Dates.random(Dates.ofTimeMillis(0L), Dates.ofTimeMillis(new Date().getTime()));
+        Date date = Dates.random(new Date(0L), new Date(new Date().getTime()));
         Assertions.assertTrue(CronExpression.isValidExpression(Dates.toCronExpression(date)));
         Assertions.assertFalse(org.springframework.scheduling.support.CronExpression.isValidExpression(Dates.toCronExpression(date)));
     }
@@ -277,7 +277,7 @@ public class TriggerTimeUtilsTest {
         job.setLastTriggerTime(null);
         job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_LOST.value());
         job.setLastTriggerTime(Dates.plusDays(new Date(), -1).getTime());
-        System.out.println(Dates.format(TriggerTimes.computeNextTriggerTime(job, new Date()), Dates.DATEFULL_PATTERN));
+        System.out.println(Dates.format(new Date(TriggerTimes.computeNextTriggerTime(job, new Date())), Dates.DATETIME_MILLI_PATTERN));
     }
 
     @Test
@@ -306,10 +306,10 @@ public class TriggerTimeUtilsTest {
 
         job.setMisfireStrategy(MisfireStrategy.FIRE_ALL_LOST.value());
         job.setStartTime(parse("2022-01-01 00:00:00.000"));
-        Assertions.assertEquals("2022-10-06 22:55:00.000", format(Dates.ofTimeMillis(TriggerTimes.computeNextTriggerTime(job, new Date()))));
+        Assertions.assertEquals("2022-10-06 22:55:00.000", format(new Date(TriggerTimes.computeNextTriggerTime(job, new Date()))));
 
         job.setMisfireStrategy(MisfireStrategy.FIRE_ONCE_NOW.value());
-        Assertions.assertEquals("2022-10-06 22:55:00.000", format(Dates.ofTimeMillis(TriggerTimes.computeNextTriggerTime(job, new Date()))));
+        Assertions.assertEquals("2022-10-06 22:55:00.000", format(new Date(TriggerTimes.computeNextTriggerTime(job, new Date()))));
     }
 
     @Test
@@ -363,11 +363,11 @@ public class TriggerTimeUtilsTest {
     }
 
     private static Date parse(String string) {
-        return Dates.toDate(string, Dates.DATEFULL_PATTERN);
+        return Dates.parse(string, Dates.DATETIME_MILLI_PATTERN);
     }
 
     private static String format(Date date) {
-        return Dates.format(date, Dates.DATEFULL_PATTERN);
+        return Dates.format(date, Dates.DATETIME_MILLI_PATTERN);
     }
 
 }

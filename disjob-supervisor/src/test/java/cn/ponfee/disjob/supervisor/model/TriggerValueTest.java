@@ -55,8 +55,8 @@ public class TriggerValueTest {
 
     @Test
     public void testDuration() {
-        Date start = Dates.toDate("2000-01-01 01:02:03.456", Dates.DATEFULL_PATTERN);
-        Date end = Dates.toDate("2000-01-01 01:02:04.123", Dates.DATEFULL_PATTERN);
+        Date start = Dates.parse("2000-01-01 01:02:03.456", Dates.DATETIME_MILLI_PATTERN);
+        Date end = Dates.parse("2000-01-01 01:02:04.123", Dates.DATETIME_MILLI_PATTERN);
         SchedInstance schedInstance = new SchedInstance();
         schedInstance.setRunStartTime(start);
         schedInstance.setRunEndTime(end);

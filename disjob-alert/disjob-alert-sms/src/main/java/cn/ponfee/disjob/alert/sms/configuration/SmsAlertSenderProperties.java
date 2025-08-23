@@ -19,9 +19,11 @@ package cn.ponfee.disjob.alert.sms.configuration;
 import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.alert.sender.AlertSenderProperties;
 import cn.ponfee.disjob.alert.sms.SmsAlertSender;
-import cn.ponfee.disjob.common.base.ToJsonString;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.dromara.sms4j.provider.config.BaseConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.io.Serializable;
@@ -41,15 +43,11 @@ public class SmsAlertSenderProperties extends AlertSenderProperties {
 
     private Map<String, SmsBlendProperties> blends = new HashMap<>();
 
-    @Getter
-    @Setter
-    public static class SmsBlendProperties extends ToJsonString implements Serializable {
+    @EqualsAndHashCode(callSuper = true)
+    @Data
+    public static class SmsBlendProperties extends BaseConfig implements Serializable {
         private static final long serialVersionUID = 1305124631930608648L;
 
-        private String accessKeyId;
-        private String accessKeySecret;
-        private String signature;
-        private String templateId;
         private String supplier;
     }
 

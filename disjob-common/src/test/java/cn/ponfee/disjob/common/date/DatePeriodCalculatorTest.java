@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.common.date;
 
-import org.apache.commons.lang3.time.FastDateFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -30,14 +29,12 @@ import java.util.Date;
  */
 public class DatePeriodCalculatorTest {
 
-    private static final FastDateFormat FORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
-
     @Test
     public void test1() {
-        test(Dates.toDate("2020-02-26 00:00:00", "yyyy-MM-dd HH:mm:ss"));
-        test(Dates.toDate("2021-02-26 00:00:00", "yyyy-MM-dd HH:mm:ss"));
-        test(Dates.toDate("2021-12-31 00:00:00", "yyyy-MM-dd HH:mm:ss"));
-        test(Dates.toDate("2021-01-01 00:00:00", "yyyy-MM-dd HH:mm:ss"));
+        test(Dates.parse("2020-02-26 00:00:00", "yyyy-MM-dd HH:mm:ss"));
+        test(Dates.parse("2021-02-26 00:00:00", "yyyy-MM-dd HH:mm:ss"));
+        test(Dates.parse("2021-12-31 00:00:00", "yyyy-MM-dd HH:mm:ss"));
+        test(Dates.parse("2021-01-01 00:00:00", "yyyy-MM-dd HH:mm:ss"));
     }
 
     private static void test(Date original) {
@@ -179,7 +176,7 @@ public class DatePeriodCalculatorTest {
 
     private static String calc(Periods period, Date start, Date target, int step, int next) {
         Date[] dates = new DatePeriodCalculator(start, target, period).calculate(step, next);
-        return FORMAT.format(dates[0]) + " ~ " + FORMAT.format(dates[1]);
+        return Dates.DATETIME_MILLI_FORMAT.format(dates[0]) + " ~ " + Dates.DATETIME_MILLI_FORMAT.format(dates[1]);
     }
 
 }

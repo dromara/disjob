@@ -29,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,6 +40,35 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class JavaUtilDateFormatTest {
 
+    private static final FastDateFormat PATTERN_21 = FastDateFormat.getInstance("yyyyMMdd");
+    private static final FastDateFormat PATTERN_22 = FastDateFormat.getInstance("yyyy-MM-dd");
+    private static final FastDateFormat PATTERN_23 = FastDateFormat.getInstance("yyyy/MM/dd");
+
+    private static final FastDateFormat PATTERN_31 = FastDateFormat.getInstance("yyyyMMddHHmmss");
+    private static final FastDateFormat PATTERN_32 = FastDateFormat.getInstance("yyyyMMddHHmmssSSS");
+
+    private static final FastDateFormat PATTERN_41 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
+    private static final FastDateFormat PATTERN_42 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss");
+    private static final FastDateFormat PATTERN_43 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss");
+    private static final FastDateFormat PATTERN_44 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss");
+
+    private static final FastDateFormat PATTERN_51 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final FastDateFormat PATTERN_52 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSS");
+    private static final FastDateFormat PATTERN_53 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    private static final FastDateFormat PATTERN_54 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSS");
+
+    private static final FastDateFormat PATTERN_71 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSSXXX");
+    private static final FastDateFormat PATTERN_72 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSSXXX");
+    private static final FastDateFormat PATTERN_73 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    private static final FastDateFormat PATTERN_74 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSSXXX");
+
+    private static final FastDateFormat PATTERN_61 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS'Z'");
+    private static final FastDateFormat PATTERN_62 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSS'Z'");
+    private static final FastDateFormat PATTERN_63 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    private static final FastDateFormat PATTERN_64 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSS'Z'");
+
+    private static final Pattern CST_PATTERN = Pattern.compile("^(Sun|Mon|Tue|Wed|Thu|Fri|Sat) [A-Z][a-z]{2} \\d{2} \\d{2}:\\d{2}:\\d{2} CST \\d{4}$");
+
     @Test
     public void test0() throws ParseException {
         Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse("2022-01-02 03:04:05.678");
@@ -48,59 +78,49 @@ public class JavaUtilDateFormatTest {
         assertEquals("Sun Jan 02 03:04:05 CST 2022", Dates.toDate(LocalDateTime.parse(date.toString(), dtf)).toString());
         assertEquals("Sun Jan 02 17:04:05 CST 2022", Date.from(ZonedDateTime.parse(date.toString(), dtf).toInstant()).toString());
 
-        assertEquals("202201", JavaUtilDateFormat.PATTERN_11.format(date));
-        assertEquals("2022-01", JavaUtilDateFormat.PATTERN_12.format(date));
-        assertEquals("2022/01", JavaUtilDateFormat.PATTERN_13.format(date));
-        assertEquals("20220102", JavaUtilDateFormat.PATTERN_21.format(date));
-        assertEquals("2022-01-02", JavaUtilDateFormat.PATTERN_22.format(date));
-        assertEquals("2022/01/02", JavaUtilDateFormat.PATTERN_23.format(date));
-        assertEquals("20220102030405", JavaUtilDateFormat.PATTERN_31.format(date));
-        assertEquals("20220102030405678", JavaUtilDateFormat.PATTERN_32.format(date));
-        assertEquals("2022-01-02 03:04:05", JavaUtilDateFormat.PATTERN_41.format(date));
-        assertEquals("2022/01/02 03:04:05", JavaUtilDateFormat.PATTERN_42.format(date));
-        assertEquals("2022-01-02T03:04:05", JavaUtilDateFormat.PATTERN_43.format(date));
-        assertEquals("2022/01/02T03:04:05", JavaUtilDateFormat.PATTERN_44.format(date));
-        assertEquals("2022-01-02 03:04:05.678", JavaUtilDateFormat.PATTERN_51.format(date));
-        assertEquals("2022/01/02 03:04:05.678", JavaUtilDateFormat.PATTERN_52.format(date));
-        assertEquals("2022-01-02T03:04:05.678", JavaUtilDateFormat.PATTERN_53.format(date));
-        assertEquals("2022/01/02T03:04:05.678", JavaUtilDateFormat.PATTERN_54.format(date));
-        assertEquals("2022-01-02 03:04:05.678Z", JavaUtilDateFormat.PATTERN_61.format(date));
-        assertEquals("2022/01/02 03:04:05.678Z", JavaUtilDateFormat.PATTERN_62.format(date));
-        assertEquals("2022-01-02T03:04:05.678Z", JavaUtilDateFormat.PATTERN_63.format(date));
-        assertEquals("2022/01/02T03:04:05.678Z", JavaUtilDateFormat.PATTERN_64.format(date));
-        assertEquals("2022-01-02T03:04:05.678+08", JavaUtilDateFormat.PATTERN_73.format(date));
-        assertEquals("2022/01/02T03:04:05.678+08", JavaUtilDateFormat.PATTERN_74.format(date));
+        assertEquals("20220102", PATTERN_21.format(date));
+        assertEquals("2022-01-02", PATTERN_22.format(date));
+        assertEquals("2022/01/02", PATTERN_23.format(date));
+        assertEquals("20220102030405", PATTERN_31.format(date));
+        assertEquals("20220102030405678", PATTERN_32.format(date));
+        assertEquals("2022-01-02 03:04:05", PATTERN_41.format(date));
+        assertEquals("2022/01/02 03:04:05", PATTERN_42.format(date));
+        assertEquals("2022-01-02T03:04:05", PATTERN_43.format(date));
+        assertEquals("2022/01/02T03:04:05", PATTERN_44.format(date));
+        assertEquals("2022-01-02 03:04:05.678", PATTERN_51.format(date));
+        assertEquals("2022/01/02 03:04:05.678", PATTERN_52.format(date));
+        assertEquals("2022-01-02T03:04:05.678", PATTERN_53.format(date));
+        assertEquals("2022/01/02T03:04:05.678", PATTERN_54.format(date));
+        assertEquals("2022-01-02 03:04:05.678Z", PATTERN_61.format(date));
+        assertEquals("2022/01/02 03:04:05.678Z", PATTERN_62.format(date));
+        assertEquals("2022-01-02T03:04:05.678Z", PATTERN_63.format(date));
+        assertEquals("2022/01/02T03:04:05.678Z", PATTERN_64.format(date));
+        assertEquals("2022-01-02T03:04:05.678+08:00", PATTERN_73.format(date));
+        assertEquals("2022/01/02T03:04:05.678+08:00", PATTERN_74.format(date));
         assertEquals("2022-01-02 03:04:05", JavaUtilDateFormat.DEFAULT.format(date));
 
+        assertEquals("Sun Jan 02 00:00:00 CST 2022", PATTERN_21.parse("20220102").toString());
+        assertEquals("Sun Jan 02 00:00:00 CST 2022", PATTERN_22.parse("2022-01-02").toString());
+        assertEquals("Sun Jan 02 00:00:00 CST 2022", PATTERN_23.parse("2022/01/02").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_31.parse("20220102030405").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_32.parse("20220102030405678").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_41.parse("2022-01-02 03:04:05").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_42.parse("2022/01/02 03:04:05").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_43.parse("2022-01-02T03:04:05").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_44.parse("2022/01/02T03:04:05").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_51.parse("2022-01-02 03:04:05.678").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_52.parse("2022/01/02 03:04:05.678").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_53.parse("2022-01-02T03:04:05.678").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_54.parse("2022/01/02T03:04:05.678").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_61.parse("2022-01-02 03:04:05.678Z").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_62.parse("2022/01/02 03:04:05.678Z").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_63.parse("2022-01-02T03:04:05.678Z").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_64.parse("2022/01/02T03:04:05.678Z").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_73.parse("2022-01-02T03:04:05.678+08:00").toString());
+        assertEquals("Sun Jan 02 11:04:05 CST 2022", PATTERN_73.parse("2022-01-02T03:04:05.678+00:00").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", PATTERN_74.parse("2022/01/02T03:04:05.678+08:00").toString());
+        assertEquals("Sun Jan 02 11:04:05 CST 2022", PATTERN_74.parse("2022/01/02T03:04:05.678+00:00").toString());
 
-        assertEquals("Sat Jan 01 00:00:00 CST 2022", JavaUtilDateFormat.PATTERN_11.parse("202201").toString());
-        assertEquals("Sat Jan 01 00:00:00 CST 2022", JavaUtilDateFormat.PATTERN_12.parse("2022-01").toString());
-        assertEquals("Sat Jan 01 00:00:00 CST 2022", JavaUtilDateFormat.PATTERN_13.parse("2022/01").toString());
-        assertEquals("Sun Jan 02 00:00:00 CST 2022", JavaUtilDateFormat.PATTERN_21.parse("20220102").toString());
-        assertEquals("Sun Jan 02 00:00:00 CST 2022", JavaUtilDateFormat.PATTERN_22.parse("2022-01-02").toString());
-        assertEquals("Sun Jan 02 00:00:00 CST 2022", JavaUtilDateFormat.PATTERN_23.parse("2022/01/02").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_31.parse("20220102030405").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_32.parse("20220102030405678").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_41.parse("2022-01-02 03:04:05").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_42.parse("2022/01/02 03:04:05").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_43.parse("2022-01-02T03:04:05").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_44.parse("2022/01/02T03:04:05").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_51.parse("2022-01-02 03:04:05.678").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_52.parse("2022/01/02 03:04:05.678").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_53.parse("2022-01-02T03:04:05.678").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_54.parse("2022/01/02T03:04:05.678").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_61.parse("2022-01-02 03:04:05.678Z").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_62.parse("2022/01/02 03:04:05.678Z").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_63.parse("2022-01-02T03:04:05.678Z").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_64.parse("2022/01/02T03:04:05.678Z").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_73.parse("2022-01-02T03:04:05.678+08").toString());
-        assertEquals("Sun Jan 02 11:04:05 CST 2022", JavaUtilDateFormat.PATTERN_73.parse("2022-01-02T03:04:05.678+00").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.PATTERN_74.parse("2022/01/02T03:04:05.678+08").toString());
-        assertEquals("Sun Jan 02 11:04:05 CST 2022", JavaUtilDateFormat.PATTERN_74.parse("2022/01/02T03:04:05.678+00").toString());
-
-        assertEquals("Sat Jan 01 00:00:00 CST 2022", JavaUtilDateFormat.DEFAULT.parse("202201").toString());
-        assertEquals("Sat Jan 01 00:00:00 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022-01").toString());
-        assertEquals("Sat Jan 01 00:00:00 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01").toString());
         assertEquals("Sun Jan 02 00:00:00 CST 2022", JavaUtilDateFormat.DEFAULT.parse("20220102").toString());
         assertEquals("Sun Jan 02 00:00:00 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022-01-02").toString());
         assertEquals("Sun Jan 02 00:00:00 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01/02").toString());
@@ -114,12 +134,12 @@ public class JavaUtilDateFormatTest {
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01/02 03:04:05.678").toString());
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022-01-02T03:04:05.678").toString());
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01/02T03:04:05.678").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022-01-02 03:04:05.678Z").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01/02 03:04:05.678Z").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022-01-02T03:04:05.678Z").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01/02T03:04:05.678Z").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022-01-02T03:04:05.678+08").toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01/02T03:04:05.678+08").toString());
+        assertEquals("Sun Jan 02 11:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022-01-02 03:04:05.678Z").toString());
+        assertEquals("Sun Jan 02 11:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01/02 03:04:05.678Z").toString());
+        assertEquals("Sun Jan 02 11:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022-01-02T03:04:05.678Z").toString());
+        assertEquals("Sun Jan 02 11:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01/02T03:04:05.678Z").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022-01-02T03:04:05.678+08:00").toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("2022/01/02T03:04:05.678+08:00").toString());
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse("Sun Jan 02 03:04:05 CST 2022").toString());
 
 
@@ -130,46 +150,38 @@ public class JavaUtilDateFormatTest {
     @Test
     public void test1() throws ParseException {
         String dateString = "2022-07-19T13:44:27.873Z";
-        Date date = JavaUtilDateFormat.PATTERN_73.parse(dateString);
+        Date date = PATTERN_73.parse(dateString);
 
-        assertEquals("202207", JavaUtilDateFormat.PATTERN_11.format(date));
-        assertEquals("2022-07", JavaUtilDateFormat.PATTERN_12.format(date));
-        assertEquals("2022/07", JavaUtilDateFormat.PATTERN_13.format(date));
+        assertEquals("20220719", PATTERN_21.format(date));
+        assertEquals("2022-07-19", PATTERN_22.format(date));
+        assertEquals("2022/07/19", PATTERN_23.format(date));
 
-        assertEquals("20220719", JavaUtilDateFormat.PATTERN_21.format(date));
-        assertEquals("2022-07-19", JavaUtilDateFormat.PATTERN_22.format(date));
-        assertEquals("2022/07/19", JavaUtilDateFormat.PATTERN_23.format(date));
+        assertEquals("20220719214427", PATTERN_31.format(date));
+        assertEquals("20220719214427873", PATTERN_32.format(date));
 
-        assertEquals("20220719214427", JavaUtilDateFormat.PATTERN_31.format(date));
-        assertEquals("20220719214427873", JavaUtilDateFormat.PATTERN_32.format(date));
+        assertEquals("2022-07-19 21:44:27", PATTERN_41.format(date));
+        assertEquals("2022/07/19 21:44:27", PATTERN_42.format(date));
+        assertEquals("2022-07-19T21:44:27", PATTERN_43.format(date));
+        assertEquals("2022/07/19T21:44:27", PATTERN_44.format(date));
 
-        assertEquals("2022-07-19 21:44:27", JavaUtilDateFormat.PATTERN_41.format(date));
-        assertEquals("2022/07/19 21:44:27", JavaUtilDateFormat.PATTERN_42.format(date));
-        assertEquals("2022-07-19T21:44:27", JavaUtilDateFormat.PATTERN_43.format(date));
-        assertEquals("2022/07/19T21:44:27", JavaUtilDateFormat.PATTERN_44.format(date));
+        assertEquals("2022-07-19 21:44:27.873", PATTERN_51.format(date));
+        assertEquals("2022/07/19 21:44:27.873", PATTERN_52.format(date));
+        assertEquals("2022-07-19T21:44:27.873", PATTERN_53.format(date));
+        assertEquals("2022/07/19T21:44:27.873", PATTERN_54.format(date));
 
-        assertEquals("2022-07-19 21:44:27.873", JavaUtilDateFormat.PATTERN_51.format(date));
-        assertEquals("2022/07/19 21:44:27.873", JavaUtilDateFormat.PATTERN_52.format(date));
-        assertEquals("2022-07-19T21:44:27.873", JavaUtilDateFormat.PATTERN_53.format(date));
-        assertEquals("2022/07/19T21:44:27.873", JavaUtilDateFormat.PATTERN_54.format(date));
+        assertEquals("2022-07-19 21:44:27.873Z", PATTERN_61.format(date));
+        assertEquals("2022/07/19 21:44:27.873Z", PATTERN_62.format(date));
+        assertEquals("2022-07-19T21:44:27.873Z", PATTERN_63.format(date));
+        assertEquals("2022/07/19T21:44:27.873Z", PATTERN_64.format(date));
 
-        assertEquals("2022-07-19 21:44:27.873Z", JavaUtilDateFormat.PATTERN_61.format(date));
-        assertEquals("2022/07/19 21:44:27.873Z", JavaUtilDateFormat.PATTERN_62.format(date));
-        assertEquals("2022-07-19T21:44:27.873Z", JavaUtilDateFormat.PATTERN_63.format(date));
-        assertEquals("2022/07/19T21:44:27.873Z", JavaUtilDateFormat.PATTERN_64.format(date));
-
-        assertEquals("2022-07-19T21:44:27.873+08", JavaUtilDateFormat.PATTERN_73.format(date));
-        assertEquals("2022/07/19T21:44:27.873+08", JavaUtilDateFormat.PATTERN_74.format(date));
+        assertEquals("2022-07-19T21:44:27.873+08:00", PATTERN_73.format(date));
+        assertEquals("2022/07/19T21:44:27.873+08:00", PATTERN_74.format(date));
     }
 
     @Test
     public void test2() throws ParseException {
         JavaUtilDateFormat format = JavaUtilDateFormat.DEFAULT;
-        FastDateFormat fastDateFormat = JavaUtilDateFormat.PATTERN_51;
-
-        assertEquals("2022-07-01 00:00:00.000", fastDateFormat.format(format.parse("202207")));
-        assertEquals("2022-07-01 00:00:00.000", fastDateFormat.format(format.parse("2022-07")));
-        assertEquals("2022-07-01 00:00:00.000", fastDateFormat.format(format.parse("2022/07")));
+        FastDateFormat fastDateFormat = PATTERN_51;
 
         assertEquals("2022-07-19 00:00:00.000", fastDateFormat.format(format.parse("20220719")));
         assertEquals("2022-07-19 00:00:00.000", fastDateFormat.format(format.parse("2022-07-19")));
@@ -188,39 +200,39 @@ public class JavaUtilDateFormatTest {
         assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse("2022-07-19T21:44:27.873")));
         assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse("2022/07/19T21:44:27.873")));
 
-        assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse("2022-07-19T21:44:27Z")));
-        assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse("2022-07-19T21:44:27.Z")));
-        assertEquals("2022-07-19 21:44:27.800", fastDateFormat.format(format.parse("2022-07-19T21:44:27.8Z")));
-        assertEquals("2022-07-19 21:44:27.870", fastDateFormat.format(format.parse("2022-07-19T21:44:27.87Z")));
-        assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse("2022-07-19T21:44:27.873Z")));
+        assertEquals("2022-07-20 05:44:27.000", fastDateFormat.format(format.parse("2022-07-19T21:44:27Z")));
+        assertEquals("2022-07-20 05:44:27.000", fastDateFormat.format(format.parse("2022-07-19T21:44:27.Z")));
+        assertEquals("2022-07-20 05:44:27.800", fastDateFormat.format(format.parse("2022-07-19T21:44:27.8Z")));
+        assertEquals("2022-07-20 05:44:27.870", fastDateFormat.format(format.parse("2022-07-19T21:44:27.87Z")));
+        assertEquals("2022-07-20 05:44:27.873", fastDateFormat.format(format.parse("2022-07-19T21:44:27.873Z")));
 
-        assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse("2022/07/19T21:44:27Z")));
-        assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse("2022/07/19T21:44:27.Z")));
-        assertEquals("2022-07-19 21:44:27.300", fastDateFormat.format(format.parse("2022/07/19T21:44:27.3Z")));
-        assertEquals("2022-07-19 21:44:27.730", fastDateFormat.format(format.parse("2022/07/19T21:44:27.73Z")));
-        assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse("2022/07/19T21:44:27.873Z")));
-
-
-        assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse("2022-07-19 21:44:27Z")));
-        assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse("2022-07-19 21:44:27.Z")));
-        assertEquals("2022-07-19 21:44:27.800", fastDateFormat.format(format.parse("2022-07-19 21:44:27.8Z")));
-        assertEquals("2022-07-19 21:44:27.870", fastDateFormat.format(format.parse("2022-07-19 21:44:27.87Z")));
-        assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse("2022-07-19 21:44:27.873Z")));
-
-        assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse("2022/07/19 21:44:27Z")));
-        assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse("2022/07/19 21:44:27.Z")));
-        assertEquals("2022-07-19 21:44:27.300", fastDateFormat.format(format.parse("2022/07/19 21:44:27.3Z")));
-        assertEquals("2022-07-19 21:44:27.730", fastDateFormat.format(format.parse("2022/07/19 21:44:27.73Z")));
-        assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse("2022/07/19 21:44:27.873Z")));
+        assertEquals("2022-07-20 05:44:27.000", fastDateFormat.format(format.parse("2022/07/19T21:44:27Z")));
+        assertEquals("2022-07-20 05:44:27.000", fastDateFormat.format(format.parse("2022/07/19T21:44:27.Z")));
+        assertEquals("2022-07-20 05:44:27.300", fastDateFormat.format(format.parse("2022/07/19T21:44:27.3Z")));
+        assertEquals("2022-07-20 05:44:27.730", fastDateFormat.format(format.parse("2022/07/19T21:44:27.73Z")));
+        assertEquals("2022-07-20 05:44:27.873", fastDateFormat.format(format.parse("2022/07/19T21:44:27.873Z")));
 
 
-        assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse("2022-07-19T21:44:27.873+08")));
-        assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse("2022/07/19T21:44:27.873+08")));
+        assertEquals("2022-07-20 05:44:27.000", fastDateFormat.format(format.parse("2022-07-19 21:44:27Z")));
+        assertEquals("2022-07-20 05:44:27.000", fastDateFormat.format(format.parse("2022-07-19 21:44:27.Z")));
+        assertEquals("2022-07-20 05:44:27.800", fastDateFormat.format(format.parse("2022-07-19 21:44:27.8Z")));
+        assertEquals("2022-07-20 05:44:27.870", fastDateFormat.format(format.parse("2022-07-19 21:44:27.87Z")));
+        assertEquals("2022-07-20 05:44:27.873", fastDateFormat.format(format.parse("2022-07-19 21:44:27.873Z")));
+
+        assertEquals("2022-07-20 05:44:27.000", fastDateFormat.format(format.parse("2022/07/19 21:44:27Z")));
+        assertEquals("2022-07-20 05:44:27.000", fastDateFormat.format(format.parse("2022/07/19 21:44:27.Z")));
+        assertEquals("2022-07-20 05:44:27.300", fastDateFormat.format(format.parse("2022/07/19 21:44:27.3Z")));
+        assertEquals("2022-07-20 05:44:27.730", fastDateFormat.format(format.parse("2022/07/19 21:44:27.73Z")));
+        assertEquals("2022-07-20 05:44:27.873", fastDateFormat.format(format.parse("2022/07/19 21:44:27.873Z")));
+
+
+        assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse("2022-07-19T21:44:27.873+08:00")));
+        assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse("2022/07/19T21:44:27.873+08:00")));
 
         assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse("Tue Jul 19 21:44:27 CST 2022")));
 
         String dateString = "2022-07-19T13:44:27.873Z";
-        Date date = JavaUtilDateFormat.PATTERN_73.parse(dateString);
+        Date date = PATTERN_73.parse(dateString);
         assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse(Long.toString(date.getTime() / 1000))));
         assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse(Long.toString(date.getTime()))));
     }
@@ -230,46 +242,40 @@ public class JavaUtilDateFormatTest {
         JavaUtilDateFormat format = JavaUtilDateFormat.DEFAULT;
         Date date = new Date();
 
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_11.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_12.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_21.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_22.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_31.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_41.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_32.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_51.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_63.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_13.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_23.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_42.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_52.format(date)));
-        System.out.println(format.parse(JavaUtilDateFormat.PATTERN_64.format(date)));
+        System.out.println(format.parse(PATTERN_21.format(date)));
+        System.out.println(format.parse(PATTERN_22.format(date)));
+        System.out.println(format.parse(PATTERN_31.format(date)));
+        System.out.println(format.parse(PATTERN_41.format(date)));
+        System.out.println(format.parse(PATTERN_32.format(date)));
+        System.out.println(format.parse(PATTERN_51.format(date)));
+        System.out.println(format.parse(PATTERN_63.format(date)));
+        System.out.println(format.parse(PATTERN_23.format(date)));
+        System.out.println(format.parse(PATTERN_42.format(date)));
+        System.out.println(format.parse(PATTERN_52.format(date)));
+        System.out.println(format.parse(PATTERN_64.format(date)));
         System.out.println(format.parse(String.valueOf(date.getTime())));
         System.out.println(format.parse(String.valueOf(date.getTime() / 1000)));
 
         System.out.println("\n------------------------");
-        System.out.println(JavaUtilDateFormat.PATTERN_11.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_12.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_21.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_22.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_31.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_41.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_32.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_51.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_63.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_13.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_23.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_42.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_52.format(date));
-        System.out.println(JavaUtilDateFormat.PATTERN_64.format(date));
+        System.out.println(PATTERN_21.format(date));
+        System.out.println(PATTERN_22.format(date));
+        System.out.println(PATTERN_31.format(date));
+        System.out.println(PATTERN_41.format(date));
+        System.out.println(PATTERN_32.format(date));
+        System.out.println(PATTERN_51.format(date));
+        System.out.println(PATTERN_63.format(date));
+        System.out.println(PATTERN_23.format(date));
+        System.out.println(PATTERN_42.format(date));
+        System.out.println(PATTERN_52.format(date));
+        System.out.println(PATTERN_64.format(date));
 
         System.out.println("\n------------------------");
-        assertTrue(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("Sat Jun 01 22:36:21 CST 2019").matches());
-        assertFalse(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("Sat Jun 0122:36:21 CST 2019").matches());
-        assertFalse(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("sat Jun 01 22:36:21 CST 2019").matches());
-        assertFalse(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("Sat Jun 01 22:36:21 DST 2019").matches());
-        assertFalse(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("Sat jun 01 22:36:21 CST 2019").matches());
-        assertFalse(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("Sat Jun 01 22:36:21CST 2019").matches());
+        assertTrue(CST_PATTERN.matcher("Sat Jun 01 22:36:21 CST 2019").matches());
+        assertFalse(CST_PATTERN.matcher("Sat Jun 0122:36:21 CST 2019").matches());
+        assertFalse(CST_PATTERN.matcher("sat Jun 01 22:36:21 CST 2019").matches());
+        assertFalse(CST_PATTERN.matcher("Sat Jun 01 22:36:21 DST 2019").matches());
+        assertFalse(CST_PATTERN.matcher("Sat jun 01 22:36:21 CST 2019").matches());
+        assertFalse(CST_PATTERN.matcher("Sat Jun 01 22:36:21CST 2019").matches());
         System.out.println(JavaUtilDateFormat.DEFAULT.parse("Sat Jun 01 22:36:21 CST 2019", new ParsePosition(0)));
         System.out.println(format.parse("Sat Jun 01 22:36:21 CST 2019"));
         System.out.println(format.parse("2020-12-01 10:33:06"));
@@ -278,15 +284,9 @@ public class JavaUtilDateFormatTest {
         System.out.println(new JavaUtilDateFormat("yyyy").parse("2022"));
         System.out.println(JavaUtilDateFormat.DEFAULT.format(new Date(0)));
 
-        assertTrue(JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher("0").matches());
-        assertTrue(JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher("1").matches());
-        assertTrue(JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher("9").matches());
-        assertTrue(JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher("1644894528").matches());
-        assertFalse(JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher("01644894528").matches());
-
         System.out.println("\n------------------------");
-        System.out.println(JavaUtilDateFormat.PATTERN_41.parse("2122-01-01 00:00:00", new ParsePosition(0)));
-        System.out.println(JavaUtilDateFormat.PATTERN_41.parse("2122-01-01 00:00:00", new ParsePosition(1)));
+        System.out.println(PATTERN_41.parse("2122-01-01 00:00:00", new ParsePosition(0)));
+        System.out.println(PATTERN_41.parse("2122-01-01 00:00:00", new ParsePosition(1)));
         System.out.println(JavaUtilDateFormat.DEFAULT.parse("x2122-01-01 00:00:00", new ParsePosition(1)));
         System.out.println(JavaUtilDateFormat.DEFAULT.parse("2122-01-01 00:00:00", new ParsePosition(0)));
         assertEquals("Wed Jan 01 00:00:00 CST 122", JavaUtilDateFormat.DEFAULT.parse("2122-01-01 00:00:00", new ParsePosition(1)).toString());

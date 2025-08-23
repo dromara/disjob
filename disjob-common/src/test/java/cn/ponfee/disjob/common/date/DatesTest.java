@@ -27,11 +27,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
@@ -48,77 +46,178 @@ public class DatesTest {
 
     @Test
     public void testInstance() {
-        String date = "1970-01-01T00:00:00Z";
-        Assertions.assertEquals(date, Instant.from(DateTimeFormatter.ISO_INSTANT.parse(date)).toString());
-        Assertions.assertEquals(date, Instant.ofEpochSecond(0).toString());
-        Assertions.assertEquals(date, Instant.ofEpochMilli(0).toString());
-        Assertions.assertEquals(date, Instant.ofEpochSecond(0, 0).toString());
+        String str = "1970-01-01T00:00:00Z";
+        Assertions.assertEquals(str, Instant.parse("1970-01-01T00:00:00Z").toString());
+        Assertions.assertEquals(str, Instant.parse("1970-01-01T00:00:00.Z").toString());
+        Assertions.assertEquals(str, Instant.parse("1970-01-01T00:00:00.0Z").toString());
+        Assertions.assertEquals(str, Instant.parse("1970-01-01T00:00:00.00Z").toString());
+        Assertions.assertEquals(str, Instant.parse("1970-01-01T00:00:00.000Z").toString());
+        Assertions.assertEquals(str, Instant.parse("1970-01-01T00:00:00.0000Z").toString());
+        Assertions.assertEquals(str, Instant.parse("1970-01-01T00:00:00.00000Z").toString());
+        Assertions.assertEquals(str, Instant.parse("1970-01-01T00:00:00.000000Z").toString());
+
+        System.out.println(Date.from(Instant.now()));              // Instant -> Date
+        System.out.println(new Date().toInstant());                // Date    -> Instant
+        System.out.println(Instant.parse("1970-01-01T00:00:00Z")); // String  -> Instant
+
+        Assertions.assertEquals(str, Instant.from(DateTimeFormatter.ISO_INSTANT.parse(str)).toString());
+        Assertions.assertEquals(str, Instant.ofEpochSecond(0).toString());
+        Assertions.assertEquals(str, Instant.ofEpochMilli(0).toString());
+        Assertions.assertEquals(str, Instant.ofEpochSecond(0, 0).toString());
+        Assertions.assertTrue(Math.abs(new Date().getTime() - Instant.now().toEpochMilli()) <= 1);
+
+        // 输出UTC+0时区的时间点
+        System.out.println(Instant.now().toString());
+        // 输出本地时区的时间点
+        System.out.println(new Date().toString());
+
+        Instant instant = Instant.ofEpochSecond(0, 1234567890L);
+        Assertions.assertEquals("1970-01-01T00:00:01.234567890Z", instant.toString());
+        Assertions.assertEquals("\"1970-01-01T00:00:01.234567890Z\"", Jsons.toJson(instant));
+        Assertions.assertEquals(instant, Jsons.fromJson("\"1970-01-01T00:00:01.234567890Z\"", Instant.class));
+    }
+
+    @Test
+    public void testLocalDateTime() {
+        LocalDateTime date = LocalDateTime.parse("1970-01-01T00:00:00");
+        Assertions.assertEquals(date, LocalDateTime.parse("1970-01-01T00:00:00"));
+        Assertions.assertEquals(date, LocalDateTime.parse("1970-01-01T00:00:00."));
+        Assertions.assertEquals(date, LocalDateTime.parse("1970-01-01T00:00:00.0"));
+        Assertions.assertEquals(date, LocalDateTime.parse("1970-01-01T00:00:00.00"));
+        Assertions.assertEquals(date, LocalDateTime.parse("1970-01-01T00:00:00.000"));
+        Assertions.assertEquals(date, LocalDateTime.parse("1970-01-01T00:00:00.0000"));
+        Assertions.assertEquals(date, LocalDateTime.parse("1970-01-01T00:00:00.00000"));
+        Assertions.assertEquals(date, LocalDateTime.parse("1970-01-01T00:00:00.000000"));
+    }
+
+    @Test
+    public void testOffsetDateTime() {
+        OffsetDateTime date = OffsetDateTime.parse("1970-01-01T00:00:00+08:00");
+        Assertions.assertEquals(date, OffsetDateTime.parse("1970-01-01T00:00:00+08:00"));
+        Assertions.assertEquals(date, OffsetDateTime.parse("1970-01-01T00:00:00.+08:00"));
+        Assertions.assertEquals(date, OffsetDateTime.parse("1970-01-01T00:00:00.0+08:00"));
+        Assertions.assertEquals(date, OffsetDateTime.parse("1970-01-01T00:00:00.00+08:00"));
+        Assertions.assertEquals(date, OffsetDateTime.parse("1970-01-01T00:00:00.000+08:00"));
+        Assertions.assertEquals(date, OffsetDateTime.parse("1970-01-01T00:00:00.0000+08:00"));
+        Assertions.assertEquals(date, OffsetDateTime.parse("1970-01-01T00:00:00.00000+08:00"));
+        Assertions.assertEquals(date, OffsetDateTime.parse("1970-01-01T00:00:00.000000+08:00"));
+
+        Assertions.assertThrows(DateTimeParseException.class, () -> OffsetDateTime.parse("1970-01-01T00:00:00.00+08"));
+        Assertions.assertEquals("1970-01-01T08:00+08:00[Asia/Shanghai]", ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneId.systemDefault()).toString());
+    }
+
+    @Test
+    public void testDateTimeFormat() throws ParseException {
+        Date date = new Date(0);
+        Assertions.assertEquals("1970-01-01T08:00:00.000+08", FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSX").format(date));
+        Assertions.assertEquals("1970-01-01T08:00:00.000+08:00", FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(date));
+        Assertions.assertEquals("1970-01-01 08:00:00", Dates.format(FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSX").parse("1970-01-01T08:00:00.000+08")));
+        Assertions.assertEquals("1970-01-01 08:00:00", Dates.format(FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").parse("1970-01-01T08:00:00.000+08:00")));
+        Assertions.assertEquals("1970-01-01 08:00:00", Dates.format(FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSX").parse("1970-01-01T08:00:00.000+08:00")));
+        //Assertions.assertEquals("1970-01-01 08:00:00", Dates.format(FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").parse("1970-01-01T08:00:00.000+08")));
+
+        System.out.println(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()));
+        System.out.println(DateTimeFormatter.ISO_ZONED_DATE_TIME.format(OffsetDateTime.now()));
+        System.out.println(LocalDate.from(DateTimeFormatter.BASIC_ISO_DATE.parse("20250816")));
+
+        System.out.println(Instant.parse("2000-01-01T00:00:00.000Z").toString());
+        System.out.println(OffsetDateTime.parse("2000-01-01T00:00:00.000+08:00").toString());
+        System.out.println(LocalDateTime.parse("2000-01-01T00:00:00.000").toString());
     }
 
     @Test
     public void test() throws ParseException {
+        Date now = new Date(0);
+        System.out.println(now); // Thu Jan 01 08:00:00 CST 1970
+        System.out.println(new Date("Thu Jan 01 00:00:00 CST 1970")); // Thu Jan 01 14:00:00 CST 1970
+        Assertions.assertEquals(now, toDate(LocalDateTime.parse(now.toString(), DateTimeFormatter.ofPattern(DATE_TO_STRING_PATTERN, Locale.ROOT))));
+
         System.out.println(FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS").format(System.currentTimeMillis()));
         String str = "2023-01-03 15:23:45.321";
-        Date date = toDate(str, DATEFULL_PATTERN);
+        Date date = parse(str, DATETIME_MILLI_PATTERN);
         Assertions.assertNotNull(JavaUtilDateFormat.DEFAULT.parse(str));
         Assertions.assertNull(JavaUtilDateFormat.DEFAULT.parse(null));
         Assertions.assertTrue(isValidDate(str, DATETIME_PATTERN));
         Assertions.assertFalse(isValidDate(null, DATETIME_PATTERN));
         Assertions.assertFalse(isValidDate("2020-xx-00 00:00:00", DATETIME_PATTERN));
 
-        Assertions.assertEquals("0002-11-30 00:00:00.000", format(ofTimeMillis(-62170185600000L), DATEFULL_PATTERN));
+        Assertions.assertEquals("0002-11-30 00:00:00.000", format(new Date(-62170185600000L), DATETIME_MILLI_PATTERN));
 
-        Assertions.assertEquals("1970-01-01 08:00:01", format(ofUnixTimestamp(1)));
-        Assertions.assertEquals("1970-01-01 08:00:00", format(ofTimeMillis(1)));
-        Assertions.assertEquals(19, now(DATETIME_PATTERN).length());
-        Assertions.assertEquals(str, format(JavaUtilDateFormat.DEFAULT.parse(str), DATEFULL_PATTERN));
-        Assertions.assertEquals(str, format(date, DATEFULL_PATTERN));
-        Assertions.assertEquals("1970-01-01 08:00:02.312", format(2312, DATEFULL_PATTERN));
+        Assertions.assertEquals("1970-01-01 08:00:01", format(new Date(1000)));
+        Assertions.assertEquals("1970-01-01 08:00:00", format(new Date(1)));
+        Assertions.assertEquals(str, format(JavaUtilDateFormat.DEFAULT.parse(str), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals(str, format(date, DATETIME_MILLI_PATTERN));
 
-        Assertions.assertEquals("2023-01-03 15:23:45.731", format(plusMillis(date, 410), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-03 15:23:48.321", format(plusSeconds(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-03 15:26:45.321", format(plusMinutes(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-03 18:23:45.321", format(plusHours(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-06 15:23:45.321", format(plusDays(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-24 15:23:45.321", format(plusWeeks(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-04-03 15:23:45.321", format(plusMonths(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2026-01-03 15:23:45.321", format(plusYears(date, 3), DATEFULL_PATTERN));
+        Assertions.assertEquals("2023-01-03 15:23:45.731", format(plusMillis(date, 410), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-03 15:23:48.321", format(plusSeconds(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-03 15:26:45.321", format(plusMinutes(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-03 18:23:45.321", format(plusHours(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-06 15:23:45.321", format(plusDays(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-24 15:23:45.321", format(plusWeeks(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-04-03 15:23:45.321", format(plusMonths(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2026-01-03 15:23:45.321", format(plusYears(date, 3), DATETIME_MILLI_PATTERN));
 
-        Assertions.assertEquals("2023-01-03 15:23:45.210", format(minusMillis(date, 111), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-03 15:23:42.321", format(minusSeconds(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-03 15:20:45.321", format(minusMinutes(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-03 12:23:45.321", format(minusHours(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2022-12-31 15:23:45.321", format(minusDays(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2022-12-13 15:23:45.321", format(minusWeeks(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2022-10-03 15:23:45.321", format(minusMonths(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2020-01-03 15:23:45.321", format(minusYears(date, 3), DATEFULL_PATTERN));
+        Assertions.assertEquals("2023-01-03 15:23:45.210", format(minusMillis(date, 111), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-03 15:23:42.321", format(minusSeconds(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-03 15:20:45.321", format(minusMinutes(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-03 12:23:45.321", format(minusHours(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2022-12-31 15:23:45.321", format(minusDays(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2022-12-13 15:23:45.321", format(minusWeeks(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2022-10-03 15:23:45.321", format(minusMonths(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2020-01-03 15:23:45.321", format(minusYears(date, 3), DATETIME_MILLI_PATTERN));
 
-        Assertions.assertEquals("2023-01-03 00:00:00.000", format(startOfDay(date), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-03 23:59:59.999", format(endOfDay(date), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-02 00:00:00.000", format(startOfWeek(date), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-08 23:59:59.999", format(endOfWeek(date), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-01 00:00:00.000", format(startOfMonth(date), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-31 23:59:59.999", format(endOfMonth(date), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-01 00:00:00.000", format(startOfYear(date), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-12-31 23:59:59.999", format(endOfYear(date), DATEFULL_PATTERN));
+        Assertions.assertEquals("2023-01-03 00:00:00.000", format(startOfDay(date), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-03 23:59:59.999", format(endOfDay(date), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-02 00:00:00.000", format(startOfWeek(date), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-08 23:59:59.999", format(endOfWeek(date), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-01 00:00:00.000", format(startOfMonth(date), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-31 23:59:59.999", format(endOfMonth(date), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-01 00:00:00.000", format(startOfYear(date), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-12-31 23:59:59.999", format(endOfYear(date), DATETIME_MILLI_PATTERN));
 
-        Assertions.assertEquals("2023-01-06 15:23:45.321", format(withDayOfWeek(date, 5), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-02 15:23:45.321", format(withDayOfWeek(date, 1), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-03 15:23:45.321", format(withDayOfWeek(date, 2), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-04 15:23:45.321", format(withDayOfWeek(date, 3), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-05 15:23:45.321", format(withDayOfMonth(date, 5), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-06-05 15:23:45.321", format(withDayOfMonth(toDate("2023-06-25 15:23:45.321", DATEFULL_PATTERN), 5), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-05 15:23:45.321", format(withDayOfYear(date, 5), DATEFULL_PATTERN));
-        Assertions.assertEquals("2023-01-05 15:23:45.321", format(withDayOfYear(toDate("2023-06-25 15:23:45.321", DATEFULL_PATTERN), 5), DATEFULL_PATTERN));
+        Assertions.assertEquals("2023-01-06 15:23:45.321", format(withDayOfWeek(date, 5), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-02 15:23:45.321", format(withDayOfWeek(date, 1), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-03 15:23:45.321", format(withDayOfWeek(date, 2), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-04 15:23:45.321", format(withDayOfWeek(date, 3), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-05 15:23:45.321", format(withDayOfMonth(date, 5), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-06-05 15:23:45.321", format(withDayOfMonth(parse("2023-06-25 15:23:45.321", DATETIME_MILLI_PATTERN), 5), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-05 15:23:45.321", format(withDayOfYear(date, 5), DATETIME_MILLI_PATTERN));
+        Assertions.assertEquals("2023-01-05 15:23:45.321", format(withDayOfYear(parse("2023-06-25 15:23:45.321", DATETIME_MILLI_PATTERN), 5), DATETIME_MILLI_PATTERN));
 
         Assertions.assertEquals(15, hourOfDay(date));
         Assertions.assertEquals(2, dayOfWeek(date));
         Assertions.assertEquals(3, dayOfMonth(date));
-        Assertions.assertEquals(156, dayOfYear(toDate("2023-06-05 15:23:45.321", DATEFULL_PATTERN)));
+        Assertions.assertEquals(156, dayOfYear(parse("2023-06-05 15:23:45.321", DATETIME_MILLI_PATTERN)));
 
         Assertions.assertEquals(15, daysBetween(JavaUtilDateFormat.DEFAULT.parse("2023-05-21 15:23:45"), JavaUtilDateFormat.DEFAULT.parse("2023-06-05 15:23:45")));
 
         Assertions.assertEquals("45 23 15 3 1 ? 2023", toCronExpression(JavaUtilDateFormat.DEFAULT.parse(str)));
+    }
+
+    @Test
+    public void test2() throws ParseException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        LocalDateTime localDateTime = LocalDateTime.parse("2023-05-21T15:23:45.123");
+        Assertions.assertEquals("2023-05-21 00:00:00.000", formatter.format(Dates.startOfDay(localDateTime)));
+        Assertions.assertEquals("2023-05-21 23:59:59.999", formatter.format(Dates.endOfDay(localDateTime)));
+        Assertions.assertEquals("2023-05-21 15:23:45.123", DATETIME_MILLI_FORMAT.format(Dates.toDate(localDateTime)));
+        Assertions.assertEquals("2023-05-21 00:00:00.000", DATETIME_MILLI_FORMAT.format(Dates.toDate(localDateTime.toLocalDate())));
+        Assertions.assertEquals("2023-05-21T15:23:45.123", Dates.toLocalDateTime(Dates.toDate(localDateTime)).toString());
+        Assertions.assertEquals("2023-05-21", Dates.toLocalDate(Dates.toDate(localDateTime)).toString());
+
+        Assertions.assertEquals("2023-05-21T07:23:45.123", Dates.toUTC(localDateTime).toString());
+        Assertions.assertEquals("2023-05-21T23:23:45.123", Dates.fromUTC(localDateTime).toString());
+        Assertions.assertEquals("2023-05-21T16:23:45.123", Dates.convertZone(localDateTime, ZoneOffset.of("+09:00")).toString());
+
+        Instant javaInstantCreatedAtWrite = Instant.ofEpochSecond(0, 123456000);
+        // java instant write to database datetime
+        LocalDateTime dbDatetimeCreatedAt = javaInstantCreatedAtWrite.atZone(ZoneOffset.UTC).toLocalDateTime();
+        // database datetime read to java instant
+        Instant javaInstantCreatedAtRead = dbDatetimeCreatedAt.atZone(ZoneOffset.UTC).toInstant();
+        // assertions
+        Assertions.assertEquals("1970-01-01T00:00:00.123456Z", javaInstantCreatedAtWrite.toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.123456", dbDatetimeCreatedAt.toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.123456Z", javaInstantCreatedAtRead.toString());
     }
 
     @Test
@@ -151,8 +250,8 @@ public class DatesTest {
     @Test
     public void testPeriods() {
         String format = "yyyy-MM-dd HH:mm:ss.SSS";
-        Date origin = Dates.toDate("2017-10-21 12:23:32.000", format);
-        Date target = Dates.toDate("2018-10-21 11:54:12.000", format);
+        Date origin = Dates.parse("2017-10-21 12:23:32.000", format);
+        Date target = Dates.parse("2018-10-21 11:54:12.000", format);
         int step = 3;
         DatePeriods periods = DatePeriods.HOURLY;
         DatePeriods.Segment segment = periods.next(origin, target, step, 0);
@@ -172,8 +271,8 @@ public class DatesTest {
 
         // SECOND
         periods = DatePeriods.PER_SECOND;
-        origin = Dates.toDate("2022-05-21 12:23:12.000", format);
-        target = Dates.toDate("2022-05-21 12:23:23.000", format);
+        origin = Dates.parse("2022-05-21 12:23:12.000", format);
+        target = Dates.parse("2022-05-21 12:23:23.000", format);
         step = 5;
         segment = periods.next(origin, target, step, 0);
         Assertions.assertEquals("2022-05-21 12:23:22.000 ~ 2022-05-21 12:23:26.999", segment.toString());
@@ -186,8 +285,8 @@ public class DatesTest {
 
         // QUARTERLY
         periods = DatePeriods.QUARTERLY;
-        origin = Dates.toDate("2021-08-21 12:23:12.000", format);
-        target = Dates.toDate("2022-05-21 23:34:23.000", format);
+        origin = Dates.parse("2021-08-21 12:23:12.000", format);
+        target = Dates.parse("2022-05-21 23:34:23.000", format);
         step = 2;
         segment = periods.next(origin, target, step, 0);
         Assertions.assertEquals("2022-02-21 12:23:12.000 ~ 2022-08-21 12:23:11.999", segment.toString());
@@ -207,6 +306,7 @@ public class DatesTest {
 
     @Test
     public void testDateString() throws ParseException {
+        Assertions.assertEquals(21, Dates.toCronExpression(LocalDateTime.of(2000, 12, 31, 23, 59, 59, 99999999)).length());
         Date date = new Date();
         System.out.println("Dates.format(date): " + Dates.format(date));
         String dateString = date.toString();

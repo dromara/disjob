@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
@@ -107,14 +107,14 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
         private static volatile Local instance = null;
 
         private final String contextPath;
-        private final LocalDateTime startupTime;
+        private final Instant startupTime;
         private String lastSubscribedEvent;
 
         private Local(String host, int port, String contextPath) {
             super(host, port);
             SingletonClassConstraint.constrain(Local.class);
             this.contextPath = contextPath;
-            this.startupTime = LocalDateTime.now();
+            this.startupTime = Instant.now();
         }
 
         /**
@@ -126,7 +126,7 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
             return contextPath;
         }
 
-        public final LocalDateTime getStartupTime() {
+        public final Instant getStartupTime() {
             return startupTime;
         }
 

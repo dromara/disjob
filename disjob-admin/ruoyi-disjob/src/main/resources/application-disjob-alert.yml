@@ -28,19 +28,18 @@ disjob.alert:
       password: xxx
       test-connection: false
     im:
-      tokenId: xxx
+      token-id: xxx
       secret-key: c9oV8sSo9bG3uxD03EXv7b
       supplier: LARK
     sms:
       blends:
         # 自定义的标识，也就是configId这里可以是任意值（最好不要是中文）
         tx1:
-          # 厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
           supplier: alibaba
-          accessKeyId: sampleAccessKeyId
-          accessKeySecret: sampleAccessKeySecret
-          signaTure: disjob
-          templateId: xxx
+          access-key-id: sampleAccessKeyId
+          access-key-secret: sampleAccessKeySecret
+          signature: disjob
+          template-id: xxx
         tx2:
           # 厂商标识，标定此配置是哪个厂商，详细请看厂商标识介绍部分
           supplier: tencent

@@ -30,7 +30,6 @@ import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
 import java.util.Date;
-import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -45,9 +44,10 @@ import java.util.concurrent.ThreadLocalRandom;
  *   LocalDateTime：无时区
  *   Date(UTC+0)：表示自格林威治时间(GMT)1970年1月1日0点经过指定的毫秒数后的时间点
  *   Instant(UTC+0)：同Date
- *   ZonedDateTime：自带时区
+ *   ZonedDateTime：自带完整的时区ID（如Asia/Shanghai），支持夏令时（DST）自动调整
+ *   OffsetDateTime：自带偏移量时区（固定的UTC偏移量），不支持夏令时
  *
- * ZoneId子类：ZoneRegion、ZoneOffset
+ * abstract class ZoneId子类：ZoneRegion、ZoneOffset
  *   ZoneId.of("Etc/GMT-8")                   -->    Etc/GMT-8
  *   ZoneId.of("GMT+8")                       -->    GMT+08:00
  *   ZoneId.of("UTC+8")                       -->    UTC+08:00
@@ -67,6 +67,11 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Dates {
 
     /**
+     * Time pattern
+     */
+    public static final String TIME_PATTERN = "HH:mm:ss";
+
+    /**
      * Date pattern
      */
     public static final String DATE_PATTERN = "yyyy-MM-dd";
@@ -77,19 +82,59 @@ public class Dates {
     public static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     /**
-     * Full datetime pattern
+     * Datetime milli pattern
      */
-    public static final String DATEFULL_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String DATETIME_MILLI_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 
     /**
-     * Date format of {@link Date#toString()}
+     * Date compact pattern
+     */
+    public static final String DATE_COMPACT_PATTERN = "yyyyMMdd";
+
+    /**
+     * Datetime compact pattern
+     */
+    public static final String DATETIME_COMPACT_PATTERN = "yyyyMMddHHmmss";
+
+    /**
+     * Datetime milli compact pattern
+     */
+    public static final String DATETIME_MILLI_COMPACT_PATTERN = "yyyyMMddHHmmssSSS";
+
+    /**
+     * Date pattern of {@link Date#toString()}
      */
     public static final String DATE_TO_STRING_PATTERN = "EEE MMM dd HH:mm:ss zzz yyyy";
+
+    /**
+     * Fast date format for date pattern
+     */
+    public static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance(DATE_PATTERN);
 
     /**
      * Fast date format for datetime pattern
      */
     public static final FastDateFormat DATETIME_FORMAT = FastDateFormat.getInstance(DATETIME_PATTERN);
+
+    /**
+     * Fast date format for datetime milli pattern
+     */
+    public static final FastDateFormat DATETIME_MILLI_FORMAT = FastDateFormat.getInstance(DATETIME_MILLI_PATTERN);
+
+    /**
+     * Fast date format for date compact pattern
+     */
+    public static final FastDateFormat DATE_COMPACT_FORMAT = FastDateFormat.getInstance(DATE_COMPACT_PATTERN);
+
+    /**
+     * Fast date format for datetime compact pattern
+     */
+    public static final FastDateFormat DATETIME_COMPACT_FORMAT = FastDateFormat.getInstance(DATETIME_COMPACT_PATTERN);
+
+    /**
+     * Fast date format for datetime milli compact pattern
+     */
+    public static final FastDateFormat DATETIME_MILLI_COMPACT_FORMAT = FastDateFormat.getInstance(DATETIME_MILLI_COMPACT_PATTERN);
 
     /**
      * 简单的日期格式校验
@@ -99,10 +144,9 @@ public class Dates {
      * @return 有效返回true, 反之false
      */
     public static boolean isValidDate(String dateStr, String pattern) {
-        if (StringUtils.isEmpty(dateStr)) {
+        if (StringUtils.isBlank(dateStr)) {
             return false;
         }
-
         try {
             new SimpleDateFormat(pattern).parse(dateStr);
             return true;
@@ -112,69 +156,18 @@ public class Dates {
     }
 
     /**
-     * 获取当前日期对象
-     *
-     * @return 当前日期对象
-     */
-    public static Date now() {
-        return new Date();
-    }
-
-    /**
-     * 获取当前日期字符串
-     *
-     * @param pattern 日期格式
-     * @return 当前日期字符串
-     */
-    public static String now(String pattern) {
-        return format(now(), pattern);
-    }
-
-    /**
-     * 转换日期即字符串为Date对象
+     * 字符串解析为Date
      *
      * @param dateStr 日期字符串
      * @param pattern 日期格式
      * @return 日期对象
      */
-    public static Date toDate(String dateStr, String pattern) {
+    public static Date parse(String dateStr, String pattern) {
         try {
             return new SimpleDateFormat(pattern).parse(dateStr);
         } catch (ParseException e) {
             return ExceptionUtils.rethrow(e);
         }
-    }
-
-    /**
-     * java（毫秒）时间戳
-     *
-     * @param timeMillis 毫秒时间戳
-     * @return 日期
-     */
-    public static Date ofTimeMillis(long timeMillis) {
-        return new Date(timeMillis);
-    }
-
-    public static Date ofTimeMillis(Long timeMillis) {
-        return timeMillis == null ? null : new Date(timeMillis);
-    }
-
-    public static long currentUnixTimestamp() {
-        return System.currentTimeMillis() / 1000;
-    }
-
-    /**
-     * unix时间戳
-     *
-     * @param unixTimestamp unix时间戳
-     * @return 日期
-     */
-    public static Date ofUnixTimestamp(long unixTimestamp) {
-        return new Date(unixTimestamp * 1000);
-    }
-
-    public static Date ofUnixTimestamp(Long unixTimestamp) {
-        return unixTimestamp == null ? null : new Date(unixTimestamp * 1000);
     }
 
     /**
@@ -185,10 +178,7 @@ public class Dates {
      * @return 当前日期字符串
      */
     public static String format(Date date, String pattern) {
-        if (date == null) {
-            return null;
-        }
-        return new SimpleDateFormat(pattern).format(date);
+        return date != null ? new SimpleDateFormat(pattern).format(date) : null;
     }
 
     /**
@@ -198,21 +188,7 @@ public class Dates {
      * @return 日期字符串
      */
     public static String format(Date date) {
-        if (date == null) {
-            return null;
-        }
-        return DATETIME_FORMAT.format(date);
-    }
-
-    /**
-     * 格式化日期对象
-     *
-     * @param timeMillis 毫秒
-     * @param pattern    格式
-     * @return 日期字符串
-     */
-    public static String format(long timeMillis, String pattern) {
-        return format(new Date(timeMillis), pattern);
+        return date != null ? DATETIME_FORMAT.format(date) : null;
     }
 
     public static String formatDuration(long durationMillis) {
@@ -496,7 +472,7 @@ public class Dates {
         return toDate(endOfDay0(date).with(TemporalAdjusters.lastDayOfYear()));
     }
 
-    // ----------------------------------------------------------------day of
+    // ----------------------------------------------------------------with day of xxx
 
     /**
      * 获取指定时间所在周的周n：[1, 7]
@@ -507,7 +483,6 @@ public class Dates {
      */
     public static Date withDayOfWeek(Date date, int dayOfWeek) {
         LocalDateTime dateTime = toLocalDateTime(date).with(WeekFields.of(DayOfWeek.MONDAY, 1).dayOfWeek(), dayOfWeek);
-        //LocalDateTime dateTime = toLocalDateTime(date).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).with(TemporalAdjusters.nextOrSame(DayOfWeek.of(dayOfWeek)));
         return toDate(dateTime);
     }
 
@@ -533,7 +508,7 @@ public class Dates {
         return toDate(toLocalDateTime(date).withDayOfYear(dayOfYear));
     }
 
-    // ----------------------------------------------------------------day of
+    // ----------------------------------------------------------------day of xxx
 
     public static int dayOfYear(Date date) {
         return toLocalDateTime(date).getDayOfYear();
@@ -554,17 +529,6 @@ public class Dates {
     // ----------------------------------------------------------------others
 
     /**
-     * 计算两个日期的时间差（单位：秒）
-     *
-     * @param start 开始时间
-     * @param end   结束时间
-     * @return 时间间隔
-     */
-    public static long clockDiff(Date start, Date end) {
-        return (end.getTime() - start.getTime()) / 1000;
-    }
-
-    /**
      * Returns a days between the two date(end-start)
      *
      * @param start the start date
@@ -573,6 +537,7 @@ public class Dates {
      * @see java.time.temporal.ChronoUnit#between(Temporal, Temporal)
      */
     public static int daysBetween(Date start, Date end) {
+        //return ChronoUnit.DAYS.between(toLocalDate(start), toLocalDate(end));
         return (int) (toLocalDate(end).toEpochDay() - toLocalDate(start).toEpochDay());
     }
 
@@ -584,19 +549,15 @@ public class Dates {
      * @return date
      */
     public static Date random(Date begin, Date end) {
-        long beginMills = begin.getTime(), endMills = end.getTime();
-        if (beginMills >= endMills) {
-            throw new IllegalArgumentException("Date [" + format(begin) + "] must before [" + format(end) + "]");
-        }
-        return random(beginMills, endMills);
+        return random(begin.getTime(), end.getTime());
     }
 
-    public static Date random(long beginTimeMills, long endTimeMills) {
-        if (beginTimeMills >= endTimeMills) {
-            throw new IllegalArgumentException("Date [" + beginTimeMills + "] must before [" + endTimeMills + "]");
+    public static Date random(long beginTimeMillis, long endTimeMillis) {
+        long datetimeDiff = endTimeMillis - beginTimeMillis;
+        if (datetimeDiff <= 0) {
+            throw new IllegalArgumentException("Date begin must before end: " + beginTimeMillis + ", " + endTimeMillis);
         }
-
-        return new Date(beginTimeMills + ThreadLocalRandom.current().nextLong(endTimeMills - beginTimeMills));
+        return new Date(beginTimeMillis + ThreadLocalRandom.current().nextLong(datetimeDiff));
     }
 
     /**
@@ -633,23 +594,6 @@ public class Dates {
 
     // ----------------------------------------------------------------java 8 date
 
-    public static LocalDateTime toLocalDateTime(Date date) {
-        //return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-    }
-
-    public static Date toDate(LocalDateTime localDateTime) {
-        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-    }
-
-    public static LocalDate toLocalDate(Date date) {
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-    }
-
-    public static Date toDate(LocalDate localDate) {
-        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-    }
-
     public static LocalDateTime startOfDay(LocalDateTime dateTime) {
         return dateTime.with(LocalTime.MIN);
     }
@@ -658,36 +602,47 @@ public class Dates {
         return dateTime.with(LocalTime.MAX);
     }
 
-    /**
-     * 时区转换
-     *
-     * @param date       the date
-     * @param sourceZone the source zone id
-     * @param targetZone the target zone id
-     * @return date of target zone id
-     */
-    public static Date zoneConvert(Date date, ZoneId sourceZone, ZoneId targetZone) {
-        if (date == null || Objects.equals(sourceZone, targetZone)) {
-            return date;
-        }
-        return Date.from(
-            date.toInstant().atZone(targetZone).withZoneSameLocal(sourceZone).toInstant()
-        );
+    public static LocalDateTime toLocalDateTime(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    public static LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    public static Date toDate(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public static Date toDate(LocalDate localDate) {
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    public static LocalDateTime toUTC(LocalDateTime systemLocalDateTime) {
+        return convertZone(systemLocalDateTime, ZoneId.systemDefault(), ZoneOffset.UTC);
+    }
+
+    public static LocalDateTime fromUTC(LocalDateTime utcLocalDateTime) {
+        return convertZone(utcLocalDateTime, ZoneOffset.UTC, ZoneId.systemDefault());
+    }
+
+    public static LocalDateTime convertZone(LocalDateTime systemLocalDateTime, ZoneId targetZone) {
+        return convertZone(systemLocalDateTime, ZoneId.systemDefault(), targetZone);
     }
 
     /**
-     * 时区转换
+     * 转换时区：转换同一UTC时间在不同时区的本地时间
      *
-     * @param localDateTime the localDateTime
-     * @param sourceZone    the source zone id
-     * @param targetZone    the target zone id
+     * @param dateTime   the dateTime
+     * @param sourceZone the source zone id
+     * @param targetZone the target zone id
      * @return localDateTime of target zone id
      */
-    public static LocalDateTime zoneConvert(LocalDateTime localDateTime, ZoneId sourceZone, ZoneId targetZone) {
-        if (localDateTime == null || sourceZone.equals(targetZone)) {
-            return localDateTime;
+    public static LocalDateTime convertZone(LocalDateTime dateTime, ZoneId sourceZone, ZoneId targetZone) {
+        if (dateTime == null || sourceZone.equals(targetZone)) {
+            return dateTime;
         }
-        return ZonedDateTime.of(localDateTime, sourceZone).withZoneSameInstant(targetZone).toLocalDateTime();
+        return dateTime.atZone(sourceZone).withZoneSameInstant(targetZone).toLocalDateTime();
     }
 
     public static String toCronExpression(Date date) {
@@ -702,7 +657,7 @@ public class Dates {
      */
     @SuppressWarnings("StringBufferReplaceableByString")
     public static String toCronExpression(LocalDateTime dateTime) {
-        return new StringBuilder(22)
+        return new StringBuilder(21)
             .append(dateTime.getSecond()    ).append(Char.SPACE) // second
             .append(dateTime.getMinute()    ).append(Char.SPACE) // minute
             .append(dateTime.getHour()      ).append(Char.SPACE) // hour

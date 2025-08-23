@@ -16,17 +16,11 @@
 
 package cn.ponfee.disjob.common.date;
 
-import cn.ponfee.disjob.common.base.Symbol.Char;
-import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 
-import javax.annotation.concurrent.ThreadSafe;
 import java.text.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * <pre>
@@ -37,61 +31,14 @@ import java.util.regex.Pattern;
  *
  * @author Ponfee
  */
-@ThreadSafe
 public class JavaUtilDateFormat extends DateFormat {
 
     private static final long serialVersionUID = 6837172676882367405L;
 
     /**
-     * For {@code java.util.Date#toString}
-     */
-    private static final DateTimeFormatter DATE_TO_STRING_FORMAT = DateTimeFormatter.ofPattern(Dates.DATE_TO_STRING_PATTERN, Locale.ROOT);
-
-    /**
-     * For {@link Date#toString()} "EEE MMM dd HH:mm:ss zzz yyyy" format
-     */
-    static final Pattern TOSTRING_PATTERN = Pattern.compile("^(Sun|Mon|Tue|Wed|Thu|Fri|Sat) [A-Z][a-z]{2} \\d{2} \\d{2}:\\d{2}:\\d{2} CST \\d{4}$");
-
-    /**
-     * 日期时间戳：秒/毫秒
-     */
-    static final Pattern TIMESTAMP_PATTERN = Pattern.compile("^(0|[1-9]\\d*)$");
-
-    static final FastDateFormat PATTERN_11 = FastDateFormat.getInstance("yyyyMM");
-    static final FastDateFormat PATTERN_12 = FastDateFormat.getInstance("yyyy-MM");
-    static final FastDateFormat PATTERN_13 = FastDateFormat.getInstance("yyyy/MM");
-
-    static final FastDateFormat PATTERN_21 = FastDateFormat.getInstance("yyyyMMdd");
-    static final FastDateFormat PATTERN_22 = FastDateFormat.getInstance("yyyy-MM-dd");
-    static final FastDateFormat PATTERN_23 = FastDateFormat.getInstance("yyyy/MM/dd");
-
-    static final FastDateFormat PATTERN_31 = FastDateFormat.getInstance("yyyyMMddHHmmss");
-    static final FastDateFormat PATTERN_32 = FastDateFormat.getInstance("yyyyMMddHHmmssSSS");
-
-    static final FastDateFormat PATTERN_41 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
-    static final FastDateFormat PATTERN_42 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss");
-    static final FastDateFormat PATTERN_43 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss");
-    static final FastDateFormat PATTERN_44 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss");
-
-    static final FastDateFormat PATTERN_51 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
-    static final FastDateFormat PATTERN_52 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSS");
-    static final FastDateFormat PATTERN_53 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS");
-    static final FastDateFormat PATTERN_54 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSS");
-
-    static final FastDateFormat PATTERN_61 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS'Z'");
-    static final FastDateFormat PATTERN_62 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSS'Z'");
-    static final FastDateFormat PATTERN_63 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-    static final FastDateFormat PATTERN_64 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSS'Z'");
-
-    static final FastDateFormat PATTERN_71 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSSX");
-    static final FastDateFormat PATTERN_72 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSSX");
-    static final FastDateFormat PATTERN_73 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-    static final FastDateFormat PATTERN_74 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSSX");
-
-    /**
      * The default date format with yyyy-MM-dd HH:mm:ss
      */
-    public static final JavaUtilDateFormat DEFAULT = new JavaUtilDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static final JavaUtilDateFormat DEFAULT = new JavaUtilDateFormat(Dates.DATETIME_PATTERN);
 
     /**
      * 兜底解析器
@@ -143,90 +90,61 @@ public class JavaUtilDateFormat extends DateFormat {
 
     @Override
     public Date parse(String source) throws ParseException {
-        if (StringUtils.isEmpty(source)) {
+        int length;
+        if (source == null || (length = source.length()) == 0) {
             return null;
         }
 
-        int length = source.length();
-        if (length >= 20 && source.endsWith("Z")) {
-            if (length < 24) {
-                source = complete(source);
-            }
-            if (isTSeparator(source)) {
-                return (isCrossbar(source) ? PATTERN_63 : PATTERN_64).parse(source);
-            } else {
-                return (isCrossbar(source) ? PATTERN_61 : PATTERN_62).parse(source);
-            }
-        }
-
         switch (length) {
-            case  6: return PATTERN_11.parse(source);
-            case  7: return (isCrossbar(source) ? PATTERN_12 : PATTERN_13).parse(source);
-            case  8: return PATTERN_21.parse(source);
+            case 8:
+                // yyyyMMdd
+                return Dates.DATE_COMPACT_FORMAT.parse(source);
             case 10:
-                char separator = source.charAt(4);
-                if (separator == Char.HYPHEN) {
-                    return PATTERN_22.parse(source);
-                } else if (separator == Char.SLASH) {
-                    return PATTERN_23.parse(source);
-                } else if (TIMESTAMP_PATTERN.matcher(source).matches()) {
-                    // long string(length 10) of unix timestamp(e.g. 1640966400)
+                char literal = source.charAt(4);
+                if (literal == '-' || literal == '/') {
+                    // yyyy-MM-dd, yyyy/MM/dd
+                    return Dates.DATE_FORMAT.parse(LocalDateTimeFormat.standardizeIsoDate(source));
+                }
+                if (LocalDateTimeFormat.isTimestamp(source)) {
+                    // 10位数字的unix时间戳，如：1640966400
                     return new Date(Long.parseLong(source) * 1000);
                 }
                 break;
             case 13:
-                // long string(length 13) of mills unix timestamp(e.g. 1640966400000)
-                if (TIMESTAMP_PATTERN.matcher(source).matches()) {
+                if (LocalDateTimeFormat.isTimestamp(source)) {
+                    // 13位数字的毫秒时间戳，如：1640966400000
                     return new Date(Long.parseLong(source));
                 }
                 break;
-            case 14: return PATTERN_31.parse(source);
-            case 19:
-                if (isTSeparator(source)) {
-                    return (isCrossbar(source) ? PATTERN_43 : PATTERN_44).parse(source);
-                } else {
-                    return (isCrossbar(source) ? PATTERN_41 : PATTERN_42).parse(source);
-                }
-            case 17: return PATTERN_32.parse(source);
-            case 23:
-                if (isTSeparator(source)) {
-                    return (isCrossbar(source) ? PATTERN_53 : PATTERN_54).parse(source);
-                } else {
-                    return (isCrossbar(source) ? PATTERN_51 : PATTERN_52).parse(source);
-                }
-            case 26:
-            case 29:
-                if (isTSeparator(source)) {
-                    // 2021-12-31T17:01:01.000+08、2021-12-31T17:01:01.000+08:00
-                    return (isCrossbar(source) ? PATTERN_73 : PATTERN_74).parse(source);
-                } else {
-                    // 2021-12-31 17:01:01.000+08、2021-12-31 17:01:01.000+08:00
-                    return (isCrossbar(source) ? PATTERN_71 : PATTERN_72).parse(source);
-                }
-            case 28:
-                if (isCST(source)) {
-                    // 以下使用方式会相差14小时：
-                    //   1）FastDateFormat.getInstance(Dates.DATE_TO_STRING_PATTERN, Locale.ENGLISH).parse(source);
-                    //   2）new Date(source);
-                    //   3）Date.from(ZonedDateTime.parse(source, DATE_TO_STRING_FORMAT).toInstant());
-                    return Dates.toDate(LocalDateTime.parse(source, DATE_TO_STRING_FORMAT));
-                }
-                break;
+            case 14:
+                // yyyyMMddHHmmss
+                return Dates.DATETIME_COMPACT_FORMAT.parse(source);
+            case 17:
+                // yyyyMMddHHmmssSSS
+                return Dates.DATETIME_MILLI_COMPACT_FORMAT.parse(source);
             default:
                 break;
         }
 
+        if (LocalDateTimeFormat.isCst(source)) {
+            // Thu Jan 01 00:00:00 CST 1970，使用`new Date(source)`方式会晚14小时(Thu Jan 01 14:00:00 CST 1970)
+            return Dates.toDate(LocalDateTimeFormat.cstToLocalDateTime(source));
+        }
+
+        if (length >= 19) {
+            if (source.endsWith("Z")) {
+                // yyyy-MM-dd'T'HH:mm:ss.SSS'Z' -> 2000-01-01T00:00:00.000Z
+                return Date.from(LocalDateTimeFormat.parseToInstant(source));
+            } else if (source.contains("+")) {
+                // yyyy-MM-dd'T'HH:mm:ss.SSSXXX -> 2000-01-01T00:00:00.000+08:00
+                return Date.from(LocalDateTimeFormat.parseToOffsetDateTime(source).toInstant());
+            } else {
+                // yyyy-MM-dd'T'HH:mm:ss.SSS    -> 2000-01-01T00:00:00.000
+                return Dates.toDate(LocalDateTimeFormat.parseToLocalDateTime(source));
+            }
+        }
+
         return backstopFormat.parse(source);
-    }
-
-    public LocalDateTime parseToLocalDateTime(String source) throws ParseException {
-        Date date = parse(source);
-        return date == null ? null : Dates.toLocalDateTime(date);
-    }
-
-    public LocalDateTime parseToLocalDateTime(String source, ParsePosition pos) {
-        Date date = parse(source, pos);
-        return date == null ? null : Dates.toLocalDateTime(date);
     }
 
     @Override
@@ -303,27 +221,6 @@ public class JavaUtilDateFormat extends DateFormat {
         if (lenient != super.isLenient()) {
             throw new UnsupportedOperationException();
         }
-    }
-
-    // ------------------------------------------------------------------------package methods
-
-    static boolean isCrossbar(String str) {
-        return str.charAt(4) == '-';
-    }
-
-    static boolean isTSeparator(String str) {
-        // 'T' literal is the date and time separator
-        return str.charAt(10) == 'T';
-    }
-
-    static boolean isCST(String str) {
-        return TOSTRING_PATTERN.matcher(str).matches();
-    }
-
-    static String complete(String source) {
-        // example: 2022/07/18T15:11:11Z, 2022/07/18T15:11:11.Z, 2022/07/18T15:11:11.1Z, 2022/07/18T15:11:11.13Z
-        String[] array = source.split("[.Z]");
-        return array[0] + "." + (array.length == 1 ? "000" : Strings.padEnd(array[1], 3, '0')) + "Z";
     }
 
 }

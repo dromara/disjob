@@ -29,24 +29,24 @@ class DispatchTaskParam {
     private final String group;
     private int retried = 0;
 
-    public DispatchTaskParam(ExecuteTaskParam task, String group) {
+    DispatchTaskParam(ExecuteTaskParam task, String group) {
         this.task = task;
         this.group = group;
     }
 
-    public ExecuteTaskParam task() {
+    ExecuteTaskParam task() {
         return task;
     }
 
-    public String group() {
+    String group() {
         return group;
     }
 
-    public int retrying() {
+    int retrying() {
         return ++this.retried;
     }
 
-    public int retried() {
+    int retried() {
         return retried;
     }
 

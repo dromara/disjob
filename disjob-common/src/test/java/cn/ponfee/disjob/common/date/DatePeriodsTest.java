@@ -35,14 +35,14 @@ public class DatePeriodsTest {
     @Test
     public void test2() {
         String format = "yyyy-MM-dd HH:mm:ss.SSS";
-        Date origin = Dates.toDate("2018-10-21 12:23:32.000", format);
-        Date target = Dates.toDate("2018-10-29 12:23:32.000", format);
+        Date origin = Dates.parse("2018-10-21 12:23:32.000", format);
+        Date target = Dates.parse("2018-10-29 12:23:32.000", format);
 
         Assertions.assertEquals("2018-10-29 14:23:32.000 ~ 2018-10-29 16:23:31.999", DatePeriods.HOURLY.next(origin, target, 2, 1).toString());
-        Assertions.assertEquals("2018-10-29 16:23:32.000 ~ 2018-10-29 18:23:31.999", DatePeriods.HOURLY.next(origin, Dates.toDate("2018-10-29 14:23:32.000", format), 2, 1).toString());
-        Assertions.assertEquals("2018-10-29 14:23:32.000 ~ 2018-10-29 16:23:31.999", DatePeriods.HOURLY.next(Dates.toDate("2018-10-29 14:23:32.000", format), 2, 0).toString());
-        Assertions.assertEquals("2018-10-29 14:23:32.000 ~ 2018-10-29 16:23:31.999", DatePeriods.HOURLY.next(origin, Dates.plusMillis(Dates.toDate("2018-10-29 14:23:32.000", format), -1), 2, 1).toString());
-        Assertions.assertEquals("2018-10-29 16:23:32.000 ~ 2018-10-29 18:23:31.999", DatePeriods.HOURLY.next(origin, Dates.plusMillis(Dates.toDate("2018-10-29 14:23:32.000", format), 1), 2, 1).toString());
+        Assertions.assertEquals("2018-10-29 16:23:32.000 ~ 2018-10-29 18:23:31.999", DatePeriods.HOURLY.next(origin, Dates.parse("2018-10-29 14:23:32.000", format), 2, 1).toString());
+        Assertions.assertEquals("2018-10-29 14:23:32.000 ~ 2018-10-29 16:23:31.999", DatePeriods.HOURLY.next(Dates.parse("2018-10-29 14:23:32.000", format), 2, 0).toString());
+        Assertions.assertEquals("2018-10-29 14:23:32.000 ~ 2018-10-29 16:23:31.999", DatePeriods.HOURLY.next(origin, Dates.plusMillis(Dates.parse("2018-10-29 14:23:32.000", format), -1), 2, 1).toString());
+        Assertions.assertEquals("2018-10-29 16:23:32.000 ~ 2018-10-29 18:23:31.999", DatePeriods.HOURLY.next(origin, Dates.plusMillis(Dates.parse("2018-10-29 14:23:32.000", format), 1), 2, 1).toString());
         Assertions.assertEquals("2018-11-07 10:23:32.000 ~ 2018-11-07 17:23:31.999", DatePeriods.HOURLY.next(origin, target, 7, 31).toString());
         Assertions.assertEquals("2019-06-02 12:23:32.000 ~ 2019-06-09 12:23:31.999", DatePeriods.DAILY.next(origin, target, 7, 31).toString());
         Assertions.assertEquals("2022-12-18 12:23:32.000 ~ 2023-02-05 12:23:31.999", DatePeriods.WEEKLY.next(origin, target, 7, 31).toString());
@@ -55,8 +55,8 @@ public class DatePeriodsTest {
     @Test
     public void test3() {
         String format = "yyyy-MM-dd HH:mm:ss.SSS";
-        Date origin = Dates.toDate("2017-10-21 12:23:32.000", format);
-        Date begin = Dates.toDate("2018-10-21 11:23:32.000", format);
+        Date origin = Dates.parse("2017-10-21 12:23:32.000", format);
+        Date begin = Dates.parse("2018-10-21 11:23:32.000", format);
         int step = 3, next = 1;
         System.out.println(DatePeriods.HOURLY.next(origin, begin, step, 0));
         System.out.println();
@@ -94,8 +94,8 @@ public class DatePeriodsTest {
     @Test
     public void testPeriods() {
         String format = "yyyy-MM-dd HH:mm:ss.SSS";
-        Date origin = Dates.toDate("2018-10-21 06:23:32.000", format);
-        Date begin = Dates.toDate("2018-10-21 11:54:12.000", format);
+        Date origin = Dates.parse("2018-10-21 06:23:32.000", format);
+        Date begin = Dates.parse("2018-10-21 11:54:12.000", format);
         int step = 3;
         DatePeriods.Segment segment = DatePeriods.HOURLY.next(origin, begin, step, 0);
         Assertions.assertEquals("2018-10-21 09:23:32.000 ~ 2018-10-21 12:23:31.999", segment.toString());

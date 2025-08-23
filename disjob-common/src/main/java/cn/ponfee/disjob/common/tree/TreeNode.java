@@ -77,7 +77,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
     // -----------------------------------------------------------public static methods
 
     /**
-     * Creates single root tree node with id and parentId is null.
+     * Creates single root tree node with id and null parentId.
      *
      * @param id  the tree node id
      * @param <T> the node id type

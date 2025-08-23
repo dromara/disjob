@@ -24,6 +24,7 @@ import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
@@ -32,7 +33,6 @@ import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.registry.Discovery;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
  */
 public class TimingWheelRotator extends SingletonClassConstraint implements Startable {
 
-    private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
     private static final Logger LOG = LoggerFactory.getLogger(TimingWheelRotator.class);
 
     private final SupervisorRpcService supervisorRpcClient;
@@ -110,7 +109,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private void process(List<ExecuteTaskParam> tasks) {
         updateTaskWorker(tasks);
         for (ExecuteTaskParam e : tasks) {
-            String triggerTime = DATE_FORMAT.format(e.getTriggerTime());
+            String triggerTime = Dates.DATETIME_MILLI_FORMAT.format(e.getTriggerTime());
             LOG.info("Task trace [{}] triggered: {}, {}, {}", e.getTaskId(), e.getOperation(), e.getWorker(), triggerTime);
             workerThreadPool.submit(new WorkerTask(e));
         }
