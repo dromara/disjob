@@ -3,6 +3,7 @@ package com.ruoyi.system.mapper;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -109,6 +110,34 @@ public interface SysUserMapper
      */
     int updateUserAvatar(@Param("userId") Long userId, @Param("avatar") String avatar);
 
+    /**
+     * 修改用户状态
+     *
+     * @param userId 用户ID
+     * @param status 状态
+     * @return 结果
+     */
+    int updateUserStatus(@Param("userId") Long userId, @Param("status") String status);
+
+    /**
+     * 重置用户密码
+     *
+     * @param userId 用户ID
+     * @param password 密码
+     * @param salt 盐
+     * @return 结果
+     */
+    int resetUserPwd(@Param("userId") Long userId, @Param("password") String password, @Param("salt") String salt);
+
+    /**
+     * 更新用户登录信息（IP和登录时间）
+     *
+     * @param userId 用户ID
+     * @param loginIp 登录IP地址
+     * @param loginDate 登录时间
+     * @return 结果
+     */
+    int updateLoginInfo(@Param("userId") Long userId, @Param("loginIp") String loginIp, @Param("loginDate") Date loginDate);
 
     /**
      * 新增用户信息

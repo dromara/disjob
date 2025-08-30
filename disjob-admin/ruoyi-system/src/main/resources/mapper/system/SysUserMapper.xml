@@ -177,10 +177,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		update sys_user set avatar = #{avatar} where user_id = #{userId}
 	</update>
 
+	<update id="resetUserPwd" parameterType="SysUser">
+		update sys_user SET pwd_update_date = sysdate(), password = #{password}, salt = #{salt}, update_time = sysdate() where user_id = #{userId}
+	</update>
+
+	<update id="updateUserStatus" parameterType="SysUser">
+		update sys_user SET status = #{status}, update_time = sysdate() where user_id = #{userId}
+	</update>
+
+	<update id="updateLoginInfo" parameterType="SysUser">
+		update sys_user set login_ip = #{loginIp}, login_date = #{loginDate} where user_id = #{userId}
+	</update>
+
  	<update id="updateUser" parameterType="SysUser">
  		update sys_user
  		<set>
- 			<if test="deptId != null and deptId != 0">dept_id = #{deptId},</if>
+ 			<if test="deptId != 0">dept_id = #{deptId},</if>
  			<if test="userName != null and userName != ''">user_name = #{userName},</if>
  			<if test="userType != null and userType != ''">user_type = #{userType},</if>
  			<if test="email != null and email != ''">email = #{email},</if>

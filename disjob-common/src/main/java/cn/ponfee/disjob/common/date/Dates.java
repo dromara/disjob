@@ -633,16 +633,16 @@ public class Dates {
     /**
      * 转换时区：转换同一UTC时间在不同时区的本地时间
      *
-     * @param dateTime   the dateTime
-     * @param sourceZone the source zone id
-     * @param targetZone the target zone id
+     * @param localDateTime the local date time
+     * @param sourceZone    the source zone id
+     * @param targetZone    the target zone id
      * @return localDateTime of target zone id
      */
-    public static LocalDateTime convertZone(LocalDateTime dateTime, ZoneId sourceZone, ZoneId targetZone) {
-        if (dateTime == null || sourceZone.equals(targetZone)) {
-            return dateTime;
+    public static LocalDateTime convertZone(LocalDateTime localDateTime, ZoneId sourceZone, ZoneId targetZone) {
+        if (localDateTime == null || sourceZone.equals(targetZone)) {
+            return localDateTime;
         }
-        return dateTime.atZone(sourceZone).withZoneSameInstant(targetZone).toLocalDateTime();
+        return localDateTime.atZone(sourceZone).withZoneSameInstant(targetZone).toLocalDateTime();
     }
 
     public static String toCronExpression(Date date) {

@@ -218,6 +218,16 @@ public class DatesTest {
         Assertions.assertEquals("1970-01-01T00:00:00.123456Z", javaInstantCreatedAtWrite.toString());
         Assertions.assertEquals("1970-01-01T00:00:00.123456", dbDatetimeCreatedAt.toString());
         Assertions.assertEquals("1970-01-01T00:00:00.123456Z", javaInstantCreatedAtRead.toString());
+
+        Instant instant = Instant.parse("1970-01-01T12:00:00Z");
+        Assertions.assertEquals(instant, instant.atZone(ZoneOffset.UTC).toInstant());
+        Assertions.assertEquals(instant, instant.atZone(ZoneOffset.of("+02:00")).toInstant());
+        Assertions.assertEquals(instant, instant.atZone(ZoneOffset.of("+08:00")).toInstant());
+        Assertions.assertEquals(instant, instant.atZone(ZoneOffset.of("+09:00")).toInstant());
+        // 1970-01-01T12:00:00Z  ->  在东八区是20:00  ->  东九区的20:00是1970-01-01T11:00:00Z
+        Assertions.assertEquals("1970-01-01T11:00:00Z", instant.atZone(ZoneOffset.of("+08:00")).withZoneSameLocal(ZoneOffset.of("+09:00")).toInstant().toString());
+        // 1970-01-01T12:00:00Z  ->  在东七区是19:00  ->  东九区的19:00是1970-01-01T10:00:00Z
+        Assertions.assertEquals("1970-01-01T10:00:00Z", instant.atZone(ZoneOffset.of("+07:00")).withZoneSameLocal(ZoneOffset.of("+09:00")).toInstant().toString());
     }
 
     @Test
