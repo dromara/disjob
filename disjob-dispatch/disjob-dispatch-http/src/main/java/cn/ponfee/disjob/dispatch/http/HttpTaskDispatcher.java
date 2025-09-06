@@ -25,8 +25,6 @@ import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
-
 /**
  * Dispatch task based http
  *
@@ -40,7 +38,7 @@ public class HttpTaskDispatcher extends TaskDispatcher {
                               Discovery<Worker> discoverWorker,
                               RetryProperties retryProperties,
                               RestTemplate restTemplate,
-                              @Nullable HttpTaskReceiver httpTaskReceiver) {
+                              HttpTaskReceiver httpTaskReceiver) {
         super(eventPublisher, discoverWorker, retryProperties, httpTaskReceiver);
 
         RetryProperties retry = RetryProperties.none();

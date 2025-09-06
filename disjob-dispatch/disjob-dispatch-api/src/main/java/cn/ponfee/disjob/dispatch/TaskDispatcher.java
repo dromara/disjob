@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -57,7 +56,7 @@ public abstract class TaskDispatcher implements Startable {
     protected TaskDispatcher(ApplicationEventPublisher eventPublisher,
                              Discovery<Worker> discoverWorker,
                              RetryProperties retryProperties,
-                             @Nullable TaskReceiver taskReceiver) {
+                             TaskReceiver taskReceiver) {
         Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
         this.eventPublisher = Objects.requireNonNull(eventPublisher);
         this.discoverWorker = Objects.requireNonNull(discoverWorker);

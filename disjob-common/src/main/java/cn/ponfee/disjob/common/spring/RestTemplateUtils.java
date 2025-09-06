@@ -53,7 +53,6 @@ import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
@@ -127,7 +126,7 @@ public class RestTemplateUtils {
         return restTemplate;
     }
 
-    public static MappingJackson2HttpMessageConverter createMappingJackson2HttpMessageConverter(@Nullable ObjectMapper objectMapper) {
+    public static MappingJackson2HttpMessageConverter createMappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
         if (objectMapper == null) {
             objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
         }

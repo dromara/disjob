@@ -24,7 +24,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -64,8 +63,8 @@ public final class DestinationServerRestProxy<T, S extends Server> {
     }
 
     public static <T, S extends Server> DestinationServerRestProxy<T, S> of(Class<T> interfaceCls,
-                                                                            @Nullable T localServiceProvider,
-                                                                            @Nullable S localServer,
+                                                                            T localServiceProvider,
+                                                                            S localServer,
                                                                             RestTemplate restTemplate,
                                                                             RetryProperties retry) {
         Constructor<T> constructor = ProxyUtils.getProxyConstructor(interfaceCls);

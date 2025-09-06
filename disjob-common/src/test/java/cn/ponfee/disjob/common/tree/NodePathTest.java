@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -102,7 +101,7 @@ public class NodePathTest {
             super(null);
         }
 
-        public JsonId(JsonId parent, @Nonnull String name, int orders) {
+        public JsonId(JsonId parent, String name, int orders) {
             super(parent);
             this.name = Objects.requireNonNull(name);
             this.orders = orders;
@@ -120,7 +119,7 @@ public class NodePathTest {
         }
 
         @Override
-        public int compareTo(@Nonnull JsonId that) {
+        public int compareTo(JsonId that) {
             int compared = super.compareTo(that);
             if (compared != 0) {
                 return compared;

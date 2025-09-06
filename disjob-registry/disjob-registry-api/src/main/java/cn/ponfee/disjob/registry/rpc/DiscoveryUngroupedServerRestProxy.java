@@ -24,7 +24,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -49,7 +48,7 @@ public final class DiscoveryUngroupedServerRestProxy {
      * @return rpc service client proxy
      */
     public static <T, D extends Server> T create(Class<T> interfaceCls,
-                                                 @Nullable T localServiceProvider,
+                                                 T localServiceProvider,
                                                  Discovery<D> discoverServer,
                                                  RestTemplate restTemplate,
                                                  RetryProperties retry) {

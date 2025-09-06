@@ -66,7 +66,6 @@
     <spring-boot.version>2.7.18</spring-boot.version>
     <mapstruct.version>1.6.3</mapstruct.version>
     <guava.version>33.4.8-jre</guava.version>
-    <spotbugs.version>4.9.3</spotbugs.version>
     <commons-collections4.version>4.5.0</commons-collections4.version>
     <commons-io.version>2.20.0</commons-io.version>
     <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>

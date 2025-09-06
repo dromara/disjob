@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -63,7 +62,7 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
                          WorkerRegistry workerRegistry,
                          TaskReceiver taskReceiver,
                          RestTemplate restTemplate,
-                         @Nullable SupervisorRpcService supervisorRpcService) {
+                         SupervisorRpcService supervisorRpcService) {
         Objects.requireNonNull(localWorker, "Local worker cannot be null.");
         Objects.requireNonNull(workerConf, "Worker properties cannot be null.").check();
         Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();

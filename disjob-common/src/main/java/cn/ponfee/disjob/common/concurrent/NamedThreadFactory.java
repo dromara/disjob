@@ -19,7 +19,6 @@ package cn.ponfee.disjob.common.concurrent;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import org.slf4j.Logger;
 
-import javax.annotation.Nonnull;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,7 +47,7 @@ public class NamedThreadFactory implements ThreadFactory {
     }
 
     @Override
-    public Thread newThread(@Nonnull Runnable runnable) {
+    public Thread newThread(Runnable runnable) {
         Thread thread = new Thread(runnable, prefix + threadNo.getAndIncrement());
         thread.setDaemon(daemon != null ? daemon : Thread.currentThread().isDaemon());
         ObjectUtils.applyIfNotNull(priority, thread::setPriority);

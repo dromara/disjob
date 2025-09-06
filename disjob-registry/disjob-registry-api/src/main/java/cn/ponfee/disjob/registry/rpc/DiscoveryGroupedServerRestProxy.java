@@ -31,7 +31,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -124,7 +123,7 @@ public final class DiscoveryGroupedServerRestProxy<T> {
      * @return rpc service client proxy
      */
     public static <T, D extends Server> DiscoveryGroupedServerRestProxy<T> of(Class<T> interfaceCls,
-                                                                              @Nullable T localServiceProvider,
+                                                                              T localServiceProvider,
                                                                               Predicate<String> localGroupMatcher,
                                                                               Discovery<D> discoverServer,
                                                                               RestTemplate restTemplate,

@@ -19,7 +19,6 @@ package cn.ponfee.disjob.common.tuple;
 import cn.ponfee.disjob.common.collect.DelegatedIntSpliterator;
 import cn.ponfee.disjob.common.util.Comparators;
 
-import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
@@ -151,7 +150,7 @@ public abstract class Tuple implements Comparable<Object>, Iterable<Object>, Ser
     }
 
     @Override
-    public final int compareTo(@Nonnull Object obj) {
+    public final int compareTo(Object obj) {
         if (this == obj) {
             return Comparators.EQ;
         }

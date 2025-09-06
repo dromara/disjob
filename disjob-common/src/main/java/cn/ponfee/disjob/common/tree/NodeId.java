@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.util.Comparators;
 import lombok.Getter;
 
-import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -63,7 +62,7 @@ public abstract class NodeId<T extends NodeId<T>> extends ToJsonString implement
     }
 
     @Override
-    public int compareTo(@Nonnull T that) {
+    public int compareTo(T that) {
         return Comparators.compareNullsFirst(this.parent, that.parent);
     }
 
