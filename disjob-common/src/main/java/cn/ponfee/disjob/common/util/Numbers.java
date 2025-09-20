@@ -438,7 +438,7 @@ public final class Numbers {
         }
         // 校验value不能超出区间：[total, 0] or [0, total]
         long total = LongStream.of(array).sum();
-        if (value < Math.min(total, 0) || value > Math.max(0, total)) {
+        if ((value < 0 && value < total) || (value > 0 && value > total)) {
             throw new IllegalArgumentException("Prorate array less than value: " + Arrays.toString(array) + ", " + value);
         }
 

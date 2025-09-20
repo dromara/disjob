@@ -173,11 +173,10 @@ public class Maths {
     public static long upDiv(long x, long y) {
         long q = x / y;
         long r = x % y;
-
         if (r == 0) {
             return q;
         }
-        return q + ((x ^ y) >= 0 ? 1 : -1);
+        return q + ((x ^ y) < 0 ? -1 : 1);
     }
 
     public static long downDiv(long x, long y) {
@@ -187,11 +186,10 @@ public class Maths {
     public static long ceilDiv(long x, long y) {
         long q = x / y;
         long r = x % y;
-
         if (r == 0) {
             return q;
         }
-        return (x ^ y) >= 0 ? q + 1 : q;
+        return (x ^ y) < 0 ? q : q + 1;
     }
 
     // ------------------------------------------------------------------------add & subtract

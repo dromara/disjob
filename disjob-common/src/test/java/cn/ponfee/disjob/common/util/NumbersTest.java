@@ -205,6 +205,33 @@ public class NumbersTest {
     }
 
     @Test
+    public void testDownDiv() {
+        Assertions.assertEquals(2, Maths.downDiv(7, 3));
+        Assertions.assertEquals(-2, Maths.downDiv(-7, 3));
+        Assertions.assertEquals(-2, Maths.downDiv(7, -3));
+        Assertions.assertEquals(2, Maths.downDiv(-7, -3));
+
+        Assertions.assertEquals(2, Maths.downDiv(10, 5));
+        Assertions.assertEquals(1, Maths.downDiv(1, 1));
+        Assertions.assertEquals(0, Maths.downDiv(-1, 2));
+        Assertions.assertEquals(0, Maths.downDiv(1, -2));
+
+        Assertions.assertEquals(0, Maths.downDiv(0, 5));
+        Assertions.assertEquals(0, Maths.downDiv(0, -5));
+        Assertions.assertEquals(-5, Maths.downDiv(5, -1));
+        Assertions.assertEquals(-5, Maths.downDiv(-5, 1));
+
+        Assertions.assertEquals(0, Maths.downDiv(1, 3));
+        Assertions.assertEquals(0, Maths.downDiv(-1, 3));
+        Assertions.assertEquals(0, Maths.downDiv(2, 3));
+        Assertions.assertEquals(0, Maths.downDiv(-2, 3));
+        Assertions.assertEquals(1, Maths.downDiv(3, 3));
+        Assertions.assertEquals(-1, Maths.downDiv(-3, 3));
+        Assertions.assertEquals(1, Maths.downDiv(4, 3));
+        Assertions.assertEquals(-1, Maths.downDiv(-4, 3));
+    }
+
+    @Test
     public void testAdd() {
         Assertions.assertThrows(ArithmeticException.class, () -> Maths.abs(Integer.MIN_VALUE));
         Assertions.assertThrows(ArithmeticException.class, () -> Maths.abs(Long.MIN_VALUE));
