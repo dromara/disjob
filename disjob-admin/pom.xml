@@ -41,7 +41,7 @@
     <kaptcha.version>2.3.3</kaptcha.version>
     <pagehelper-spring-boot-starter.version>2.1.1</pagehelper-spring-boot-starter.version>
     <fastjson.version>1.2.83</fastjson.version>
-    <oshi-core.version>6.8.3</oshi-core.version>
+    <oshi-core.version>6.9.0</oshi-core.version>
     <poi-ooxml.version>5.4.1</poi-ooxml.version>
     <velocity-engine-core.version>2.4.1</velocity-engine-core.version>
   </properties>
@@ -100,7 +100,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
-        <version>1.7.2</version>
+        <version>1.7.3</version>
         <configuration>
           <updatePomFile>true</updatePomFile>
           <flattenMode>resolveCiFriendliesOnly</flattenMode>
