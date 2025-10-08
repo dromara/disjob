@@ -72,7 +72,7 @@
     <!-- Registry: select one implementation for server registry -->
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-registry-redis</artifactId>
+      <artifactId>disjob-registry-database</artifactId>
       <!--
       <artifactId>disjob-registry-database</artifactId>
       <artifactId>disjob-registry-redis</artifactId>
