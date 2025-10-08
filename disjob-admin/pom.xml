@@ -27,16 +27,17 @@
     <disjob.version>2.2.1</disjob.version>
 
     <file.encoding>UTF-8</file.encoding>
-    <java.version>1.8</java.version>
+    <java.version>17</java.version>
     <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
     <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
-    <spring-boot.version>2.7.18</spring-boot.version>
-    <shiro.version>1.13.0</shiro.version>
+    <spring-boot.version>3.5.6</spring-boot.version>
+    <shiro.version>2.0.5</shiro.version>
+    <ehcache-core.version>2.6.11</ehcache-core.version>
     <thymeleaf-extras-shiro.version>2.1.0</thymeleaf-extras-shiro.version>
-    <druid-spring-boot-starter.version>1.2.27</druid-spring-boot-starter.version>
+    <druid-spring-boot-3-starter.version>1.2.27</druid-spring-boot-3-starter.version>
     <UserAgentUtils.version>1.21</UserAgentUtils.version>
     <kaptcha.version>2.3.3</kaptcha.version>
     <pagehelper-spring-boot-starter.version>2.1.1</pagehelper-spring-boot-starter.version>
@@ -89,7 +90,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.10.1</version>
+        <version>3.14.0</version>
         <configuration>
           <encoding>${file.encoding}</encoding>
           <source>${java.version}</source>

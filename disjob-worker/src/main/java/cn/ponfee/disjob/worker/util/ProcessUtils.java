@@ -22,15 +22,11 @@ import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
-import com.sun.jna.Pointer;
-import com.sun.jna.platform.win32.Kernel32;
-import com.sun.jna.platform.win32.WinNT;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,21 +65,7 @@ public final class ProcessUtils {
      * @return process id
      */
     public static Long getProcessId(Process process) {
-        try {
-            if (SystemUtils.IS_OS_WINDOWS) {
-                // Windows Process class：java.lang.Win32Process || java.lang.ProcessImpl
-                long handlePointer = ((Number) FieldUtils.readField(process, "handle", true)).longValue();
-                WinNT.HANDLE handle = new WinNT.HANDLE();
-                handle.setPointer(Pointer.createConstant(handlePointer));
-                return (long) Kernel32.INSTANCE.GetProcessId(handle);
-            } else {
-                // Unix Process class：java.lang.UNIXProcess
-                return ((Number) FieldUtils.readField(process, "pid", true)).longValue();
-            }
-        } catch (Throwable t) {
-            LOG.error("Get process id error.", t);
-            return null;
-        }
+        return process.pid();
     }
 
     /**

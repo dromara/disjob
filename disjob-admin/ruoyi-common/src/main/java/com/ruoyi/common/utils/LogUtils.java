@@ -1,11 +1,11 @@
 package com.ruoyi.common.utils;
 
 import com.alibaba.fastjson.JSON;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashSet;
@@ -74,10 +74,10 @@ public class LogUtils
     {
         String username = getUsername();
 
-        Integer statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
-        String message = (String) request.getAttribute("javax.servlet.error.message");
-        String uri = (String) request.getAttribute("javax.servlet.error.request_uri");
-        Throwable t = (Throwable) request.getAttribute("javax.servlet.error.exception");
+        Integer statusCode = (Integer) request.getAttribute("jakarta.servlet.error.status_code");
+        String message = (String) request.getAttribute("jakarta.servlet.error.message");
+        String uri = (String) request.getAttribute("jakarta.servlet.error.request_uri");
+        Throwable t = (Throwable) request.getAttribute("jakarta.servlet.error.exception");
 
         if (statusCode == null)
         {

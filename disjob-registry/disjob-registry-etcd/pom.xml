@@ -17,7 +17,7 @@
   <url>https://github.com/dromara/disjob</url>
 
   <properties>
-    <jetcd.version>0.7.7</jetcd.version>
+    <jetcd.version>0.8.5</jetcd.version>
   </properties>
 
   <dependencies>

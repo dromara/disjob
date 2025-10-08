@@ -21,10 +21,10 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.RegistryException;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.zookeeper.configuration.ZookeeperRegistryProperties;
+import jakarta.annotation.PreDestroy;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PreDestroy;
 import java.util.List;
 
 /**

@@ -34,7 +34,7 @@ class VersionUtilsTest {
 
     @Test
     void testGetVersion() {
-        Assertions.assertEquals("3.12.0", VersionUtils.getVersion(StringUtils.class));
+        Assertions.assertEquals("3.17.0", VersionUtils.getVersion(StringUtils.class));
         Assertions.assertEquals("33.5.0-jre", VersionUtils.getVersion(Graph.class, "com.google.guava", "guava"));
         Assertions.assertEquals("${revision}", VersionUtils.getVersion(VersionUtils.class, "cn.ponfee", "disjob-common"));
     }

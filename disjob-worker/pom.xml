@@ -28,14 +28,8 @@
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.groovy</groupId>
+      <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-jsr223</artifactId>
-    </dependency>
-    <!-- OS process operate: used by ProcessUtils -->
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna-platform</artifactId>
-      <version>5.18.1</version>
     </dependency>
 
     <dependency>

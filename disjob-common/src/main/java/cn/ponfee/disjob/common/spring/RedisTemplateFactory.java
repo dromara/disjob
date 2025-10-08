@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
+import io.lettuce.core.api.StatefulConnection;
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.resource.ClientResources;
@@ -128,7 +129,7 @@ public class RedisTemplateFactory implements Closeable {
         if (Boolean.FALSE.equals(pool.getEnabled())) {
             builder = LettuceClientConfiguration.builder();
         } else {
-            GenericObjectPoolConfig<?> poolConfig = new GenericObjectPoolConfig<>();
+            GenericObjectPoolConfig<StatefulConnection<?, ?>> poolConfig = new GenericObjectPoolConfig<>();
             poolConfig.setMaxTotal(pool.getMaxActive());
             poolConfig.setMaxIdle(pool.getMaxIdle());
             poolConfig.setMinIdle(pool.getMinIdle());
@@ -142,7 +143,7 @@ public class RedisTemplateFactory implements Closeable {
         }
 
         // apply properties
-        if (properties.isSsl()) {
+        if (properties.getSsl().isEnabled()) {
             builder.useSsl();
         }
         if (properties.getTimeout() != null) {

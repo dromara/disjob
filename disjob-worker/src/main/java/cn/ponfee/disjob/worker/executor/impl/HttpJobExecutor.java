@@ -26,12 +26,13 @@ import cn.ponfee.disjob.worker.executor.JobExecutor;
 import cn.ponfee.disjob.worker.executor.Savepoint;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.http.client.config.RequestConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
@@ -76,7 +77,7 @@ public class HttpJobExecutor extends JobExecutor {
         }
         Assert.hasText(req.url, "Http url cannot be empty.");
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(req.url);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(req.url);
         MultiValueMap<String, String> paramsMap = RestTemplateUtils.convertToMultiValueMap(req.params);
         if (paramsMap != null) {
             builder.queryParams(paramsMap);
@@ -93,7 +94,7 @@ public class HttpJobExecutor extends JobExecutor {
         RequestConfig requestConfig = getRequestConfig(req.connectionTimeout, req.readTimeout);
         try {
             ResponseEntity<String> responseEntity = RestTemplateUtils.invoke(requestConfig, REST_TEMPLATE, uri, method, requestCallback, responseExtractor);
-            HttpStatus status = responseEntity.getStatusCode();
+            HttpStatusCode status = responseEntity.getStatusCode();
             String body = responseEntity.getBody();
             return status.is2xxSuccessful() ? ExecutionResult.success(body) : ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), status + ": " + body);
         } catch (Throwable t) {
@@ -119,10 +120,10 @@ public class HttpJobExecutor extends JobExecutor {
     private static RequestConfig getRequestConfig(Integer connectionTimeout, Integer readTimeout) {
         RequestConfig.Builder builder = null;
         if (connectionTimeout != null && connectionTimeout != DEFAULT_CONNECT_TIMEOUT) {
-            builder = RequestConfig.custom().setConnectionRequestTimeout(connectionTimeout);
+            builder = RequestConfig.custom().setConnectionRequestTimeout(Timeout.ofMilliseconds(connectionTimeout));
         }
         if (readTimeout != null && readTimeout != DEFAULT_READ_TIMEOUT) {
-            (builder == null ? (builder = RequestConfig.custom()) : builder).setSocketTimeout(readTimeout);
+            (builder == null ? (builder = RequestConfig.custom()) : builder).setResponseTimeout(Timeout.ofMilliseconds(readTimeout));
         }
         return builder == null ? null : builder.build();
     }

@@ -1,5 +1,5 @@
 # springboot redis configuration
-spring.redis:
+spring.data.redis:
   database: 0
   connect-timeout: 3000
   timeout: 5000
