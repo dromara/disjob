@@ -19,7 +19,7 @@ package cn.ponfee.disjob.common.util;
 import cn.ponfee.disjob.common.collect.SynchronizedSegmentMap;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -80,9 +80,8 @@ class SynchronizedSegmentMapTest {
     }
 
     @Test
-    @Disabled
     void testExecute() {
-        int total = 320000, expectSegmentSize = total / 16;
+        int total = 32000, expectSegmentSize = total / 16;
         SynchronizedSegmentMap<String, String> map1 = new SynchronizedSegmentMap<>(14);
         for (int i = 0; i < total; i++) {
             String s = UuidUtils.uuid32();
@@ -90,19 +89,50 @@ class SynchronizedSegmentMapTest {
         }
         MutableLong size1 = new MutableLong(0);
         map1.execute(e -> size1.add(e.size()));
-        System.out.println("Map1 total: " + size1.getValue());
+        Assertions.assertEquals(total, size1.getValue());
         map1.execute(e -> System.out.println(Numbers.percent(e.size(), expectSegmentSize, 2)));
 
         System.out.println("--------------");
+
         SynchronizedSegmentMap<Long, String> map2 = new SynchronizedSegmentMap<>(14);
         for (int i = 0; i < total; i++) {
             long k = ThreadLocalRandom.current().nextLong();
             map2.put(k, k + "");
         }
         MutableLong size2 = new MutableLong(0);
-        map1.execute(e -> size2.add(e.size()));
-        System.out.println("Map2 total: " + size2.getValue());
+        map2.execute(e -> size2.add(e.size()));
+        Assertions.assertEquals(total, size2.getValue());
         map2.execute(e -> System.out.println(Numbers.percent(e.size(), expectSegmentSize, 2)));
+    }
+
+    @Test
+    void testMultipleThread() throws InterruptedException {
+        int total = 320000, expectSegmentSize = total / 16;
+        SynchronizedSegmentMap<Long, String> map = new SynchronizedSegmentMap<>(14);
+
+        int threadCount = 10, n = total / threadCount;
+        Thread[] threads = new Thread[threadCount];
+        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new Thread(() -> {
+                for (int j = 0; j < n; j++) {
+                    long k = ThreadLocalRandom.current().nextLong();
+                    map.put(k, k + "");
+                }
+            });
+        }
+
+        for (Thread thread : threads) {
+            thread.start();
+        }
+
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
+        MutableLong size = new MutableLong(0);
+        map.execute(e -> size.add(e.size()));
+        Assertions.assertEquals(total, size.getValue());
+        map.execute(e -> System.out.println(Numbers.percent(e.size(), expectSegmentSize, 2)));
     }
 
 }
