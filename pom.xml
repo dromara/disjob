@@ -52,7 +52,7 @@
   </modules>
 
   <properties>
-    <revision>2.2.1-SNAPSHOT</revision>
+    <revision>2.2.1</revision>
 
     <file.encoding>UTF-8</file.encoding>
     <java.version>1.8</java.version>
