@@ -1,0 +1,6 @@
+# 当使用consul作为注册中心时使用该配置，同时需要在“application.yml”配置文件的“spring.profiles.include”项中增加“registry-consul”，即“spring.profiles.include: xxx,registry-consul”
+disjob.registry.consul:
+  namespace: disjob_registry
+  host: localhost
+  port: 8500
+  token:
