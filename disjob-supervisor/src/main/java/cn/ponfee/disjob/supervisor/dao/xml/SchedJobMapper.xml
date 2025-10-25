@@ -2,8 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper">
 
-  <sql id="Table_Name">sched_job</sql>
-
   <sql id="Base_Column_List">
     job_id, `group`, job_name, job_type, job_state, job_executor, job_param,
     retry_type, retry_count, retry_interval, trigger_type, trigger_value, start_time, end_time,
@@ -14,13 +12,13 @@
 
   <select id="findByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.supervisor.model.SchedJob">
     SELECT <include refid="Base_Column_List"/>
-    FROM <include refid="Table_Name" />
+    FROM sched_job
     WHERE job_id IN (<foreach collection="collection" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)
       AND is_deleted = 0
   </select>
 
   <insert id="insert" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-    INSERT INTO <include refid="Table_Name" /> (
+    INSERT INTO sched_job (
       job_id,
       `group`,
       job_name,
@@ -74,7 +72,7 @@
   </insert>
 
   <update id="update">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_job
     SET job_name = #{jobName,jdbcType=VARCHAR},
 
       <if test="jobExecutor != null and jobExecutor != ''">
@@ -112,14 +110,14 @@
 
   <select id="get" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedJob">
     SELECT <include refid="Base_Column_List" />
-    FROM <include refid="Table_Name" />
+    FROM sched_job
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND is_deleted = 0
   </select>
 
   <select id="getJobId" resultType="long">
     SELECT job_id
-    FROM <include refid="Table_Name" />
+    FROM sched_job
     WHERE `group` = #{group,jdbcType=VARCHAR}
       AND job_name = #{jobName,jdbcType=VARCHAR}
       AND is_deleted = 0
@@ -127,14 +125,14 @@
 
   <select id="getGroup" parameterType="_long" resultType="string">
     SELECT `group`
-    FROM <include refid="Table_Name" />
+    FROM sched_job
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND is_deleted = 0
   </select>
 
   <select id="findBeTriggering" resultType="cn.ponfee.disjob.supervisor.model.SchedJob">
     SELECT <include refid="Base_Column_List"/>
-    FROM <include refid="Table_Name" />
+    FROM sched_job
     WHERE job_state = 1
       AND next_trigger_time &lt; #{maxNextTriggerTime}
       AND next_scan_time &lt; CURRENT_TIMESTAMP(3)
@@ -144,7 +142,7 @@
   </select>
 
   <update id="updateNextScanTime">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_job
     SET next_scan_time = #{nextScanTime,jdbcType=TIMESTAMP},
         scan_failed_count = #{scanFailedCount,jdbcType=INTEGER},
         version = version+1
@@ -154,7 +152,7 @@
   </update>
 
   <update id="disable">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_job
     SET job_state = 0,
         next_trigger_time = null,
         remark = #{remark,jdbcType=VARCHAR},
@@ -166,7 +164,7 @@
   </update>
 
   <update id="updateNextTriggerTime">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_job
     SET job_state = #{jobState,jdbcType=TINYINT},
         last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT},
         next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
@@ -182,7 +180,7 @@
   </update>
 
   <update id="updateState">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_job
     SET job_state = #{toState,jdbcType=TINYINT},
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
@@ -192,7 +190,7 @@
   </update>
 
   <update id="updateFixedNextTriggerTime">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_job
     SET next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
@@ -204,7 +202,7 @@
   </update>
 
   <update id="softDelete">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_job
     SET is_deleted = id,
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
@@ -215,7 +213,7 @@
 
   <select id="searchJob" resultType="map">
     SELECT CAST(job_id AS CHAR) id, CONCAT(`group`, ' | ', job_name) text
-    FROM <include refid="Table_Name" />
+    FROM sched_job
     WHERE `group` IN (<foreach collection="groups" separator="," item="g">#{g,jdbcType=VARCHAR}</foreach>)
       AND is_deleted = 0
       <choose>
@@ -239,20 +237,20 @@
   <!-- COUNT(*)是SQL 92定义的标准统计行数的语法，优先走普通索引进行统计 -->
   <select id="queryPageCount" resultType="_long">
     SELECT COUNT(*) cnt
-    FROM <include refid="Table_Name" />
-    <include refid="Query_Page_Condition" />
+    FROM sched_job
+    <include refid="Page_Query_Where_Clause" />
   </select>
 
   <!-- 文件导出功能时：paged=false -->
   <select id="queryPageRecords" resultType="cn.ponfee.disjob.supervisor.model.SchedJob">
     SELECT <include refid="Base_Column_List" />
-    FROM <include refid="Table_Name" />
-    <include refid="Query_Page_Condition" />
+    FROM sched_job
+    <include refid="Page_Query_Where_Clause" />
     ORDER BY created_at DESC
     <if test="paged">LIMIT #{offset}, #{pageSize}</if>
   </select>
 
-  <sql id="Query_Page_Condition">
+  <sql id="Page_Query_Where_Clause">
     WHERE is_deleted = 0
       <if test="groups != null and groups.size() != 0">
         AND `group` IN (<foreach collection="groups" separator="," item="g">#{g,jdbcType=VARCHAR}</foreach>)

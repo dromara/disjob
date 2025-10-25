@@ -2,8 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper">
 
-  <sql id="Table_Name">sched_task</sql>
-
   <sql id="Base_Column_List">
     task_id, instance_id, task_no, task_count, execute_state, worker
   </sql>
@@ -14,8 +12,8 @@
     execute_snapshot, dispatch_failed_count, error_msg
   </sql>
 
-  <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-    INSERT INTO <include refid="Table_Name" /> (
+  <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+    INSERT INTO sched_task (
       task_id,
       instance_id,
       task_no,
@@ -39,13 +37,13 @@
 
   <select id="get" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedTask">
     SELECT <include refid="Large_Column_List" />
-    FROM <include refid="Table_Name" />
+    FROM sched_task
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </select>
 
   <select id="findBaseByInstanceIdAndStates" resultType="cn.ponfee.disjob.supervisor.model.SchedTask">
     SELECT <include refid="Base_Column_List" />
-    FROM <include refid="Table_Name" />
+    FROM sched_task
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
     <if test="states != null and states.size() != 0">
       AND execute_state IN (<foreach collection="states" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
@@ -54,7 +52,7 @@
 
   <select id="findLargeByInstanceIdAndStates" resultType="cn.ponfee.disjob.supervisor.model.SchedTask">
     SELECT <include refid="Large_Column_List" />
-    FROM <include refid="Table_Name" />
+    FROM sched_task
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
     <if test="states != null and states.size() != 0">
       AND execute_state IN (<foreach collection="states" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
@@ -62,7 +60,7 @@
   </select>
 
   <update id="incrementDispatchFailedCount">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_task
     SET dispatch_failed_count = (#{currentDispatchFailedCount,jdbcType=TINYINT} + 1)
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND dispatch_failed_count = #{currentDispatchFailedCount,jdbcType=TINYINT}
@@ -71,7 +69,7 @@
 
   <!-- use `IFNULL` function reason: possibly re-execute the paused task -->
   <update id="start">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_task
     SET execute_state = 20,
         execute_start_time = IFNULL(execute_start_time, #{executeStartTime,jdbcType=TIMESTAMP}),
         worker = #{worker,jdbcType=VARCHAR},
@@ -83,7 +81,7 @@
   <select id="checkStartIdempotent" resultType="_boolean">
     SELECT EXISTS (
       SELECT 1
-      FROM <include refid="Table_Name" />
+      FROM sched_task
       WHERE task_id = #{taskId,jdbcType=BIGINT}
         AND execute_state = 20
         AND worker = #{worker,jdbcType=VARCHAR}
@@ -92,7 +90,7 @@
   </select>
 
   <update id="terminate">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_task
     SET <if test="executeEndTime != null">
           execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
         </if>
@@ -110,18 +108,18 @@
   </update>
 
   <update id="updateStateByInstanceId">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_task
     SET <if test="executeEndTime != null">
           execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
         </if>
         execute_state = #{toState,jdbcType=TINYINT}
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
       AND execute_state != #{toState,jdbcType=TINYINT}
-      AND execute_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+      AND execute_state IN (<foreach collection="fromStates" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
   </update>
 
   <update id="forceChangeState">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_task
     SET execute_state = #{toState,jdbcType=TINYINT}
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
       AND execute_state != #{toState,jdbcType=TINYINT}
@@ -130,7 +128,7 @@
   </update>
 
   <update id="savepoint">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_task
     SET execute_snapshot = #{executeSnapshot,jdbcType=LONGVARCHAR}
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_state = 20
@@ -138,9 +136,9 @@
   </update>
 
   <delete id="deleteByInstanceId" parameterType="_long">
-    DELETE FROM <include refid="Table_Name" />
+    DELETE FROM sched_task
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_state &lt; 40) t)=0
+      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM sched_task WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_state &lt; 40) t)=0
   </delete>
 
   <!-- 使用其它的批量方式需要添加jdbc参数：allowMultiQueries=true&rewriteBatchedStatements=true -->
@@ -152,8 +150,8 @@
    |   column_c = CASE id <foreach collection="list" item="e"> WHEN #{e.id} THEN #{e.columnC} </foreach> END
    | WHERE id IN ( <foreach collection="list" separator="," item="e">#{e.id}</foreach> )
   -->
-  <update id="batchUpdateWorker">
-    UPDATE <include refid="Table_Name" />
+  <update id="updateWorkerBatch">
+    UPDATE sched_task
     SET worker = #{worker,jdbcType=VARCHAR}
     WHERE task_id IN (<foreach collection="taskIds" separator="," item="taskId">#{taskId,jdbcType=BIGINT}</foreach>)
       AND execute_state = 10

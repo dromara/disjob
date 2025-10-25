@@ -127,7 +127,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
 
         String worker = Collects.getFirst(list).getWorker().serialize();
         for (List<Long> ids : Lists.partition(taskIds, JobConstants.PROCESS_BATCH_SIZE)) {
-            ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(worker, ids), () -> "Update task worker error: " + ids);
+            ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(ids, worker), () -> "Update task worker error: " + ids);
         }
     }
 

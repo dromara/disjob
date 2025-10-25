@@ -2,8 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper">
 
-  <sql id="Table_Name">sched_group</sql>
-
   <sql id="Base_Column_List">
     `group`, own_user, supervisor_token, worker_token, user_token,
     dev_users, alert_recipients, alert_webhook, worker_context_path
@@ -15,7 +13,7 @@
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-    INSERT INTO <include refid="Table_Name" /> (
+    INSERT INTO sched_group (
       `group`,
       own_user,
       updated_by,
@@ -30,19 +28,19 @@
 
   <select id="get" resultType="cn.ponfee.disjob.supervisor.model.SchedGroup">
     SELECT <include refid="Large_Column_List"/>
-    FROM <include refid="Table_Name" />
+    FROM sched_group
     WHERE `group` = #{group,jdbcType=VARCHAR}
       AND is_deleted = 0
   </select>
 
   <select id="findAll" resultType="cn.ponfee.disjob.supervisor.model.SchedGroup">
     SELECT <include refid="Base_Column_List"/>
-    FROM <include refid="Table_Name" />
+    FROM sched_group
     WHERE is_deleted = 0
   </select>
 
   <update id="updateToken">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_group
     SET ${type}_token = #{newToken,jdbcType=VARCHAR},
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
@@ -52,7 +50,7 @@
   </update>
 
   <update id="updateOwnUser">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_group
     SET own_user = #{ownUser,jdbcType=VARCHAR},
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
@@ -61,7 +59,7 @@
   </update>
 
   <update id="softDelete">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_group
     SET is_deleted = id,
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
@@ -70,7 +68,7 @@
   </update>
 
   <update id="update">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_group
     SET own_user = #{ownUser,jdbcType=VARCHAR},
         dev_users = #{devUsers,jdbcType=VARCHAR},
         alert_recipients = #{alertRecipients,jdbcType=VARCHAR},
@@ -86,7 +84,7 @@
   <!--
   |  SELECT COUNT(*) cnt FROM (
   |    SELECT 1
-  |    FROM <include refid="Table_Name" />
+  |    FROM sched_group
   |    WHERE `group` = #{group,jdbcType=VARCHAR} AND is_deleted = 0
   |    LIMIT 1
   |  ) t
@@ -94,14 +92,14 @@
   <select id="exists" resultType="_boolean">
     SELECT EXISTS (
       SELECT 1
-      FROM <include refid="Table_Name" />
+      FROM sched_group
       WHERE `group` = #{group,jdbcType=VARCHAR} AND is_deleted = 0
     ) e
   </select>
 
   <select id="searchGroup" resultType="string">
     SELECT `group`
-    FROM <include refid="Table_Name" />
+    FROM sched_group
     WHERE is_deleted = 0
       <if test="_parameter != null and _parameter != ''">
         AND `group` LIKE #{_parameter}
@@ -113,19 +111,19 @@
 
   <select id="queryPageCount" resultType="_long">
     SELECT COUNT(*) cnt
-    FROM <include refid="Table_Name" />
-    <include refid="Query_Page_Condition" />
+    FROM sched_group
+    <include refid="Page_Query_Where_Clause" />
   </select>
 
   <select id="queryPageRecords" resultType="cn.ponfee.disjob.supervisor.model.SchedGroup">
     SELECT <include refid="Large_Column_List" />
-    FROM <include refid="Table_Name" />
-    <include refid="Query_Page_Condition" />
+    FROM sched_group
+    <include refid="Page_Query_Where_Clause" />
     ORDER BY updated_at DESC
     LIMIT #{offset}, #{pageSize}
   </select>
 
-  <sql id="Query_Page_Condition">
+  <sql id="Page_Query_Where_Clause">
     WHERE is_deleted = 0
     <if test="groups != null and groups.size() != 0">
       AND `group` IN (<foreach collection="groups" separator="," item="g">#{g,jdbcType=VARCHAR}</foreach>)

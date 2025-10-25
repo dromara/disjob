@@ -2,14 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedWorkflowMapper">
 
-  <sql id="Table_Name">sched_workflow</sql>
-
   <sql id="Base_Column_List">
     wnstance_id, pre_node, cur_node, run_state, instance_id, updated_at
   </sql>
 
-  <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-    INSERT INTO <include refid="Table_Name" /> (
+  <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+    INSERT INTO sched_workflow (
       wnstance_id,
       pre_node,
       cur_node,
@@ -29,12 +27,12 @@
 
   <select id="findByWnstanceId" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedWorkflow">
     SELECT <include refid="Base_Column_List"/>
-    FROM <include refid="Table_Name" />
+    FROM sched_workflow
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
   </select>
 
   <update id="update">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_workflow
     <set>
       <if test="toState != null">run_state = #{toState,jdbcType=TINYINT},</if>
       <if test="toInstanceId != null">instance_id = #{toInstanceId,jdbcType=BIGINT},</if>
@@ -50,7 +48,7 @@
   </update>
 
   <update id="resumeWaiting" parameterType="_long">
-    UPDATE <include refid="Table_Name" />
+    UPDATE sched_workflow
     SET run_state = 10
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
       AND run_state = 30
@@ -58,9 +56,9 @@
   </update>
 
   <delete id="deleteByWnstanceId" parameterType="_long">
-    DELETE FROM <include refid="Table_Name" />
+    DELETE FROM sched_workflow
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
-      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT} AND run_state &lt; 40) t)=0
+      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM sched_workflow WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT} AND run_state &lt; 40) t)=0
   </delete>
 
 </mapper>

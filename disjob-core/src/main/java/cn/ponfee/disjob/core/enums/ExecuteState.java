@@ -76,9 +76,9 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     EXECUTE_TIMEOUT(54, RunState.CANCELED, "执行超时"),
 
     /**
-     * 执行冲突取消(sched_job.collided_strategy=3 并且 当前任务还未执行完成 时被取消)
+     * 执行终止(如执行过程中Worker宕机)
      */
-    EXECUTE_COLLIDED(55, RunState.CANCELED, "执行冲突"),
+    EXECUTE_ABORTED(55, RunState.CANCELED, "执行终止"),
 
     /**
      * 广播任务终止(广播任务分派的Worker已下线导致未执行)
@@ -86,12 +86,12 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     BROADCAST_ABORTED(56, RunState.CANCELED, "广播终止"),
 
     /**
-     * 执行终止(如执行过程中Worker异常关机)
+     * 执行冲突取消(sched_job.collided_strategy=3 并且 上次任务还未执行完成 时取消上次任务)
      */
-    EXECUTE_ABORTED(57, RunState.CANCELED, "执行终止"),
+    COLLIDE_CANCELED(57, RunState.CANCELED, "冲突取消"),
 
     /**
-     * Worker关机取消(sched_job.shutdown_strategy=3 并且 Worker正常关闭)
+     * Worker关机取消(sched_job.shutdown_strategy=3 并且 Worker正常关闭 时被取消)
      */
     SHUTDOWN_CANCELED(58, RunState.CANCELED, "关机取消"),
 

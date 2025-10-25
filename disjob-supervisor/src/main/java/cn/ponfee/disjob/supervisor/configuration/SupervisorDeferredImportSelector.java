@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DeferredImportSelector;
 import org.springframework.core.type.AnnotationMetadata;
@@ -45,7 +46,10 @@ class SupervisorDeferredImportSelector implements DeferredImportSelector {
     @SuppressWarnings("NullableProblems")
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-        return new String[]{SupervisorDeferredConfiguration.class.getName()};
+        return new String[]{
+            SupervisorDeferredConfiguration.class.getName(),
+            AlerterDeferredConfiguration.class.getName(),
+        };
     }
 
     private static class SupervisorDeferredConfiguration {
@@ -73,16 +77,14 @@ class SupervisorDeferredImportSelector implements DeferredImportSelector {
         public LockTemplate scanTriggeringJobLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
             return new DatabaseLockTemplate(jdbcTemplate, SupervisorConstants.LOCK_SCAN_TRIGGERING_JOB);
         }
+    }
 
-        @ConditionalOnExpression(Alerter.ENABLED_KEY_EXPRESSION)
-        @ConditionalOnBean(AlertSender.class)
-        @Bean
-        public AlerterProperties alerterProperties() {
-            return new AlerterProperties();
-        }
+    @ConditionalOnExpression(Alerter.ENABLED_KEY_EXPRESSION)
+    @ConditionalOnBean(AlertSender.class)
+    @EnableConfigurationProperties(AlerterProperties.class)
+    private static class AlerterDeferredConfiguration {
 
-        @ConditionalOnExpression(Alerter.ENABLED_KEY_EXPRESSION)
-        @ConditionalOnBean(AlertSender.class)
+        @ConditionalOnMissingBean
         @Bean
         public Alerter alerter(AlerterProperties alerterConfig, GroupInfoService groupInfoService) {
             return new Alerter(alerterConfig, groupInfoService);

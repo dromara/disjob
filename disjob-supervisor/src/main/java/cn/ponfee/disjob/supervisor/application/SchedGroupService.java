@@ -150,7 +150,7 @@ public class SchedGroupService extends SingletonClassConstraint {
             SchedGroupConverter.INSTANCE::convert
         );
 
-        page.forEachRow(SchedGroupResponse::maskToken);
+        page.forEachRecord(SchedGroupResponse::maskToken);
         return page;
     }
 

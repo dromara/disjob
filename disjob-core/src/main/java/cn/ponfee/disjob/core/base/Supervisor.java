@@ -102,7 +102,7 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
     /**
      * Supervisor.class.getDeclaredClasses()[0]
      */
-    @SuppressWarnings({"serial", "unused"})
+    @SuppressWarnings("unused")
     public abstract static class Local extends Supervisor {
         private static volatile Local instance = null;
 

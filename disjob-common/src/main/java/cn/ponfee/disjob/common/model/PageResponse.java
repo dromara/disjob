@@ -16,12 +16,10 @@
 
 package cn.ponfee.disjob.common.model;
 
-import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.beans.Transient;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -33,27 +31,22 @@ import java.util.function.Consumer;
  */
 @Getter
 @Setter
-public class PageResponse<T> extends ToJsonString implements Serializable {
+public class PageResponse<T> extends Page {
     private static final long serialVersionUID = 3175875483341043538L;
 
     /**
-     * Current page records
-     */
-    private List<T> rows;
-
-    /**
-     * Total of result records
+     * Total available records.
      */
     private long total;
 
     /**
-     * Page request
+     * Current page records.
      */
-    private PageRequest request;
+    private List<T> records = Collections.emptyList();
 
     @Transient
     public int getTotalPages() {
-        return computeTotalPages(request.getPageSize(), total);
+        return computeTotalPages(pageSize, total);
     }
 
     @Transient
@@ -67,39 +60,17 @@ public class PageResponse<T> extends ToJsonString implements Serializable {
     }
 
     public boolean hasPrevious() {
-        return request.isPaged() && request.getPageNumber() > 1 && getTotalPages() > 1;
+        return pageNumber > 1 && getTotalPages() > 1;
     }
 
     public boolean hasNext() {
-        return request.isPaged() && request.getPageNumber() < getTotalPages();
+        return pageNumber < getTotalPages();
     }
 
-    public void forEachRow(Consumer<T> action) {
-        if (rows != null) {
-            rows.forEach(action);
+    public void forEachRecord(Consumer<T> action) {
+        if (records != null) {
+            records.forEach(action);
         }
-    }
-
-    // ------------------------------------------------------------static methods
-
-    public static int computeTotalPages(int pageSize, long total) {
-        return (int) ((total + pageSize - 1) / pageSize);
-    }
-
-    public static <T> PageResponse<T> empty() {
-        return of(Collections.emptyList(), 0, null);
-    }
-
-    public static <T> PageResponse<T> of(List<T> rows, long total) {
-        return of(rows, total, null);
-    }
-
-    public static <T> PageResponse<T> of(List<T> rows, long total, PageRequest request) {
-        PageResponse<T> response = new PageResponse<>();
-        response.setRows(rows);
-        response.setTotal(total);
-        response.setRequest(request);
-        return response;
     }
 
 }

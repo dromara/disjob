@@ -18,6 +18,8 @@ package cn.ponfee.disjob.id.snowflake;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.util.Maths;
+import cn.ponfee.disjob.common.util.Numbers;
+import cn.ponfee.disjob.common.util.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,9 +55,9 @@ public final class Snowflake implements IdGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(Snowflake.class);
 
     /**
-     * 起始基准时间点(2015-03-01 00:00:00)
+     * 起始基准时间点(2015-03-01T00:00:00.000)
      */
-    private static final long TWEPOCH = 1425139200000L;
+    private static final long TWEPOCH = Numbers.toLong(SystemUtils.getConfig("disjob.snowflake.twepoch"), 1425139200000L);
 
     /**
      * Timestamp left shift bits length: datacenterIdBitLength + workerIdBitLength + sequenceBitLength

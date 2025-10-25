@@ -32,7 +32,7 @@ import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
  */
 public interface SchedTaskMapper {
 
-    int batchInsert(List<SchedTask> records);
+    int insertBatch(List<SchedTask> records);
 
     SchedTask get(long taskId);
 
@@ -60,7 +60,7 @@ public interface SchedTaskMapper {
 
     int updateStateByInstanceId(@Param("instanceId") long instanceId,
                                 @Param("toState") int toState,
-                                @Param("fromStateList") List<Integer> fromStateList,
+                                @Param("fromStates") List<Integer> fromStates,
                                 @Param("executeEndTime") Date executeEndTime);
 
     int forceChangeState(@Param("instanceId") long instanceId, @Param("toState") int toState);
@@ -78,11 +78,11 @@ public interface SchedTaskMapper {
     /**
      * Update or clear the task worker
      *
-     * @param worker  the worker
      * @param taskIds the task id list
+     * @param worker  the worker
      * @return update sql affected rows
      */
-    int batchUpdateWorker(@Param("worker") String worker, @Param("taskIds") List<Long> taskIds);
+    int updateWorkerBatch(@Param("taskIds") List<Long> taskIds, @Param("worker") String worker);
 
     // -------------------------------------------------default methods
 

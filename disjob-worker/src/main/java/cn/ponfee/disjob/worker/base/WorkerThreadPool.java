@@ -639,7 +639,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 if (workerTask.getRouteStrategy().isNotBroadcast()) {
                     // reset task worker
                     List<Long> list = Collections.singletonList(workerTask.getTaskId());
-                    ThrowingRunnable<?> action = () -> supervisorRpcClient.updateTaskWorker(null, list);
+                    ThrowingRunnable<?> action = () -> supervisorRpcClient.updateTaskWorker(list, null);
                     ThrowingRunnable.doCaught(action, () -> "Reset task worker error: " + workerTask);
                 }
                 Threads.interruptIfNecessary(t);

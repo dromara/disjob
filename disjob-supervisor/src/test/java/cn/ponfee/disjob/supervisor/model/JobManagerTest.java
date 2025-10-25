@@ -51,7 +51,7 @@ public class JobManagerTest extends SpringBootTestBase<SchedJobMapper> {
     public void testUpdateTaskWorkerNonDeadlock() throws Throwable {
         int count = 197;
         long instanceId = idGenerator.generateId();
-        taskMapper.batchInsert(createTasks(count, instanceId));
+        taskMapper.insertBatch(createTasks(count, instanceId));
         List<Worker> workers = Arrays.asList(
             new Worker("g", UuidUtils.uuid32(), "127.0.0.1", 80),
             new Worker("g", UuidUtils.uuid32(), "127.0.0.2", 80),
@@ -66,7 +66,7 @@ public class JobManagerTest extends SpringBootTestBase<SchedJobMapper> {
                 List<Long> subList = new ArrayList<>(taskIds.subList(0, taskIds.size() / 2));
                 Collections.shuffle(subList);
                 Worker worker = workers.get(ThreadLocalRandom.current().nextInt(workers.size()));
-                jobManager.updateTaskWorker(worker.serialize(), subList);
+                jobManager.updateTaskWorker(subList, worker.serialize());
             }
         };
 

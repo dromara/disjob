@@ -16,14 +16,13 @@
 
 package cn.ponfee.disjob.common.model;
 
-import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.collect.TypedDictionary;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.util.Assert;
 
 import java.beans.Transient;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -47,29 +46,14 @@ import java.util.function.ToLongFunction;
 @Getter
 @Setter
 @SuppressWarnings("SuspiciousMethodCalls")
-public class PageRequest extends ToJsonString implements TypedDictionary<String, Object>, Serializable {
+public class PageRequest extends Page implements TypedDictionary<String, Object> {
     private static final long serialVersionUID = 2032344850017264330L;
 
     /**
      * Is whether page query.
-     * <p>如数据导出场景时，设置为`false`导出全部数据
+     * <p>如数据导出场景时，设置`paged=false`导出全部数据
      */
     private boolean paged = true;
-
-    /**
-     * Page number, start with 1.
-     */
-    private int pageNumber;
-
-    /**
-     * Page size, cannot less than 0.
-     */
-    private int pageSize;
-
-    /**
-     * Sort string, for example: "updated_at desc, name asc"
-     */
-    private String sort;
 
     /**
      * Parameter of query condition
@@ -108,6 +92,7 @@ public class PageRequest extends ToJsonString implements TypedDictionary<String,
 
     @Transient
     public long getOffset() {
+        Assert.state(paged, "Unpaged unsupported get offset operation.");
         return (long) (pageNumber - 1) * pageSize;
     }
 
@@ -120,36 +105,32 @@ public class PageRequest extends ToJsonString implements TypedDictionary<String,
     public <P extends PageRequest, A, B> PageResponse<B> query(ToLongFunction<P> countQuerier,
                                                                Function<P, List<A>> recordQuerier,
                                                                Function<A, B> recordMapper) {
-        check();
         long total;
         List<A> list;
         if (paged) {
+            Assert.isTrue(pageNumber > 0, "Paged number must be greater than 0.");
+            Assert.isTrue(pageSize > 0, "Paged size must be greater than 0.");
             total = countQuerier.applyAsLong((P) this);
-            correctPageNumber(total);
+            // Correct exceed page number
+            this.pageNumber = Math.min(pageNumber, computeTotalPages(pageSize, total));
             list = (total == 0) ? Collections.emptyList() : recordQuerier.apply((P) this);
         } else {
             list = recordQuerier.apply((P) this);
             total = list.size();
-        }
-        List<B> rows = (recordMapper == null) ? (List<B>) list : Collects.convert(list, recordMapper);
-        return PageResponse.of(rows, total, this);
-    }
-
-    // ------------------------------------------------------------------------private methods
-
-    private void check() {
-        int minimumPageSize = paged ? 1 : 0;
-        if (pageSize < minimumPageSize) {
-            throw new IllegalArgumentException("Invalid page size value [" + pageSize + "].");
-        }
-    }
-
-    private void correctPageNumber(long total) {
-        if (pageNumber < 1 || total == 0) {
             this.pageNumber = 1;
-        } else {
-            this.pageNumber = Math.min(pageNumber, PageResponse.computeTotalPages(pageSize, total));
+            this.pageSize = list.size();
         }
+        return toPageResponse(total, recordMapper == null ? (List<B>) list : Collects.convert(list, recordMapper));
+    }
+
+    private <B> PageResponse<B> toPageResponse(long total, List<B> records) {
+        PageResponse<B> response = new PageResponse<>();
+        response.setPageNumber(pageNumber);
+        response.setPageSize(pageSize);
+        response.setSort(sort);
+        response.setTotal(total);
+        response.setRecords(records == null ? Collections.emptyList() : records);
+        return response;
     }
 
 }

@@ -38,7 +38,7 @@ public interface SupervisorRpcService {
     void subscribeWorkerEvent(RegistryEventType eventType, Worker worker);
 
     @PostMapping("/task/worker/update")
-    void updateTaskWorker(String worker, List<Long> taskIds) throws Exception;
+    void updateTaskWorker(List<Long> taskIds, String worker) throws Exception;
 
     @PostMapping("/task/start")
     StartTaskResult startTask(StartTaskParam param) throws Exception;

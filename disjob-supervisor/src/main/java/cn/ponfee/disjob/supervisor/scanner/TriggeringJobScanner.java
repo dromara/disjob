@@ -268,7 +268,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         } else if (strategy == CollidedStrategy.OVERRIDE) {
             // 覆盖执行：先取消上一次的执行（或取消上一次的重试实例）
             if (instance != null) {
-                jobManager.cancelInstance(instance.getInstanceId(), Operation.COLLIDED_CANCEL);
+                jobManager.cancelInstance(instance.getInstanceId(), Operation.COLLIDE_CANCEL);
             }
             updateNextScanTime(job, now, 3000L);
         } else {

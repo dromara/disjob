@@ -60,8 +60,8 @@ public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
     }
 
     @Override
-    public void updateTaskWorker(String worker, List<Long> taskIds) {
-        jobManager.updateTaskWorker(worker, taskIds);
+    public void updateTaskWorker(List<Long> taskIds, String worker) {
+        jobManager.updateTaskWorker(taskIds, worker);
     }
 
     @Override

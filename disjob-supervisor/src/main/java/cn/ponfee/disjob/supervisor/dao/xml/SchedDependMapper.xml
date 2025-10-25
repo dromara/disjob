@@ -2,14 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper">
 
-  <sql id="Table_Name">sched_depend</sql>
-
   <sql id="Base_Column_List">
     parent_job_id, child_job_id
   </sql>
 
-  <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-    INSERT INTO <include refid="Table_Name" /> (
+  <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+    INSERT INTO sched_depend (
       parent_job_id,
       child_job_id
     ) VALUES
@@ -23,23 +21,23 @@
 
   <select id="findByParentJobId" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedDepend">
     SELECT <include refid="Base_Column_List"/>
-    FROM <include refid="Table_Name" />
+    FROM sched_depend
     WHERE parent_job_id = #{parentJobId,jdbcType=BIGINT}
   </select>
 
   <select id="findByChildJobIds" parameterType="collection" resultType="cn.ponfee.disjob.supervisor.model.SchedDepend">
     SELECT <include refid="Base_Column_List"/>
-    FROM <include refid="Table_Name" />
+    FROM sched_depend
     WHERE child_job_id IN (<foreach collection="collection" separator="," item="cid">#{cid,jdbcType=BIGINT}</foreach>)
   </select>
 
   <delete id="deleteByParentJobId" parameterType="_long">
-    DELETE FROM <include refid="Table_Name" />
+    DELETE FROM sched_depend
     WHERE parent_job_id = #{parentJobId,jdbcType=BIGINT}
   </delete>
 
   <delete id="deleteByChildJobId" parameterType="_long">
-    DELETE FROM <include refid="Table_Name" />
+    DELETE FROM sched_depend
     WHERE child_job_id = #{childJobId,jdbcType=BIGINT}
   </delete>
 

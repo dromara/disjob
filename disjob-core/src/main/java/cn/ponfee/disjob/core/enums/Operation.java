@@ -41,9 +41,9 @@ public enum Operation {
     EXCEPTION_CANCEL(EXECUTING, EXECUTE_EXCEPTION),
 
     /**
-     * Collided cancel from EXECUTING to EXECUTE_COLLIDED
+     * Collided cancel from EXECUTING to COLLIDE_CANCELED
      */
-    COLLIDED_CANCEL(EXECUTING, EXECUTE_COLLIDED),
+    COLLIDE_CANCEL(EXECUTING, COLLIDE_CANCELED),
 
     /**
      * Shutdown resume from EXECUTING to WAITING

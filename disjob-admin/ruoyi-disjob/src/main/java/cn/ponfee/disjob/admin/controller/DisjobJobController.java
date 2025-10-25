@@ -145,8 +145,8 @@ public class DisjobJobController extends BaseController {
         if (CollectionUtils.isNotEmpty(request.getGroups())) {
             // 不分页查询，导出全部数据
             request.setPaged(false);
-            List<SchedJobResponse> rows = schedJobService.queryJobForPage(request).getRows();
-            list = Collects.convert(rows, SchedJobExport::of);
+            List<SchedJobResponse> records = schedJobService.queryJobForPage(request).getRecords();
+            list = Collects.convert(records, SchedJobExport::of);
         }
         ExcelUtil<SchedJobExport> excel = new ExcelUtil<>(SchedJobExport.class);
         return excel.exportExcel(list, "作业配置数据");

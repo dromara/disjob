@@ -73,7 +73,7 @@ public class JobQuerier {
     }
 
     public SchedInstance getInstance(long jobId, long triggerTime, RunType runType) {
-        Assert.isTrue(runType.isUniqueFlag(), () -> "Run type unsupported unique flag: " + runType);
+        Assert.isTrue(runType.isUniqueFlag(), () -> "Run type must be unique flag: " + runType);
         return instanceMapper.getByUniqueKey(jobId, triggerTime, runType.value(), runType.getUniqueFlag());
     }
 
@@ -125,9 +125,9 @@ public class JobQuerier {
 
         if (pageRequest.isTree()) {
             if (pageRequest.getInstanceId() != null) {
-                pageResponse.forEachRow(e -> e.setPnstanceId(null));
+                pageResponse.forEachRecord(e -> e.setPnstanceId(null));
             }
-            fillIsTreeLeaf(pageResponse.getRows());
+            fillIsTreeLeaf(pageResponse.getRecords());
         }
         return pageResponse;
     }
@@ -154,7 +154,7 @@ public class JobQuerier {
         List<Long> instanceIds = list.stream().map(SchedInstanceResponse::getInstanceId).collect(Collectors.toList());
         Map<Long, Integer> map = instanceMapper.queryChildCount(instanceIds)
             .stream()
-            .collect(Collectors.toMap(e -> MapUtils.getLongValue(e, "pnstanceId"), e -> MapUtils.getIntValue(e, "count")));
+            .collect(Collectors.toMap(e -> MapUtils.getLongValue(e, "pnstanceId"), e -> MapUtils.getIntValue(e, "cnt")));
         for (SchedInstanceResponse e : list) {
             Integer count = map.get(e.getInstanceId());
             e.setIsTreeLeaf(Numbers.isNullOrZero(count) ? 0 : 1);

@@ -38,8 +38,8 @@ public class Pagination {
     public static TableDataInfo toTableDataInfo(PageResponse<?> page) {
         TableDataInfo table = new TableDataInfo();
         table.setCode(0);
-        table.setRows(page.getRows());
         table.setTotal(page.getTotal());
+        table.setRows(page.getRecords());
         return table;
     }
 

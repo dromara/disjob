@@ -34,7 +34,7 @@ import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.*;
 
 /**
  * Supervisor lifecycle
- * <p>https://www.cnblogs.com/deityjian/p/11296846.html
+ * <p><a href="https://www.cnblogs.com/deityjian/p/11296846.html">Spring Lifecycle</a>
  * <p>InitializingBean#afterPropertiesSet -> SmartLifecycle#start -> SmartLifecycle#stop -> DisposableBean#destroy
  *
  * @author Ponfee
@@ -89,7 +89,7 @@ class SupervisorLifecycle implements SmartLifecycle {
 
     @Override
     public int getPhase() {
-        return DEFAULT_PHASE;
+        return SmartLifecycle.super.getPhase();
     }
 
 }

@@ -34,7 +34,7 @@ import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
  */
 public interface SchedInstanceMapper {
 
-    int batchInsert(List<SchedInstance> instances);
+    int insertBatch(List<SchedInstance> instances);
 
     /**
      * Gets sched instance by instance_id
@@ -60,7 +60,7 @@ public interface SchedInstanceMapper {
 
     int terminate(@Param("instanceId") long instanceId,
                   @Param("toState") int toState,
-                  @Param("fromStateList") List<Integer> fromStateList,
+                  @Param("fromStates") List<Integer> fromStates,
                   @Param("runEndTime") Date runEndTime);
 
     int updateState(@Param("instanceId") long instanceId, @Param("toState") int toState, @Param("fromState") int fromState);
@@ -113,8 +113,8 @@ public interface SchedInstanceMapper {
 
     // -------------------------------------------------default methods
 
-    default boolean terminate(long instanceId, RunState toState, List<Integer> fromStateList, Date runEndTime) {
-        return isOneAffectedRow(terminate(instanceId, toState.value(), fromStateList, runEndTime));
+    default boolean terminate(long instanceId, RunState toState, List<Integer> fromStates, Date runEndTime) {
+        return isOneAffectedRow(terminate(instanceId, toState.value(), fromStates, runEndTime));
     }
 
     default boolean updateState(long instanceId, RunState toState, RunState fromState) {

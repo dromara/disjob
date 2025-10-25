@@ -248,15 +248,15 @@ public class JobManager {
     /**
      * Set or clear task worker
      *
-     * @param worker  the worker
      * @param taskIds the task id list
+     * @param worker  the worker
      */
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
-    public void updateTaskWorker(String worker, List<Long> taskIds) {
+    public void updateTaskWorker(List<Long> taskIds, String worker) {
         if (CollectionUtils.isNotEmpty(taskIds)) {
             // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
             taskIds = taskIds.stream().distinct().sorted().collect(Collectors.toList());
-            Collects.batchProcess(taskIds, ids -> taskMapper.batchUpdateWorker(worker, ids), PROCESS_BATCH_SIZE);
+            Collects.batchProcess(taskIds, ids -> taskMapper.updateWorkerBatch(ids, worker), PROCESS_BATCH_SIZE);
         }
     }
 
@@ -518,9 +518,9 @@ public class JobManager {
 
     private void saveInstances(List<SchedInstance> instances, List<SchedWorkflow> workflows, List<SchedTask> tasks) {
         instances.forEach(SchedInstance::fillUniqueFlag);
-        Collects.batchProcess(instances, instanceMapper::batchInsert, PROCESS_BATCH_SIZE);
-        Collects.batchProcess(workflows, workflowMapper::batchInsert, PROCESS_BATCH_SIZE);
-        Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
+        Collects.batchProcess(instances, instanceMapper::insertBatch, PROCESS_BATCH_SIZE);
+        Collects.batchProcess(workflows, workflowMapper::insertBatch, PROCESS_BATCH_SIZE);
+        Collects.batchProcess(tasks, taskMapper::insertBatch, PROCESS_BATCH_SIZE);
     }
 
     private SchedJob getRequiredJob(long jobId) {
@@ -578,7 +578,7 @@ public class JobManager {
             checkCycleDepends(jobId, new HashSet<>(parentJobIds));
 
             List<SchedDepend> list = Collects.convert(parentJobIds, pid -> SchedDepend.of(pid, jobId));
-            Collects.batchProcess(list, dependMapper::batchInsert, JobConstants.PROCESS_BATCH_SIZE);
+            Collects.batchProcess(list, dependMapper::insertBatch, JobConstants.PROCESS_BATCH_SIZE);
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {

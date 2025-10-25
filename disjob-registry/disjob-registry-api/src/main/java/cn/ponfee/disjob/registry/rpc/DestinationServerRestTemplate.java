@@ -50,8 +50,10 @@ final class DestinationServerRestTemplate {
         HttpStatus.REQUEST_TIMEOUT,
         HttpStatus.TOO_MANY_REQUESTS,
 
+        // 500：服务器端内部请求外部服务超时导致异常，如连接数据库超时等
+        //HttpStatus.INTERNAL_SERVER_ERROR,
+
         // 5xx：502、503、504、509
-        //HttpStatus.INTERNAL_SERVER_ERROR, // 500：服务器端内部请求外部服务超时导致异常，如：数据库连接超时等
         HttpStatus.BAD_GATEWAY,
         HttpStatus.SERVICE_UNAVAILABLE,
         HttpStatus.GATEWAY_TIMEOUT,

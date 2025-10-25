@@ -116,8 +116,9 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
 
     @Override
     public void destroy() throws Exception {
-        ThreadPoolExecutors.shutdown(noticeAsyncExecutor, config.getSendThreadPool().getAwaitTerminationSeconds());
-        ThreadPoolExecutors.shutdown(alarmAsyncExecutor, config.getSendThreadPool().getAwaitTerminationSeconds());
+        int awaitTerminationSeconds = config.getSendThreadPool().getAwaitTerminationSeconds();
+        ThreadPoolExecutors.shutdown(noticeAsyncExecutor, awaitTerminationSeconds);
+        ThreadPoolExecutors.shutdown(alarmAsyncExecutor, awaitTerminationSeconds);
     }
 
     // ------------------------------------------------------------------private methods

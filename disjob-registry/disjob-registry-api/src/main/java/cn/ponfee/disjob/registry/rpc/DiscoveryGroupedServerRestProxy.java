@@ -157,15 +157,15 @@ public final class DiscoveryGroupedServerRestProxy<T> {
     static Request buildRequest(final Method method, final String prefixPath) {
         //
         // 如果是继承方式，两个子接口继承的`subscribeServerEvent`方法的prefixPath不一样，Map Key需要改为`Pair<Class<?>, Method>`
-        // SubscribeEventService {
+        // interface SubscribeEventService {
         //   void subscribeServerEvent(RegistryEventType eventType, Server server);
         // }
         //
         // @RequestMapping("/worker/rpc")
-        // WorkerRpcService extends SubscribeEventService { }
+        // interface WorkerRpcService extends SubscribeEventService { }
         //
         // @RequestMapping("/supervisor/rpc")
-        // SupervisorRpcService extends SubscribeEventService { }
+        // interface SupervisorRpcService extends SubscribeEventService { }
         //
         return METHOD_REQUEST_CACHE.computeIfAbsent(method, key -> {
             RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(key, RequestMapping.class);

@@ -28,7 +28,7 @@ import java.util.Set;
  */
 public interface SchedDependMapper {
 
-    int batchInsert(List<SchedDepend> records);
+    int insertBatch(List<SchedDepend> records);
 
     List<SchedDepend> findByParentJobId(long parentJobId);
 
