@@ -92,7 +92,7 @@ public class PageRequest extends Page implements TypedDictionary<String, Object>
 
     @Transient
     public long getOffset() {
-        Assert.state(paged, "Unpaged unsupported get offset operation.");
+        Assert.state(paged, "Unpaged cannot support get offset operation.");
         return (long) (pageNumber - 1) * pageSize;
     }
 
@@ -112,7 +112,7 @@ public class PageRequest extends Page implements TypedDictionary<String, Object>
             Assert.isTrue(pageSize > 0, "Paged size must be greater than 0.");
             total = countQuerier.applyAsLong((P) this);
             // Correct exceed page number
-            this.pageNumber = Math.min(pageNumber, computeTotalPages(pageSize, total));
+            this.pageNumber = Math.min(pageNumber, Math.max(1, computeTotalPages(pageSize, total)));
             list = (total == 0) ? Collections.emptyList() : recordQuerier.apply((P) this);
         } else {
             list = recordQuerier.apply((P) this);
@@ -123,8 +123,12 @@ public class PageRequest extends Page implements TypedDictionary<String, Object>
         return toPageResponse(total, recordMapper == null ? (List<B>) list : Collects.convert(list, recordMapper));
     }
 
-    private <B> PageResponse<B> toPageResponse(long total, List<B> records) {
-        PageResponse<B> response = new PageResponse<>();
+    public <T> PageResponse<T> empty() {
+        return toPageResponse(0, Collections.emptyList());
+    }
+
+    private <T> PageResponse<T> toPageResponse(long total, List<T> records) {
+        PageResponse<T> response = new PageResponse<>();
         response.setPageNumber(pageNumber);
         response.setPageSize(pageSize);
         response.setSort(sort);

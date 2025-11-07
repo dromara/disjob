@@ -87,12 +87,11 @@ public class Worker extends Server implements Comparable<Worker> {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Worker) || !super.equals(obj)) {
+        if (!(obj instanceof Worker)) {
             return false;
         }
         Worker that = (Worker) obj;
-        return this.group.equals(that.group)
-            && this.workerId.equals(that.workerId);
+        return this.matches(that) && this.workerId.equals(that.workerId);
     }
 
     @Override
@@ -108,8 +107,7 @@ public class Worker extends Server implements Comparable<Worker> {
      * @return {@code true} if same worker
      */
     public boolean matches(Worker other) {
-        return super.equals(other)
-            && this.equalsGroup(other.group);
+        return super.equals(other) && this.equalsGroup(other.group);
     }
 
     /**

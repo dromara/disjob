@@ -251,10 +251,8 @@
   </select>
 
   <sql id="Page_Query_Where_Clause">
-    WHERE is_deleted = 0
-      <if test="groups != null and groups.size() != 0">
-        AND `group` IN (<foreach collection="groups" separator="," item="g">#{g,jdbcType=VARCHAR}</foreach>)
-      </if>
+    WHERE `group` IN (<foreach collection="groups" separator="," item="g">#{g,jdbcType=VARCHAR}</foreach>)
+       AND is_deleted = 0
       <if test="jobName != null and jobName != ''">
         AND job_name LIKE CONCAT('%', #{jobName}, '%')
       </if>

@@ -23,7 +23,6 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables;
-import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
@@ -40,7 +39,6 @@ import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.file.ImageUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -49,7 +47,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -109,13 +106,9 @@ public class DisjobJobController extends BaseController {
     public TableDataInfo list(SchedJobPageRequest request) {
         request.authorizeAndTruncateGroup(getLoginName());
 
-        if (CollectionUtils.isEmpty(request.getGroups())) {
-            return TableDataInfo.empty();
-        }
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
-        PageResponse<SchedJobResponse> response = schedJobService.queryJobForPage(request);
-        return Pagination.toTableDataInfo(response);
+        return Pagination.toTableDataInfo(schedJobService.queryJobForPage(request));
     }
 
     /**
@@ -141,15 +134,11 @@ public class DisjobJobController extends BaseController {
     public AjaxResult export(SchedJobPageRequest request) {
         request.authorizeAndTruncateGroup(getLoginName());
 
-        List<SchedJobExport> list = Collections.emptyList();
-        if (CollectionUtils.isNotEmpty(request.getGroups())) {
-            // 不分页查询，导出全部数据
-            request.setPaged(false);
-            List<SchedJobResponse> records = schedJobService.queryJobForPage(request).getRecords();
-            list = Collects.convert(records, SchedJobExport::of);
-        }
+        // 不分页查询，导出全部数据
+        request.setPaged(false);
+        List<SchedJobResponse> records = schedJobService.queryJobForPage(request).getRecords();
         ExcelUtil<SchedJobExport> excel = new ExcelUtil<>(SchedJobExport.class);
-        return excel.exportExcel(list, "作业配置数据");
+        return excel.exportExcel(Collects.convert(records, SchedJobExport::of), "作业配置");
     }
 
     // -------------------------------------------------------操作

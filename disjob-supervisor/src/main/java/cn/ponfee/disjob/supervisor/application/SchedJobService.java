@@ -35,11 +35,13 @@ import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -93,10 +95,16 @@ public class SchedJobService extends SingletonClassConstraint {
     }
 
     public PageResponse<SchedJobResponse> queryJobForPage(SchedJobPageRequest pageRequest) {
+        if (CollectionUtils.isEmpty(pageRequest.getGroups())) {
+            return pageRequest.empty();
+        }
         return jobQuerier.queryJobForPage(pageRequest);
     }
 
     public List<Map<String, Object>> searchJob(SchedJobSearchRequest req) {
+        if (CollectionUtils.isEmpty(req.getGroups())) {
+            return Collections.emptyList();
+        }
         return jobQuerier.searchJob(req);
     }
 

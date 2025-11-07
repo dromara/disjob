@@ -42,6 +42,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.Collections;
 import java.util.List;
@@ -157,10 +158,12 @@ public class SchedGroupService extends SingletonClassConstraint {
     // ------------------------------------------------------------other static methods
 
     public static ImmutableSet<String> myGroups(String user) {
+        Assert.hasText(user, "Authentication user cannot be blank.");
         return CACHE.get().myGroups(user);
     }
 
     public static DisjobGroup getGroup(String group) {
+        Assert.hasText(group, "Authentication group cannot be blank.");
         return CACHE.get().getGroup(group);
     }
 

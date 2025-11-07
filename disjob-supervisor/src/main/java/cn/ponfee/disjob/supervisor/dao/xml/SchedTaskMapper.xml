@@ -45,7 +45,7 @@
     SELECT <include refid="Base_Column_List" />
     FROM sched_task
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-    <if test="states != null and states.size() != 0">
+    <if test="states != null and !states.isEmpty()">
       AND execute_state IN (<foreach collection="states" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
     </if>
   </select>
@@ -54,7 +54,7 @@
     SELECT <include refid="Large_Column_List" />
     FROM sched_task
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-    <if test="states != null and states.size() != 0">
+    <if test="states != null and !states.isEmpty()">
       AND execute_state IN (<foreach collection="states" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
     </if>
   </select>
