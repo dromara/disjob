@@ -131,7 +131,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         // double check instance run state
         SchedInstance reloadInstance = jobQuerier.getInstance(instance.getInstanceId());
         if (reloadInstance == null) {
-            log.error("Scanned running state instance not exists: {}", instance.getInstanceId());
+            log.error("Scanned running instance not found: {}", instance.getInstanceId());
             return;
         }
         if (reloadInstance.isTerminal()) {

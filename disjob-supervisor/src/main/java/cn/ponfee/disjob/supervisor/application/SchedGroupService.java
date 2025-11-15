@@ -21,8 +21,8 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Functions;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.TokenType;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
@@ -33,8 +33,8 @@ import cn.ponfee.disjob.supervisor.base.OperationEventType;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper;
-import cn.ponfee.disjob.supervisor.exception.GroupNotFoundException;
-import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
+import cn.ponfee.disjob.supervisor.exception.KeyAlreadyExistsException;
+import cn.ponfee.disjob.supervisor.exception.KeyNotFoundException;
 import cn.ponfee.disjob.supervisor.model.SchedGroup;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
@@ -94,7 +94,7 @@ public class SchedGroupService extends SingletonClassConstraint {
     public long add(String user, SchedGroupAddRequest request) {
         request.checkAndTrim();
         if (groupMapper.exists(request.getGroup())) {
-            throw new KeyExistsException("Group already exists: " + request.getGroup());
+            throw new KeyAlreadyExistsException("Group name already exists: " + request.getGroup());
         }
         SchedGroup schedGroup = request.toSchedGroup(user);
         groupMapper.insert(schedGroup);
@@ -105,7 +105,7 @@ public class SchedGroupService extends SingletonClassConstraint {
     public boolean delete(String user, String group) {
         List<Worker> workers = workerClient.getAliveWorkers(group);
         if (CollectionUtils.isNotEmpty(workers)) {
-            throw new KeyExistsException("Group '" + group + "' has registered workers, cannot delete.");
+            throw new KeyAlreadyExistsException("Cannot delete group that has alive worker: " + group);
         }
         return Functions.doIfTrue(
             isOneAffectedRow(groupMapper.softDelete(group, user)),
@@ -220,7 +220,7 @@ public class SchedGroupService extends SingletonClassConstraint {
         DisjobGroup getGroup(String group) {
             DisjobGroup disjobGroup = groupMap.get(group);
             if (disjobGroup == null) {
-                throw new GroupNotFoundException("Not found worker group: " + group);
+                throw new KeyNotFoundException("Group not found: " + group);
             }
             return disjobGroup;
         }

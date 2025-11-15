@@ -16,11 +16,11 @@
 
 package cn.ponfee.disjob.dispatch.redis;
 
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.enums.ShutdownStrategy;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

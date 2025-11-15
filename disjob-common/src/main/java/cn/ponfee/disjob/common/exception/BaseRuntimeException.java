@@ -17,7 +17,8 @@
 package cn.ponfee.disjob.common.exception;
 
 /**
- * Base unchecked(runtime) exception definition(运行时异常)
+ * Base unchecked exception abstract class
+ * <p>运行时异常
  *
  * @author Ponfee
  */
@@ -55,11 +56,8 @@ public abstract class BaseRuntimeException extends RuntimeException {
      * @param enableSuppression  the enableSuppression
      * @param writableStackTrace the writableStackTrace
      */
-    protected BaseRuntimeException(int code,
-                                   String message,
-                                   Throwable cause,
-                                   boolean enableSuppression,
-                                   boolean writableStackTrace) {
+    protected BaseRuntimeException(int code, String message, Throwable cause,
+                                   boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.code = code;
     }

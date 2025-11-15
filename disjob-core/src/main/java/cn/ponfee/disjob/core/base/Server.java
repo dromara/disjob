@@ -92,7 +92,7 @@ public abstract class Server implements Serializable {
         return "https://" + host + ":" + port;
     }
 
-    static String check(String str) {
+    protected static String check(String str) {
         if (str == null || str.isEmpty() || Strings.containsCharOrWhitespace(str, Char.COLON)) {
             throw new IllegalArgumentException("Invalid server part value: " + (str == null ? "null" : "'" + str + "'"));
         }

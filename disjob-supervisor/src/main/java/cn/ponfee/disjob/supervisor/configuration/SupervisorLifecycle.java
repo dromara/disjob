@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.supervisor.configuration;
 
 import cn.ponfee.disjob.common.lock.LockTemplate;
-import cn.ponfee.disjob.core.base.Supervisor;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;

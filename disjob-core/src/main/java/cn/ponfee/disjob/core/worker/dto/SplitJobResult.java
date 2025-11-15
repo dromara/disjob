@@ -14,33 +14,33 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.exception;
+package cn.ponfee.disjob.core.worker.dto;
 
-import cn.ponfee.disjob.core.enums.Operation;
+import cn.ponfee.disjob.common.base.ToJsonString;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
 
 /**
- * Exception for cancel the executing task.
+ * Split job result.
  *
  * @author Ponfee
  */
-public final class CancelTaskException extends OperationTaskException {
-    private static final long serialVersionUID = -3461401416673580272L;
+@Getter
+@Setter
+public class SplitJobResult extends ToJsonString implements java.io.Serializable {
+    private static final long serialVersionUID = -7020990825612520665L;
 
-    public CancelTaskException() {
-        super("Cancel task.");
-    }
+    /**
+     * List of task param
+     */
+    private List<String> taskParams;
 
-    public CancelTaskException(String message) {
-        super(message);
-    }
-
-    public CancelTaskException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    @Override
-    public Operation operation() {
-        return Operation.EXCEPTION_CANCEL;
+    public static SplitJobResult of(List<String> taskParams) {
+        SplitJobResult result = new SplitJobResult();
+        result.setTaskParams(taskParams);
+        return result;
     }
 
 }

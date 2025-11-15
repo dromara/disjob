@@ -18,8 +18,8 @@ package cn.ponfee.disjob.supervisor.auth;
 
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication.Subject;
 import org.apache.commons.lang3.StringUtils;

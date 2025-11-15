@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.dto.worker;
+package cn.ponfee.disjob.supervisor.exception;
 
-import lombok.Getter;
-import lombok.Setter;
+import cn.ponfee.disjob.common.exception.BaseRuntimeException;
+import cn.ponfee.disjob.core.base.JobCodeMsg;
 
 /**
- * Get worker metrics param
+ * Key already exists exception.
  *
  * @author Ponfee
  */
-@Getter
-@Setter
-public class GetMetricsParam extends AuthenticationParam {
-    private static final long serialVersionUID = 6100003437491314940L;
+public class KeyAlreadyExistsException extends BaseRuntimeException {
+    private static final long serialVersionUID = -6198294663343359692L;
 
-    public static GetMetricsParam of(String group) {
-        GetMetricsParam param = new GetMetricsParam();
-        param.fillSupervisorAuthenticationToken(group);
-        return param;
+    public KeyAlreadyExistsException() {
+        this("Key already exists.");
     }
+
+    public KeyAlreadyExistsException(String message) {
+        super(JobCodeMsg.KEY_ALREADY_EXISTS.getCode(), message);
+    }
+
 }

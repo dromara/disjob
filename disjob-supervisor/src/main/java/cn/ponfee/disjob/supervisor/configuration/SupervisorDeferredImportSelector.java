@@ -21,7 +21,7 @@ import cn.ponfee.disjob.alert.base.AlerterProperties;
 import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.common.lock.DatabaseLockTemplate;
 import cn.ponfee.disjob.common.lock.LockTemplate;
-import cn.ponfee.disjob.core.base.GroupInfoService;
+import cn.ponfee.disjob.core.supervisor.GroupInfoService;
 import cn.ponfee.disjob.supervisor.base.DefaultGroupInfoService;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import org.springframework.beans.factory.annotation.Qualifier;

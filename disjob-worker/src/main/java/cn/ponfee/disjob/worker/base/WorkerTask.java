@@ -17,11 +17,11 @@
 package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
-import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
-import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.*;
+import cn.ponfee.disjob.core.supervisor.dto.StartTaskParam;
+import cn.ponfee.disjob.core.supervisor.dto.StartTaskResult;
+import cn.ponfee.disjob.core.supervisor.dto.StopTaskParam;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import cn.ponfee.disjob.worker.executor.JobExecutor;

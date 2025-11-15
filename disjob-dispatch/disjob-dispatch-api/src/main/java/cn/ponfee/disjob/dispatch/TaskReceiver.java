@@ -18,7 +18,7 @@ package cn.ponfee.disjob.dispatch;
 
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.worker.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

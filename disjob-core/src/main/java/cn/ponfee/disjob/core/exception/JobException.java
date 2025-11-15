@@ -20,20 +20,12 @@ import cn.ponfee.disjob.common.exception.BaseException;
 import cn.ponfee.disjob.common.model.CodeMsg;
 
 /**
- * Job checked exception definition.
+ * Job exception.
  *
  * @author Ponfee
  */
 public class JobException extends BaseException {
     private static final long serialVersionUID = -6568546076593428337L;
-
-    public JobException(int code) {
-        super(code, null);
-    }
-
-    public JobException(int code, String message) {
-        super(code, message);
-    }
 
     public JobException(CodeMsg cm) {
         super(cm.getCode(), cm.getMsg());
@@ -45,18 +37,6 @@ public class JobException extends BaseException {
 
     public JobException(int code, String message, Throwable cause) {
         super(code, message, cause);
-    }
-
-    public JobException(CodeMsg cm, Throwable cause) {
-        super(cm.getCode(), cm.getMsg(), cause);
-    }
-
-    public JobException(int code,
-                        String message,
-                        Throwable cause,
-                        boolean enableSuppression,
-                        boolean writableStackTrace) {
-        super(code, message, cause, enableSuppression, writableStackTrace);
     }
 
 }

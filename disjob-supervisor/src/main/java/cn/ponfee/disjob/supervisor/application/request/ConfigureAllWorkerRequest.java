@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.supervisor.application.request;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam.Action;
+import cn.ponfee.disjob.core.worker.dto.ConfigureWorkerParam.Action;
 import lombok.Getter;
 import lombok.Setter;
 

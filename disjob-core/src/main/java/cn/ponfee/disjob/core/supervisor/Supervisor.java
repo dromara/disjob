@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.base;
+package cn.ponfee.disjob.core.supervisor;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.core.base.Tokens;
 import cn.ponfee.disjob.core.enums.TokenType;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;

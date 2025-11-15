@@ -14,28 +14,43 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.dto.worker;
+package cn.ponfee.disjob.core.worker.dto;
 
+import cn.ponfee.disjob.core.dag.WorkflowInstance;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.Assert;
 
+import java.util.List;
+
 /**
- * Verify job parameter.
+ * Split job parameter.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class VerifyJobParam extends AuthenticationParam {
+public class SplitJobParam extends AuthenticationParam {
     private static final long serialVersionUID = -216622646271234535L;
 
     private String jobExecutor;
     private String jobParam;
+    private int retryCount;
+    private int retriedCount;
     private JobType jobType;
     private RouteStrategy routeStrategy;
+
+    /**
+     * Worker数量
+     */
+    private int workerCount;
+
+    /**
+     * 工作流(DAG)任务的前驱节点实例列表(若为`非工作流任务`或`工作流第一批任务节点`时，则为null)
+     */
+    private List<WorkflowInstance> predecessorInstances;
 
     public void check() {
         Assert.hasText(jobExecutor, "Job executor cannot be empty.");

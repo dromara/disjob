@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.registry;
 
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.registry.discovery.ServerDiscovery;
 import org.apache.commons.collections4.CollectionUtils;
 

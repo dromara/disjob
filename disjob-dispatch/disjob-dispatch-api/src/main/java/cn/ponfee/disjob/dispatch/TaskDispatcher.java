@@ -21,7 +21,7 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.AsyncDelayedExecutor;
 import cn.ponfee.disjob.common.concurrent.DelayedData;
 import cn.ponfee.disjob.core.base.RetryProperties;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
 import cn.ponfee.disjob.dispatch.route.ExecutionRouterRegistrar;
 import cn.ponfee.disjob.registry.Discovery;

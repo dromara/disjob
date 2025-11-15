@@ -24,12 +24,12 @@ import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.SupervisorRpcService;
-import cn.ponfee.disjob.core.base.WorkerMetrics;
-import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
-import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.Operation;
+import cn.ponfee.disjob.core.supervisor.SupervisorRpcService;
+import cn.ponfee.disjob.core.supervisor.dto.StartTaskResult;
+import cn.ponfee.disjob.core.supervisor.dto.StopTaskParam;
+import cn.ponfee.disjob.core.worker.WorkerMetrics;
 import cn.ponfee.disjob.worker.exception.OperationTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
@@ -662,8 +662,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
             try {
                 execute(workerTask, taskExecutor, executionTask);
             } catch (OperationTaskException e) {
-                LOG.error("Operation task exception: {}, {}, {}", e.operation(), workerTask, e.getMessage());
-                stopInstance(workerTask, e.operation(), toErrorMsg(e));
+                LOG.error("Operation task exception: {}, {}, {}", e.getOperation(), workerTask, e.getMessage());
+                stopInstance(workerTask, e.getOperation(), toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
                     // 调用`Thread#stop()`时可能会抛出该异常

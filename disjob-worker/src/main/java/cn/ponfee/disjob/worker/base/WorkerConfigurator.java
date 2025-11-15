@@ -17,9 +17,9 @@
 package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.base.WorkerMetrics;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
+import cn.ponfee.disjob.core.worker.Worker;
+import cn.ponfee.disjob.core.worker.WorkerMetrics;
 
 import java.util.Date;
 

@@ -18,7 +18,7 @@ package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.core.base.Supervisor;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.supervisor.base.OperationEventType;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;

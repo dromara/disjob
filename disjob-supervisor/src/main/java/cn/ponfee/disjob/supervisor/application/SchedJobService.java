@@ -23,7 +23,6 @@ import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobState;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.exception.JobRuntimeException;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
 import cn.ponfee.disjob.supervisor.application.request.*;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
@@ -110,24 +109,24 @@ public class SchedJobService extends SingletonClassConstraint {
 
     // ------------------------------------------------------------------instance
 
-    public void pauseInstance(String user, long instanceId) {
+    public void pauseInstance(String user, long instanceId) throws JobException {
         LOG.info("Pausing instance by {}: {}", user, instanceId);
         if (!jobManager.pauseInstance(instanceId)) {
-            throw new JobRuntimeException(JobCodeMsg.NOT_PAUSABLE_INSTANCE);
+            throw new JobException(JobCodeMsg.NOT_PAUSABLE_INSTANCE);
         }
     }
 
-    public void cancelInstance(String user, long instanceId) {
+    public void cancelInstance(String user, long instanceId) throws JobException {
         LOG.info("Canceling instance by {}: {}", user, instanceId);
         if (!jobManager.cancelInstance(instanceId, Operation.MANUAL_CANCEL)) {
-            throw new JobRuntimeException(JobCodeMsg.NOT_CANCELABLE_INSTANCE);
+            throw new JobException(JobCodeMsg.NOT_CANCELABLE_INSTANCE);
         }
     }
 
-    public void resumeInstance(String user, long instanceId) {
+    public void resumeInstance(String user, long instanceId) throws JobException {
         LOG.info("Resuming instance by {}: {}", user, instanceId);
         if (!jobManager.resumeInstance(instanceId)) {
-            throw new JobRuntimeException(JobCodeMsg.NOT_RESUMABLE_INSTANCE);
+            throw new JobException(JobCodeMsg.NOT_RESUMABLE_INSTANCE);
         }
     }
 

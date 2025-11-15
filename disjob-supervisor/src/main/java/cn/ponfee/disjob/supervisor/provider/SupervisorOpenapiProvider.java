@@ -125,7 +125,7 @@ public class SupervisorOpenapiProvider extends BaseController {
     // ------------------------------------------------------------------instance
 
     @PostMapping("/instance/pause")
-    public Result<Void> pauseInstance(@RequestParam("instanceId") long instanceId) {
+    public Result<Void> pauseInstance(@RequestParam("instanceId") long instanceId) throws JobException {
         String user = requestUser();
         authorizeGroupService.authorizeInstance(user, requestGroup(), instanceId);
 
@@ -134,7 +134,7 @@ public class SupervisorOpenapiProvider extends BaseController {
     }
 
     @PostMapping("/instance/cancel")
-    public Result<Void> cancelInstance(@RequestParam("instanceId") long instanceId) {
+    public Result<Void> cancelInstance(@RequestParam("instanceId") long instanceId) throws JobException {
         String user = requestUser();
         authorizeGroupService.authorizeInstance(user, requestGroup(), instanceId);
 
@@ -143,7 +143,7 @@ public class SupervisorOpenapiProvider extends BaseController {
     }
 
     @PostMapping("/instance/resume")
-    public Result<Void> resumeInstance(@RequestParam("instanceId") long instanceId) {
+    public Result<Void> resumeInstance(@RequestParam("instanceId") long instanceId) throws JobException {
         String user = requestUser();
         authorizeGroupService.authorizeInstance(user, requestGroup(), instanceId);
 

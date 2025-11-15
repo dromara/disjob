@@ -22,13 +22,14 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.SchedJobService;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobSearchRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
-import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
+import cn.ponfee.disjob.supervisor.exception.KeyNotFoundException;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -170,7 +171,7 @@ public class DisjobInstanceController extends BaseController {
     @Log(title = "暂停任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/pause/{instanceId}")
     @ResponseBody
-    public AjaxResult pause(@PathVariable("instanceId") Long instanceId) {
+    public AjaxResult pause(@PathVariable("instanceId") Long instanceId) throws JobException {
         String user = getLoginName();
         authorizeGroupService.authorizeInstance(user, instanceId);
 
@@ -189,7 +190,7 @@ public class DisjobInstanceController extends BaseController {
     @Log(title = "恢复任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/resume/{instanceId}")
     @ResponseBody
-    public AjaxResult resume(@PathVariable("instanceId") Long instanceId) {
+    public AjaxResult resume(@PathVariable("instanceId") Long instanceId) throws JobException {
         String user = getLoginName();
         authorizeGroupService.authorizeInstance(user, instanceId);
 
@@ -208,7 +209,7 @@ public class DisjobInstanceController extends BaseController {
     @Log(title = "取消任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/cancel/{instanceId}")
     @ResponseBody
-    public AjaxResult cancel(@PathVariable("instanceId") Long instanceId) {
+    public AjaxResult cancel(@PathVariable("instanceId") Long instanceId) throws JobException {
         String user = getLoginName();
         authorizeGroupService.authorizeInstance(user, instanceId);
 
@@ -249,7 +250,7 @@ public class DisjobInstanceController extends BaseController {
         }
         try {
             request.authorize(getLoginName(), authorizeGroupService);
-        } catch (KeyNotExistsException e) {
+        } catch (KeyNotFoundException e) {
             return TableDataInfo.empty();
         } catch (Exception e) {
             return AjaxResult.error(e.getMessage());

@@ -22,10 +22,9 @@ import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
-import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.exception.JobRuntimeException;
+import cn.ponfee.disjob.core.worker.dto.SplitJobParam;
+import cn.ponfee.disjob.core.worker.dto.VerifyJobParam;
 import cn.ponfee.disjob.worker.executor.JobExecutor;
 import cn.ponfee.disjob.worker.executor.SplitParam;
 import cn.ponfee.disjob.worker.executor.VerifyParam;
@@ -53,7 +52,7 @@ public class JobExecutorUtils {
                 boolean result = jobExecutor.verify(verifyParam);
                 Assert.isTrue(result, () -> "Verify job failed: " + param);
             }
-        } catch (JobException | JobRuntimeException e) {
+        } catch (JobException e) {
             throw e;
         } catch (Throwable e) {
             throw new JobException(JobCodeMsg.INVALID_JOB_EXECUTOR, e.getMessage());
@@ -97,7 +96,7 @@ public class JobExecutorUtils {
             }
             taskParams.forEach(e -> CoreUtils.checkClobMaximumLength(e, "Splitting task param"));
             return taskParams;
-        } catch (JobException | JobRuntimeException e) {
+        } catch (JobException e) {
             throw e;
         } catch (Throwable t) {
             throw new JobException(JobCodeMsg.SPLIT_JOB_FAILED.getCode(), "Split job task failed: " + t.getMessage(), t);

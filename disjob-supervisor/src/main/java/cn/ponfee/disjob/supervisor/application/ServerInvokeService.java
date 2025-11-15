@@ -22,11 +22,15 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.util.Numbers;
-import cn.ponfee.disjob.core.base.*;
-import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam;
-import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam.Action;
-import cn.ponfee.disjob.core.dto.worker.GetMetricsParam;
+import cn.ponfee.disjob.core.base.JobConstants;
+import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
+import cn.ponfee.disjob.core.worker.Worker;
+import cn.ponfee.disjob.core.worker.WorkerMetrics;
+import cn.ponfee.disjob.core.worker.dto.ConfigureWorkerParam;
+import cn.ponfee.disjob.core.worker.dto.ConfigureWorkerParam.Action;
+import cn.ponfee.disjob.core.worker.dto.GetMetricsParam;
 import cn.ponfee.disjob.registry.Registry;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import cn.ponfee.disjob.supervisor.application.converter.ServerMetricsConverter;
@@ -38,8 +42,8 @@ import cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService;
 import cn.ponfee.disjob.supervisor.base.OperationEventType;
 import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
-import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
-import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
+import cn.ponfee.disjob.supervisor.exception.KeyAlreadyExistsException;
+import cn.ponfee.disjob.supervisor.exception.KeyNotFoundException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -121,12 +125,12 @@ public class ServerInvokeService extends SingletonClassConstraint {
         if (req.getAction() == Action.ADD_WORKER) {
             List<Worker> workers = workerClient.getAliveWorkers(req.getGroup());
             if (workers != null && workers.stream().anyMatch(worker::matches)) {
-                throw new KeyExistsException("Worker already registered: " + worker);
+                throw new KeyAlreadyExistsException("Worker was already registered: " + worker);
             }
         } else {
             List<Worker> workers = getRequiredAliveWorkers(req.getGroup());
             if (!workers.contains(worker)) {
-                throw new KeyNotExistsException("Not found worker: " + worker);
+                throw new KeyNotFoundException("Worker not found: " + worker);
             }
         }
 
@@ -206,7 +210,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     private List<Worker> getRequiredAliveWorkers(String group) {
         List<Worker> workers = workerClient.getAliveWorkers(group);
         if (CollectionUtils.isEmpty(workers)) {
-            throw new KeyNotExistsException("Group '" + group + "' not exists workers.");
+            throw new KeyNotFoundException("Group not has alive worker: " + group);
         }
         return workers;
     }

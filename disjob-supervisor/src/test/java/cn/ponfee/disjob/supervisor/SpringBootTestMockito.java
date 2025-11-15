@@ -18,7 +18,7 @@ package cn.ponfee.disjob.supervisor;
 
 import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.core.base.CoreUtils;
-import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.core.worker.WorkerRpcService;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoSettings;

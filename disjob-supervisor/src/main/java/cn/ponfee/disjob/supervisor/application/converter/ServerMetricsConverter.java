@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.application.converter;
 
-import cn.ponfee.disjob.core.base.WorkerMetrics;
+import cn.ponfee.disjob.core.worker.WorkerMetrics;
 import cn.ponfee.disjob.supervisor.application.response.SupervisorMetricsResponse;
 import cn.ponfee.disjob.supervisor.application.response.WorkerMetricsResponse;
 import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;

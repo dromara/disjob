@@ -17,8 +17,8 @@
 package cn.ponfee.disjob.registry.redis.configuration;
 
 import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.configuration.BaseServerRegistryAutoConfiguration;

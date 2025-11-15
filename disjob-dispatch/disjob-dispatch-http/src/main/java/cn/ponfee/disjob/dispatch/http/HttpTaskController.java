@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.dispatch.http;
 
-import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.core.worker.WorkerRpcService;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

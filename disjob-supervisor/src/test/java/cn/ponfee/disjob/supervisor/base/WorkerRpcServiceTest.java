@@ -16,9 +16,9 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
-import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
-import cn.ponfee.disjob.core.dto.worker.SplitJobResult;
 import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.worker.dto.SplitJobParam;
+import cn.ponfee.disjob.core.worker.dto.SplitJobResult;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Test;
 

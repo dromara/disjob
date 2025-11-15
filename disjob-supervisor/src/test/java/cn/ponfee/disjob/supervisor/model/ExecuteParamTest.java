@@ -17,11 +17,11 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.enums.ShutdownStrategy;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.supervisor.util.CommonTest;
 import org.junit.jupiter.api.Assertions;

@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.registry.etcd;
 
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.etcd.configuration.EtcdRegistryProperties;
 import org.springframework.web.client.RestTemplate;

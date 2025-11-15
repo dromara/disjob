@@ -27,14 +27,14 @@ import cn.ponfee.disjob.common.base.IntValueEnum;
 public enum JobState implements IntValueEnum<JobState> {
 
     /**
-     * 启用
-     */
-    ENABLED(1, "启用"),
-
-    /**
      * 禁用
      */
     DISABLED(0, "禁用"),
+
+    /**
+     * 启用
+     */
+    ENABLED(1, "启用"),
 
     ;
 

@@ -21,7 +21,7 @@ import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.ProxyUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.core.worker.WorkerRpcService;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
 import com.google.common.collect.ImmutableMap;

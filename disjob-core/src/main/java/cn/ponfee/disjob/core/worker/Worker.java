@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.base;
+package cn.ponfee.disjob.core.worker;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
+import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.core.base.Tokens;
 import cn.ponfee.disjob.core.enums.TokenType;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
+import cn.ponfee.disjob.core.worker.dto.AuthenticationParam;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

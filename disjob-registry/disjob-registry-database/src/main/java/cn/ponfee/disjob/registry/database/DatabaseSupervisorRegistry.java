@@ -17,8 +17,8 @@
 package cn.ponfee.disjob.registry.database;
 
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
 import org.springframework.web.client.RestTemplate;

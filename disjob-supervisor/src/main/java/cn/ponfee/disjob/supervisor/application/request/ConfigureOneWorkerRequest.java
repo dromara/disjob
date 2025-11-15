@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.application.request;
 
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.worker.Worker;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;

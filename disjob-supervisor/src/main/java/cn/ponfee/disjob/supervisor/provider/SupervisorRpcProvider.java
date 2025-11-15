@@ -18,13 +18,13 @@ package cn.ponfee.disjob.supervisor.provider;
 
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
-import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
-import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
+import cn.ponfee.disjob.core.supervisor.dto.StartTaskParam;
+import cn.ponfee.disjob.core.supervisor.dto.StartTaskResult;
+import cn.ponfee.disjob.core.supervisor.dto.StopTaskParam;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.application.OperationEventService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;

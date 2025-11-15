@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.base;
+package cn.ponfee.disjob.core.worker;
 
-import cn.ponfee.disjob.core.dto.worker.*;
 import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.worker.dto.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

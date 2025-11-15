@@ -134,6 +134,7 @@ public class DisjobMyGroupController extends BaseController {
         if (!user.equals(data.getOwnUser())) {
             // 非Own User不可更换own_user数据(即只有Own User本人才能更换该group的own_user为其它人)
             Assert.isTrue(req.getOwnUser().equals(data.getOwnUser()), "Cannot modify own user.");
+            Assert.isTrue(req.getWorkerContextPath().equals(data.getWorkerContextPath()), "Cannot modify worker context path.");
         }
         boolean result = schedGroupService.update(user, req);
         return result ? success() : error("修改冲突，请刷新页面");

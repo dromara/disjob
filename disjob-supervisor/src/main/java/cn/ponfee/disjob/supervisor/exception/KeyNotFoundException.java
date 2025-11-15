@@ -14,28 +14,25 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.dto.worker;
+package cn.ponfee.disjob.supervisor.exception;
 
-import lombok.Getter;
-import lombok.Setter;
+import cn.ponfee.disjob.common.exception.BaseRuntimeException;
+import cn.ponfee.disjob.core.base.JobCodeMsg;
 
 /**
- * Exists task param
+ * Key not found exception.
  *
  * @author Ponfee
  */
-@Getter
-@Setter
-public class ExistsTaskParam extends AuthenticationParam {
-    private static final long serialVersionUID = -2212057097314433737L;
+public class KeyNotFoundException extends BaseRuntimeException {
+    private static final long serialVersionUID = -5304388166455122511L;
 
-    private long taskId;
+    public KeyNotFoundException() {
+        this("Key not found.");
+    }
 
-    public static ExistsTaskParam of(String group, long taskId) {
-        ExistsTaskParam param = new ExistsTaskParam();
-        param.fillSupervisorAuthenticationToken(group);
-        param.setTaskId(taskId);
-        return param;
+    public KeyNotFoundException(String message) {
+        super(JobCodeMsg.KEY_NOT_FOUND.getCode(), message);
     }
 
 }

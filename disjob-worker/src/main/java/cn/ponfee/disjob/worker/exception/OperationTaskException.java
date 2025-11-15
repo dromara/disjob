@@ -19,26 +19,26 @@ package cn.ponfee.disjob.worker.exception;
 import cn.ponfee.disjob.core.enums.Operation;
 
 /**
- * Operation task exception
+ * Operation task exception.
  *
  * @author Ponfee
  */
-public abstract class OperationTaskException extends Exception {
+public class OperationTaskException extends Exception {
     private static final long serialVersionUID = 1726398099653634708L;
 
-    protected OperationTaskException(String message) {
+    private final Operation operation;
+
+    public OperationTaskException(Operation operation) {
+        this(operation, null);
+    }
+
+    public OperationTaskException(Operation operation, String message) {
         super(message);
+        this.operation = operation;
     }
 
-    protected OperationTaskException(String message, Throwable cause) {
-        super(message, cause);
+    public Operation getOperation() {
+        return operation;
     }
-
-    /**
-     * Gets operation
-     *
-     * @return Operation
-     */
-    public abstract Operation operation();
 
 }

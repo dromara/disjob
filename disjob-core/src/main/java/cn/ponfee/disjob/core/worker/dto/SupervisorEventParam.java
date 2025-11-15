@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.dto.worker;
+package cn.ponfee.disjob.core.worker.dto;
 
-import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.Assert;

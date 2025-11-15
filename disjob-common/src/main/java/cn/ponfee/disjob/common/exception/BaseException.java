@@ -17,7 +17,8 @@
 package cn.ponfee.disjob.common.exception;
 
 /**
- * Base checked exception definition(编译时异常)
+ * Base checked exception abstract class
+ * <p>编译时异常
  *
  * @author Ponfee
  */
@@ -55,11 +56,8 @@ public abstract class BaseException extends Exception {
      * @param enableSuppression  the enableSuppression
      * @param writableStackTrace the writableStackTrace
      */
-    protected BaseException(int code,
-                            String message,
-                            Throwable cause,
-                            boolean enableSuppression,
-                            boolean writableStackTrace) {
+    protected BaseException(int code, String message, Throwable cause,
+                            boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.code = code;
     }

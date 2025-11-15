@@ -22,7 +22,7 @@ import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
-import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
+import cn.ponfee.disjob.supervisor.exception.KeyNotFoundException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
@@ -97,7 +97,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     public void authorizeJob(String user, long jobId) {
         String dataGroup = getJobGroup(jobId);
         if (StringUtils.isEmpty(dataGroup)) {
-            throw new KeyNotExistsException("Job id not exists: " + jobId);
+            throw new KeyNotFoundException("Job not found: " + jobId);
         }
         authorizeGroup(user, dataGroup);
     }
@@ -105,7 +105,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     public void authorizeJob(String user, String authGroup, long jobId) {
         String dataGroup = getJobGroup(jobId);
         if (StringUtils.isEmpty(dataGroup)) {
-            throw new KeyNotExistsException("Job id not exists: " + jobId);
+            throw new KeyNotFoundException("Job not found: " + jobId);
         }
         authorizeGroup(user, authGroup, dataGroup);
     }
@@ -113,7 +113,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     public void authorizeInstance(String user, long instanceId) {
         Long jobId = jobQuerier.getInstanceJobId(instanceId);
         if (jobId == null) {
-            throw new KeyNotExistsException("Instance id not exists: " + instanceId);
+            throw new KeyNotFoundException("Instance not found: " + instanceId);
         }
         authorizeJob(user, jobId);
     }
@@ -121,7 +121,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     public void authorizeInstance(String user, String authGroup, long instanceId) {
         Long jobId = jobQuerier.getInstanceJobId(instanceId);
         if (jobId == null) {
-            throw new KeyNotExistsException("Instance id not exists: " + instanceId);
+            throw new KeyNotFoundException("Instance not found: " + instanceId);
         }
         authorizeJob(user, authGroup, jobId);
     }
@@ -140,7 +140,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
             LOG.info("Loaded caching group: {}, {}", jobId, group);
             jobGroupCache.put(jobId, group);
         } else {
-            LOG.warn("Loading job not exists: {}", jobId);
+            LOG.warn("Job not exists: {}", jobId);
         }
         return group;
     }

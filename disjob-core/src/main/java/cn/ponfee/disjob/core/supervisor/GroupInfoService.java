@@ -14,34 +14,31 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.exception;
+package cn.ponfee.disjob.core.supervisor;
 
-import cn.ponfee.disjob.core.enums.Operation;
+import java.util.Set;
 
 /**
- * Exception for pause the executing task.
+ * Group info service
  *
  * @author Ponfee
  */
-public final class PauseTaskException extends OperationTaskException {
-    private static final long serialVersionUID = 409247238969878885L;
+public interface GroupInfoService {
 
-    public PauseTaskException() {
-        super("Pause task.");
-    }
+    String getSupervisorToken(String group);
 
-    public PauseTaskException(String message) {
-        super(message);
-    }
+    String getWorkerToken(String group);
 
-    public PauseTaskException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    String getUserToken(String group);
 
+    String getOwnUser(String group);
 
-    @Override
-    public Operation operation() {
-        return Operation.PAUSE;
-    }
+    Set<String> getDevUsers(String group);
+
+    Set<String> getAlertRecipients(String group);
+
+    String getAlertWebhook(String group);
+
+    String getWorkerContextPath(String group);
 
 }

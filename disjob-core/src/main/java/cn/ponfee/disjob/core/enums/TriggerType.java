@@ -323,10 +323,6 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         return example;
     }
 
-    public final boolean isFixedTriggerType() {
-        return this == FIXED_RATE || this == FIXED_DELAY;
-    }
-
     protected abstract boolean validate0(String triggerValue);
 
     protected abstract Date computeFirstTriggerTime0(String triggerValue, Date startTime);

@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
-import cn.ponfee.disjob.core.base.GroupInfoService;
+import cn.ponfee.disjob.core.supervisor.GroupInfoService;
 
 import java.util.Set;
 

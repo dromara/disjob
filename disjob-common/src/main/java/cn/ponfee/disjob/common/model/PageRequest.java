@@ -124,6 +124,8 @@ public class PageRequest extends Page implements TypedDictionary<String, Object>
     }
 
     public <T> PageResponse<T> empty() {
+        this.pageNumber = 1;
+        this.pageSize = 0;
         return toPageResponse(0, Collections.emptyList());
     }
 

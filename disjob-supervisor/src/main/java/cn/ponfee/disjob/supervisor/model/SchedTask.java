@@ -17,8 +17,8 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.model.BaseEntity;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.ExecuteState;
+import cn.ponfee.disjob.core.worker.Worker;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;

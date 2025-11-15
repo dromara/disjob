@@ -20,7 +20,7 @@ import cn.ponfee.disjob.common.exception.BaseRuntimeException;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 
 /**
- * Authentication exception
+ * Authentication exception.
  *
  * @author Ponfee
  */
@@ -34,4 +34,5 @@ public class AuthenticationException extends BaseRuntimeException {
     public AuthenticationException(String message) {
         super(JobCodeMsg.UN_AUTHENTICATED.getCode(), message);
     }
+
 }

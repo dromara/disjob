@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.dto.supervisor;
+package cn.ponfee.disjob.core.supervisor.dto;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.enums.ExecuteState;

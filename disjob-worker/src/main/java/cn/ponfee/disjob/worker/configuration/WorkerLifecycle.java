@@ -18,8 +18,8 @@ package cn.ponfee.disjob.worker.configuration;
 
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
-import cn.ponfee.disjob.core.base.SupervisorRpcService;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.supervisor.SupervisorRpcService;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.WorkerStartup;

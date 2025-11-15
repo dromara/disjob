@@ -14,24 +14,28 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.exception;
+package cn.ponfee.disjob.core.worker.dto;
 
-import cn.ponfee.disjob.common.exception.BaseRuntimeException;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * Ket not exists exception
+ * Exists task param
  *
  * @author Ponfee
  */
-public class KeyNotExistsException extends BaseRuntimeException {
-    private static final long serialVersionUID = -5304388166455122511L;
+@Getter
+@Setter
+public class ExistsTaskParam extends AuthenticationParam {
+    private static final long serialVersionUID = -2212057097314433737L;
 
-    public KeyNotExistsException() {
-        this("Key not exists.");
+    private long taskId;
+
+    public static ExistsTaskParam of(String group, long taskId) {
+        ExistsTaskParam param = new ExistsTaskParam();
+        param.fillSupervisorAuthenticationToken(group);
+        param.setTaskId(taskId);
+        return param;
     }
 
-    public KeyNotExistsException(String message) {
-        super(JobCodeMsg.KEY_NOT_FOUND.getCode(), message);
-    }
 }

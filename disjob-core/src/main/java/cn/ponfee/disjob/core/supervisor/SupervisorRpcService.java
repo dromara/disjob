@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.base;
+package cn.ponfee.disjob.core.supervisor;
 
-import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
-import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
-import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
+import cn.ponfee.disjob.core.supervisor.dto.StartTaskParam;
+import cn.ponfee.disjob.core.supervisor.dto.StartTaskResult;
+import cn.ponfee.disjob.core.supervisor.dto.StopTaskParam;
+import cn.ponfee.disjob.core.worker.Worker;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 

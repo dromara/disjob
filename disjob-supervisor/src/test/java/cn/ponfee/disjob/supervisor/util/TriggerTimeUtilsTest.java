@@ -18,8 +18,8 @@ package cn.ponfee.disjob.supervisor.util;
 
 import cn.ponfee.disjob.common.date.*;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.*;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.supervisor.base.TriggerTimes;
 import cn.ponfee.disjob.supervisor.model.SchedJob;

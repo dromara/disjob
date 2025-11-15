@@ -17,12 +17,12 @@
 package cn.ponfee.disjob.dispatch;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.enums.ShutdownStrategy;
+import cn.ponfee.disjob.core.worker.Worker;
+import cn.ponfee.disjob.core.worker.dto.AuthenticationParam;
 import lombok.Getter;
 import lombok.Setter;
 

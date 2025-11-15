@@ -29,6 +29,7 @@ public enum JobCodeMsg implements CodeMsg {
     INVALID_PARAM(400, "Invalid param."),
     UN_AUTHENTICATED(401, "Un authenticated."),
     KEY_NOT_FOUND(404, "Key not found."),
+    KEY_ALREADY_EXISTS(409, "Key already exists."),
     LOAD_JOB_EXECUTOR_ERROR(450, "Load job executor error."),
     INVALID_JOB_EXECUTOR(451, "Invalid job executor."),
     SPLIT_JOB_FAILED(452, "Split job failed."),

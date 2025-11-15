@@ -19,7 +19,7 @@ package cn.ponfee.disjob.worker.executor.impl;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.core.exception.JobRuntimeException;
+import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import cn.ponfee.disjob.worker.executor.JobExecutor;
@@ -194,7 +194,7 @@ public class ScriptJobExecutor extends JobExecutor {
         private String[] envp;
     }
 
-    private static String prepareScriptFile(String script, String scriptFileName, Charset charset) throws IOException {
+    private static String prepareScriptFile(String script, String scriptFileName, Charset charset) throws Exception {
         Assert.hasText(script, "Script source cannot be empty.");
         String scriptPath = WORKER_SCRIPT_DIR + scriptFileName;
 
@@ -205,7 +205,7 @@ public class ScriptJobExecutor extends JobExecutor {
 
         FileUtils.forceMkdirParent(scriptFile);
         if (!scriptFile.createNewFile()) {
-            throw new JobRuntimeException(JobCodeMsg.JOB_EXECUTE_ERROR, "Create script file failed: " + scriptPath);
+            throw new JobException(JobCodeMsg.JOB_EXECUTE_ERROR, "Create script file failed: " + scriptPath);
         }
 
         // download script from url

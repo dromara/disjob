@@ -210,7 +210,13 @@ public class SchedJob extends BaseEntity {
 
     @Transient
     public boolean isFixedTriggerType() {
-        return TriggerType.of(triggerType).isFixedTriggerType();
+        TriggerType type = TriggerType.of(triggerType);
+        return type == TriggerType.FIXED_RATE || type == TriggerType.FIXED_DELAY;
+    }
+
+    @Transient
+    public boolean isDependTriggerType() {
+        return TriggerType.of(triggerType) == TriggerType.DEPEND;
     }
 
     @Transient

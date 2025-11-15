@@ -18,8 +18,8 @@ package cn.ponfee.disjob.dispatch.redis.configuration;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.core.base.RetryProperties;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.dispatch.TaskReceiver;

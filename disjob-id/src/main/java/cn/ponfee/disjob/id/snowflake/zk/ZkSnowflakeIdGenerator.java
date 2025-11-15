@@ -81,7 +81,7 @@ public @interface ZkSnowflakeIdGenerator {
          * @return serialization string
          */
         private static String serializeSupervisor(Object supervisor) {
-            String expectCls = "cn.ponfee.disjob.core.base.Supervisor$Local$1";
+            String expectCls = "cn.ponfee.disjob.core.supervisor.Supervisor$Local$1";
             String actualCls = supervisor.getClass().getName();
             Assert.isTrue(expectCls.equals(actualCls), () -> "Not a Supervisor$Local$1 instance: " + actualCls);
             return supervisor.toString();

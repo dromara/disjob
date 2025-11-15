@@ -18,8 +18,8 @@ package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.ExecuteState;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;

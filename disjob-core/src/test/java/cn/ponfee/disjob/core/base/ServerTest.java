@@ -16,6 +16,8 @@
 
 package cn.ponfee.disjob.core.base;
 
+import cn.ponfee.disjob.core.supervisor.Supervisor;
+import cn.ponfee.disjob.core.worker.Worker;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;

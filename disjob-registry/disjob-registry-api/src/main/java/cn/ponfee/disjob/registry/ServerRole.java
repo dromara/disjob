@@ -18,8 +18,8 @@ package cn.ponfee.disjob.registry;
 
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Server;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
+import cn.ponfee.disjob.core.worker.Worker;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Modifier;

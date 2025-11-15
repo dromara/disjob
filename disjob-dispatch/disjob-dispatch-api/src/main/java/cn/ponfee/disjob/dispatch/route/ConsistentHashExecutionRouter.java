@@ -17,8 +17,8 @@
 package cn.ponfee.disjob.dispatch.route;
 
 import cn.ponfee.disjob.common.base.ConsistentHash;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.apache.commons.lang3.tuple.Pair;
 

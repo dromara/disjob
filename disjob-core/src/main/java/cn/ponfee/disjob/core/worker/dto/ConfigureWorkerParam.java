@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.dto.worker;
+package cn.ponfee.disjob.core.worker.dto;
 
 import lombok.Getter;
 import lombok.Setter;

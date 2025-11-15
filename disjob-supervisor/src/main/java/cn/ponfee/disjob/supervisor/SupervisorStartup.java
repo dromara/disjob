@@ -22,7 +22,7 @@ import cn.ponfee.disjob.common.base.TablePrinter;
 import cn.ponfee.disjob.common.concurrent.TripleState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.Supervisor;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;

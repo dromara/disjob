@@ -31,14 +31,14 @@ import cn.ponfee.disjob.common.tuple.Tuple3;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dag.WorkflowInstance;
-import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
-import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
-import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
-import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.supervisor.dto.StartTaskParam;
+import cn.ponfee.disjob.core.supervisor.dto.StartTaskResult;
+import cn.ponfee.disjob.core.supervisor.dto.StopTaskParam;
+import cn.ponfee.disjob.core.worker.Worker;
+import cn.ponfee.disjob.core.worker.dto.SplitJobParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
 import cn.ponfee.disjob.supervisor.base.ExecuteTaskParamBuilder;
@@ -47,7 +47,7 @@ import cn.ponfee.disjob.supervisor.base.TriggerTimes;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import cn.ponfee.disjob.supervisor.dao.mapper.*;
-import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
+import cn.ponfee.disjob.supervisor.exception.KeyAlreadyExistsException;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
 import cn.ponfee.disjob.supervisor.model.*;
 import com.google.common.base.Joiner;
@@ -179,7 +179,7 @@ public class JobManager {
     public Long addJob(SchedJob job) throws JobException {
         job.verifyForAdd(conf.getMaximumJobRetryCount());
         if (jobMapper.getJobId(job.getGroup(), job.getJobName()) != null) {
-            throw new KeyExistsException("Exists job name: " + job.getJobName());
+            throw new KeyAlreadyExistsException("Job name already exists: " + job.getJobName());
         }
         workerClient.verifyJob(job);
         job.setJobId(generateId());
@@ -201,7 +201,7 @@ public class JobManager {
         }
 
         SchedJob dbJob = jobMapper.get(job.getJobId());
-        Assert.notNull(dbJob, () -> "Sched job id not found " + job.getJobId());
+        Assert.notNull(dbJob, () -> "Job not found " + job.getJobId());
         Assert.isTrue(dbJob.getGroup().equals(job.getGroup()), "Job group cannot be modify.");
         if (job.isNeedUpdateTrigger(dbJob.getTriggerType(), dbJob.getTriggerValue())) {
             dependMapper.deleteByChildJobId(job.getJobId());
@@ -214,7 +214,7 @@ public class JobManager {
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void deleteJob(String user, long jobId) {
         SchedJob job = jobMapper.get(jobId);
-        Assert.notNull(job, () -> "Job id not found: " + jobId);
+        Assert.notNull(job, () -> "Job not found: " + jobId);
         Assert.state(!job.isEnabled(), "Please disable job before delete this job.");
         assertOneAffectedRow(jobMapper.softDelete(jobId, user), "Delete sched job fail or conflict.");
         dependMapper.deleteByParentJobId(jobId);
@@ -226,8 +226,13 @@ public class JobManager {
         if (isNotAffectedRow(jobMapper.updateState(jobId, user, toState.value(), 1 ^ toState.value()))) {
             throw new IllegalStateException("Change job state failed: " + jobId);
         }
-        if (toState == JobState.ENABLED) {
-            updateNextTriggerTime(jobMapper.get(jobId));
+        SchedJob job;
+        if (toState == JobState.ENABLED && !(job = jobMapper.get(jobId)).isDependTriggerType()) {
+            Long nextTriggerTime = TriggerTimes.updateNextTriggerTime(job);
+            if (!nextTriggerTime.equals(job.getNextTriggerTime())) {
+                job.setNextTriggerTime(nextTriggerTime);
+                assertOneAffectedRow(jobMapper.updateNextTriggerTime(job), () -> "Update next trigger time failed: " + job);
+            }
         }
     }
 
@@ -546,17 +551,6 @@ public class JobManager {
             && (currentDispatchFailedCount + 1) == conf.getTaskDispatchFailedCountThreshold();
     }
 
-    private void updateNextTriggerTime(SchedJob job) {
-        if (TriggerType.of(job.getTriggerType()) == TriggerType.DEPEND) {
-            return;
-        }
-        Long nextTriggerTime = TriggerTimes.updateNextTriggerTime(job);
-        if (!nextTriggerTime.equals(job.getNextTriggerTime())) {
-            job.setNextTriggerTime(nextTriggerTime);
-            assertOneAffectedRow(jobMapper.updateNextTriggerTime(job), () -> "Update next trigger time failed: " + job);
-        }
-    }
-
     private void parseTriggerConfig(SchedJob job) {
         String triggerValue = CoreUtils.trimRequired(job.getTriggerValue(), 255, "Trigger value");
         job.setTriggerValue(triggerValue);
@@ -570,7 +564,7 @@ public class JobManager {
             Map<Long, SchedJob> parentJobMap = Collects.toMap(jobMapper.findByJobIds(parentJobIds), SchedJob::getJobId);
             for (Long parentJobId : parentJobIds) {
                 SchedJob parentJob = parentJobMap.get(parentJobId);
-                Assert.notNull(parentJob, () -> "Parent job id not found: " + parentJobId);
+                Assert.notNull(parentJob, () -> "Parent job not found: " + parentJobId);
                 String cGroup = job.getGroup(), pGroup = parentJob.getGroup();
                 Assert.isTrue(cGroup.equals(pGroup), () -> "Inconsistent depend group: " + cGroup + ", " + pGroup);
             }

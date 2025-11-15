@@ -18,12 +18,12 @@ package cn.ponfee.disjob.worker.provider;
 
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.common.util.ProxyUtils;
-import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.base.WorkerMetrics;
-import cn.ponfee.disjob.core.base.WorkerRpcService;
-import cn.ponfee.disjob.core.dto.worker.*;
-import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.worker.Worker;
+import cn.ponfee.disjob.core.worker.WorkerMetrics;
+import cn.ponfee.disjob.core.worker.WorkerRpcService;
+import cn.ponfee.disjob.core.worker.dto.*;
+import cn.ponfee.disjob.core.worker.dto.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.WorkerConfigurator;
 import cn.ponfee.disjob.worker.util.JobExecutorUtils;

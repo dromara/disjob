@@ -130,7 +130,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             // double check instance run state
             SchedInstance reloadInstance = jobQuerier.getInstance(instance.getInstanceId());
             if (reloadInstance == null) {
-                log.error("Scanned waiting state instance not exists: {}", instance.getInstanceId());
+                log.error("Scanned waiting instance not found: {}", instance.getInstanceId());
                 return;
             }
             if (reloadInstance.isTerminal()) {

@@ -17,11 +17,11 @@
 package cn.ponfee.disjob.registry.discovery;
 
 import cn.ponfee.disjob.core.base.RetryProperties;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.base.WorkerRpcService;
-import cn.ponfee.disjob.core.dto.worker.SupervisorEventParam;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
+import cn.ponfee.disjob.core.supervisor.Supervisor;
+import cn.ponfee.disjob.core.worker.Worker;
+import cn.ponfee.disjob.core.worker.WorkerRpcService;
+import cn.ponfee.disjob.core.worker.dto.SupervisorEventParam;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
