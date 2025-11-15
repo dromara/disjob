@@ -174,6 +174,7 @@ public abstract class TaskDispatcher implements Startable {
             throw new TaskDispatchException("unassigned");
         }
 
+        task.fillSupervisorAuthenticationToken(task.getWorker().getGroup());
         boolean result;
         if (taskReceiver != null && task.getWorker().matches(Worker.local())) {
             // if local Supervisor also is a Worker role, then dispatch to this local worker

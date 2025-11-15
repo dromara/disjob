@@ -19,6 +19,7 @@ package cn.ponfee.disjob.registry.rpc;
 import cn.ponfee.disjob.common.util.ProxyUtils;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.core.worker.Worker;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -85,6 +86,9 @@ public final class DestinationServerRestProxy<T, S extends Server> {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (destinationServer instanceof Worker) {
+                DiscoveryGroupedServerRestProxy.setAuthenticationToken(((Worker) destinationServer).getGroup(), args);
+            }
             if (localServiceProvider != null && destinationServer.equals(localServer)) {
                 return method.invoke(localServiceProvider, args);
             } else {

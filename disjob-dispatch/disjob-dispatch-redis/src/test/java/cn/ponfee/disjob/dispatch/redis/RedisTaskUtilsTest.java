@@ -43,6 +43,8 @@ public class RedisTaskUtilsTest {
         param1.setWnstanceId(1L);
         param1.setTriggerTime(ThreadLocalRandom.current().nextLong());
         param1.setJobId(ThreadLocalRandom.current().nextLong());
+        param1.setRetryCount(5);
+        param1.setRetriedCount(2);
         param1.setJobType(JobType.GENERAL);
         param1.setRouteStrategy(RouteStrategy.ROUND_ROBIN);
         param1.setShutdownStrategy(ShutdownStrategy.RESUME);
@@ -50,9 +52,10 @@ public class RedisTaskUtilsTest {
         param1.setSupervisorAuthenticationToken("supervisor token");
         param1.setWorker(new Worker("default", "workerId", "host", 1));
         param1.setJobExecutor("JobExecutor测试中文乱码。");
-        System.out.println(param1);
 
         ExecuteTaskParam param2 = RedisTaskUtils.deserialize(RedisTaskUtils.serialize(param1));
+        System.out.println(param1);
+        System.out.println(param2);
         Assertions.assertNotSame(param1, param2);
         Assertions.assertEquals(param1.toString(), param2.toString());
         Assertions.assertEquals(param1.getSupervisorAuthenticationToken(), param2.getSupervisorAuthenticationToken());

@@ -24,12 +24,11 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.registry.Discovery;
-import cn.ponfee.disjob.registry.ServerRole;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Method;
@@ -76,24 +75,21 @@ final class DiscoveryServerRestTemplate<D extends Server> {
      * @throws Exception if occur exception
      */
     <T> T execute(Method method, String group, HttpMethod httpMethod, String servletPath, Object[] args) throws Exception {
-        List<D> servers = discoverServer.getAliveServers(group);
-        ServerRole discoveryServerRole = discoverServer.discoveryRole();
-        if (CollectionUtils.isEmpty(servers)) {
-            String errMsg = (group == null ? " " : " '" + group + "' ");
-            throw new IllegalStateException("Not found available" + errMsg + discoveryServerRole);
-        }
-
         String serverContextPath;
         Map<String, String> authenticationHeaders = null;
-        if (discoveryServerRole.isWorker()) {
+        if (discoverServer.discoveryRole().isWorker()) {
             // Supervisor 远程调用 Worker
+            Assert.hasText(group, "Worker group cannot be blank.");
             serverContextPath = Supervisor.local().getWorkerContextPath(group);
         } else {
             // Worker 远程调用 Supervisor
+            Assert.isNull(group, () -> "Supervisor group must be null: " + group);
             serverContextPath = Worker.local().getSupervisorContextPath();
             authenticationHeaders = Worker.local().createWorkerAuthenticationHeaders();
         }
 
+        List<D> servers = discoverServer.getAliveServers(group);
+        Assert.notEmpty(servers, () -> "Server not discovered: " + discoverServer.discoveryRole() + ", " + group);
         Type returnType = method.getGenericReturnType();
         String requestPath = Strings.concatPath(serverContextPath, servletPath);
         Throwable ex = null;

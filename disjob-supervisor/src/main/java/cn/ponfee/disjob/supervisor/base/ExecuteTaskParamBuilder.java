@@ -60,7 +60,6 @@ public final class ExecuteTaskParamBuilder {
         param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
         param.setShutdownStrategy(ShutdownStrategy.of(job.getShutdownStrategy()));
         param.setExecuteTimeout(job.getExecuteTimeout());
-        param.fillSupervisorAuthenticationToken(job.getGroup());
         param.setWorker(worker);
         param.setJobExecutor(obtainJobExecutor());
         return param;

@@ -113,10 +113,9 @@ public class WorkerClient {
             return true;
         }
 
-        ExistsTaskParam param = ExistsTaskParam.of(worker.getGroup(), task.getTaskId());
         try {
             // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功，需要重新分发
-            return !destination(worker).existsTask(param);
+            return !destination(worker).existsTask(ExistsTaskParam.of(task.getTaskId()));
         } catch (Throwable e) {
             LOG.error("Invoke worker exists task error: " + worker, e);
             // 若调用异常(如请求超时)，则默认为Worker已存在该task，本次不做处理，等下一次扫描时再判断是否要重新分发任务

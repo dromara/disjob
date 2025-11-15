@@ -85,8 +85,7 @@ final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
     @Override
     void notify(Worker worker, RegistryEventType eventType, Supervisor supervisor) {
         try {
-            SupervisorEventParam param = SupervisorEventParam.of(worker.getGroup(), eventType, supervisor);
-            workerRpcProxy.destination(worker).subscribeSupervisorEvent(param);
+            workerRpcProxy.destination(worker).subscribeSupervisorEvent(SupervisorEventParam.of(eventType, supervisor));
         } catch (Throwable t) {
             log.error("Notify server error: {}, {}", worker, t.getMessage());
         }

@@ -23,22 +23,22 @@ import cn.ponfee.disjob.core.enums.Operation;
  *
  * @author Ponfee
  */
-public class OperationTaskException extends Exception {
+public abstract class OperationTaskException extends Exception {
     private static final long serialVersionUID = 1726398099653634708L;
 
-    private final Operation operation;
-
-    public OperationTaskException(Operation operation) {
-        this(operation, null);
-    }
-
-    public OperationTaskException(Operation operation, String message) {
+    protected OperationTaskException(String message) {
         super(message);
-        this.operation = operation;
     }
 
-    public Operation getOperation() {
-        return operation;
+    protected OperationTaskException(String message, Throwable cause) {
+        super(message, cause);
     }
+
+    /**
+     * Gets operation
+     *
+     * @return Operation
+     */
+    public abstract Operation operation();
 
 }

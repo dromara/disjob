@@ -186,10 +186,9 @@ public class ServerInvokeService extends SingletonClassConstraint {
     private WorkerMetricsResponse getWorkerMetrics(Worker worker) {
         WorkerMetrics metrics = null;
         Long responseTime = null;
-        GetMetricsParam param = GetMetricsParam.of(worker.getGroup());
         try {
             long start = System.currentTimeMillis();
-            metrics = workerClient.destination(worker).getMetrics(param);
+            metrics = workerClient.destination(worker).getMetrics(new GetMetricsParam());
             responseTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Gets worker metrics occur error: {} {}", worker, e.getMessage());
@@ -216,8 +215,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     private void verifyWorkerSignature(Worker worker) {
-        GetMetricsParam param = GetMetricsParam.of(worker.getGroup());
-        WorkerMetrics metrics = workerClient.destination(worker).getMetrics(param);
+        WorkerMetrics metrics = workerClient.destination(worker).getMetrics(new GetMetricsParam());
         if (!Supervisor.local().verifyWorkerSignatureToken(worker.getGroup(), metrics.getSignature())) {
             throw new AuthenticationException("Worker authenticated failed: " + worker);
         }
@@ -227,8 +225,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         if (action == Action.ADD_WORKER) {
             verifyWorkerSignature(worker);
         }
-        ConfigureWorkerParam param = ConfigureWorkerParam.of(worker.getGroup(), action, data);
-        workerClient.destination(worker).configureWorker(param);
+        workerClient.destination(worker).configureWorker(ConfigureWorkerParam.of(action, data));
     }
 
     private void publishOperationEvent(Supervisor supervisor, OperationEventType eventType, Date eventTime, String eventData) {

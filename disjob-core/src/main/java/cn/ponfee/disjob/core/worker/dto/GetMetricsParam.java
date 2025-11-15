@@ -29,9 +29,4 @@ import lombok.Setter;
 public class GetMetricsParam extends AuthenticationParam {
     private static final long serialVersionUID = 6100003437491314940L;
 
-    public static GetMetricsParam of(String group) {
-        GetMetricsParam param = new GetMetricsParam();
-        param.fillSupervisorAuthenticationToken(group);
-        return param;
-    }
 }

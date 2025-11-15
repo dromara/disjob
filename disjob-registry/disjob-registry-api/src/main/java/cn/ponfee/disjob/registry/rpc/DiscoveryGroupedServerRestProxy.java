@@ -22,8 +22,10 @@ import cn.ponfee.disjob.common.util.ProxyUtils;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.core.worker.dto.AuthenticationParam;
 import cn.ponfee.disjob.registry.Discovery;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -145,6 +147,7 @@ public final class DiscoveryGroupedServerRestProxy<T> {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            setAuthenticationToken(group, args);
             if (localServiceProvider != null && localGroupMatcher.test(group)) {
                 return method.invoke(localServiceProvider, args);
             } else {
@@ -207,6 +210,20 @@ public final class DiscoveryGroupedServerRestProxy<T> {
         }
         String firstPath = Collects.get(mapping.path(), 0);
         return Strings.trimPath(firstPath);
+    }
+
+    static void setAuthenticationToken(String group, Object[] args) {
+        if (ArrayUtils.isEmpty(args)) {
+            return;
+        }
+        for (Object arg : args) {
+            if (arg instanceof AuthenticationParam) {
+                AuthenticationParam param = (AuthenticationParam) arg;
+                if (StringUtils.isEmpty(param.getSupervisorAuthenticationToken())) {
+                    param.fillSupervisorAuthenticationToken(group);
+                }
+            }
+        }
     }
 
 }

@@ -40,9 +40,8 @@ public class SupervisorEventParam extends AuthenticationParam {
         Assert.notNull(supervisor, "Supervisor cannot be null.");
     }
 
-    public static SupervisorEventParam of(String group, RegistryEventType eventType, Supervisor supervisor) {
+    public static SupervisorEventParam of(RegistryEventType eventType, Supervisor supervisor) {
         SupervisorEventParam param = new SupervisorEventParam();
-        param.fillSupervisorAuthenticationToken(group);
         param.setEventType(eventType);
         param.setSupervisor(supervisor);
 

@@ -662,8 +662,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
             try {
                 execute(workerTask, taskExecutor, executionTask);
             } catch (OperationTaskException e) {
-                LOG.error("Operation task exception: {}, {}, {}", e.getOperation(), workerTask, e.getMessage());
-                stopInstance(workerTask, e.getOperation(), toErrorMsg(e));
+                LOG.error("Operation task exception: {}, {}, {}", e.operation(), workerTask, e.getMessage());
+                stopInstance(workerTask, e.operation(), toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
                     // 调用`Thread#stop()`时可能会抛出该异常

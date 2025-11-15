@@ -14,27 +14,33 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.worker.dto;
+package cn.ponfee.disjob.worker.exception;
 
-import lombok.Getter;
-import lombok.Setter;
+import cn.ponfee.disjob.core.enums.Operation;
 
 /**
- * Exists task param
+ * Exception for pause the executing task.
  *
  * @author Ponfee
  */
-@Getter
-@Setter
-public class ExistsTaskParam extends AuthenticationParam {
-    private static final long serialVersionUID = -2212057097314433737L;
+public final class PauseTaskException extends OperationTaskException {
+    private static final long serialVersionUID = 409247238969878885L;
 
-    private long taskId;
+    public PauseTaskException() {
+        super("Pause task.");
+    }
 
-    public static ExistsTaskParam of(long taskId) {
-        ExistsTaskParam param = new ExistsTaskParam();
-        param.setTaskId(taskId);
-        return param;
+    public PauseTaskException(String message) {
+        super(message);
+    }
+
+    public PauseTaskException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    @Override
+    public Operation operation() {
+        return Operation.PAUSE;
     }
 
 }
