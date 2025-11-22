@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.worker.provider;
 
+import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.common.util.ProxyUtils;
 import cn.ponfee.disjob.core.exception.JobException;
@@ -27,6 +28,8 @@ import cn.ponfee.disjob.core.worker.dto.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.WorkerConfigurator;
 import cn.ponfee.disjob.worker.util.JobExecutorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -42,22 +45,26 @@ public interface WorkerRpcProvider extends WorkerRpcService {
     /**
      * Creates WorkerRpcService proxy
      *
-     * @param localWorker    the localWorker
-     * @param workerRegistry the workerRegistry
+     * @param localWorker    the local worker
+     * @param timingWheel    the timing wheel
+     * @param workerRegistry the worker registry
      * @return WorkerRpcService proxy
      */
-    static WorkerRpcProvider create(Worker.Local localWorker, WorkerRegistry workerRegistry) {
-        InvocationHandler invocationHandler = new AuthenticateHandler(localWorker, workerRegistry);
-        return ProxyUtils.create(invocationHandler, WorkerRpcProvider.class);
+    static WorkerRpcProvider create(Worker.Local localWorker, TimingWheel<ExecuteTaskParam> timingWheel, WorkerRegistry workerRegistry) {
+        return ProxyUtils.create(new WorkerRpcLocal(localWorker, timingWheel, workerRegistry), WorkerRpcProvider.class);
     }
 
-    class AuthenticateHandler implements InvocationHandler {
-        private final Worker.Local localWorker;
-        private final WorkerRpcService target;
+    class WorkerRpcLocal implements InvocationHandler, WorkerRpcService {
+        private static final Logger LOG = LoggerFactory.getLogger(WorkerRpcLocal.class);
 
-        private AuthenticateHandler(Worker.Local localWorker, WorkerRegistry workerRegistry) {
+        private final Worker.Local localWorker;
+        private final TimingWheel<ExecuteTaskParam> timingWheel;
+        private final WorkerRegistry workerRegistry;
+
+        private WorkerRpcLocal(Worker.Local localWorker, TimingWheel<ExecuteTaskParam> timingWheel, WorkerRegistry workerRegistry) {
             this.localWorker = localWorker;
-            this.target = new WorkerRpcLocal(localWorker, workerRegistry);
+            this.timingWheel = timingWheel;
+            this.workerRegistry = workerRegistry;
         }
 
         @Override
@@ -69,17 +76,7 @@ public interface WorkerRpcProvider extends WorkerRpcService {
                     localWorker.verifySupervisorAuthenticationToken((AuthenticationParam) args[i]);
                 }
             }
-            return method.invoke(target, args);
-        }
-    }
-
-    class WorkerRpcLocal implements WorkerRpcService {
-        private final Worker.Local localWorker;
-        private final WorkerRegistry workerRegistry;
-
-        private WorkerRpcLocal(Worker.Local localWorker, WorkerRegistry workerRegistry) {
-            this.localWorker = localWorker;
-            this.workerRegistry = workerRegistry;
+            return method.invoke(this, args);
         }
 
         @Override
@@ -98,6 +95,35 @@ public interface WorkerRpcProvider extends WorkerRpcService {
         public SplitJobResult splitJob(SplitJobParam param) throws JobException {
             param.check();
             return SplitJobResult.of(JobExecutorUtils.split(param));
+        }
+
+        @Override
+        public boolean receiveTask(ExecuteTaskParam param) {
+            if (param == null) {
+                LOG.error("Received task param cannot be null.");
+                return false;
+            }
+
+            localWorker.verifySupervisorAuthenticationToken(param);
+            Worker assignedWorker = param.getWorker();
+            if (!localWorker.matches(assignedWorker)) {
+                LOG.error("Received unmatched worker task: {}, {}, {}", param.getTaskId(), localWorker, assignedWorker);
+                return false;
+            }
+            if (!localWorker.getWorkerId().equals(assignedWorker.getWorkerId())) {
+                // 当Worker宕机后又快速启动(重启)的情况，Supervisor从本地缓存(或注册中心)拿到的仍是旧的workerId，但任务却派发给新的workerId(同机器同端口)
+                // 这种情况：1、可以剔除掉，等待Supervisor重新派发即可；2、也可以不剔除掉，短暂时间内该Worker的压力会是正常情况的2倍(注册中心还存有旧workerId)；
+                LOG.warn("Received former worker task: {}, {}, {}", param.getTaskId(), localWorker, assignedWorker);
+                param.setWorker(localWorker);
+            }
+
+            boolean res = timingWheel.offer(param);
+            if (res) {
+                LOG.info("Task trace [{}] received: {}, {}", param.getTaskId(), param.getOperation(), param.getWorker());
+            } else {
+                LOG.error("Received task failed {}", param);
+            }
+            return res;
         }
 
         @Override

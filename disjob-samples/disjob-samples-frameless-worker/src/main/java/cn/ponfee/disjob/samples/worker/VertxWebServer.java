@@ -25,8 +25,6 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.worker.WorkerRpcService;
 import cn.ponfee.disjob.core.worker.dto.*;
-import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
-import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.worker.util.JobExecutorUtils;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
@@ -56,13 +54,11 @@ public class VertxWebServer extends AbstractVerticle {
 
     private final int port;
     private final String prefixPath;
-    private final TaskReceiver taskReceiver;
     private final WorkerRpcService workerRpcService;
 
-    public VertxWebServer(int port, String contextPath, TaskReceiver taskReceiver, WorkerRpcService workerRpcService) {
+    public VertxWebServer(int port, String contextPath, WorkerRpcService workerRpcService) {
         this.port = port;
         this.prefixPath = Strings.concatPath(Strings.trimPath(contextPath), WorkerRpcService.PREFIX_PATH);
-        this.taskReceiver = taskReceiver;
         this.workerRpcService = workerRpcService;
     }
 
@@ -106,7 +102,7 @@ public class VertxWebServer extends AbstractVerticle {
 
         // ------------------------------------------------------add http api route start
         //String[] args = ctx.body().asPojo(String[].class);
-        router.post(prefixPath + "/supervisor/event/subscribe").handler(ctx -> handle(() -> {
+        router.post(prefixPath + "/supervisor_event/subscribe").handler(ctx -> handle(() -> {
             SupervisorEventParam param = parseBodyArg(ctx, SupervisorEventParam.class);
             workerRpcService.subscribeSupervisorEvent(param);
         }, ctx, BAD_REQUEST));
@@ -127,6 +123,12 @@ public class VertxWebServer extends AbstractVerticle {
             return workerRpcService.splitJob(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
+        router.post(prefixPath + "/task/receive").handler(ctx -> handle(() -> {
+            ExecuteTaskParam param = parseBodyArg(ctx, ExecuteTaskParam.class);
+            JobExecutorMapping.correctParamJobExecutor(param, "jobExecutor");
+            return workerRpcService.receiveTask(param);
+        }, ctx, INTERNAL_SERVER_ERROR));
+
         router.get(prefixPath + "/task/exists").handler(ctx -> handle(() -> {
             ExistsTaskParam param = parseParamArg(ctx, ExistsTaskParam.class);
             return workerRpcService.existsTask(param);
@@ -142,11 +144,6 @@ public class VertxWebServer extends AbstractVerticle {
             workerRpcService.configureWorker(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
-        router.post(prefixPath + "/task/receive").handler(ctx -> handle(() -> {
-            ExecuteTaskParam param = parseBodyArg(ctx, ExecuteTaskParam.class);
-            JobExecutorMapping.correctParamJobExecutor(param, "jobExecutor");
-            return taskReceiver.receive(param);
-        }, ctx, INTERNAL_SERVER_ERROR));
         // ------------------------------------------------------add http api route end
 
         HttpServerOptions options = new HttpServerOptions()

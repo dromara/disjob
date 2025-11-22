@@ -36,18 +36,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AnnotationUtilsTest {
 
     @RequestMapping(value = "parent/controller")
-    static class ParentController {
-    }
+    static class ParentController { }
 
-    static class ChildController extends ParentController {
-    }
+    static class ChildController extends ParentController { }
 
     @RpcController("super")
-    static class SupClass {
-    }
+    static class SupClass { }
 
-    static class SubClass extends SupClass {
-    }
+    static class SubClass extends SupClass { }
 
     static class HelloController {
         @GetMapping("/hello")
@@ -77,9 +73,16 @@ public class AnnotationUtilsTest {
 
     @Test
     public void test2() throws NoSuchMethodException {
-        // 不支持`@AliasFor`语义
+        // AnnotationUtils.findAnnotation不支持`@AliasFor`语义
+        assertEquals("", AnnotationUtils.findAnnotation(SupClass.class, Component.class).value());
+        assertEquals("super", AnnotationUtils.findAnnotation(SupClass.class, RpcController.class).value());
         assertEquals("", AnnotationUtils.findAnnotation(SubClass.class, Component.class).value());
+        assertEquals("super", AnnotationUtils.findAnnotation(SubClass.class, RpcController.class).value());
+
+        assertEquals("super", AnnotatedElementUtils.findMergedAnnotation(SupClass.class, Component.class).value());
+        assertEquals("super", AnnotatedElementUtils.findMergedAnnotation(SupClass.class, RpcController.class).value());
         assertEquals("super", AnnotatedElementUtils.findMergedAnnotation(SubClass.class, Component.class).value());
+        assertEquals("super", AnnotatedElementUtils.findMergedAnnotation(SubClass.class, RpcController.class).value());
 
         Method method = HelloController.class.getMethod("hello", String.class);
         RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class);

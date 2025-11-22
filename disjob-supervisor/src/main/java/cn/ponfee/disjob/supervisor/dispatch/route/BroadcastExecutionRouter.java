@@ -14,30 +14,34 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.base;
+package cn.ponfee.disjob.supervisor.dispatch.route;
 
-import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.core.enums.RouteStrategy;
+import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 
-import java.util.Objects;
+import java.util.List;
 
 /**
- * Timing wheel for execute sched task.
+ * Broadcast execution router
  *
  * @author Ponfee
  */
-public class TaskTimingWheel extends TimingWheel<ExecuteTaskParam> {
-    private static final long serialVersionUID = 5234431161365689615L;
+public class BroadcastExecutionRouter extends ExecutionRouter {
 
-    public TaskTimingWheel(long tickMs, int ringSize) {
-        super(tickMs, ringSize);
+    public static final BroadcastExecutionRouter INSTANCE = new BroadcastExecutionRouter();
+
+    private BroadcastExecutionRouter() {
     }
 
     @Override
-    protected boolean verify(ExecuteTaskParam param) {
-        Objects.requireNonNull(param, "Execute task param cannot be null.");
-        Objects.requireNonNull(param.getWorker(), "Execute task worker cannot be null.");
-        return true;
+    public RouteStrategy routeStrategy() {
+        return RouteStrategy.BROADCAST;
+    }
+
+    @Override
+    protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
+        throw new UnsupportedOperationException("Broadcast route strategy must be pre-assign worker.");
     }
 
 }

@@ -21,7 +21,7 @@ import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.enums.ShutdownStrategy;
 import cn.ponfee.disjob.core.worker.Worker;
-import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import org.springframework.util.Assert;

@@ -16,11 +16,12 @@
 
 package cn.ponfee.disjob.worker.configuration;
 
+import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.supervisor.SupervisorRpcService;
 import cn.ponfee.disjob.core.worker.Worker;
-import cn.ponfee.disjob.dispatch.TaskReceiver;
+import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.WorkerStartup;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,23 +40,15 @@ class WorkerLifecycle implements SmartLifecycle {
 
     private final WorkerStartup workerStartup;
 
-    WorkerLifecycle(Worker.Local localWorker,
-                    WorkerProperties workerProperties,
-                    RetryProperties retryProperties,
+    WorkerLifecycle(WorkerProperties workerConf,
+                    Worker.Local localWorker,
+                    TimingWheel<ExecuteTaskParam> timingWheel,
+                    RetryProperties retryConf,
                     WorkerRegistry workerRegistry,
-                    TaskReceiver taskReceiver,
                     @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                     // if the local server also is a supervisor -> cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider
                     @Nullable SupervisorRpcService supervisorRpcService) {
-        this.workerStartup = new WorkerStartup(
-            localWorker,
-            workerProperties,
-            retryProperties,
-            workerRegistry,
-            taskReceiver,
-            restTemplate,
-            supervisorRpcService
-        );
+        this.workerStartup = new WorkerStartup(workerConf, localWorker, timingWheel, retryConf, workerRegistry, restTemplate, supervisorRpcService);
     }
 
     @Override

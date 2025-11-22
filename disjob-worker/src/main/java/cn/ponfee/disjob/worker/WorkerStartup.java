@@ -19,13 +19,14 @@ package cn.ponfee.disjob.worker;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TablePrinter;
+import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.TripleState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.supervisor.SupervisorRpcService;
 import cn.ponfee.disjob.core.worker.Worker;
-import cn.ponfee.disjob.dispatch.TaskReceiver;
+import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.rpc.DiscoveryUngroupedServerRestProxy;
 import cn.ponfee.disjob.worker.base.TimingWheelRotator;
@@ -48,45 +49,33 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerStartup.class);
 
-    private final Worker.Local localWorker;
     private final WorkerProperties workerConf;
+    private final Worker.Local localWorker;
     private final WorkerThreadPool workerThreadPool;
     private final TimingWheelRotator timingWheelRotator;
-    private final TaskReceiver taskReceiver;
     private final WorkerRegistry workerRegistry;
     private final TripleState state = TripleState.create();
 
-    public WorkerStartup(Worker.Local localWorker,
-                         WorkerProperties workerConf,
-                         RetryProperties retryProperties,
+    public WorkerStartup(WorkerProperties workerConf,
+                         Worker.Local localWorker,
+                         TimingWheel<ExecuteTaskParam> timingWheel,
+                         RetryProperties retryConf,
                          WorkerRegistry workerRegistry,
-                         TaskReceiver taskReceiver,
                          RestTemplate restTemplate,
                          SupervisorRpcService supervisorRpcService) {
-        Objects.requireNonNull(localWorker, "Local worker cannot be null.");
         Objects.requireNonNull(workerConf, "Worker properties cannot be null.").check();
-        Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
-        Objects.requireNonNull(workerRegistry, "Server registry cannot be null.");
-        Objects.requireNonNull(taskReceiver, "Task receiver cannot be null.");
+        Objects.requireNonNull(localWorker, "Local worker cannot be null.");
+        Objects.requireNonNull(timingWheel, "Timing wheel cannot be null.");
+        Objects.requireNonNull(retryConf, "Retry properties cannot be null.").check();
+        Objects.requireNonNull(workerRegistry, "Worker registry cannot be null.");
         Objects.requireNonNull(restTemplate, "Rest template cannot be null.");
 
-        SupervisorRpcService supervisorRpcClient = DiscoveryUngroupedServerRestProxy.create(
-            SupervisorRpcService.class, supervisorRpcService, workerRegistry, restTemplate, retryProperties
-        );
+        SupervisorRpcService supervisorRpcClient = DiscoveryUngroupedServerRestProxy.create(SupervisorRpcService.class, supervisorRpcService, workerRegistry, restTemplate, retryConf);
 
         this.workerConf = workerConf;
         this.localWorker = localWorker;
-        this.workerThreadPool = new WorkerThreadPool(
-            workerConf.getMaximumPoolSize(), workerConf.getKeepAliveTimeSeconds(), supervisorRpcClient
-        );
-        this.timingWheelRotator = new TimingWheelRotator(
-            supervisorRpcClient,
-            workerRegistry,
-            taskReceiver.getTimingWheel(),
-            workerThreadPool,
-            workerConf.getProcessThreadPoolSize()
-        );
-        this.taskReceiver = taskReceiver;
+        this.workerThreadPool = new WorkerThreadPool(workerConf.getMaximumPoolSize(), workerConf.getKeepAliveTimeSeconds(), supervisorRpcClient);
+        this.timingWheelRotator = new TimingWheelRotator(supervisorRpcClient, workerRegistry, timingWheel, workerThreadPool, workerConf.getProcessThreadPoolSize());
         this.workerRegistry = workerRegistry;
     }
 
@@ -100,7 +89,6 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
         LOG.info("Worker start begin: {}", localWorker);
         workerThreadPool.start();
         timingWheelRotator.start();
-        taskReceiver.start();
         ThrowingRunnable.doCaught(workerRegistry::discoverServers);
         workerRegistry.register(localWorker);
         printBanner(workerConf.isPrintBannerEnabled());
@@ -116,7 +104,6 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
 
         LOG.info("Worker stop begin: {}", localWorker);
         ThrowingRunnable.doCaught(workerRegistry::close);
-        ThrowingRunnable.doCaught(taskReceiver::close);
         ThrowingRunnable.doCaught(timingWheelRotator::close);
         ThrowingRunnable.doCaught(workerThreadPool::close);
         LOG.info("Worker stop end: {}", localWorker);
@@ -126,7 +113,6 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
         return state.isRunning();
     }
 
-    @SuppressWarnings("all")
     private static void printBanner(boolean enabled) {
         if (!enabled) {
             return;

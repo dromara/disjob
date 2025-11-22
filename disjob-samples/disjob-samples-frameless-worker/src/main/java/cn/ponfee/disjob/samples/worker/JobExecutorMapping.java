@@ -66,6 +66,9 @@ public class JobExecutorMapping {
                 //beanName = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, type.getSimpleName());
                 beanName = Introspector.decapitalize(ClassUtils.getShortName(type.getName()));
             }
+            if (map.containsKey(beanName)) {
+                throw new Error("JobExecutor name exists: " + beanName);
+            }
             map.put(beanName, type);
         }
         JOB_EXECUTOR_MAP = map;

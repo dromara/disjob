@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.worker.configuration;
 
+import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
@@ -23,6 +24,7 @@ import cn.ponfee.disjob.core.base.BasicDeferredImportSelector;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.core.worker.WorkerRpcService;
+import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.configuration.EnableWorker.EnableWorkerConfiguration;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
@@ -72,8 +74,10 @@ public @interface EnableWorker {
         }
 
         @Bean
-        public WorkerRpcService workerRpcService(Worker.Local localWorker, WorkerRegistry workerRegistry) {
-            return WorkerRpcProvider.create(localWorker, workerRegistry);
+        public WorkerRpcService workerRpcService(Worker.Local localWorker,
+                                                 TimingWheel<ExecuteTaskParam> timingWheel,
+                                                 WorkerRegistry workerRegistry) {
+            return WorkerRpcProvider.create(localWorker, timingWheel, workerRegistry);
         }
     }
 

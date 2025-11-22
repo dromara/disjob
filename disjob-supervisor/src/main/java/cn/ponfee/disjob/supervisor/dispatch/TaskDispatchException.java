@@ -14,27 +14,17 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.worker.dto;
-
-import cn.ponfee.disjob.common.base.ToJsonString;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.io.Serializable;
+package cn.ponfee.disjob.supervisor.dispatch;
 
 /**
- * Worker authentication param
+ * Task dispatch exception
  *
  * @author Ponfee
  */
-@Getter
-@Setter
-public abstract class AuthenticationParam extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = -6147946999789807933L;
+class TaskDispatchException extends Exception {
+    private static final long serialVersionUID = 2626305365213783551L;
 
-    /**
-     * 从Supervisor侧传过来的token
-     */
-    private String supervisorAuthenticationToken;
-
+    public TaskDispatchException(String msg) {
+        super(msg);
+    }
 }

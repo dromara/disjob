@@ -18,9 +18,9 @@ package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.dispatch.route.count.AtomicCounter;
-import cn.ponfee.disjob.dispatch.route.count.JdkAtomicCounter;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
+import cn.ponfee.disjob.supervisor.dispatch.count.AtomicCounter;
+import cn.ponfee.disjob.supervisor.dispatch.count.JdkAtomicCounter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;

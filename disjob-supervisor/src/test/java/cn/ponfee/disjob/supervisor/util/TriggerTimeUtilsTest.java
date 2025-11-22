@@ -20,7 +20,7 @@ import cn.ponfee.disjob.common.date.*;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.worker.Worker;
-import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import cn.ponfee.disjob.supervisor.base.TriggerTimes;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import org.junit.jupiter.api.Assertions;

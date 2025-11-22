@@ -32,7 +32,7 @@ public interface WorkerRpcService {
 
     String PREFIX_PATH = "/worker/rpc";
 
-    @PostMapping("/supervisor/event/subscribe")
+    @PostMapping("/supervisor_event/subscribe")
     void subscribeSupervisorEvent(SupervisorEventParam param);
 
     @PostMapping("/job/verify")
@@ -40,6 +40,9 @@ public interface WorkerRpcService {
 
     @PostMapping("/job/split")
     SplitJobResult splitJob(SplitJobParam param) throws JobException;
+
+    @PostMapping("/task/receive")
+    boolean receiveTask(ExecuteTaskParam param);
 
     @GetMapping("/task/exists")
     boolean existsTask(ExistsTaskParam param);

@@ -28,7 +28,7 @@ import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.enums.ShutdownStrategy;
 import cn.ponfee.disjob.core.worker.Worker;
-import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;

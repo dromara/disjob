@@ -78,22 +78,6 @@
 
       <dependency>
         <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-dispatch-api</artifactId>
-        <version>${project.parent.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-dispatch-redis</artifactId>
-        <version>${project.parent.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-dispatch-http</artifactId>
-        <version>${project.parent.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>cn.ponfee</groupId>
         <artifactId>disjob-alert-api</artifactId>
         <version>${project.parent.version}</version>
       </dependency>

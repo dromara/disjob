@@ -43,7 +43,6 @@
     <module>disjob-id</module>
     <module>disjob-test</module>
     <module>disjob-registry</module>
-    <module>disjob-dispatch</module>
     <module>disjob-alert</module>
     <module>disjob-supervisor</module>
     <module>disjob-worker</module>

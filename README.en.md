@@ -42,10 +42,6 @@ disjob                                        # Main project①pom.xml
 ├── disjob-bom                                # Maven project bom module
 ├── disjob-common                             # Common utility class module
 ├── disjob-core                               # Task scheduling related core classes (such as data models, enumeration classes, abstract layer interfaces, etc.)
-├── disjob-dispatch                           # Task dispatch module
-│   ├── disjob-dispatch-api                   # Abstract interface layer of task dispatch
-│   ├── disjob-dispatch-http                  # Http implementation of task dispatch
-│   └── disjob-dispatch-redis                 # Redis implementation of task dispatch
 ├── disjob-id                                 # Distributed ID generation module
 ├── disjob-registry                           # Server (Supervisor & Worker) registration module
 │   ├── disjob-registry-api                   # Abstract interface layer of Server registration center
@@ -138,11 +134,11 @@ disjob                                        # Main project①pom.xml
 - [Core framework SQL script](sql/mysql-disjob.sql)
 - [Admin console SQL script](sql/mysql-disjob_admin.sql)
 
-2. Change the specific implementation of `disjob-registry-{xxx}` and `disjob-dispatch-{xxx}` in the maven pom file
+2. Change the specific implementation of `disjob-registry-{xxx}` in the maven pom file
 
 - [Samples project](disjob-samples/pom.xml)
 - [Admin project](disjob-admin/ruoyi-disjob/pom.xml)
-- By default, `disjob-registry-redis` is used as the server registry and `disjob-dispatch-http` is used for task dispatch
+- By default, `disjob-registry-redis` is used as the server registry is used for task dispatch
 
 3. Samples project configuration files
 

@@ -14,30 +14,31 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.base;
+package cn.ponfee.disjob.supervisor.dispatch;
 
-import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
-
-import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * Timing wheel for execute sched task.
+ * Task dispatch failed event
  *
  * @author Ponfee
  */
-public class TaskTimingWheel extends TimingWheel<ExecuteTaskParam> {
-    private static final long serialVersionUID = 5234431161365689615L;
+@Getter
+@Setter
+public class TaskDispatchFailedEvent {
 
-    public TaskTimingWheel(long tickMs, int ringSize) {
-        super(tickMs, ringSize);
-    }
+    private long jobId;
+    private long instanceId;
+    private long taskId;
 
-    @Override
-    protected boolean verify(ExecuteTaskParam param) {
-        Objects.requireNonNull(param, "Execute task param cannot be null.");
-        Objects.requireNonNull(param.getWorker(), "Execute task worker cannot be null.");
-        return true;
+    public static TaskDispatchFailedEvent of(ExecuteTaskParam task) {
+        TaskDispatchFailedEvent event = new TaskDispatchFailedEvent();
+        event.setJobId(task.getJobId());
+        event.setInstanceId(task.getInstanceId());
+        event.setTaskId(task.getTaskId());
+        return event;
     }
 
 }

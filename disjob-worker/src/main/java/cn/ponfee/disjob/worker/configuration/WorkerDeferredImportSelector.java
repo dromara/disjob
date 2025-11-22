@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.worker.configuration;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;

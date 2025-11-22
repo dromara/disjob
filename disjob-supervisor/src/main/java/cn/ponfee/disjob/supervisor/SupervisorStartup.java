@@ -23,9 +23,9 @@ import cn.ponfee.disjob.common.concurrent.TripleState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.supervisor.Supervisor;
-import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
+import cn.ponfee.disjob.supervisor.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.supervisor.scanner.RunningInstanceScanner;
 import cn.ponfee.disjob.supervisor.scanner.TriggeringJobScanner;
 import cn.ponfee.disjob.supervisor.scanner.WaitingInstanceScanner;
@@ -46,8 +46,8 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
 
     private static final Logger LOG = LoggerFactory.getLogger(SupervisorStartup.class);
 
-    private final Supervisor.Local localSupervisor;
     private final SupervisorProperties supervisorConf;
+    private final Supervisor.Local localSupervisor;
     private final SupervisorRegistry supervisorRegistry;
     private final TaskDispatcher taskDispatcher;
     private final WaitingInstanceScanner waitingInstanceScanner;
@@ -55,15 +55,15 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
     private final TriggeringJobScanner triggeringJobScanner;
     private final TripleState state = TripleState.create();
 
-    public SupervisorStartup(Supervisor.Local localSupervisor,
-                             SupervisorProperties supervisorConf,
+    public SupervisorStartup(SupervisorProperties supervisorConf,
+                             Supervisor.Local localSupervisor,
                              SupervisorRegistry supervisorRegistry,
                              TaskDispatcher taskDispatcher,
                              WaitingInstanceScanner waitingInstanceScanner,
                              RunningInstanceScanner runningInstanceScanner,
                              TriggeringJobScanner triggeringJobScanner) {
-        this.localSupervisor = requireNonNull(localSupervisor, "Local supervisor cannot be null.");
         this.supervisorConf = requireNonNull(supervisorConf, "Supervisor properties cannot be null.");
+        this.localSupervisor = requireNonNull(localSupervisor, "Local supervisor cannot be null.");
         this.supervisorRegistry = requireNonNull(supervisorRegistry, "Supervisor registry cannot be null.");
         this.taskDispatcher = requireNonNull(taskDispatcher, "Task dispatcher cannot be null.");
         this.waitingInstanceScanner = requireNonNull(waitingInstanceScanner, "Waiting instance scanner cannot be null.");
@@ -111,7 +111,6 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
         return state.isRunning();
     }
 
-    @SuppressWarnings("all")
     private static void printBanner(boolean enabled) {
         if (!enabled) {
             return;

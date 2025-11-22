@@ -42,10 +42,6 @@ disjob                                        # 主项目①pom.xml
 ├── disjob-bom                                # Maven项目bom模块
 ├── disjob-common                             # 公共的工具类模块
 ├── disjob-core                               # 任务调度相关的核心类（如枚举类、接口定义、接口参数等）
-├── disjob-dispatch                           # 任务派发模块
-│   ├── disjob-dispatch-api                   # 任务派发的抽象接口层
-│   ├── disjob-dispatch-http                  # 任务派发的Http实现
-│   └── disjob-dispatch-redis                 # 任务派发的Redis实现
 ├── disjob-id                                 # 分布式ID生成模块
 ├── disjob-registry                           # Server(Supervisor & Worker)注册模块
 │   ├── disjob-registry-api                   # Server注册中心的抽象接口层
@@ -71,7 +67,7 @@ disjob                                        # 主项目①pom.xml
 
 - 分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署
 - Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Database、Redis、Consul、Nacos、Zookeeper、Etcd
-- Supervisor负责生成任务，把任务派发给Worker执行，支持的任务派发方式有：Redis、Http
+- Supervisor负责生成任务，把任务派发给Worker执行
 - 需要指定Job的分组(group)，Job的任务只会派发给指定组的Worker执行
 - 提供任务分片的能力，重写拆分方法[JobSplitter#split](disjob-worker/src/main/java/cn/ponfee/disjob/worker/executor/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
 - 支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试
@@ -158,24 +154,24 @@ disjob                                        # 主项目①pom.xml
 - [核心框架的SQL脚本](sql/mysql-disjob.sql)
 - [管理后台的SQL脚本](sql/mysql-disjob_admin.sql)
 
-2. 在Maven pom文件中更改`注册中心disjob-registry-{xxx}`和`任务派发disjob-dispatch-{xxx}`的具体实现
+2. 在Maven pom文件中更改`注册中心disjob-registry-{xxx}`的具体实现
 
 - [Samples项目](disjob-samples/pom.xml)
 - [Admin项目](disjob-admin/ruoyi-disjob/pom.xml)
-- 默认使用`disjob-registry-redis`做注册中心，`disjob-dispatch-http`做任务派发
+- 默认使用`disjob-registry-redis`做注册中心
 
 3. Samples项目配置文件【disjob-samples】
 
 - [Supervisor角色Mysql配置](disjob-samples/disjob-samples-conf/application-mysql.yml)
 - [Supervisor角色核心配置](disjob-samples/disjob-samples-conf/application-supervisor.yml)
 - [Worker角色核心配置](disjob-samples/disjob-samples-conf/application-worker.yml)（Spring-boot应用）
-- [Redis配置](disjob-samples/disjob-samples-conf/application-registry-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
+- [Redis配置](disjob-samples/disjob-samples-conf/application-registry-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心时需要配置）
 - [Spring-boot Web相关配置](disjob-samples/disjob-samples-conf/application-web.yml)（Worker与Supervisor共用）
 - [Worker角色普通Java-main应用配置](disjob-samples/disjob-samples-frameless-worker/src/main/resources/worker-conf.yml)
 
 4. Admin项目配置文件【disjob-admin】
 - [Supervisor角色相关的Mysql配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)
-- [Redis配置](disjob-admin/ruoyi-disjob/src/main/resources/application-registry-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
+- [Redis配置](disjob-admin/ruoyi-disjob/src/main/resources/application-registry-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心时需要配置）
 - [可加@EnableWorker注解启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)（管理后台必须启用Supervisor角色）
 - [管理后台功能相关的Mysql配置](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)
 - [RuoYi框架相关配置参考官方文档](http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE )（只增加了[ruoyi-disjob](disjob-admin/ruoyi-disjob)模块，其它的RuoYi原有模块基本未改动）

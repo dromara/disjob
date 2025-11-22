@@ -109,7 +109,10 @@ public final class GroovyUtils {
             protected <T> T evaluate(String scriptText, Map<String, Object> params) {
                 Script script = scripCache.computeIfAbsent(scriptText, GROOVY_SHELL::parse);
                 Closure<?> closure = (Closure<?>) script.run();
-                return (T) closure.call(params);
+                // closure = closure.rehydrate(new groovy.util.Expando(), null, null);
+                // closure.setResolveStrategy(Closure.DELEGATE_ONLY);
+                params.forEach(closure::setProperty);
+                return (T) closure.call();
             }
         },
 

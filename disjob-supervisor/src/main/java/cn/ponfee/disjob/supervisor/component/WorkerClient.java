@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.supervisor.component;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.spring.TransactionUtils;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
@@ -30,8 +29,6 @@ import cn.ponfee.disjob.core.worker.dto.ExistsTaskParam;
 import cn.ponfee.disjob.core.worker.dto.SplitJobParam;
 import cn.ponfee.disjob.core.worker.dto.SplitJobResult;
 import cn.ponfee.disjob.core.worker.dto.VerifyJobParam;
-import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
-import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import cn.ponfee.disjob.registry.rpc.DiscoveryGroupedServerRestProxy;
@@ -62,18 +59,15 @@ public class WorkerClient {
     private static final Logger LOG = LoggerFactory.getLogger(WorkerClient.class);
 
     private final Discovery<Worker> discoverWorker;
-    private final TaskDispatcher taskDispatcher;
     private final DiscoveryGroupedServerRestProxy<WorkerRpcService> groupedProxy;
     private final DestinationServerRestProxy<WorkerRpcService, Worker> destinationProxy;
 
     public WorkerClient(Discovery<Worker> discoverWorker,
-                        TaskDispatcher taskDispatcher,
                         RetryProperties retry,
                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                         @Nullable WorkerRpcService workerRpcProvider,
                         @Nullable Worker.Local localWorker) {
         this.discoverWorker = discoverWorker;
-        this.taskDispatcher = taskDispatcher;
 
         retry.check();
         Predicate<String> localGroupMatcher = localWorker != null ? localWorker::equalsGroup : group -> false;
@@ -103,7 +97,7 @@ public class WorkerClient {
             tasks.stream().anyMatch(e -> e.isExecuting() && isAliveWorker(e.worker()));
     }
 
-    public boolean shouldRedispatch(SchedTask task) {
+    public boolean isShouldRedispatch(SchedTask task) {
         if (!task.isWaiting()) {
             return false;
         }
@@ -169,16 +163,6 @@ public class WorkerClient {
             tasks.add(SchedTask.of(taskParams.get(i), idGenerator.generateId(), instanceId, i + 1, tCount, worker));
         }
         return tasks;
-    }
-
-    void dispatch(List<ExecuteTaskParam> tasks) {
-        TransactionUtils.assertWithoutTransaction();
-        taskDispatcher.dispatch(tasks);
-    }
-
-    void dispatch(String group, List<ExecuteTaskParam> tasks) {
-        TransactionUtils.assertWithoutTransaction();
-        taskDispatcher.dispatch(group, tasks);
     }
 
 }

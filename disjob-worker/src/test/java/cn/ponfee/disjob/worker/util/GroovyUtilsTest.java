@@ -52,10 +52,20 @@ public class GroovyUtilsTest {
         assertThat((String) GroovyUtils.Evaluator.SCRIPT.eval(SCRIPT_TEXT, PARAMS)).isEqualTo(RESULT);
         assertThat((String) GroovyUtils.Evaluator.CLASS.eval(SCRIPT_TEXT, PARAMS)).isEqualTo(RESULT);
 
+        /*
+        // 使用形式一：return (T) closure.call(params);
         String closureScript =
             "import cn.ponfee.disjob.common.util.Jsons; " +
             "{it -> Jsons.toJson(it.get('list')) + (it.get('a') + it.get('b')) + it.get('str').length()}";
         assertThat((String) GroovyUtils.Evaluator.CLOSURE.eval(closureScript, PARAMS)).isEqualTo(RESULT);
+        */
+
+        // 使用形式二：params.forEach(closure::setProperty); return (T) closure.call();
+        assertThat((String) GroovyUtils.Evaluator.CLOSURE.eval("import cn.ponfee.disjob.common.util.Jsons; { it -> Jsons.toJson(list)+(a+b)+str.length() }", PARAMS)).isEqualTo(RESULT);
+        assertThat((Boolean) GroovyUtils.Evaluator.CLOSURE.eval("{ it -> a>0 && b<3 && str=='string' }", PARAMS)).isEqualTo(true);
+        Object result = GroovyUtils.Evaluator.CLOSURE.eval("{ it -> \"${a>0 && b<3 && str=='string'}\" }", PARAMS);
+        assertThat(result).isInstanceOf(org.codehaus.groovy.runtime.GStringImpl.class);
+        assertThat(result.toString()).isEqualTo("true");
     }
 
     @Test

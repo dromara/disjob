@@ -82,16 +82,6 @@
       <artifactId>disjob-registry-etcd</artifactId>
       -->
     </dependency>
-
-    <!-- Dispatching: select one implementation for task dispatching -->
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-dispatch-http</artifactId>
-      <!--
-      <artifactId>disjob-dispatch-redis</artifactId>
-      <artifactId>disjob-dispatch-http</artifactId>
-      -->
-    </dependency>
   </dependencies>
 
   <build>

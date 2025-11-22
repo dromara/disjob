@@ -35,10 +35,10 @@ import java.util.List;
 @RequestMapping("/supervisor/rpc")
 public interface SupervisorRpcService {
 
-    @PostMapping("/worker/event/subscribe")
+    @PostMapping("/worker_event/subscribe")
     void subscribeWorkerEvent(RegistryEventType eventType, Worker worker);
 
-    @PostMapping("/task/worker/update")
+    @PostMapping("/task_worker/update")
     void updateTaskWorker(List<Long> taskIds, String worker) throws Exception;
 
     @PostMapping("/task/start")

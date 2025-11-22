@@ -29,7 +29,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.core.supervisor.SupervisorRpcService;
-import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import cn.ponfee.disjob.registry.Discovery;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;

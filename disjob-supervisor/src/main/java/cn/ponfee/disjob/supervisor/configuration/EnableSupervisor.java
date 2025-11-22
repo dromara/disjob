@@ -62,7 +62,7 @@ import java.lang.annotation.*;
     EnableSupervisorConfiguration.class,
     BasicDeferredImportSelector.class,
     SupervisorDeferredImportSelector.class,
-    SupervisorLifecycle.class
+    SupervisorLifecycle.class,
 })
 public @interface EnableSupervisor {
 

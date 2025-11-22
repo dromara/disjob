@@ -24,7 +24,7 @@ import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.enums.ShutdownStrategy;
 import cn.ponfee.disjob.core.worker.Worker;
-import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

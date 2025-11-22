@@ -38,15 +38,16 @@ import cn.ponfee.disjob.core.supervisor.dto.StartTaskParam;
 import cn.ponfee.disjob.core.supervisor.dto.StartTaskResult;
 import cn.ponfee.disjob.core.supervisor.dto.StopTaskParam;
 import cn.ponfee.disjob.core.worker.Worker;
+import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import cn.ponfee.disjob.core.worker.dto.SplitJobParam;
-import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
-import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
 import cn.ponfee.disjob.supervisor.base.ExecuteTaskParamBuilder;
 import cn.ponfee.disjob.supervisor.base.ModelConverter;
 import cn.ponfee.disjob.supervisor.base.TriggerTimes;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import cn.ponfee.disjob.supervisor.dao.mapper.*;
+import cn.ponfee.disjob.supervisor.dispatch.TaskDispatchFailedEvent;
+import cn.ponfee.disjob.supervisor.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.supervisor.exception.KeyAlreadyExistsException;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
 import cn.ponfee.disjob.supervisor.model.*;
@@ -109,6 +110,7 @@ public class JobManager {
     private final SchedWorkflowMapper workflowMapper;
     private final SchedTaskMapper taskMapper;
     private final WorkerClient workerClient;
+    private final TaskDispatcher taskDispatcher;
     private final ApplicationEventPublisher eventPublisher;
     private final TransactionTemplate transactionTemplate;
 
@@ -120,6 +122,7 @@ public class JobManager {
                       SchedWorkflowMapper workflowMapper,
                       SchedTaskMapper taskMapper,
                       WorkerClient workerClient,
+                      TaskDispatcher taskDispatcher,
                       ApplicationEventPublisher eventPublisher,
                       @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate txTemplate) {
         conf.check();
@@ -131,6 +134,7 @@ public class JobManager {
         this.workflowMapper = workflowMapper;
         this.taskMapper = taskMapper;
         this.workerClient = workerClient;
+        this.taskDispatcher = taskDispatcher;
         this.eventPublisher = eventPublisher;
         this.transactionTemplate = txTemplate;
     }
@@ -623,7 +627,7 @@ public class JobManager {
             }
         }
 
-        doAfterTransactionCommit(() -> workerClient.dispatch(job.getGroup(), list));
+        doAfterTransactionCommit(() -> taskDispatcher.dispatch(job.getGroup(), list));
     }
 
     private List<Tuple2<Worker, Long>> calculateWorkload(SchedJob job, SchedInstance instance) {
@@ -729,7 +733,7 @@ public class JobManager {
             }
         } else {
             // has alive executing tasks: dispatch and pause executing tasks
-            doAfterTransactionCommit(() -> workerClient.dispatch(executingTasks));
+            doAfterTransactionCommit(() -> taskDispatcher.dispatch(executingTasks));
         }
     }
 
@@ -770,7 +774,7 @@ public class JobManager {
             }
         } else {
             // dispatch and cancel executing tasks
-            doAfterTransactionCommit(() -> workerClient.dispatch(executingTasks));
+            doAfterTransactionCommit(() -> taskDispatcher.dispatch(executingTasks));
         }
     }
 

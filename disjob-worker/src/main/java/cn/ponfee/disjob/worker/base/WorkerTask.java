@@ -22,7 +22,7 @@ import cn.ponfee.disjob.core.supervisor.dto.StartTaskParam;
 import cn.ponfee.disjob.core.supervisor.dto.StartTaskResult;
 import cn.ponfee.disjob.core.supervisor.dto.StopTaskParam;
 import cn.ponfee.disjob.core.worker.Worker;
-import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import cn.ponfee.disjob.worker.executor.JobExecutor;
 import lombok.AccessLevel;
