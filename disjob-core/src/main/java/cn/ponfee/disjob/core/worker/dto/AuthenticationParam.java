@@ -37,4 +37,8 @@ public abstract class AuthenticationParam extends ToJsonString implements Serial
      */
     private String supervisorAuthenticationToken;
 
+    public void check() {
+        // default do-nothing
+    }
+
 }

@@ -37,6 +37,7 @@ public class VerifyJobParam extends AuthenticationParam {
     private JobType jobType;
     private RouteStrategy routeStrategy;
 
+    @Override
     public void check() {
         Assert.hasText(jobExecutor, "Job executor cannot be empty.");
         Assert.notNull(jobType, "Job type cannot be null.");

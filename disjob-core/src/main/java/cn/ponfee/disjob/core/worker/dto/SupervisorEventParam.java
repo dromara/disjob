@@ -35,6 +35,7 @@ public class SupervisorEventParam extends AuthenticationParam {
     private RegistryEventType eventType;
     private Supervisor supervisor;
 
+    @Override
     public void check() {
         Assert.notNull(eventType, "Event type cannot be null.");
         Assert.notNull(supervisor, "Supervisor cannot be null.");

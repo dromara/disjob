@@ -125,7 +125,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         if (req.getAction() == Action.ADD_WORKER) {
             List<Worker> workers = workerClient.getAliveWorkers(req.getGroup());
             if (workers != null && workers.stream().anyMatch(worker::matches)) {
-                throw new KeyAlreadyExistsException("Worker was already registered: " + worker);
+                throw new KeyAlreadyExistsException("Worker already registered: " + worker.getHost() + ":" + worker.getPort());
             }
         } else {
             List<Worker> workers = getRequiredAliveWorkers(req.getGroup());

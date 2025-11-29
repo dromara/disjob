@@ -67,7 +67,7 @@ public class JobExecutorMapping {
                 beanName = Introspector.decapitalize(ClassUtils.getShortName(type.getName()));
             }
             if (map.containsKey(beanName)) {
-                throw new Error("JobExecutor name exists: " + beanName);
+                throw new Error("Duplicated jobExecutor name: " + beanName);
             }
             map.put(beanName, type);
         }

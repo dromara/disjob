@@ -33,8 +33,8 @@ import java.time.ZoneOffset;
  *  1）Java中使用`Instant`（也可以使用`OffsetDateTime`）
  *  2）Database中使用`DATETIME(6)`
  *  3）前后端交互使用UTC字符串`2000-01-01T00:00:00.000Z`，在前端JS代码中转换为本地时间展示`new Date("2000-01-01T00:00:00.000Z")`
- *  4）Java把Instant转成LocalDateTime → 保存数据库：instant.atZone(ZoneOffset.UTC).toLocalDateTime();
- *  5）读取数据库 → Java把LocalDateTime转成Instant：datetime.atZone(ZoneOffset.UTC).toInstant()
+ *  4）Java把Instant转成LocalDateTime → 保存数据库：`instant.atZone(ZoneOffset.UTC).toLocalDateTime();`
+ *  5）读取数据库 → Java把LocalDateTime转成Instant：`localDateTime.atZone(ZoneOffset.UTC).toInstant();`
  *
  * Java Instant与Mysql datetime之间的相互转换，在Mybatis的配置文件`mybatis-config.xml`中添加：
  * &lt;typeHandlers>
@@ -54,22 +54,22 @@ public class UtcInstantTypeHandler extends BaseTypeHandler<Instant> {
 
     @Override
     public Instant getNullableResult(ResultSet rs, String columnName) throws SQLException {
-        return utcDatetime2Instant(rs.getObject(columnName, LocalDateTime.class));
+        return utcLocalDateTime2Instant(rs.getObject(columnName, LocalDateTime.class));
     }
 
     @Override
     public Instant getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-        return utcDatetime2Instant(rs.getObject(columnIndex, LocalDateTime.class));
+        return utcLocalDateTime2Instant(rs.getObject(columnIndex, LocalDateTime.class));
     }
 
     @Override
     public Instant getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        return utcDatetime2Instant(cs.getObject(columnIndex, LocalDateTime.class));
+        return utcLocalDateTime2Instant(cs.getObject(columnIndex, LocalDateTime.class));
     }
 
     // -------------------------------------------------------private static methods
 
-    private static Instant utcDatetime2Instant(LocalDateTime datetime) {
+    private static Instant utcLocalDateTime2Instant(LocalDateTime datetime) {
         return (datetime != null) ? datetime.atZone(ZoneOffset.UTC).toInstant() : null;
     }
 

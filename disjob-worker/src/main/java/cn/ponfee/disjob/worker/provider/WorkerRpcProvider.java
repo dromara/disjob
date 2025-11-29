@@ -73,7 +73,11 @@ public interface WorkerRpcProvider extends WorkerRpcService {
             for (int i = 0; i < parameterTypes.length; i++) {
                 // 要通过参数类型判断，防止参数值传null绕过认证
                 if (AuthenticationParam.class.isAssignableFrom(parameterTypes[i])) {
-                    localWorker.verifySupervisorAuthenticationToken((AuthenticationParam) args[i]);
+                    AuthenticationParam param = (AuthenticationParam) args[i];
+                    if (param != null) {
+                        param.check();
+                    }
+                    localWorker.verifySupervisorAuthenticationToken(param);
                 }
             }
             return method.invoke(this, args);
@@ -81,19 +85,16 @@ public interface WorkerRpcProvider extends WorkerRpcService {
 
         @Override
         public void subscribeSupervisorEvent(SupervisorEventParam param) {
-            param.check();
             workerRegistry.subscribeServerEvent(param.getEventType(), param.getSupervisor());
         }
 
         @Override
         public void verifyJob(VerifyJobParam param) throws JobException {
-            param.check();
             JobExecutorUtils.verify(param);
         }
 
         @Override
         public SplitJobResult splitJob(SplitJobParam param) throws JobException {
-            param.check();
             return SplitJobResult.of(JobExecutorUtils.split(param));
         }
 

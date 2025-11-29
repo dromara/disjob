@@ -52,6 +52,7 @@ public class SplitJobParam extends AuthenticationParam {
      */
     private List<WorkflowInstance> predecessorInstances;
 
+    @Override
     public void check() {
         Assert.hasText(jobExecutor, "Job executor cannot be empty.");
         Assert.notNull(jobType, "Job type cannot be null.");
