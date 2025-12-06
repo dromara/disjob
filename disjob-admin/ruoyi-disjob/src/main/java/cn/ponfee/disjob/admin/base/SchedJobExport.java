@@ -55,7 +55,7 @@ public class SchedJobExport {
     private Integer jobType;
 
     /**
-     * Job状态：0-禁用；1-启用；
+     * Job状态：0-已禁用；1-已启用；
      */
     @Excel(name = "Job状态")
     private Integer jobState;

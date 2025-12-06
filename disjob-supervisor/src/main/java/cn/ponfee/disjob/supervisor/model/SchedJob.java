@@ -65,7 +65,7 @@ public class SchedJob extends BaseEntity {
     private Integer jobType;
 
     /**
-     * Job状态：0-禁用；1-启用；
+     * Job状态：0-已禁用；1-已启用；
      *
      * @see JobState
      */

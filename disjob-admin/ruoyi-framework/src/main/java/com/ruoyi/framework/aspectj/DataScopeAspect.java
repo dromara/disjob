@@ -93,7 +93,7 @@ public class DataScopeAspect
         List<String> conditions = new ArrayList<>();
         List<String> scopeCustomIds = new ArrayList<>();
         user.getRoles().forEach(role -> {
-            if (DATA_SCOPE_CUSTOM.equals(role.getDataScope()) && StringUtils.equals(role.getStatus(), UserConstants.ROLE_NORMAL) && StringUtils.containsAny(role.getPermissions(), Convert.toStrArray(permission)))
+            if (DATA_SCOPE_CUSTOM.equals(role.getDataScope()) && StringUtils.equals(role.getStatus(), UserConstants.ROLE_NORMAL) && (StringUtils.isEmpty(permission) || StringUtils.containsAny(role.getPermissions(), Convert.toStrArray(permission))))
             {
                 scopeCustomIds.add(Convert.toStr(role.getRoleId()));
             }
@@ -106,7 +106,7 @@ public class DataScopeAspect
             {
                 continue;
             }
-            if (!StringUtils.containsAny(role.getPermissions(), Convert.toStrArray(permission)))
+            if (StringUtils.isNotEmpty(permission) && !StringUtils.containsAny(role.getPermissions(), Convert.toStrArray(permission)))
             {
                 continue;
             }

@@ -245,7 +245,7 @@ public class SchedInstance extends BaseEntity {
     public void fillUniqueFlag() {
         RunType type = RunType.of(runType);
         // Workflow node trigger time is not unique
-        this.uniqueFlag = (type.isUniqueFlag() && !isWorkflowNode()) ? type.getUniqueFlag() : instanceId;
+        this.uniqueFlag = (type.isRequiredUnique() && !isWorkflowNode()) ? type.getUniqueFlag() : instanceId;
     }
 
     public void markTerminated(RunState runState, Date runEndTime) {

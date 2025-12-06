@@ -31,7 +31,7 @@ CREATE TABLE `sched_job` (
   `group`                 VARCHAR(60)              NOT NULL                               COMMENT '分组名称(可以理解为一个应用的appid，此job只会分派给所属组的Worker执行)',
   `job_name`              VARCHAR(60)              NOT NULL                               COMMENT 'Job名称',
   `job_type`              TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT 'Job类型：1-常规；2-工作流(DAG)；',
-  `job_state`             TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT 'Job状态：0-禁用；1-启用；',
+  `job_state`             TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT 'Job状态：0-已禁用；1-已启用；',
   `job_executor`          TEXT                     NOT NULL                               COMMENT 'Job执行器(支持：执行器类的全限定名、Spring bean name、DAG表达式、执行器源码等)',
   `job_param`             TEXT                               DEFAULT NULL                 COMMENT 'Job参数',
   `retry_type`            TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '实例失败的重试类型：0-不重试；1-只重试失败的Task；2-重试所有的Task；',

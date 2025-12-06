@@ -135,18 +135,27 @@ public class CoreUtils {
 
     public static String buildCacheStats(Cache<?, ?> cache, String cacheName) {
         CacheStats stats = cache.stats();
-        String header = "Cache analytics: " + cacheName;
-        String hitRate = (stats.requestCount() == 0) ? "-" : String.format("%.2f%%", stats.hitRate() * 100);
-        String loadExceptionRate = (stats.loadCount() == 0) ? "-" : String.format("%.2f%%", stats.loadExceptionRate() * 100);
-        String averageLoadPenalty = (stats.loadCount() == 0) ? "-" : Dates.formatDuration(TimeUnit.NANOSECONDS.toMillis((long) stats.averageLoadPenalty()));
+        long requestCount = stats.requestCount();
+        long loadCount = stats.loadCount();
+
+        String hitRate = "-";
+        String loadExceptionRate = "-";
+        String averageLoadPenalty = "-";
+        if (requestCount != 0) {
+            hitRate = String.format("%.2f%%", stats.hitRate() * 100);
+        }
+        if (loadCount != 0) {
+            loadExceptionRate = String.format("%.2f%%", stats.loadExceptionRate() * 100);
+            averageLoadPenalty = Dates.formatDuration(TimeUnit.NANOSECONDS.toMillis((long) stats.averageLoadPenalty()));
+        }
         List<String> rows = Arrays.asList(
             "Cache size: " + cache.size(),
-            String.format("Hit rate: %s (%d/%d)", hitRate, stats.hitCount(), stats.requestCount()),
-            String.format("Load exception rate: %s (%d/%d)", loadExceptionRate, stats.loadExceptionCount(), stats.loadCount()),
+            String.format("Hit rate: %s (%d/%d)", hitRate, stats.hitCount(), requestCount),
+            String.format("Load exception rate: %s (%d/%d)", loadExceptionRate, stats.loadExceptionCount(), loadCount),
             "Average load penalty: " + averageLoadPenalty,
             "Eviction count: " + stats.evictionCount()
         );
-        return TablePrinter.HALF.print(header, rows);
+        return TablePrinter.HALF.print("Cache analytics: " + cacheName, rows);
     }
 
     // ----------------------------------------------------------------------private methods

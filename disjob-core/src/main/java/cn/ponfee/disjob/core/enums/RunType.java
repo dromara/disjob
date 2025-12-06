@@ -29,22 +29,22 @@ public enum RunType implements IntValueEnum<RunType> {
     /**
      * 调度计划
      */
-    SCHEDULE(1, 0L, "调度计划"),
+    SCHEDULE(1, true, "调度计划"),
 
     /**
      * 任务依赖
      */
-    DEPEND(2, null, "任务依赖"),
+    DEPEND(2, false, "任务依赖"),
 
     /**
      * 失败重试
      */
-    RETRY(3, null, "失败重试"),
+    RETRY(3, false, "失败重试"),
 
     /**
      * 手动触发
      */
-    MANUAL(4, 0L, "手动触发"),
+    MANUAL(4, true, "手动触发"),
 
     ;
 
@@ -53,13 +53,13 @@ public enum RunType implements IntValueEnum<RunType> {
     /**
      * Trigger time whether is unique
      */
-    private final Long uniqueFlag;
+    private final boolean requiredUnique;
 
     private final String desc;
 
-    RunType(int value, Long uniqueFlag, String desc) {
+    RunType(int value, boolean requiredUnique, String desc) {
         this.value = value;
-        this.uniqueFlag = uniqueFlag;
+        this.requiredUnique = requiredUnique;
         this.desc = desc;
     }
 
@@ -73,13 +73,13 @@ public enum RunType implements IntValueEnum<RunType> {
         return desc;
     }
 
-    public boolean isUniqueFlag() {
-        return uniqueFlag != null;
+    public boolean isRequiredUnique() {
+        return requiredUnique;
     }
 
     public long getUniqueFlag() {
-        if (isUniqueFlag()) {
-            return uniqueFlag;
+        if (requiredUnique) {
+            return 0L;
         }
         throw new UnsupportedOperationException(this + " cannot supported unique flag.");
     }

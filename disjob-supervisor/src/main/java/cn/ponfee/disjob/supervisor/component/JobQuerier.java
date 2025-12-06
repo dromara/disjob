@@ -36,7 +36,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
@@ -73,7 +72,6 @@ public class JobQuerier {
     }
 
     public SchedInstance getInstance(long jobId, long triggerTime, RunType runType) {
-        Assert.isTrue(runType.isUniqueFlag(), () -> "Run type must be unique flag: " + runType);
         return instanceMapper.getByUniqueKey(jobId, triggerTime, runType.value(), runType.getUniqueFlag());
     }
 
