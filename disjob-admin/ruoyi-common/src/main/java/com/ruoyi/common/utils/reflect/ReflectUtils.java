@@ -138,7 +138,7 @@ public class ReflectUtils
         }
         catch (Exception e)
         {
-            String msg = "method: " + method + ", obj: " + obj + ", args: " + args + "";
+            String msg = "method: " + method + ", obj: " + obj + ", args: " + args;
             throw convertReflectionExceptionToUnchecked(msg, e);
         }
     }
@@ -215,7 +215,7 @@ public class ReflectUtils
         }
         catch (Exception e)
         {
-            String msg = "method: " + method + ", obj: " + obj + ", args: " + args + "";
+            String msg = "method: " + method + ", obj: " + obj + ", args: " + args;
             throw convertReflectionExceptionToUnchecked(msg, e);
         }
     }

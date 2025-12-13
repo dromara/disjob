@@ -167,7 +167,7 @@ public class Worker extends Server implements Comparable<Worker> {
 
     // --------------------------------------------------------local Worker
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"serial", "unused"})
     public abstract static class Local extends Worker {
         private static volatile Local instance = null;
 

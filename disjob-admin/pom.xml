@@ -37,12 +37,12 @@
     <shiro.version>1.13.0</shiro.version>
     <thymeleaf-extras-shiro.version>2.1.0</thymeleaf-extras-shiro.version>
     <druid-spring-boot-starter.version>1.2.27</druid-spring-boot-starter.version>
-    <UserAgentUtils.version>1.21</UserAgentUtils.version>
     <kaptcha.version>2.3.3</kaptcha.version>
     <pagehelper-spring-boot-starter.version>2.1.1</pagehelper-spring-boot-starter.version>
-    <fastjson.version>1.2.83</fastjson.version>
+    <fastjson.version>2.0.60</fastjson.version>
     <oshi-core.version>6.9.1</oshi-core.version>
-    <poi-ooxml.version>5.5.0</poi-ooxml.version>
+    <poi-ooxml.version>5.5.1</poi-ooxml.version>
+    <yauaa.version>7.32.0</yauaa.version>
     <velocity-engine-core.version>2.4.1</velocity-engine-core.version>
   </properties>
 

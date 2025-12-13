@@ -31,11 +31,6 @@ import java.util.stream.IntStream;
  */
 public class DelegatedIntSpliterator<T> implements Spliterator<T> {
 
-    private static final int CHARACTERISTICS = Spliterator.ORDERED
-                                             | Spliterator.SIZED
-                                             | Spliterator.SUBSIZED
-                                             | Spliterator.IMMUTABLE;
-
     private final OfInt delegate;
     private final IntFunction<? extends T> mapper;
 
@@ -72,7 +67,7 @@ public class DelegatedIntSpliterator<T> implements Spliterator<T> {
 
     @Override
     public int characteristics() {
-        return CHARACTERISTICS;
+        return Spliterator.ORDERED | Spliterator.SIZED | Spliterator.IMMUTABLE | Spliterator.SUBSIZED;
     }
 
     @Override

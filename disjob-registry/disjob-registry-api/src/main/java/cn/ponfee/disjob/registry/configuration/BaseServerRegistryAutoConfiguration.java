@@ -34,9 +34,9 @@ public abstract class BaseServerRegistryAutoConfiguration {
 
     protected BaseServerRegistryAutoConfiguration() {
         if (MUTEX.compareAndSet(false, true)) {
-            log.info("Enabled registry center.");
+            log.info("Registry center be creating.");
         } else {
-            throw new Error("Registry center already imported.");
+            throw new Error("Registry center already created: " + this.getClass());
         }
     }
 

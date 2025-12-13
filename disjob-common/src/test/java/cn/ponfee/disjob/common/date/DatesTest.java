@@ -68,7 +68,7 @@ public class DatesTest {
         // 输出UTC+0时区的时间点
         System.out.println(Instant.now().toString());
         // 输出本地时区的时间点
-        System.out.println(new Date().toString());
+        System.out.println(new Date());
 
         Instant instant = Instant.ofEpochSecond(0, 1234567890L);
         Assertions.assertEquals("1970-01-01T00:00:01.234567890Z", instant.toString());
@@ -119,9 +119,9 @@ public class DatesTest {
         System.out.println(DateTimeFormatter.ISO_ZONED_DATE_TIME.format(OffsetDateTime.now()));
         System.out.println(LocalDate.from(DateTimeFormatter.BASIC_ISO_DATE.parse("20250816")));
 
-        System.out.println(Instant.parse("2000-01-01T00:00:00.000Z").toString());
-        System.out.println(OffsetDateTime.parse("2000-01-01T00:00:00.000+08:00").toString());
-        System.out.println(LocalDateTime.parse("2000-01-01T00:00:00.000").toString());
+        System.out.println(Instant.parse("2000-01-01T00:00:00.000Z"));
+        System.out.println(OffsetDateTime.parse("2000-01-01T00:00:00.000+08:00"));
+        System.out.println(LocalDateTime.parse("2000-01-01T00:00:00.000"));
     }
 
     @Test

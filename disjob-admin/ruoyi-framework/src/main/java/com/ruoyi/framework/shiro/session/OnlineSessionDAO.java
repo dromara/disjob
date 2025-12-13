@@ -72,7 +72,7 @@ public class OnlineSessionDAO extends EnterpriseCacheSessionDAO
         {
             boolean needSync = true;
             long deltaTime = onlineSession.getLastAccessTime().getTime() - lastSyncTimestamp.getTime();
-            if (deltaTime < dbSyncPeriod * 60 * 1000)
+            if (deltaTime < (long) dbSyncPeriod * 60 * 1000)
             {
                 // 时间差不足 无需同步
                 needSync = false;
