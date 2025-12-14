@@ -26,7 +26,6 @@ import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
-import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -99,30 +98,10 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
         List<SchedTask> tasks = jobQuerier.findBaseInstanceTasks(instance.getInstanceId());
         List<SchedTask> waitingTasks = Collects.filter(tasks, SchedTask::isWaiting);
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
-            processHasWaitingTask(instance, waitingTasks);
+            jobManager.redispatchWaitingTask(instance, waitingTasks);
         } else {
             processNoWaitingTask(instance, tasks);
         }
-    }
-
-    private void processHasWaitingTask(SchedInstance instance, List<SchedTask> waitingTasks) {
-        // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to do re-dispatch
-        List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, workerClient::isShouldRedispatch);
-        if (CollectionUtils.isEmpty(redispatchingTasks)) {
-            return;
-        }
-        SchedJob job = jobQuerier.getJob(instance.getJobId());
-        if (job == null) {
-            log.error("Scanned waiting state instance not found job: {}", instance.getJobId());
-            return;
-        }
-        // check the group is whether none alive worker
-        if (!workerClient.hasAliveWorker(job.getGroup())) {
-            log.error("Scanned waiting state instance none alive worker: {}, {}", instance.getInstanceId(), job.getGroup());
-            return;
-        }
-        jobManager.redispatch(job, instance, redispatchingTasks);
-        log.info("Scanned waiting state instance re-dispatch task: {}", instance.getInstanceId());
     }
 
     private void processNoWaitingTask(SchedInstance instance, List<SchedTask> tasks) {

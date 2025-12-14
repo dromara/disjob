@@ -149,10 +149,6 @@ public class JobManager {
         return workerClient.splitJob(group, instanceId, param, idGenerator, conf.getMaximumSplitTaskSize());
     }
 
-    public void redispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
-        dispatch(true, job, instance, tasks);
-    }
-
     // ------------------------------------------------------------------database single operation without spring transactional
 
     public void disableJob(SchedJob job) {
@@ -175,6 +171,26 @@ public class JobManager {
     public boolean savepoint(long taskId, String worker, String executeSnapshot) {
         CoreUtils.checkClobMaximumLength(executeSnapshot, "Execute snapshot");
         return isOneAffectedRow(taskMapper.savepoint(taskId, worker, executeSnapshot));
+    }
+
+    public void redispatchWaitingTask(SchedInstance instance, List<SchedTask> waitingTasks) {
+        // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to redo dispatch
+        List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, workerClient::isNeedRedispatch);
+        if (CollectionUtils.isEmpty(redispatchingTasks)) {
+            return;
+        }
+        SchedJob job = jobMapper.get(instance.getJobId());
+        if (job == null) {
+            LOG.error("Job not found: {}", instance.getJobId());
+            return;
+        }
+        // check the group is whether none alive worker
+        if (!workerClient.hasAliveWorker(job.getGroup())) {
+            LOG.error("Group none alive worker: {}, {}", instance.getInstanceId(), job.getGroup());
+            return;
+        }
+        dispatch(true, job, instance, redispatchingTasks);
+        LOG.info("Redo dispatch task: {}", instance.getInstanceId());
     }
 
     // ------------------------------------------------------------------database operation within spring @Transactional

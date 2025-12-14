@@ -94,27 +94,11 @@ public class WorkerClient {
 
     public boolean hasAliveTask(List<SchedTask> tasks) {
         return CollectionUtils.isNotEmpty(tasks) &&
-            tasks.stream().anyMatch(e -> e.isExecuting() && isAliveWorker(e.worker()));
+            tasks.stream().anyMatch(e -> e.isExecuting() && isAliveTask(e));
     }
 
-    public boolean isShouldRedispatch(SchedTask task) {
-        if (!task.isWaiting()) {
-            return false;
-        }
-
-        Worker worker = task.worker();
-        if (!isAliveWorker(worker)) {
-            return true;
-        }
-
-        try {
-            // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功，需要重新分发
-            return !destination(worker).existsTask(ExistsTaskParam.of(task.getTaskId()));
-        } catch (Throwable e) {
-            LOG.error("Invoke worker exists task error: " + worker, e);
-            // 若调用异常(如请求超时)，则默认为Worker已存在该task，本次不做处理，等下一次扫描时再判断是否要重新分发任务
-            return false;
-        }
+    public boolean isNeedRedispatch(SchedTask task) {
+        return task.isWaiting() && !isAliveTask(task);
     }
 
     public WorkerRpcService destination(Worker destinationWorker) {
@@ -163,6 +147,21 @@ public class WorkerClient {
             tasks.add(SchedTask.of(taskParams.get(i), idGenerator.generateId(), instanceId, i + 1, tCount, worker));
         }
         return tasks;
+    }
+
+    private boolean isAliveTask(SchedTask task) {
+        Worker worker = task.worker();
+        if (!isAliveWorker(worker)) {
+            return false;
+        }
+        try {
+            // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功
+            return destination(worker).existsTask(ExistsTaskParam.of(task.getTaskId()));
+        } catch (Throwable e) {
+            LOG.error("Invoke worker exists task error: " + worker, e);
+            // 若调用异常(如请求超时)，则默认worker已存在该task，等待下一次重试时再调用`existsTask`判断
+            return true;
+        }
     }
 
 }

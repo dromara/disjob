@@ -26,7 +26,6 @@ import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
-import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -99,32 +98,12 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         List<SchedTask> waitingTasks = Collects.filter(tasks, SchedTask::isWaiting);
 
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
-            processHasWaitingTask(instance, waitingTasks);
+            jobManager.redispatchWaitingTask(instance, waitingTasks);
         } else if (tasks.stream().allMatch(SchedTask::isTerminal)) {
             processAllTerminatedTask(instance);
         } else {
             processHasExecutingTask(instance, tasks);
         }
-    }
-
-    private void processHasWaitingTask(SchedInstance instance, List<SchedTask> waitingTasks) {
-        // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to do re-dispatch
-        List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, workerClient::isShouldRedispatch);
-        if (CollectionUtils.isEmpty(redispatchingTasks)) {
-            return;
-        }
-        SchedJob job = jobQuerier.getJob(instance.getJobId());
-        if (job == null) {
-            log.error("Scanned running state instance not found job: {}", instance.getJobId());
-            return;
-        }
-        // check the group is whether none alive worker
-        if (!workerClient.hasAliveWorker(job.getGroup())) {
-            log.error("Scanned running state instance none alive worker: {}, {}", instance.getInstanceId(), job.getGroup());
-            return;
-        }
-        jobManager.redispatch(job, instance, redispatchingTasks);
-        log.info("Scanned running state instance re-dispatch task: {}", instance.getInstanceId());
     }
 
     private void processAllTerminatedTask(SchedInstance instance) {
