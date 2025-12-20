@@ -30,17 +30,17 @@ public class SupervisorConstants {
     /**
      * Scan triggering job lock name
      */
-    public static final String LOCK_SCAN_TRIGGERING_JOB = "triggering_job";
+    public static final String LOCK_SCAN_TRIGGERING_JOB = "scan_triggering_job";
 
     /**
      * Scan waiting instance lock name
      */
-    public static final String LOCK_SCAN_WAITING_INSTANCE = "waiting_instance";
+    public static final String LOCK_SCAN_WAITING_INSTANCE = "scan_waiting_instance";
 
     /**
      * Scan running instance lock name
      */
-    public static final String LOCK_SCAN_RUNNING_INSTANCE = "running_instance";
+    public static final String LOCK_SCAN_RUNNING_INSTANCE = "scan_running_instance";
 
     // ----------------------------------------------------------------scan locker spring bean name
 

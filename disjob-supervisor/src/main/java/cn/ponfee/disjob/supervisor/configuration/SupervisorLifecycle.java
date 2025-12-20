@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.supervisor.configuration;
 
 import cn.ponfee.disjob.common.lock.LockTemplate;
+import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
@@ -24,9 +25,8 @@ import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.dispatch.TaskDispatcher;
-import cn.ponfee.disjob.supervisor.scanner.RunningInstanceScanner;
+import cn.ponfee.disjob.supervisor.scanner.ExpireInstanceScanner;
 import cn.ponfee.disjob.supervisor.scanner.TriggeringJobScanner;
-import cn.ponfee.disjob.supervisor.scanner.WaitingInstanceScanner;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.SmartLifecycle;
 
@@ -57,9 +57,9 @@ class SupervisorLifecycle implements SmartLifecycle {
         supervisorConf.check();
         this.supervisorStartup = new SupervisorStartup(
             supervisorConf, localSupervisor, supervisorRegistry, taskDispatcher,
-            new WaitingInstanceScanner(supervisorConf, jobManager, jobQuerier, workerClient, scanWaitingInstanceLocker),
-            new RunningInstanceScanner(supervisorConf, jobManager, jobQuerier, workerClient, scanRunningInstanceLocker),
-            new TriggeringJobScanner  (supervisorConf, jobManager, jobQuerier, workerClient, scanTriggeringJobLocker)
+            new ExpireInstanceScanner(RunState.WAITING, supervisorConf, jobManager, jobQuerier, workerClient, scanWaitingInstanceLocker),
+            new ExpireInstanceScanner(RunState.RUNNING, supervisorConf, jobManager, jobQuerier, workerClient, scanRunningInstanceLocker),
+            new TriggeringJobScanner(supervisorConf, jobManager, jobQuerier, workerClient, scanTriggeringJobLocker)
         );
     }
 

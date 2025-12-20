@@ -54,7 +54,7 @@ final class DestinationServerRestTemplate {
         HttpStatus.REQUEST_TIMEOUT,
         HttpStatus.TOO_MANY_REQUESTS,
 
-        // 500：服务器端内部请求外部服务超时导致异常，如连接数据库超时等
+        // 500：RPC服务器端内部请求其所依赖的外部服务超时(如连接数据库超时等)，进而导致RPC客户端也调用超时
         //HttpStatus.INTERNAL_SERVER_ERROR,
 
         // 5xx：502、503、504、509

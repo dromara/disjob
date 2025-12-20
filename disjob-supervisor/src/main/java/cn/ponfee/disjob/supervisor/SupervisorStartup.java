@@ -26,9 +26,8 @@ import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dispatch.TaskDispatcher;
-import cn.ponfee.disjob.supervisor.scanner.RunningInstanceScanner;
+import cn.ponfee.disjob.supervisor.scanner.ExpireInstanceScanner;
 import cn.ponfee.disjob.supervisor.scanner.TriggeringJobScanner;
-import cn.ponfee.disjob.supervisor.scanner.WaitingInstanceScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +49,8 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
     private final Supervisor.Local localSupervisor;
     private final SupervisorRegistry supervisorRegistry;
     private final TaskDispatcher taskDispatcher;
-    private final WaitingInstanceScanner waitingInstanceScanner;
-    private final RunningInstanceScanner runningInstanceScanner;
+    private final ExpireInstanceScanner waitingInstanceScanner;
+    private final ExpireInstanceScanner runningInstanceScanner;
     private final TriggeringJobScanner triggeringJobScanner;
     private final TripleState state = TripleState.create();
 
@@ -59,8 +58,8 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
                              Supervisor.Local localSupervisor,
                              SupervisorRegistry supervisorRegistry,
                              TaskDispatcher taskDispatcher,
-                             WaitingInstanceScanner waitingInstanceScanner,
-                             RunningInstanceScanner runningInstanceScanner,
+                             ExpireInstanceScanner waitingInstanceScanner,
+                             ExpireInstanceScanner runningInstanceScanner,
                              TriggeringJobScanner triggeringJobScanner) {
         this.supervisorConf = requireNonNull(supervisorConf, "Supervisor properties cannot be null.");
         this.localSupervisor = requireNonNull(localSupervisor, "Local supervisor cannot be null.");

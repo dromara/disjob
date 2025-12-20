@@ -86,12 +86,8 @@ public class JobQuerier {
         return jobMapper.findBeTriggering(maxNextTriggerTime, size);
     }
 
-    public List<SchedInstance> findExpireWaitingInstance(Date expireTime, int size) {
-        return instanceMapper.findExpireState(RunState.WAITING.value(), expireTime, size);
-    }
-
-    public List<SchedInstance> findExpireRunningInstance(Date expireTime, int size) {
-        return instanceMapper.findExpireState(RunState.RUNNING.value(), expireTime, size);
+    public List<SchedInstance> findExpireInstance(RunState runState, Date expireTime, int size) {
+        return instanceMapper.findExpireState(runState.value(), expireTime, size);
     }
 
     public SchedInstance getRetryingInstance(long instanceId) {

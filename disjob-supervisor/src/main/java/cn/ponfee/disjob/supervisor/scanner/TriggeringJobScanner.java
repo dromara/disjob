@@ -29,7 +29,6 @@ import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import com.google.common.math.IntMath;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
 
@@ -92,19 +91,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             logPrinter.execute();
             return true;
         }
-
-        Boolean result = lockTemplate.execute(() -> {
-            Date now = new Date();
-            long maxNextTriggerTime = now.getTime() + afterMilliseconds;
-            List<SchedJob> jobs = jobQuerier.findBeTriggeringJob(maxNextTriggerTime, scanBatchSize);
-            if (CollectionUtils.isEmpty(jobs)) {
-                return true;
-            }
-            MultithreadExecutors.run(jobs, job -> processJob(job, now, maxNextTriggerTime), processJobExecutor);
-            return jobs.size() < scanBatchSize;
-        });
-
-        return result != null && result;
+        return Boolean.TRUE.equals(lockTemplate.execute(this::scan));
     }
 
     @PreDestroy
@@ -114,7 +101,17 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         ThreadPoolExecutors.shutdown(processJobExecutor, 1);
     }
 
-    private void processJob(SchedJob job, Date now, long maxNextTriggerTime) {
+    // --------------------------------------------------------------------------private methods
+
+    private boolean scan() {
+        long maxNextTriggerTime = System.currentTimeMillis() + afterMilliseconds;
+        List<SchedJob> jobs = jobQuerier.findBeTriggeringJob(maxNextTriggerTime, scanBatchSize);
+        MultithreadExecutors.run(jobs, this::processJob, processJobExecutor);
+        return jobs.size() < scanBatchSize;
+    }
+
+    private void processJob(SchedJob job) {
+        Date now = new Date();
         try {
             // check has available workers
             if (!workerClient.hasAliveWorker(job.getGroup())) {
@@ -133,7 +130,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 disableJob(job, "Recompute disabled, invalid next trigger time: " + triggerTime);
                 return;
             }
-            if (triggerTime > maxNextTriggerTime) {
+            if (triggerTime > (now.getTime() + afterMilliseconds)) {
                 // 更新next_trigger_time，等待下次扫描
                 jobManager.updateJobNextTriggerTime(job);
                 return;
@@ -149,10 +146,10 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             boolean updated = jobManager.updateJobNextTriggerTime(job);
             log.info("Update conflict next trigger time: {}, {}, {}", updated, job, e.getMessage());
         } catch (IllegalArgumentException e) {
-            log.error("Scan trigger job failed: " + job, e);
+            log.error("Scan trigger job failed: {}", job, e);
             disableJob(job, StringUtils.truncate("Scan process failed: " + e.getMessage(), REMARK_MAX_LENGTH));
         } catch (Throwable t) {
-            log.error("Scan trigger job error: " + job, t);
+            log.error("Scan trigger job error: {}", job, t);
             if (job.getScanFailedCount() >= jobScanFailedCountThreshold) {
                 disableJob(job, StringUtils.truncate("Scan over failed: " + t.getMessage(), REMARK_MAX_LENGTH));
             } else {
