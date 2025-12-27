@@ -20,12 +20,8 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.common.concurrent.LoopThread;
-import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
-import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.concurrent.*;
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.core.supervisor.SupervisorRpcService;
@@ -68,7 +64,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
         this.timingWheel = timingWheel;
         this.workerThreadPool = threadPool;
 
-        this.heartbeatThread = new LoopThread("timing_wheel_rotate", timingWheel.getTickMs(), 0, this::process);
+        this.heartbeatThread = new LoopThread("timing_wheel_rotate", timingWheel.getTickMs(), 0, this::rotate);
 
         int actualProcessPoolSize = Math.max(1, processThreadPoolSize);
         this.processExecutor = ThreadPoolExecutors.builder()
@@ -93,7 +89,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
         }
     }
 
-    private void process() {
+    private void rotate() {
         // check has available supervisors
         if (!discoverSupervisor.hasAliveServer()) {
             logPrinter.execute();
@@ -102,16 +98,26 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
 
         final List<ExecuteTaskParam> tasks = timingWheel.poll();
         if (CollectionUtils.isNotEmpty(tasks)) {
-            processExecutor.execute(() -> process(tasks));
+            processExecutor.execute(() -> processTasks(tasks));
         }
     }
 
-    private void process(List<ExecuteTaskParam> tasks) {
+    private void processTasks(List<ExecuteTaskParam> tasks) {
+        tasks = Collects.filter(tasks, e -> {
+            if (workerThreadPool.existsTask(e.getTaskId())) {
+                // Task was repeated dispatch
+                LOG.warn("Polled task has been exists: {}", e.getTaskId());
+                return false;
+            } else {
+                return true;
+            }
+        });
+
         updateTaskWorker(tasks);
         for (ExecuteTaskParam e : tasks) {
             String triggerTime = Dates.DATETIME_MILLI_FORMAT.format(e.getTriggerTime());
-            LOG.info("Task trace [{}] triggered: {}, {}, {}", e.getTaskId(), e.getOperation(), e.getWorker(), triggerTime);
-            workerThreadPool.submit(new WorkerTask(e));
+            boolean state = workerThreadPool.submit(new WorkerTask(e));
+            LOG.info("Task trace [{}] triggered: {}, {}, {}, {}", e.getTaskId(), e.getOperation(), e.getWorker(), triggerTime, state);
         }
     }
 
@@ -121,13 +127,16 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
             .filter(e -> e.getRouteStrategy().isNotBroadcast())
             .map(ExecuteTaskParam::getTaskId)
             .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(taskIds)) {
-            return;
-        }
-
-        String worker = Collects.getFirst(list).getWorker().serialize();
-        for (List<Long> ids : Lists.partition(taskIds, JobConstants.PROCESS_BATCH_SIZE)) {
-            ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(ids, worker), () -> "Update task worker error: " + ids);
+        if (CollectionUtils.isNotEmpty(taskIds)) {
+            String worker = Collects.getFirst(list).getWorker().serialize();
+            for (List<Long> ids : Lists.partition(taskIds, JobConstants.PROCESS_BATCH_SIZE)) {
+                try {
+                    supervisorRpcClient.updateTaskWorker(ids, worker);
+                } catch (Throwable t) {
+                    LOG.error("Update task worker error: {}", ids, t);
+                    Threads.interruptIfNecessary(t);
+                }
+            }
         }
     }
 

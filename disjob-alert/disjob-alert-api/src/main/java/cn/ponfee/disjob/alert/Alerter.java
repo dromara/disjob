@@ -110,7 +110,7 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
         try {
             alert(event);
         } catch (Throwable t) {
-            LOG.warn("Alert event occur error: " + event, t);
+            LOG.warn("Alert event occur error: {}", event, t);
         }
     }
 
@@ -179,7 +179,7 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
                 try {
                     sender.send(event, alertRecipients, alertWebhook);
                 } catch (Throwable t) {
-                    LOG.error("Alert event send error: " + event, t);
+                    LOG.error("Alert event send error: {}", event, t);
                 }
             });
         }

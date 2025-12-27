@@ -16,14 +16,15 @@
 
 package cn.ponfee.disjob.supervisor.model;
 
-import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import cn.ponfee.disjob.supervisor.component.JobManager;
+import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Resource;
@@ -39,18 +40,22 @@ import java.util.stream.LongStream;
 public class JobManagerTest extends SpringBootTestBase<SchedJobMapper> {
 
     @Resource
-    private IdGenerator idGenerator;
-
-    @Resource
     private SchedTaskMapper taskMapper;
-
     @Resource
     private JobManager jobManager;
+    @Resource
+    private WorkerClient workerClient;
+
+    @Test
+    public void testWorkerClient() throws Throwable {
+        Assertions.assertFalse(workerClient.hasAliveWorker("unknown_group"));
+        Assertions.assertFalse(workerClient.hasAliveWorker());
+    }
 
     @Test
     public void testUpdateTaskWorkerNonDeadlock() throws Throwable {
         int count = 197;
-        long instanceId = idGenerator.generateId();
+        long instanceId = jobManager.generateId();
         taskMapper.insertBatch(createTasks(count, instanceId));
         List<Worker> workers = Arrays.asList(
             new Worker("g", UuidUtils.uuid32(), "127.0.0.1", 80),

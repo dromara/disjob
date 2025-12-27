@@ -45,11 +45,7 @@ public class CsrfValidateFilter extends AccessControlFilter
     {
         Object obj = ShiroUtils.getSession().getAttribute(ShiroConstants.CSRF_TOKEN);
         String sessionToken = Convert.toStr(obj, "");
-        if (StringUtils.isEmpty(requestToken) || !requestToken.equalsIgnoreCase(sessionToken))
-        {
-            return false;
-        }
-        return true;
+        return StringUtils.isNotEmpty(requestToken) && requestToken.equalsIgnoreCase(sessionToken);
     }
 
     @Override

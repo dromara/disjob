@@ -29,7 +29,6 @@ import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import com.google.common.math.IntMath;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
 
 import javax.annotation.PreDestroy;
@@ -46,8 +45,6 @@ import java.util.concurrent.SynchronousQueue;
  * @author Ponfee
  */
 public class TriggeringJobScanner extends AbstractHeartbeatThread {
-
-    private static final int REMARK_MAX_LENGTH = 255;
 
     private final int scanBatchSize;
     private final int jobScanFailedCountThreshold;
@@ -122,12 +119,12 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             // 重新再计算一次nextTriggerTime
             job.setNextTriggerTime(reComputeNextTriggerTime(job, now));
             if (job.getNextTriggerTime() == null) {
-                disableJob(job, "Recompute disabled, none next trigger time");
+                disableJob(job, "not next trigger time");
                 return;
             }
             long triggerTime = job.getNextTriggerTime();
             if (job.getLastTriggerTime() != null && job.getLastTriggerTime() >= triggerTime) {
-                disableJob(job, "Recompute disabled, invalid next trigger time: " + triggerTime);
+                disableJob(job, "invalid next trigger time '" + triggerTime + "'");
                 return;
             }
             if (triggerTime > (now.getTime() + afterMilliseconds)) {
@@ -147,11 +144,11 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             log.info("Update conflict next trigger time: {}, {}, {}", updated, job, e.getMessage());
         } catch (IllegalArgumentException e) {
             log.error("Scan trigger job failed: {}", job, e);
-            disableJob(job, StringUtils.truncate("Scan process failed: " + e.getMessage(), REMARK_MAX_LENGTH));
+            disableJob(job, "scan process failed, " + e.getMessage());
         } catch (Throwable t) {
             log.error("Scan trigger job error: {}", job, t);
             if (job.getScanFailedCount() >= jobScanFailedCountThreshold) {
-                disableJob(job, StringUtils.truncate("Scan over failed: " + t.getMessage(), REMARK_MAX_LENGTH));
+                disableJob(job, "scan over failed, " + t.getMessage());
             } else {
                 int scanFailedCount = job.incrementAndGetScanFailedCount();
                 updateNextScanTime(job, now, IntMath.pow(scanFailedCount, 2) * 5000L);
@@ -160,8 +157,9 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     }
 
     private void disableJob(SchedJob job, String reason) {
-        job.setRemark(reason);
-        jobManager.disableJob(job);
+        if (jobManager.disableJob(job)) {
+            log.warn("Disabled sched job: {}, {}", job.getJobId(), reason);
+        }
     }
 
     /**
@@ -281,16 +279,15 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     /**
      * Refresh the job next trigger time.
      *
-     * @param job             the job
-     * @param lastTriggerTime the lastTriggerTime
-     * @param now             the current date
+     * @param job         the job
+     * @param triggerTime the triggerTime
+     * @param now         the current date
      */
-    private static void refreshNextTriggerTime(SchedJob job, Long lastTriggerTime, Date now) {
-        job.setLastTriggerTime(lastTriggerTime);
+    private static void refreshNextTriggerTime(SchedJob job, long triggerTime, Date now) {
+        job.setLastTriggerTime(triggerTime);
         job.setNextTriggerTime(doComputeNextTriggerTime(job, now));
         if (job.getNextTriggerTime() == null) {
-            // It has not next triggered time, then stop the job
-            job.setRemark("Refresh disabled, not next trigger time");
+            // Disable the job if no next trigger time
             job.setJobState(JobState.DISABLED.value());
         }
     }

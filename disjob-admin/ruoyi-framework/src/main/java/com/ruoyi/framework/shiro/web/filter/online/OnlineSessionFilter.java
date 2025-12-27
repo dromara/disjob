@@ -50,7 +50,7 @@ public class OnlineSessionFilter extends AccessControlFilter
             request.setAttribute(ShiroConstants.ONLINE_SESSION, onlineSession);
             // 把user对象设置进去
             boolean isGuest = onlineSession.getUserId() == null || onlineSession.getUserId() == 0L;
-            if (isGuest == true)
+            if (isGuest)
             {
                 SysUser user = ShiroUtils.getSysUser();
                 if (user != null)

@@ -219,6 +219,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         if (taskQueue.stream().anyMatch(e -> e.getTaskId() == taskId)) {
             return true;
         }
+        // check again from active pool
         return activePool.containsKey(taskId);
     }
 
@@ -611,7 +612,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     LOG.info("Task trace [{}] readied: {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());
                     run(task);
                 } catch (Throwable t) {
-                    LOG.error("Worker thread execute failed: " + task, t);
+                    LOG.error("Worker thread execute failed: {}", task, t);
                     ThrowingRunnable.doCaught(() -> stopTask(task, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t)));
                 }
 
@@ -635,7 +636,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
                 executionTask = workerTask.toExecutionTask(startTaskResult);
             } catch (Throwable t) {
-                LOG.warn("Start task error: " + workerTask, t);
+                LOG.warn("Start task error: {}", workerTask, t);
                 if (workerTask.getRouteStrategy().isNotBroadcast()) {
                     // reset task worker
                     List<Long> list = Collections.singletonList(workerTask.getTaskId());
@@ -653,7 +654,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 taskExecutor.init(executionTask);
                 LOG.info("Initialized task executor: {}", workerTask.getTaskId());
             } catch (Throwable t) {
-                LOG.error("Initialize task executor error: " + workerTask, t);
+                LOG.error("Initialize task executor error: {}", workerTask, t);
                 stopTask(workerTask, Operation.TRIGGER, INITIALIZE_EXCEPTION, toErrorMsg(t));
                 Threads.interruptIfNecessary(t);
                 return;
@@ -671,7 +672,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 } else if (t instanceof InterruptedException) {
                     LOG.warn("Execute task interrupted: {}, {}", workerTask, t.getMessage());
                 } else {
-                    LOG.error("Execute task error: " + workerTask, t);
+                    LOG.error("Execute task error: {}", workerTask, t);
                 }
                 stopTask(workerTask, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
                 Threads.interruptIfNecessary(t);
@@ -680,7 +681,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     taskExecutor.destroy();
                     LOG.info("Destroyed task executor: {}", workerTask.getTaskId());
                 } catch (Throwable t) {
-                    LOG.error("Destroy task executor error: " + workerTask, t);
+                    LOG.error("Destroy task executor error: {}", workerTask, t);
                 }
             }
         }

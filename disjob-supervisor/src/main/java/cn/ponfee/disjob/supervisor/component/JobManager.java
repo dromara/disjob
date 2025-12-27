@@ -73,7 +73,7 @@ import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.common.spring.TransactionUtils.*;
 import static cn.ponfee.disjob.common.util.Functions.convert;
-import static cn.ponfee.disjob.common.util.Functions.doIfTrue;
+import static cn.ponfee.disjob.common.util.Functions.executeIfTrue;
 import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_TEMPLATE;
@@ -155,8 +155,8 @@ public class JobManager {
 
     // ------------------------------------------------------------------database single operation without spring transactional
 
-    public void disableJob(SchedJob job) {
-        jobMapper.disable(job);
+    public boolean disableJob(SchedJob job) {
+        return isOneAffectedRow(jobMapper.disable(job));
     }
 
     public boolean updateJobNextTriggerTime(SchedJob job) {
@@ -249,8 +249,11 @@ public class JobManager {
     public void scheduleTriggerJob(SchedJob job, long triggerTime) throws JobException {
         if (isOneAffectedRow(jobMapper.updateNextTriggerTime(job))) {
             triggerJob(job, RunType.SCHEDULE, triggerTime);
+            if (job.isDisabled()) {
+                LOG.info("Disabled sched job: {}, {}", job.getJobId(), "trigger job success");
+            }
         } else {
-            LOG.warn("Schedule trigger job unsuccessful: {}, {}", job.getJobId(), triggerTime);
+            LOG.warn("Schedule trigger job failed: {}, {}", job.getJobId(), triggerTime);
         }
     }
 
@@ -262,11 +265,10 @@ public class JobManager {
      */
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void updateTaskWorker(List<Long> taskIds, String worker) {
-        if (CollectionUtils.isNotEmpty(taskIds)) {
-            // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
-            taskIds = taskIds.stream().distinct().sorted().collect(Collectors.toList());
-            Collects.batchProcess(taskIds, ids -> taskMapper.updateWorkerBatch(ids, worker), PROCESS_BATCH_SIZE);
-        }
+        Assert.notEmpty(taskIds, "Update task worker task ids cannot be empty.");
+        // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
+        taskIds = taskIds.stream().distinct().sorted().collect(Collectors.toList());
+        Collects.batchProcess(taskIds, ids -> taskMapper.updateWorkerBatch(ids, worker), PROCESS_BATCH_SIZE);
     }
 
     // ------------------------------------------------------------------database operation within spring TransactionTemplate
@@ -491,7 +493,7 @@ public class JobManager {
     public boolean pauseInstance(long instanceId) {
         LOG.info("Pause instance: {}", instanceId);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
-            return doIfTrue(instance.isPausable(), () -> pauseInstance(instance));
+            return executeIfTrue(instance.isPausable(), () -> pauseInstance(instance));
         });
     }
 
@@ -506,7 +508,7 @@ public class JobManager {
         LOG.info("Cancel instance: {}, {}", instanceId, ops);
         Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
-            return doIfTrue(!instance.isTerminal(), () -> cancelInstance(instance, ops));
+            return executeIfTrue(!instance.isTerminal(), () -> cancelInstance(instance, ops));
         });
     }
 
@@ -519,7 +521,7 @@ public class JobManager {
     public boolean resumeInstance(long instanceId) {
         LOG.info("Resume instance: {}", instanceId);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
-            return doIfTrue(instance.isPaused(), () -> resumeInstance(instance));
+            return executeIfTrue(instance.isPaused(), () -> resumeInstance(instance));
         });
     }
 

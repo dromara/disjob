@@ -81,13 +81,11 @@
         job_type = #{jobType,jdbcType=TINYINT},
         route_strategy = #{routeStrategy,jdbcType=TINYINT},
       </if>
+
       <if test="triggerType != null">
         trigger_type = #{triggerType,jdbcType=TINYINT},
         trigger_value = #{triggerValue,jdbcType=VARCHAR},
         next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
-      </if>
-      <if test="remark != null and remark != ''">
-        remark = #{remark,jdbcType=VARCHAR},
       </if>
 
         job_state = #{jobState,jdbcType=TINYINT},
@@ -101,6 +99,7 @@
         misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
         shutdown_strategy = #{shutdownStrategy,jdbcType=TINYINT},
         alert_options = #{alertOptions,jdbcType=TINYINT},
+        remark = #{remark,jdbcType=VARCHAR},
         version = version+1,
         updated_by = #{updatedBy,jdbcType=VARCHAR}
     WHERE job_id = #{jobId,jdbcType=BIGINT}
@@ -155,7 +154,6 @@
     UPDATE sched_job
     SET job_state = 0,
         next_trigger_time = null,
-        remark = #{remark,jdbcType=VARCHAR},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND job_state = 1
@@ -169,9 +167,6 @@
         last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT},
         next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
         scan_failed_count = 0,
-      <if test="jobState == 0">
-        remark = #{remark,jdbcType=VARCHAR},
-      </if>
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND job_state = 1

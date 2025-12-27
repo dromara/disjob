@@ -168,6 +168,10 @@ public class Collects {
         return list.stream().sorted(comparator).collect(Collectors.toList());
     }
 
+    public static <T> T getFirst(T[] array) {
+        return (array == null || array.length == 0) ? null : array[0];
+    }
+
     public static <T> T getLast(T[] array) {
         return (array == null || array.length == 0) ? null : array[array.length - 1];
     }

@@ -105,7 +105,7 @@ public class OnlineWebSessionManager extends DefaultWebSessionManager
             // 永不过期不进行处理
             return;
         }
-        Date expiredDate = DateUtils.addMilliseconds(new Date(), 0 - timeout);
+        Date expiredDate = DateUtils.addMilliseconds(new Date(), -timeout);
         ISysUserOnlineService userOnlineService = SpringUtils.getBean(ISysUserOnlineService.class);
         List<SysUserOnline> userOnlineList = userOnlineService.selectOnlineByExpired(expiredDate);
         // 批量过期删除

@@ -43,7 +43,7 @@ public class Functions {
         };
     }
 
-    public static <T> T doIfTrue(Supplier<T> supplier, Predicate<T> predicate, Runnable action) {
+    public static <T> T executeIfTrue(Supplier<T> supplier, Predicate<T> predicate, Runnable action) {
         T result = supplier.get();
         if (predicate.test(result)) {
             action.run();
@@ -51,7 +51,7 @@ public class Functions {
         return result;
     }
 
-    public static <T> T doIfTrue(Supplier<T> supplier, T expect, Runnable action) {
+    public static <T> T executeIfTrue(Supplier<T> supplier, T expect, Runnable action) {
         T result = supplier.get();
         if (Objects.equals(result, expect)) {
             action.run();
@@ -59,7 +59,7 @@ public class Functions {
         return result;
     }
 
-    public static boolean doIfTrue(boolean state, Runnable action) {
+    public static boolean executeIfTrue(boolean state, Runnable action) {
         if (state) {
             action.run();
         }
