@@ -51,7 +51,6 @@ CREATE TABLE `sched_job` (
   `next_trigger_time`     BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '下一次的触发时间(毫秒时间戳)',
   `next_scan_time`        DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '下一次的扫描时间',
   `scan_failed_count`     TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '连续扫描失败的次数，连续失败次数达到阈值后自动禁用(set job_state=0)',
-  `remark`                VARCHAR(255)                       DEFAULT NULL                 COMMENT '备注',
   `version`               INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
   `is_deleted`            BIGINT         UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '是否已删除：0-否；{id}-是(用id来解决因软删引起的唯一索引冲突问题)；',
   `updated_by`            VARCHAR(60)                        DEFAULT NULL                 COMMENT '更新人',

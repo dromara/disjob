@@ -39,8 +39,8 @@ public class JobTxManagerTestService extends AbstractTxManagerTestService<SchedJ
         super(
             transactionTemplate,
             (id1, id2) -> jobTxMapper.findByJobIds(Arrays.asList(id1, id2)),
-            jobTxMapper::updateRemark,
-            e -> Tuple2.of(e.getJobId(), e.getRemark())
+            jobTxMapper::updateJobParam,
+            e -> Tuple2.of(e.getJobId(), e.getJobParam())
         );
     }
 

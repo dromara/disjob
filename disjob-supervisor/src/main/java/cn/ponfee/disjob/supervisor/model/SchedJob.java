@@ -179,11 +179,6 @@ public class SchedJob extends BaseEntity {
     private Integer scanFailedCount;
 
     /**
-     * 备注
-     */
-    private String remark;
-
-    /**
      * 行记录版本号
      */
     private Integer version;
@@ -298,7 +293,6 @@ public class SchedJob extends BaseEntity {
 
     private void verifyAndDefaultSetting(int maximumJobRetryCount) {
         this.jobName = CoreUtils.trimRequired(jobName, 60, "Job name");
-        this.remark = CoreUtils.trimOptional(remark, 255, "Remark");
         this.jobExecutor = StringUtils.trim(jobExecutor);
 
         // set default

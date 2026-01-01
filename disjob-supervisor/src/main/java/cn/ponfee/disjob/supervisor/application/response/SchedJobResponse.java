@@ -74,8 +74,6 @@ public class SchedJobResponse extends ToJsonString implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long nextTriggerTime;
 
-    private String remark;
-
     private Integer version;
     private Date updatedAt;
     private Date createdAt;

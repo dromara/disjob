@@ -18,7 +18,7 @@ package cn.ponfee.disjob.worker.util;
 
 import cn.ponfee.disjob.common.collect.PooledObjectProcessor;
 import groovy.lang.*;
-import org.apache.commons.codec.digest.DigestUtils;
+import groovy.util.Expando;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineFactory;
 import org.slf4j.Logger;
@@ -48,14 +48,14 @@ public final class GroovyUtils {
     private static final Pattern QUALIFIED_CLASS_NAME_PATTERN = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*\\.)*[a-zA-Z_$][a-zA-Z\\d_$]*$");
 
     /**
-     * Groovy class loader
-     */
-    private static final GroovyClassLoader CLASS_LOADER = new GroovyClassLoader();
-
-    /**
      * Groovy compile class cache
      */
     private static final ConcurrentMap<String, Class<?>> CLASS_CACHE = new ConcurrentHashMap<>();
+
+    /**
+     * Groovy class loader
+     */
+    private static final GroovyClassLoader CLASS_LOADER = new GroovyClassLoader();
 
     /**
      * Groovy shell
@@ -90,37 +90,44 @@ public final class GroovyUtils {
     }
 
     public static <T> Class<T> parseClass(String sourceCode) {
-        String sha1 = DigestUtils.sha1Hex(sourceCode);
-        return (Class<T>) CLASS_CACHE.computeIfAbsent(sha1, key -> CLASS_LOADER.parseClass(sourceCode));
+        return (Class<T>) CLASS_CACHE.computeIfAbsent(sourceCode, CLASS_LOADER::parseClass);
     }
 
     /**
-     * 通用方法调用方式：InvokerHelper.invokeMethod(object, methodName, arguments);
+     * <pre>
+     * 1）调用script中声明的方法：scriptObject.invokeMethod(methodName, args);
+     * 2）通用方法调用方式：InvokerHelper.invokeMethod(scriptObject, methodName, args);
+     * 3）调用script中声明的方法：((Invocable) scriptEngine).invokeMethod(scriptObject, methodName, args);
+     * </pre>
      */
     public enum Evaluator {
 
         /**
-         * Groovy script closure
+         * <pre>
+         * Groovy closure script lambda format: `{ (arg_0, ..., arg_n) -> expression }`
+         *
+         * The current closure script lambda only supported three format:
+         *  1) { it -> expression }, `it` arg is null
+         *  2) { () -> expression }
+         *  3) {    -> expression }
+         * </pre>
          */
         CLOSURE() {
-            final ConcurrentMap<String, Script> scripCache = new ConcurrentHashMap<>();
+            final ConcurrentMap<String, Closure<?>> cache = new ConcurrentHashMap<>();
 
             @Override
             protected <T> T evaluate(String scriptText, Map<String, Object> params) {
-                Script script = scripCache.computeIfAbsent(scriptText, GROOVY_SHELL::parse);
-                Closure<?> closure = (Closure<?>) script.run();
-                // closure = closure.rehydrate(new groovy.util.Expando(), null, null);
-                // closure.setResolveStrategy(Closure.DELEGATE_ONLY);
-                params.forEach(closure::setProperty);
-                return (T) closure.call();
+                Closure<?> closure = cache.computeIfAbsent(scriptText, e -> (Closure<?>) GROOVY_SHELL.parse(e).run());
+                Closure<?> rehydrateClosure = closure.rehydrate(new Expando(), null, null);
+                rehydrateClosure.setResolveStrategy(Closure.DELEGATE_ONLY);
+                params.forEach(rehydrateClosure::setProperty);
+                // 调用call方法传入的参数即是lambda闭包参数，无参就为null：{ it -> it==null }
+                return (T) rehydrateClosure.call();
             }
         },
 
         /**
          * Groovy script based GroovyShell，使用自定义对象池处理器
-         *
-         * <p>方法调用方式一：groovyShell.invokeMethod(methodName, args);
-         * <p>方法调用方式二：script.invokeMethod(methodName, args);
          */
         SHELL() {
             final PooledObjectProcessor<String, Script> pool = new PooledObjectProcessor<>(10, GROOVY_SHELL::parse);
@@ -137,32 +144,24 @@ public final class GroovyUtils {
 
         /**
          * Groovy script based ScriptEngine，在GroovyScriptEngineImpl内部有classMap来缓存script
-         *
          * <p>javax方式创建：new javax.script.ScriptEngineManager().getEngineByExtension("groovy");
-         *
-         * <p>方法调用方式一：((Invocable) scriptEngine).invokeFunction(methodName, args);
-         * <p>方法调用方式二：((Invocable) scriptEngine).invokeMethod(null, methodName, args);
          */
         SCRIPT() {
-            final GroovyScriptEngineFactory scriptEngineFactory = new GroovyScriptEngineFactory();
+            final ScriptEngine scriptEngine = new GroovyScriptEngineFactory().getScriptEngine();
 
             @Override
             protected <T> T evaluate(String scriptText, Map<String, Object> params) throws Exception {
-                ScriptEngine scriptEngine = scriptEngineFactory.getScriptEngine();
                 return (T) scriptEngine.eval(scriptText, new SimpleBindings(params));
             }
         },
 
         /**
          * Groovy script based JavaClass，在#parseClass时会缓存class
-         *
-         * <p>方法调用：script.invokeMethod(methodName, args);
          */
         CLASS() {
             @Override
             protected <T> T evaluate(String scriptText, Map<String, Object> params) throws Exception {
-                Class<?> clazz = parseClass(scriptText);
-                Script script = (Script) clazz.newInstance();
+                Script script = (Script) parseClass(scriptText).newInstance();
                 script.setBinding(new Binding(params));
                 return (T) script.run();
             }

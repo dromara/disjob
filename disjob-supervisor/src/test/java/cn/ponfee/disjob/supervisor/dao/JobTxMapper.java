@@ -32,6 +32,6 @@ public interface JobTxMapper {
 
     List<Long> listLimit(int limit);
 
-    int updateRemark(@Param("jobId") Long jobId, @Param("remark") String remark);
+    int updateJobParam(@Param("jobId") Long jobId, @Param("jobParam") String jobParam);
 
 }

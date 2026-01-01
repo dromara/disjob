@@ -3,7 +3,7 @@
 <mapper namespace="cn.ponfee.disjob.supervisor.dao.JobTxMapper">
 
   <select id="findByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.supervisor.model.SchedJob">
-    SELECT job_id jobId, remark
+    SELECT job_id AS jobId, job_param AS jobParam
     FROM sched_job
     WHERE job_id IN (<foreach collection="collection" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)
   </select>
@@ -12,9 +12,9 @@
     SELECT job_id FROM sched_job LIMIT #{limit,jdbcType=INTEGER}
   </select>
 
-  <update id="updateRemark">
+  <update id="updateJobParam">
     UPDATE sched_job
-    SET remark = #{remark,jdbcType=VARCHAR}, version = version+1
+    SET job_param = #{jobParam}, version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
   </update>
 

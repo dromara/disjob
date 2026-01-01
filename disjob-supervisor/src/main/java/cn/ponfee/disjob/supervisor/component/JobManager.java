@@ -28,6 +28,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
+import cn.ponfee.disjob.common.util.Functions;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
@@ -72,8 +73,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.common.spring.TransactionUtils.*;
-import static cn.ponfee.disjob.common.util.Functions.convert;
-import static cn.ponfee.disjob.common.util.Functions.executeIfTrue;
 import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_TEMPLATE;
@@ -250,7 +249,7 @@ public class JobManager {
         if (isOneAffectedRow(jobMapper.updateNextTriggerTime(job))) {
             triggerJob(job, RunType.SCHEDULE, triggerTime);
             if (job.isDisabled()) {
-                LOG.info("Disabled sched job: {}, {}", job.getJobId(), "trigger job success");
+                LOG.warn("Disabled sched job: {}, {}", job.getJobId(), "trigger job success");
             }
         } else {
             LOG.warn("Schedule trigger job failed: {}, {}", job.getJobId(), triggerTime);
@@ -493,7 +492,7 @@ public class JobManager {
     public boolean pauseInstance(long instanceId) {
         LOG.info("Pause instance: {}", instanceId);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
-            return executeIfTrue(instance.isPausable(), () -> pauseInstance(instance));
+            return Functions.executeIfTrue(instance.isPausable(), () -> pauseInstance(instance));
         });
     }
 
@@ -508,7 +507,7 @@ public class JobManager {
         LOG.info("Cancel instance: {}, {}", instanceId, ops);
         Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
-            return executeIfTrue(!instance.isTerminal(), () -> cancelInstance(instance, ops));
+            return Functions.executeIfTrue(!instance.isTerminal(), () -> cancelInstance(instance, ops));
         });
     }
 
@@ -521,7 +520,7 @@ public class JobManager {
     public boolean resumeInstance(long instanceId) {
         LOG.info("Resume instance: {}", instanceId);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
-            return executeIfTrue(instance.isPaused(), () -> resumeInstance(instance));
+            return Functions.executeIfTrue(instance.isPaused(), () -> resumeInstance(instance));
         });
     }
 
@@ -654,7 +653,7 @@ public class JobManager {
     }
 
     private void doInSynchronizedTransaction(long instanceId, Long wnstanceId, Consumer<SchedInstance> action) {
-        doInSynchronizedTransaction(instanceId, wnstanceId, convert(action, true));
+        doInSynchronizedTransaction(instanceId, wnstanceId, Functions.convert(action, true));
     }
 
     /**
@@ -998,7 +997,7 @@ public class JobManager {
             return;
         }
 
-        // 2、if fixed trigger type job then update the job next triggertime
+        // 2、if fixed trigger type job then update the job next trigger time
         if (job.isEnabled() && job.isFixedTriggerType() && original.isRunSchedule()) {
             TriggerType triggerType = TriggerType.of(job.getTriggerType());
             long lastTriggerTime = original.getTriggerTime(), nextTriggerTime;

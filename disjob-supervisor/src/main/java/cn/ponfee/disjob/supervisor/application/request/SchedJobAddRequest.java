@@ -54,7 +54,6 @@ public class SchedJobAddRequest extends ToJsonString implements Serializable {
     private Integer routeStrategy;
     private Integer shutdownStrategy;
     private Integer alertOptions;
-    private String remark;
 
     public SchedJob tosSchedJob(String user) {
         SchedJob job = SchedJobConverter.INSTANCE.convert(this);

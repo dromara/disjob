@@ -73,15 +73,15 @@ class AlerterTest {
 
         assertThatThrownBy(() -> AlertType.check(-1))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Invalid alert type val: -1");
+            .hasMessage("Invalid alert type value: -1");
 
         assertThatThrownBy(() -> AlertType.check(4))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Invalid alert type val: 4");
+            .hasMessage("Invalid alert type value: 4");
 
         assertThatThrownBy(() -> AlertType.check(null))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Invalid alert type val: null");
+            .hasMessage("Invalid alert type value: null");
     }
 
     @Test

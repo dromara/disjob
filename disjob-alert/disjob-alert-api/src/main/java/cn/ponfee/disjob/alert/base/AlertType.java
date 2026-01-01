@@ -67,12 +67,12 @@ public enum AlertType implements IntValueEnum<AlertType> {
     }
 
     public static void check(Integer val) {
-        // 0表示未选，MAX_VAL表示全选
-        if (val == null || val < 0 || val > MAX_VAL) {
-            throw new IllegalArgumentException("Invalid alert type val: " + val);
+        // 0表示未选，MAX_VALUE表示全选
+        if (val == null || val < 0 || val > MAX_VALUE) {
+            throw new IllegalArgumentException("Invalid alert type value: " + val);
         }
     }
 
-    private static final int MAX_VAL = Arrays.stream(values()).mapToInt(AlertType::value).reduce(0, (a, b) -> a ^ b);
+    private static final int MAX_VALUE = Arrays.stream(values()).mapToInt(AlertType::value).reduce(0, (a, b) -> a ^ b);
 
 }
