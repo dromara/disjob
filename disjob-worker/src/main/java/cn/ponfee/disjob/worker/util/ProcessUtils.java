@@ -124,10 +124,10 @@ public final class ProcessUtils {
                 LOG.error("Stop process id unknown os name: {}, {}", SystemUtils.OS_NAME, pid);
             }
         } catch (InterruptedException e) {
-            LOG.error("Kill process id '{}' interrupted.", pid);
+            LOG.error("Kill process id interrupted: {}", pid);
             ExceptionUtils.rethrow(e);
         } catch (Throwable t) {
-            LOG.error("Kill process id '" + pid + "' error.", t);
+            LOG.error("Kill process id error: {}", pid, t);
         }
     }
 
@@ -152,7 +152,7 @@ public final class ProcessUtils {
                 return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + error);
             }
         } catch (Throwable t) {
-            log.error("Process execute error: " + task, t);
+            log.error("Process execute error: {}", task, t);
             Threads.interruptIfNecessary(t);
             return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
         } finally {
@@ -188,7 +188,7 @@ public final class ProcessUtils {
             try {
                 process.destroy();
             } catch (Throwable t) {
-                verbose.accept("Destroy process error: " + ExceptionUtils.getStackTrace(t));
+                verbose.accept("Process destroy error: " + ExceptionUtils.getStackTrace(t));
             }
         }
     }
@@ -215,7 +215,7 @@ public final class ProcessUtils {
             try {
                 process.destroy();
             } catch (Throwable t) {
-                LOG.error("Destroy process " + process.getClass().getName() + " error.", t);
+                LOG.error("Destroy process error: {}", process.getClass().getName(), t);
             }
         }
     }

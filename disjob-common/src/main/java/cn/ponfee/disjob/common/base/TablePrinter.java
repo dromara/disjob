@@ -99,49 +99,51 @@ public enum TablePrinter {
             colLines[i] = Strings.repeat(hr, maxWidth + 2);
         }
 
-        // print top border: ┌──┬──┐
-        printBorder(output, colLines, tl, tc, tr, true);
+        // print top border: `┌─────────┬────────────┬─────────────┐`
+        printBorder(output, colLines, tl, tc, tr, false);
 
         if (withHeader) {
-            // print header: │  header   │
+            // print header: `│ header1 │  header2   │   header3   │`
             printRow(output, colLines, headers, true);
         }
 
         if (!rows.isEmpty()) {
             if (withHeader) {
-                // print middle border: ├──┼──┤
-                printBorder(output, colLines, ml, mc, mr, true);
+                // print middle border: `├─────────┼────────────┼─────────────┤`
+                printBorder(output, colLines, ml, mc, mr, false);
             }
             for (String[] row : rows) {
-                // print row: │ row       │
+                // print row: `│ row1    │ row2222222 │ row33333333 │`
                 printRow(output, colLines, row, false);
             }
         }
 
-        // print bottom border: └──┴──┘
-        printBorder(output, colLines, bl, bc, br, false);
+        // print bottom border: `└─────────┴────────────┴─────────────┘`
+        printBorder(output, colLines, bl, bc, br, true);
     }
 
     // ------------------------------------------------------------private methods
 
     private void printBorder(Appendable output, String[] colLines,
-                             String left, String center, String right, boolean newLine) throws IOException {
+                             String left, String center, String right, boolean isBottom) throws IOException {
         output.append(left);
         for (int i = 0, n = colLines.length - 1; i <= n; i++) {
             output.append(colLines[i]).append(i < n ? center : right);
         }
-        if (newLine) {
+        // append new line if is not bottom
+        if (!isBottom) {
             output.append('\n');
         }
     }
 
     private void printRow(Appendable output, String[] colLines,
-                          String[] cells, boolean alignCenter) throws IOException {
+                          String[] cells, boolean isHeader) throws IOException {
         output.append(vr);
         for (int i = 0; i < colLines.length; i++) {
             String cell = (cells[i] != null) ? cells[i] : "";
             int paddingCount = colLines[i].length() - cell.length();
-            String leftPadding = alignCenter ? Strings.repeat(" ", paddingCount / 2) : " ";
+            // align center if is header
+            String leftPadding = isHeader ? Strings.repeat(" ", paddingCount / 2) : " ";
             String rightPadding = Strings.repeat(" ", paddingCount - leftPadding.length());
             output.append(leftPadding).append(cell).append(rightPadding).append(vr);
         }

@@ -95,12 +95,32 @@ public class ExpireInstanceScanner extends AbstractHeartbeatThread {
         if (jobManager.updateInstanceNextScanTime(instance, new Date())) {
             List<SchedTask> allTasks = jobQuerier.findBaseInstanceTasks(instance.getInstanceId());
             List<SchedTask> waitingTasks = Collects.filter(allTasks, SchedTask::isWaiting);
-            if (CollectionUtils.isEmpty(waitingTasks)) {
-                purgeExpiredInstance(instance, allTasks);
-            } else {
+            if (CollectionUtils.isNotEmpty(waitingTasks)) {
                 redispatchWaitingTask(instance, waitingTasks);
+            } else {
+                purgeExpiredInstance(instance, allTasks);
             }
         }
+    }
+
+    private void redispatchWaitingTask(SchedInstance instance, List<SchedTask> waitingTasks) {
+        // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to redo dispatch
+        List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, workerClient::isNeedRedispatch);
+        if (CollectionUtils.isEmpty(redispatchingTasks)) {
+            return;
+        }
+        SchedJob job = jobQuerier.getJob(instance.getJobId());
+        if (job == null) {
+            log.error("Job not found: {}", instance.getJobId());
+            return;
+        }
+        // check the group is whether none alive worker
+        if (!workerClient.hasAliveWorker(job.getGroup())) {
+            log.error("Group none alive worker: {}, {}", instance.getInstanceId(), job.getGroup());
+            return;
+        }
+        jobManager.redispatch(job, instance, redispatchingTasks);
+        log.info("Redo dispatch task: {}", instance.getInstanceId());
     }
 
     private void purgeExpiredInstance(SchedInstance instance, List<SchedTask> allTasks) {
@@ -122,26 +142,6 @@ public class ExpireInstanceScanner extends AbstractHeartbeatThread {
         }
         boolean purged = jobManager.purgeInstance(instance);
         log.info("Purge scanned instance: {}, {}", instance.getInstanceId(), purged);
-    }
-
-    private void redispatchWaitingTask(SchedInstance instance, List<SchedTask> waitingTasks) {
-        // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to redo dispatch
-        List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, workerClient::isNeedRedispatch);
-        if (CollectionUtils.isEmpty(redispatchingTasks)) {
-            return;
-        }
-        SchedJob job = jobQuerier.getJob(instance.getJobId());
-        if (job == null) {
-            log.error("Job not found: {}", instance.getJobId());
-            return;
-        }
-        // check the group is whether none alive worker
-        if (!workerClient.hasAliveWorker(job.getGroup())) {
-            log.error("Group none alive worker: {}, {}", instance.getInstanceId(), job.getGroup());
-            return;
-        }
-        jobManager.redispatch(job, instance, redispatchingTasks);
-        log.info("Redo dispatch task: {}", instance.getInstanceId());
     }
 
     private static long obtainHeartbeatPeriodMs(RunState scanRunState, SupervisorProperties conf) {

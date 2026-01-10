@@ -82,7 +82,7 @@ public class RedisKeyRenewal {
                 this.nextRenewTimeMillis = System.currentTimeMillis() + intervalMillis;
                 LOG.debug("Renewed redis key '{}' successful.", stringKey);
             } catch (Throwable t) {
-                LOG.warn("Renew redis key '" + stringKey + "' occur error.", t);
+                LOG.warn("Renew redis key '{}' occur error.", stringKey, t);
             } finally {
                 lock.unlock();
             }

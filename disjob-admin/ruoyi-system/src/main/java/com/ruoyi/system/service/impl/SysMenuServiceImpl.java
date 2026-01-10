@@ -7,6 +7,7 @@ import com.ruoyi.common.core.domain.entity.SysRole;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.text.Convert;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.mapper.SysMenuMapper;
 import com.ruoyi.system.mapper.SysRoleMenuMapper;
@@ -66,7 +67,7 @@ public class SysMenuServiceImpl implements ISysMenuService
     public List<SysMenu> selectMenuList(SysMenu menu, Long userId)
     {
         List<SysMenu> menuList = null;
-        if (SysUser.isAdmin(userId))
+        if (ShiroUtils.isAdmin(userId))
         {
             menuList = menuMapper.selectMenuList(menu);
         }
@@ -87,7 +88,7 @@ public class SysMenuServiceImpl implements ISysMenuService
     public List<SysMenu> selectMenuAll(Long userId)
     {
         List<SysMenu> menuList = null;
-        if (SysUser.isAdmin(userId))
+        if (ShiroUtils.isAdmin(userId))
         {
             menuList = menuMapper.selectMenuAll();
         }

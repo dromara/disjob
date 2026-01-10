@@ -293,8 +293,8 @@ public class CommonTest {
     }
 
     @Test
-    public void testTablePrint() {
-        String[] headers = {"ID", "Name", "Age", "City"};
+    public void testTablePrint1() {
+        String[] headers = {"Id", "Name", "Age", "City"};
         List<String[]> rows = new ArrayList<>();
         rows.add(new String[]{"1", "Alice", "25", "Beijing"});
         rows.add(new String[]{"2", "Bob", "30", ""});
@@ -322,6 +322,14 @@ public class CommonTest {
         System.out.println(TablePrinter.HALF.print(null, rows));
         System.out.println();
         System.out.println(TablePrinter.HALF.print(headers, Collections.emptyList()));
+    }
+
+    @Test
+    public void testTablePrint2() {
+        String[] headers = {"header1", "header2", "header3"};
+        List<String[]> rows = new ArrayList<>();
+        rows.add(new String[]{"row1", "row2222222", "row33333333"});
+        System.out.println(TablePrinter.FULL.print(headers, rows));
     }
 
     @Test

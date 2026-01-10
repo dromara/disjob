@@ -35,9 +35,11 @@ import java.util.function.Function;
  */
 public class FilePrinterTest {
 
+    private static final String BASE_PACKAGE = "cn.ponfee.disjob.common";
+
     @Test
     public void test1() throws IOException {
-        File root = new File(MavenProjects.getTestJavaPath("cn.ponfee.disjob.common"));
+        File root = new File(MavenProjects.getTestJavaPath(BASE_PACKAGE));
         Function<File, List<File>> nodeChildren = f -> Optional.ofNullable(f.listFiles()).map(Arrays::asList).orElse(Collections.emptyList());
         print(root, nodeChildren, File::getName, System.out);
     }
@@ -49,10 +51,10 @@ public class FilePrinterTest {
             File::getName,
             f -> Optional.ofNullable(f.listFiles()).map(Arrays::asList).orElse(Collections.emptyList())
         );
-        printer.print(new File(MavenProjects.getTestJavaPath("cn.ponfee.disjob.common")));
+        printer.print(new File(MavenProjects.getTestJavaPath(BASE_PACKAGE)));
     }
 
-    public static <T> void print(T node, Function<T, List<T>> nodeChildren, Function<T, CharSequence> nodeLabel, Appendable output) throws IOException {
+    private static <T> void print(T node, Function<T, List<T>> nodeChildren, Function<T, CharSequence> nodeLabel, Appendable output) throws IOException {
         print(node, nodeChildren, nodeLabel, output, null, true);
     }
 

@@ -52,6 +52,7 @@ import java.util.Objects;
  *
  * @author Ponfee
  */
+@Getter
 public class RedisTemplateFactory implements Closeable {
 
     private final RedisProperties properties;
@@ -76,18 +77,6 @@ public class RedisTemplateFactory implements Closeable {
         this.redisConnectionFactory = createConnectionFactory(builderCustomizers);
         this.redisTemplate = createRedisTemplate(redisConnectionFactory);
         this.stringRedisTemplate = new StringRedisTemplate(redisConnectionFactory);
-    }
-
-    public LettuceConnectionFactory getRedisConnectionFactory() {
-        return redisConnectionFactory;
-    }
-
-    public RedisTemplate<Object, Object> getRedisTemplate() {
-        return redisTemplate;
-    }
-
-    public StringRedisTemplate getStringRedisTemplate() {
-        return stringRedisTemplate;
     }
 
     @Override
