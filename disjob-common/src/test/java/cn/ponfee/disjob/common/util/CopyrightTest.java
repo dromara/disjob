@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Ponfee (http://www.ponfee.cn/)
+ * Copyright 2022-2026 Ponfee (http://www.ponfee.cn/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class CopyrightTest {
 
     public static final String CURRENT_FILE_CLASS = "\npublic class " + CopyrightTest.class.getSimpleName() + " {\n";
     private static final String OLD_COPYRIGHT_KEYWORD = "\n * Copyright 2022-2023 Ponfee (http://www.ponfee.cn/)\n";
-    private static final String NEW_COPYRIGHT_KEYWORD = "\n * Copyright 2022-2024 Ponfee (http://www.ponfee.cn/)\n";
+    private static final String NEW_COPYRIGHT_KEYWORD = "\n * Copyright 2022-2026 Ponfee (http://www.ponfee.cn/)\n";
 
     private static final String BASE_DIR = MavenProjects.getProjectBaseDir(); // + "/src/test/java/cn/ponfee/disjob/common/spring/a";
     private static final String COPYRIGHT = ThrowingSupplier.doChecked(

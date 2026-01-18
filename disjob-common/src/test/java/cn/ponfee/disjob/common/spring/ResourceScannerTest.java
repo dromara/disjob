@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Ponfee (http://www.ponfee.cn/)
+ * Copyright 2022-2026 Ponfee (http://www.ponfee.cn/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,8 @@ public class ResourceScannerTest {
         String file = "copy-right.txt";
         Map<String, String> map = new ResourceScanner(file).scan4text();
         assertThat(map.get(file))
-            //.startsWith("/*\n * Copyright 2022-2024 Ponfee (http://www.ponfee.cn/)\n") // Windows is “\r\n”
-            .contains(" * Copyright 2022-2024 Ponfee (http://www.ponfee.cn/)")
+            //.startsWith("/*\n * Copyright 2022-2026 Ponfee (http://www.ponfee.cn/)\n") // Windows is “\r\n”
+            .contains(" * Copyright 2022-2026 Ponfee (http://www.ponfee.cn/)")
             .contains("*     https://www.apache.org/licenses/LICENSE-2.0");
     }
 }

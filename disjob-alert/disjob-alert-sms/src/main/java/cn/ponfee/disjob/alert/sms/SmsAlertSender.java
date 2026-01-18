@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Ponfee (http://www.ponfee.cn/)
+ * Copyright 2022-2026 Ponfee (http://www.ponfee.cn/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class SmsAlertSender extends AlertSender {
             smsBlend.massTexting(phones, message);
             LOG.info("Alert event sms send success: {}", phones);
         } catch (Exception e) {
-            LOG.error("Alert event sms send error: " + phones, e);
+            LOG.error("Alert event sms send error: {}", phones, e);
         }
     }
 
