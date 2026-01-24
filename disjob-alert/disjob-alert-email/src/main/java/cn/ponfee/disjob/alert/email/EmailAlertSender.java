@@ -74,7 +74,7 @@ public class EmailAlertSender extends AlertSender {
             sender.send(mimeMessage);
             LOG.info("Alert event email send success: {}", alertRecipientMap.values());
         } catch (Exception e) {
-            LOG.error("Alert event email send error: " + alertRecipientMap.values(), e);
+            LOG.error("Alert event email send error: {}", alertRecipientMap.values(), e);
         }
     }
 

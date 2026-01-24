@@ -72,7 +72,7 @@ public class ImAlertSender extends AlertSender {
             doPost(alertWebhook, payload);
             LOG.info("Alert event instant messaging sent success: {}, {}", supplier, alertWebhook);
         } catch (Exception e) {
-            LOG.error("Alert event instant messaging sent error: " + supplier + ", " + alertWebhook, e);
+            LOG.error("Alert event instant messaging sent error: {}, {}", supplier, alertWebhook, e);
         }
     }
 

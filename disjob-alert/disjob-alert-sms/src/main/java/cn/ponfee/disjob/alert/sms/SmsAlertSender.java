@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package cn.ponfee.disjob.alert.sms;
 
 import cn.ponfee.disjob.alert.base.AlertEvent;
