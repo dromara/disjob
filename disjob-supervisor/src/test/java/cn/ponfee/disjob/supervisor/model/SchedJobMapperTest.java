@@ -25,6 +25,7 @@ import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import cn.ponfee.disjob.supervisor.base.TriggerTimes;
 import cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
+import cn.ponfee.disjob.supervisor.disjob_admin.AdminDataSourceConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -52,10 +53,10 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     @Resource(name = SupervisorDataSourceConfig.SPRING_BEAN_NAME_JDBC_TEMPLATE)
     private JdbcTemplate jdbcTemplate;
 
-    @Resource(name = "disjobDataSource")
+    @Resource(name = SupervisorDataSourceConfig.SPRING_BEAN_NAME_DATA_SOURCE)
     private DataSource disjobDataSource;
 
-    @Resource(name = "disjob-adminDataSource")
+    @Resource(name = AdminDataSourceConfig.SPRING_BEAN_NAME_DATA_SOURCE)
     private DataSource adminDataSource;
 
     @Test

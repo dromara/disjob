@@ -48,6 +48,11 @@ public class AdminDataSourceConfig /*extends cn.ponfee.disjob.common.spring.Abst
     }
 
     /**
+     * Spring bean name data source
+     */
+    public static final String SPRING_BEAN_NAME_DATA_SOURCE = DATA_SOURCE_NAME + MybatisDataSourceConfigurer.DATA_SOURCE_NAME_SUFFIX;
+
+    /**
      * Spring bean name transaction manager
      */
     public static final String SPRING_BEAN_NAME_TX_MANAGER = DATA_SOURCE_NAME + MybatisDataSourceConfigurer.TX_MANAGER_NAME_SUFFIX;

@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @EnableSupervisor
 @SpringBootApplication
-public class SpringBootTestApplication {
+class SpringBootTestApplication {
 
     // 因测试用例为单机模式，可代替`@DbSnowflakeIdGenerator(jdbcTemplateRef = SPRING_BEAN_NAME_JDBC_TEMPLATE)`
     @Bean

@@ -16,11 +16,13 @@
 
 package cn.ponfee.disjob.supervisor;
 
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.worker.WorkerRpcService;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -33,8 +35,6 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.reset;
 
 /**
  * <pre>
@@ -79,8 +79,56 @@ import static org.mockito.Mockito.reset;
 public abstract class SpringBootTestMockito {
 
     static {
+        init();
+    }
+
+    // Only reset mock field which is defined in SpringBootTestMockito
+    private static final List<Field> MOCKED_FIELDS = FieldUtils.getAllFieldsList(SpringBootTestMockito.class)
+        .stream()
+        .filter(e -> !Modifier.isStatic(e.getModifiers()))
+        .filter(e -> e.isAnnotationPresent(MockBean.class) || MockedStatic.class.isAssignableFrom(e.getType()))
+        .peek(e -> assertTrue(Modifier.isProtected(e.getModifiers()), () -> "Mock field must be protected: " + e.toGenericString()))
+        .collect(Collectors.toList());
+
+    // --------------------------------------------------------mocked object bean fields
+
+    @MockBean
+    protected WorkerRpcService workerRpcService;
+
+    // --------------------------------------------------------mocked class static fields
+
+    protected MockedStatic<NetUtils> mockedStaticNetUtils;
+
+    // --------------------------------------------------------protected final methods
+
+    protected final void initMock() {
+        mockedStaticNetUtils = Mockito.mockStatic(NetUtils.class);
+
+        /*
+        String localhost = UuidUtils.uuid32();
+        mockedStaticNetUtils.when(NetUtils::getLocalHost).thenReturn(localhost);
+        mockedStaticNetUtils.verify(NetUtils::getLocalHost, Mockito.never());
+        assertEquals(localhost, NetUtils.getLocalHost());
+        mockedStaticNetUtils.verify(NetUtils::getLocalHost, Mockito.times(1));
+        */
+    }
+
+    protected final void destroyMock() {
+        for (Field field : MOCKED_FIELDS) {
+            Object mockedObj = ThrowingSupplier.doChecked(() -> field.get(this));
+            if (mockedObj instanceof MockedStatic) {
+                ((MockedStatic<?>) mockedObj).close();
+            } else if (field.isAnnotationPresent(MockBean.class)) {
+                Mockito.reset(mockedObj);
+            } else {
+                throw new Error("Invalid mocked field: " + field.toGenericString());
+            }
+        }
+    }
+
+    private static void init() {
         // Mock CoreUtils.getLocalHost返回`127.0.0.1`，支持在断网时能跑测试用例
-        MockedStatic<CoreUtils> mockedStaticCoreUtils = mockStatic(CoreUtils.class);
+        MockedStatic<CoreUtils> mockedStaticCoreUtils = Mockito.mockStatic(CoreUtils.class);
         String localhostIp = "127.0.0.1";
 
         // Mock CoreUtils#getLocalHost(String)
@@ -92,46 +140,6 @@ public abstract class SpringBootTestMockito {
         mockedStaticCoreUtils.when(CoreUtils::getLocalHost).thenReturn(localhostIp);
         assertEquals(localhostIp, CoreUtils.getLocalHost());
         mockedStaticCoreUtils.verify(CoreUtils::getLocalHost);
-    }
-
-    // Only reset mock field which is defined in SpringBootTestMockito
-    private static final List<Field> MOCKED_FIELDS = FieldUtils.getAllFieldsList(SpringBootTestMockito.class)
-        .stream()
-        .filter(e -> !Modifier.isStatic(e.getModifiers()))
-        .filter(e -> e.isAnnotationPresent(MockBean.class) || MockedStatic.class.isAssignableFrom(e.getType()))
-        .peek(e -> assertTrue(Modifier.isProtected(e.getModifiers()), () -> "Mock field must be protected: " + e.toGenericString()))
-        .collect(Collectors.toList());
-
-    // --------------------------------------mock bean definition
-
-    @MockBean
-    protected WorkerRpcService workerRpcService;
-
-    // --------------------------------------mock static method definition
-
-    protected MockedStatic<NetUtils> mockedStaticNetUtils;
-
-    // --------------------------------------methods
-
-    protected final void initMock() {
-        mockedStaticNetUtils = mockStatic(NetUtils.class);
-    }
-
-    protected final void destroyMock() {
-        for (Field field : MOCKED_FIELDS) {
-            try {
-                Object mockedObj = field.get(this);
-                if (mockedObj == null) {
-                    throw new RuntimeException("Mocked object cannot be null: " + field.toGenericString());
-                } else if (mockedObj instanceof MockedStatic) {
-                    ((MockedStatic<?>) mockedObj).close();
-                } else {
-                    reset(mockedObj);
-                }
-            } catch (Exception ex) {
-                throw new RuntimeException("Mocked object reset error: " + field.toGenericString(), ex);
-            }
-        }
     }
 
 }

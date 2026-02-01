@@ -20,8 +20,6 @@ import cn.ponfee.disjob.common.dag.DAGExpression;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,13 +30,11 @@ import java.io.IOException;
  *
  * @author Ponfee
  */
-@Disabled
-class DAGPrinterTest {
+public class DAGPrinterTest {
 
     private static final String BASE_DIR = MavenProjects.getProjectBaseDir() + "/target/dag/";
 
-    @Test
-    void testPrint() throws Exception {
+    public static void main(String[] args) throws Exception {
         File baseDir = new File(BASE_DIR);
         FileUtils.deleteDirectory(baseDir);
         FileUtils.forceMkdir(baseDir);

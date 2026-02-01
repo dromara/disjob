@@ -78,7 +78,7 @@ public abstract class SpringBootTestBase<T> extends SpringBootTestMockito implem
         this.applicationContext = applicationContext;
     }
 
-    // --------------------------------------annotated junit jupiter methods definition
+    // ------------------------------------------------------annotated junit jupiter methods definition
 
     /**
      * 在当前测试类的所有测试方法之前执行一次，必须是void返回类型且不能为private，可以按junit jupiter的规范带上参数
@@ -100,11 +100,11 @@ public abstract class SpringBootTestBase<T> extends SpringBootTestMockito implem
         log.info("Before all test method.");
         Class<T> type = GenericUtils.getActualTypeArgument(getClass(), 0);
         if (!Arrays.asList(Void.class, Object.class).contains(type)) {
-            this.bean = StringUtils.isBlank(beanName)
-                ? applicationContext.getBean(type)
-                : applicationContext.getBean(beanName, type);
+            this.bean = StringUtils.isBlank(beanName) ?
+                applicationContext.getBean(type) :
+                applicationContext.getBean(beanName, type);
         }
-        SpringBootTestCollector.collect(applicationContext, getClass());
+        SpringBootTestCollector.collect(applicationContext, this);
 
         beforeAll();
     }
@@ -136,7 +136,7 @@ public abstract class SpringBootTestBase<T> extends SpringBootTestMockito implem
     }
     */
 
-    // --------------------------------------sub-class can override methods definition
+    // ------------------------------------------------------sub-class can override methods definition
 
     protected void beforeAll() {
         // default no-operation

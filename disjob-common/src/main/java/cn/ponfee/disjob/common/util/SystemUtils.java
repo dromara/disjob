@@ -43,7 +43,7 @@ public final class SystemUtils {
                 return value;
             }
         } catch (Exception e) {
-            LOG.error("Get system property occur error: " + name, e);
+            LOG.error("Get system property occur error: {}", name, e);
         }
 
         try {
@@ -53,7 +53,7 @@ public final class SystemUtils {
                 return value;
             }
         } catch (Exception e) {
-            LOG.error("Get system env occur error: " + name, e);
+            LOG.error("Get system env occur error: {}", name, e);
         }
 
         return value;

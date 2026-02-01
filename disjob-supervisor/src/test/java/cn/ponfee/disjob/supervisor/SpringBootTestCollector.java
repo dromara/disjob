@@ -16,42 +16,56 @@
 
 package cn.ponfee.disjob.supervisor;
 
+import cn.ponfee.disjob.common.base.TablePrinter;
 import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
+import cn.ponfee.disjob.common.date.Dates;
+import cn.ponfee.disjob.common.tree.PlainNode;
+import cn.ponfee.disjob.common.tree.TreeNode;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.ObjectUtils;
 
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 /**
- * Collect spring boot test info
+ * Collect spring boot test container info
  *
  * @author Ponfee
  */
-public class SpringBootTestCollector {
+class SpringBootTestCollector {
 
-    private static final ConcurrentMap<ApplicationContext, Set<Class<?>>> TEST_CLASSES_MAP = new ConcurrentHashMap<>();
+    private static final Map<ApplicationContext, Set<Object>> CONTAINER_BEAN_MAP = new ConcurrentHashMap<>();
 
     static {
-        ShutdownHookManager.addShutdownHook(0, () -> {
-            StringBuilder printer = new StringBuilder();
-            printer.append("\n\n");
-            printer.append("/*=================================Spring container & Test case=================================*\\");
-            TEST_CLASSES_MAP.forEach((spring, classes) -> {
-                printer.append("\n");
-                printer.append(spring + ": \n");
-                printer.append(classes.stream().map(e -> "---- " + e.getName()).collect(Collectors.joining("\n")));
-                printer.append("\n");
-            });
-            printer.append("\\*=================================Spring container & Test case=================================*/");
-            printer.append("\n\n");
-            System.out.println(printer);
-        });
+        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, SpringBootTestCollector::print);
     }
 
-    public static void collect(ApplicationContext applicationContext, Class<?> testClasses) {
-        TEST_CLASSES_MAP.computeIfAbsent(applicationContext, k -> ConcurrentHashMap.newKeySet()).add(testClasses);
+    static void collect(ApplicationContext applicationContext, Object bean) {
+        CONTAINER_BEAN_MAP.computeIfAbsent(applicationContext, k -> ConcurrentHashMap.newKeySet()).add(bean);
+    }
+
+    // ------------------------------------------------------------------------private methods
+
+    private static void print() throws IOException {
+        List<TreeNode<Integer, String>> nodes = new ArrayList<>();
+        CONTAINER_BEAN_MAP.forEach((ctx, beans) -> {
+            Integer ctxId = System.identityHashCode(ctx);
+            String ctxStr = "[" + Dates.DATETIME_MILLI_FORMAT.format(ctx.getStartupDate()) + "] " + ctx.getDisplayName();
+            if (ctx.getParent() != null) {
+                ctxStr += " --> " + ctx.getParent().getDisplayName();
+            }
+            nodes.add(new TreeNode<>(ctxId, null, ctxStr));
+            beans.forEach(e -> nodes.add(new TreeNode<>(System.identityHashCode(e), ctxId, ObjectUtils.identityToString(e))));
+        });
+
+        StringBuilder output = new StringBuilder(4096);
+        TreeNode<Integer, String> root = new TreeNode<>(null, null, "Spring boot test containers");
+        root.mount(nodes);
+        root.print(output, PlainNode::getAttach);
+        List<String> lines = Arrays.asList(output.toString().split("\n"));
+
+        System.out.println("\n\n" + TablePrinter.HALF.print(null, lines) + "\n\n");
     }
 
 }

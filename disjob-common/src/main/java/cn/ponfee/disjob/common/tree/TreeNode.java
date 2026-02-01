@@ -67,7 +67,11 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
     private final List<TreeNode<T, A>> children = new ArrayList<>();
 
     public TreeNode(T id, T parentId) {
-        super(id, parentId);
+        super(id, parentId, true, true, null);
+    }
+
+    public TreeNode(T id, T parentId, A attach) {
+        super(id, parentId, true, true, attach);
     }
 
     public TreeNode(T id, T parentId, boolean enabled, boolean available, A attach) {

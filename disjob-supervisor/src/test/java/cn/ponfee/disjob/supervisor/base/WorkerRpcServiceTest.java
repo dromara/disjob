@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.supervisor.base;
 
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.worker.dto.SplitJobParam;
 import cn.ponfee.disjob.core.worker.dto.SplitJobResult;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Test;
@@ -26,8 +25,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * <pre>
@@ -39,15 +37,17 @@ import static org.mockito.Mockito.when;
  *
  * @author Ponfee
  */
-public class WorkerRpcServiceTest extends SpringBootTestBase<Object> {
+class WorkerRpcServiceTest extends SpringBootTestBase<Object> {
 
     @Test
-    public void testSplit() throws JobException {
+    void testSplit() throws JobException {
         String taskParam = "taskParam";
         when(workerRpcService.splitJob(any())).thenReturn(SplitJobResult.of(Collections.singletonList(taskParam)));
 
-        SplitJobParam param = new SplitJobParam();
-        SplitJobResult result = workerRpcService.splitJob(param);
+        verify(workerRpcService, never()).splitJob(any());
+        SplitJobResult result = workerRpcService.splitJob(null);
+        verify(workerRpcService, times(1)).splitJob(any());
+
         assertNotNull(result);
         assertNotNull(result.getTaskParams());
         assertEquals(1, result.getTaskParams().size());

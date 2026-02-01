@@ -48,10 +48,6 @@ abstract class BaseTree<T extends Serializable & Comparable<T>, A> extends Plain
 
     // -------------------------------------------------------------------Constructor
 
-    BaseTree(T id, T parentId) {
-        super(id, parentId);
-    }
-
     BaseTree(T id, T parentId, boolean enabled, boolean available, A attach) {
         super(id, parentId, enabled, available, attach);
     }
