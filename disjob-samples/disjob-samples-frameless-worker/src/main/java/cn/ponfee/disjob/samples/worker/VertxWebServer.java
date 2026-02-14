@@ -169,9 +169,8 @@ public class VertxWebServer extends AbstractVerticle {
             } else {
                 resp.end(toJson(result));
             }
-        } catch (Throwable e) {
-            resp.setStatusCode(failStatus.code())
-                .end(Throwables.getRootCauseMessage(e));
+        } catch (Throwable t) {
+            resp.setStatusCode(failStatus.code()).end(Throwables.getRootCauseMessage(t));
         }
     }
 

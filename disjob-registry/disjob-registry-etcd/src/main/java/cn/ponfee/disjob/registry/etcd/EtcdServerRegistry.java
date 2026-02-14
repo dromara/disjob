@@ -113,8 +113,8 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             client.createEphemeralKey(buildRegistryServerId(server), PLACEHOLDER_VALUE, leaseId);
             registered.add(server);
             log.info("Etcd server registered: {}, {}", registryRole, server);
-        } catch (Throwable e) {
-            throw new RegistryException("Etcd server register failed: " + server, e);
+        } catch (Throwable t) {
+            throw new RegistryException("Etcd server register failed: " + server, t);
         }
     }
 

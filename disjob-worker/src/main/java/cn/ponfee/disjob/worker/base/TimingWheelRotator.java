@@ -134,7 +134,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
                     supervisorRpcClient.updateTaskWorker(ids, worker);
                 } catch (Throwable t) {
                     LOG.error("Update task worker error: {}", ids, t);
-                    Threads.interruptIfNecessary(t);
+                    Threads.reinterruptIfInterruptedException(t);
                 }
             }
         }

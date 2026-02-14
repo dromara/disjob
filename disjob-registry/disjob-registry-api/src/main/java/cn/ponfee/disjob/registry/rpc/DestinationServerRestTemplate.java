@@ -111,14 +111,16 @@ final class DestinationServerRestTemplate {
         String requestPath = Strings.concatPath(serverContextPath, servletPath);
         String url = destinationServer.buildHttpUrlPrefix() + requestPath;
         Type returnType = method.getGenericReturnType();
-        Throwable ex = null;
+        Throwable throwable = null;
         for (int i = 0; i <= retryMaxCount; i++) {
             try {
                 return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, args);
-            } catch (Throwable e) {
-                ex = e;
-                LOG.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(args), e.getMessage());
-                if (isNotRetry(e)) {
+            } catch (Throwable t) {
+                if (throwable == null) {
+                    throwable = t;
+                }
+                LOG.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(args), t.getMessage());
+                if (isNotRetry(t)) {
                     break;
                 }
                 if (i < retryMaxCount) {
@@ -127,11 +129,11 @@ final class DestinationServerRestTemplate {
             }
         }
 
-        String msg = (ex == null) ? null : ex.getMessage();
+        String msg = (throwable == null) ? null : throwable.getMessage();
         if (StringUtils.isBlank(msg)) {
             msg = "Invoke server rpc error: " + requestPath;
         }
-        throw new RpcInvokeException(msg, ex);
+        throw new RpcInvokeException(msg, throwable);
     }
 
     // ----------------------------------------------------------------------------------------static methods

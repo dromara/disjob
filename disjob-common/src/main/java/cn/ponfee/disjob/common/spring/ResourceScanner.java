@@ -135,8 +135,8 @@ public class ResourceScanner {
                     }
                     try {
                         result.add(Class.forName(reader.getClassMetadata().getClassName()));
-                    } catch (Throwable e) {
-                        LOG.error("Load class occur error.", e);
+                    } catch (Throwable t) {
+                        LOG.error("Load class occur error.", t);
                     }
                 }
             }
@@ -187,8 +187,8 @@ public class ResourceScanner {
                     }
                     try (InputStream input = resource.getInputStream()) {
                         result.put(resource.getFilename(), mapper.apply(input));
-                    } catch (Throwable e) {
-                        LOG.error("Resource scan location pattern failed: " + locationPattern, e);
+                    } catch (Throwable t) {
+                        LOG.error("Resource scan location pattern failed: " + locationPattern, t);
                     }
                 }
             }

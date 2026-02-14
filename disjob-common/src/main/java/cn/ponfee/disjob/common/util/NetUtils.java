@@ -301,8 +301,8 @@ public final class NetUtils {
                     validNetworkInterfaces.add(networkInterface);
                 }
             }
-        } catch (Throwable e) {
-            LOG.warn("Failed to get network interface: {}", e.getMessage());
+        } catch (Throwable t) {
+            LOG.warn("Failed to get network interface: {}", t.getMessage());
             return null;
         }
 
@@ -416,8 +416,8 @@ public final class NetUtils {
             if (address != null) {
                 return address;
             }
-        } catch (Throwable e) {
-            LOG.warn("Failed to get network address: {}", e.getMessage());
+        } catch (Throwable t) {
+            LOG.warn("Failed to get network address: {}", t.getMessage());
         }
 
         InetAddress localAddress = null;
@@ -427,8 +427,8 @@ public final class NetUtils {
             if (address != null) {
                 return address;
             }
-        } catch (Throwable e) {
-            LOG.warn("Failed to get local host address: {} ", e.getMessage());
+        } catch (Throwable t) {
+            LOG.warn("Failed to get local host address: {} ", t.getMessage());
         }
 
         return localAddress;

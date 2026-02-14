@@ -166,8 +166,8 @@ public class ServerInvokeService extends SingletonClassConstraint {
             long start = System.currentTimeMillis();
             metrics = supervisorRpcProxy.destination(supervisor).getMetrics();
             responseTime = System.currentTimeMillis() - start;
-        } catch (Throwable e) {
-            LOG.warn("Gets supervisor metrics occur error: {} {}", supervisor, e.getMessage());
+        } catch (Throwable t) {
+            LOG.warn("Gets supervisor metrics occur error: {} {}", supervisor, t.getMessage());
         }
 
         SupervisorMetricsResponse response;
@@ -190,8 +190,8 @@ public class ServerInvokeService extends SingletonClassConstraint {
             long start = System.currentTimeMillis();
             metrics = workerClient.destination(worker).getMetrics(new GetMetricsParam());
             responseTime = System.currentTimeMillis() - start;
-        } catch (Throwable e) {
-            LOG.warn("Gets worker metrics occur error: {} {}", worker, e.getMessage());
+        } catch (Throwable t) {
+            LOG.warn("Gets worker metrics occur error: {} {}", worker, t.getMessage());
         }
 
         WorkerMetricsResponse response;

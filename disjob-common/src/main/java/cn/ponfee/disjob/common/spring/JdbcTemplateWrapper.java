@@ -134,21 +134,15 @@ public final class JdbcTemplateWrapper {
     }
 
     public void createTableIfNotExists(String tableName, String createTableDdl) {
-        EXISTS_TABLE.computeIfAbsent(tableName.trim().toLowerCase(), key -> {
-            try {
-                return RetryTemplate.execute(() -> {
-                    if (existsTable(key)) {
-                        return true;
-                    }
-                    jdbcTemplate.execute(createTableDdl);
-                    Assert.state(existsTable(key), () -> "Create table " + key + " failed.");
-                    LOG.info("Created table {} success.", key);
-                    return true;
-                }, 3, 1000L);
-            } catch (Throwable e) {
-                return ExceptionUtils.rethrow(e);
+        EXISTS_TABLE.computeIfAbsent(tableName.trim().toLowerCase(), key -> RetryTemplate.execute(() -> {
+            if (existsTable(key)) {
+                return true;
             }
-        });
+            jdbcTemplate.execute(createTableDdl);
+            Assert.state(existsTable(key), () -> "Create table " + key + " failed.");
+            LOG.info("Created table {} success.", key);
+            return true;
+        }, 3, 1000L));
     }
 
     public boolean existsTable(String tableName) {

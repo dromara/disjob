@@ -37,6 +37,7 @@ import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import cn.ponfee.disjob.worker.executor.JobExecutor;
 import cn.ponfee.disjob.worker.executor.Savepoint;
 import cn.ponfee.disjob.worker.util.JobExecutorUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,10 +183,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 executeTask();
             }
         } catch (Throwable t) {
-            LOG.warn("Worker thread pool boss thread run error: {}({})", t.getClass(), t.getMessage());
-            Threads.interruptIfNecessary(t);
+            ExceptionUtils.rethrow(t);
+        } finally {
+            close();
         }
-        close();
     }
 
     @Override
@@ -284,9 +285,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
             LOG.error(e.getMessage());
             // return the worker thread to idle pool
             idlePool.putFirst(workerThread);
-        } catch (Throwable e) {
+        } catch (Throwable t) {
             workerThread.doStop();
-            throw e;
+            throw t;
         }
     }
 
@@ -396,9 +397,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     wt.execute(task);
                     map.put(task.getTaskId(), wt);
                     LOG.info("Put to active pool worker thread: {}, {}", task.getTaskId(), wt.getName());
-                } catch (Throwable e) {
+                } catch (Throwable t) {
                     wt.setCurrentTask(null);
-                    throw e;
+                    throw t;
                 }
             });
         }
@@ -643,7 +644,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     ThrowingRunnable<?> action = () -> supervisorRpcClient.updateTaskWorker(list, null);
                     ThrowingRunnable.doCaught(action, () -> "Reset task worker error: " + workerTask);
                 }
-                Threads.interruptIfNecessary(t);
+                Throwables.rethrowIfFatal(t);
                 return;
             }
 
@@ -656,7 +657,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             } catch (Throwable t) {
                 LOG.error("Initialize task executor error: {}", workerTask, t);
                 stopTask(workerTask, Operation.TRIGGER, INITIALIZE_EXCEPTION, toErrorMsg(t));
-                Threads.interruptIfNecessary(t);
+                Throwables.rethrowIfFatal(t);
                 return;
             }
 
@@ -675,7 +676,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     LOG.error("Execute task error: {}", workerTask, t);
                 }
                 stopTask(workerTask, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
-                Threads.interruptIfNecessary(t);
+                Throwables.rethrowIfFatal(t);
             } finally {
                 try {
                     taskExecutor.destroy();

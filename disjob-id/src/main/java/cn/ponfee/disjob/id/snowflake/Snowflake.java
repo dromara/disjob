@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.util.Maths;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.SystemUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,8 +157,7 @@ public final class Snowflake implements IdGenerator {
                     throw new ClockMovedBackwardsException(String.format(format, offset, (lastTimestamp - timestamp)));
                 }
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new ClockMovedBackwardsException("Clock moved backwards " + offset + " ms, wait occur error.", e);
+                ExceptionUtils.rethrow(e);
             }
         }
 

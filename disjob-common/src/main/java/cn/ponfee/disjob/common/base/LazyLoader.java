@@ -26,7 +26,21 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
+ * <pre>
  * Lazy loader
+ *
+ * Case1: {@code
+ * LazyLoader<SchedJob> jobLoader = LazyLoader.of(() -> jobMapper.get(jobId));
+ * }
+ *
+ * Case2: {@code
+ * LazyLoader<SchedJob> jobLoader = LazyLoader.of(jobMapper::get, jobId);
+ * }
+ *
+ * Case3: {@code
+ * SchedJob job = LazyLoader.of(SchedJob.class, jobMapper::get, jobId);
+ * }
+ * </pre>
  *
  * @author Ponfee
  */

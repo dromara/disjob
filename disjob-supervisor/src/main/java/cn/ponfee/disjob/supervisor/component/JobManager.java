@@ -25,6 +25,7 @@ import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
+import cn.ponfee.disjob.common.exception.Try;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
@@ -226,7 +227,7 @@ public class JobManager {
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void changeJobState(String user, long jobId, JobState toState) {
-        if (isNotAffectedRow(jobMapper.updateState(jobId, user, toState.value(), 1 ^ toState.value()))) {
+        if (isNoAffectedRow(jobMapper.updateState(jobId, user, toState.value(), 1 ^ toState.value()))) {
             throw new IllegalStateException("Change job state failed: " + jobId);
         }
         SchedJob job;
@@ -304,13 +305,13 @@ public class JobManager {
             LOG.info("Task trace [{}] starting: {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
             Date now = new Date();
             // 如果先`get`查一次然后`start`，最后再`get`查会返回之前get时的一级缓存
-            if (isNotAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), startRequestId, now))) {
+            if (isNoAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), startRequestId, now))) {
                 if (!taskMapper.checkStartIdempotent(param.getTaskId(), param.getWorker(), startRequestId)) {
                     return StartTaskResult.failure("Start task failure.");
                 }
                 LOG.info("Start task idempotent: {}, {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
             }
-            if (isNotAffectedRow(instanceMapper.start(param.getInstanceId(), now))) {
+            if (isNoAffectedRow(instanceMapper.start(param.getInstanceId(), now))) {
                 SchedInstance instance = instanceMapper.get(param.getInstanceId());
                 Assert.state(instance != null && instance.isRunning(), () -> "Start instance failure: " + instance);
             }
@@ -350,7 +351,7 @@ public class JobManager {
                     Assert.isTrue(updated, () -> "Shutdown resume instance state to WAITING failed: " + param.getInstanceId());
                 }
                 Date nextScanTime = new Date(System.currentTimeMillis() + conf.getShutdownTaskDelayResumeMs());
-                if (isNotAffectedRow(instanceMapper.updateNextScanTime(instance.getInstanceId(), nextScanTime, instance.getVersion()))) {
+                if (isNoAffectedRow(instanceMapper.updateNextScanTime(instance.getInstanceId(), nextScanTime, instance.getVersion()))) {
                     LOG.warn("Resume task renew instance update time failed: {}", param.getTaskId());
                 }
                 return true;
@@ -874,10 +875,12 @@ public class JobManager {
             }
             saveInstances(Collections.singletonList(retryInstance), null, tasks);
         };
-        Consumer<Throwable> errorHandler = t -> { throw new IllegalStateException("Create retry instance failed: " + failed, t); };
         // 使用嵌套事务：保证`workflow & instance & tasks`操作的原子性，异常则回滚而不影响外层事务
-        if (doInNestedTransaction(transactionTemplate, persistenceAction, errorHandler)) {
+        Try<Void> result = doInNestedTransaction(transactionTemplate, persistenceAction);
+        if (result.isSuccess()) {
             dispatch(false, job, retryInstance, tasks);
+        } else {
+            throw new IllegalStateException("Create retry instance failed: " + failed, result.getCause());
         }
         return retryInstanceId;
     }
@@ -925,9 +928,11 @@ public class JobManager {
 
         // 使用嵌套事务：保证`save`方法内部数据操作的原子性，异常则回滚而不影响外层事务
         TriggerInstance ti = TriggerInstance.of(this, childJob, parent, RunType.DEPEND, System.currentTimeMillis());
-        Consumer<Throwable> errorHandler = t -> LOG.error("Create depend instance failed: {}, {}", childJob, parent, t);
-        if (doInNestedTransaction(transactionTemplate, () -> ti.save(this::saveInstances), errorHandler)) {
+        Try<Void> result = doInNestedTransaction(transactionTemplate, () -> ti.save(this::saveInstances));
+        if (result.isSuccess()) {
             ti.dispatch((job, instance, tasks) -> dispatch(false, job, instance, tasks));
+        } else {
+            LOG.error("Create depend instance failed: {}, {}", childJob, parent, result.getCause());
         }
     }
 
@@ -1056,14 +1061,14 @@ public class JobManager {
         Map<DAGEdge, SchedWorkflow> map = graph.successors(node.parseWorkflowCurNode());
         SchedInstance lead = instanceMapper.get(wnstanceId);
 
-        Consumer<Throwable> errorHandler = t -> {
-            LOG.error("Process workflow node error: {}", node, t);
-            updateWorkflowLeadState(lead, RunState.CANCELED, RS_RUNNABLE);
-        };
         // 使用嵌套事务：保证`processWorkflowNode`方法内部数据操作的原子性，异常则回滚而不影响外层事务
-        ThrowingSupplier<List<Runnable>, Throwable> persistenceAction = () -> processWorkflowGraph(lead, graph, map);
-        List<Runnable> dispatchActions = doInNestedTransaction(transactionTemplate, persistenceAction, errorHandler);
-        CollectionUtils.emptyIfNull(dispatchActions).forEach(Runnable::run);
+        Try<List<Runnable>> result = doInNestedTransaction(transactionTemplate, () -> processWorkflowGraph(lead, graph, map));
+        if (result.isSuccess()) {
+            CollectionUtils.emptyIfNull(result.get()).forEach(Runnable::run);
+        } else {
+            LOG.error("Process workflow node error: {}", node, result.getCause());
+            updateWorkflowLeadState(lead, RunState.CANCELED, RS_RUNNABLE);
+        }
     }
 
     private List<Runnable> processWorkflowGraph(SchedInstance lead, WorkflowGraph graph,

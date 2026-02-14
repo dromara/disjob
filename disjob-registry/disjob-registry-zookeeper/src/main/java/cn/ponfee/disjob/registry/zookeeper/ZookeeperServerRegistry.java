@@ -89,8 +89,8 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             client.createEphemeral(buildRegistryPath(server), CREATE_EPHEMERAL_FAIL_RETRIES);
             registered.add(server);
             log.info("Server registered: {}, {}", registryRole, server);
-        } catch (Throwable e) {
-            throw new RegistryException("Zookeeper server register failed: " + server, e);
+        } catch (Throwable t) {
+            throw new RegistryException("Zookeeper server register failed: " + server, t);
         }
     }
 
@@ -102,7 +102,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             client.deletePath(registryPath);
             log.info("Zookeeper server deregister success: {}", server);
         } catch (Throwable t) {
-            log.error("Zookeeper server deregister error: " + server, t);
+            log.error("Zookeeper server deregister error: {}", server, t);
         }
     }
 

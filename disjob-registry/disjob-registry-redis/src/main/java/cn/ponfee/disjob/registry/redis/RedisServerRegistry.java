@@ -172,7 +172,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     // ------------------------------------------------------------------Discovery
 
     @Override
-    public void discoverServers() throws Throwable {
+    public void discoverServers() {
         RetryTemplate.execute(() -> refreshDiscoveredServers(getServers(discoveryRedisKey)), 3, 1000L);
     }
 

@@ -33,9 +33,9 @@ public interface Discovery<D extends Server> extends Closeable {
     /**
      * Discover servers
      *
-     * @throws Throwable if occur error
+     * @throws Exception if occur error
      */
-    default void discoverServers() throws Throwable {
+    default void discoverServers() throws Exception {
         // default do nothing
     }
 

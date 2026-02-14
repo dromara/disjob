@@ -92,7 +92,7 @@ final class DiscoveryServerRestTemplate<D extends Server> {
         Assert.notEmpty(servers, () -> "Server not discovered: " + discoverServer.discoveryRole() + ", " + group);
         Type returnType = method.getGenericReturnType();
         String requestPath = Strings.concatPath(serverContextPath, servletPath);
-        Throwable ex = null;
+        Throwable throwable = null;
         int serverNumber = servers.size();
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
         for (int i = 0, n = Math.min(serverNumber, retryMaxCount); i <= n; i++) {
@@ -100,10 +100,12 @@ final class DiscoveryServerRestTemplate<D extends Server> {
             String url = server.buildHttpUrlPrefix() + requestPath;
             try {
                 return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, args);
-            } catch (Throwable e) {
-                ex = e;
-                LOG.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(args), e.getMessage());
-                if (DestinationServerRestTemplate.isNotRetry(e)) {
+            } catch (Throwable t) {
+                if (throwable == null) {
+                    throwable = t;
+                }
+                LOG.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(args), t.getMessage());
+                if (DestinationServerRestTemplate.isNotRetry(t)) {
                     break;
                 }
                 if (i < n) {
@@ -112,11 +114,11 @@ final class DiscoveryServerRestTemplate<D extends Server> {
             }
         }
 
-        String msg = (ex == null) ? null : ex.getMessage();
+        String msg = (throwable == null) ? null : throwable.getMessage();
         if (StringUtils.isBlank(msg)) {
             msg = "Invoke server rpc error: " + requestPath;
         }
-        throw new RpcInvokeException(msg, ex);
+        throw new RpcInvokeException(msg, throwable);
     }
 
 }

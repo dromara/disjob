@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.exception.Throwables;
 import com.google.common.base.CaseFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,9 +78,8 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
                 try {
                     // true is busy loop
                     isBusyLoop = heartbeat();
-                } catch (InterruptedException e) {
-                    throw e;
                 } catch (Throwable t) {
+                    Throwables.rethrowIfFatal(t);
                     isBusyLoop = true;
                     log.error("Heartbeat occur error: state={}", state, t);
                 }
@@ -101,17 +101,14 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
                     doSleep(sleepTime);
                 }
             }
-        } catch (InterruptedException e) {
-            log.warn("Heartbeat sleep interrupted: state={}, error={}", state, e.getMessage());
-            Thread.currentThread().interrupt();
+        } finally {
+            toStop();
+            log.info("Heartbeat thread end.");
         }
-
-        toStop();
-        log.info("Heartbeat end.");
     }
 
-    private void doSleep(long sleepTimeMillis) throws InterruptedException {
-        Thread.sleep(sleepTimeMillis);
+    private void doSleep(long sleepTimeMillis) {
+        Threads.sleep(sleepTimeMillis);
         log.debug("Heartbeat sleep time: {}", sleepTimeMillis);
     }
 

@@ -88,13 +88,10 @@ public class CoreUtils {
     }
 
     public static void doInSynchronized(Long lock, ThrowingRunnable<?> action, Supplier<String> message) {
-        Throwable t = null;
         try {
             doInSynchronized(lock, action);
-        } catch (Throwable e) {
-            t = e;
+        } catch (Throwable t) {
             LOG.error(message.get(), t);
-        } finally {
             if (isCurrentThreadInterrupted(t)) {
                 boolean interrupted = Thread.currentThread().isInterrupted();
                 LOG.info("Do synchronized retry interrupted {}, {}", interrupted, message.get());
@@ -102,11 +99,11 @@ public class CoreUtils {
                     try {
                         doInSynchronized(lock, action);
                     } catch (Throwable e) {
-                        LOG.error("Do synchronized retry error, " + message.get(), e);
+                        LOG.error("Do synchronized retry error, {}", message.get(), e);
                     }
                 });
             }
-            Threads.interruptIfNecessary(t);
+            Threads.reinterruptIfInterruptedException(t);
         }
     }
 

@@ -35,26 +35,28 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class Tokens {
 
     private static final long EXPIRATION_MILLISECONDS = 60_000L;
+    private static final String AUTHENTICATION_MODE = "authentication";
+    private static final String SIGNATURE_MODE = "signature";
 
     public static String createAuthentication(String tokenKey, TokenType type, String group) {
-        return create(tokenKey, type, Mode.authentication, group);
+        return create(tokenKey, type, AUTHENTICATION_MODE, group);
     }
 
     public static String createSignature(String tokenKey, TokenType type, String group) {
-        return create(tokenKey, type, Mode.signature, group);
+        return create(tokenKey, type, SIGNATURE_MODE, group);
     }
 
     public static boolean verifyAuthentication(String tokenSecret, String tokenKey, TokenType type, String group) {
-        return verify(tokenSecret, tokenKey, type, Mode.authentication, group);
+        return verify(tokenSecret, tokenKey, type, AUTHENTICATION_MODE, group);
     }
 
     public static boolean verifySignature(String tokenSecret, String tokenKey, TokenType type, String group) {
-        return verify(tokenSecret, tokenKey, type, Mode.signature, group);
+        return verify(tokenSecret, tokenKey, type, SIGNATURE_MODE, group);
     }
 
     // -----------------------------------------------------------------private methods
 
-    private static String create(String tokenKey, TokenType type, Mode mode, String group) {
+    private static String create(String tokenKey, TokenType type, String mode, String group) {
         if (StringUtils.isEmpty(tokenKey)) {
             return null;
         }
@@ -62,7 +64,7 @@ public class Tokens {
         return secret(tokenKey, type, mode, expiration, group) + DOT + expiration;
     }
 
-    private static boolean verify(String tokenSecret, String tokenKey, TokenType type, Mode mode, String group) {
+    private static boolean verify(String tokenSecret, String tokenKey, TokenType type, String mode, String group) {
         if (StringUtils.isEmpty(tokenKey)) {
             return true;
         }
@@ -84,26 +86,15 @@ public class Tokens {
         return actual.equals(expect);
     }
 
-    private static String secret(String tokenKey, TokenType type, Mode mode, String expiration, String group) {
+    private static String secret(String tokenKey, TokenType type, String mode, String expiration, String group) {
         Assert.notNull(type, "Type cannot be null.");
         Assert.notNull(mode, "Mode cannot be null.");
         Assert.hasText(group, "Group cannot be empty.");
-        String payload = type.name() + DOT + mode.name() + DOT + expiration + DOT + group;
+        String payload = type.name() + DOT + mode + DOT + expiration + DOT + group;
 
         HmacUtils hm = new HmacUtils(HmacAlgorithms.HMAC_SHA_1, tokenKey.getBytes(UTF_8));
         byte[] digest = hm.hmac(payload.getBytes(UTF_8));
         return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
-    }
-
-    private enum Mode {
-        /**
-         * For authentication
-         */
-        authentication,
-        /**
-         * For signature
-         */
-        signature,
     }
 
 }

@@ -157,8 +157,8 @@ public class WorkerClient {
         try {
             // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功
             return destination(worker).existsTask(ExistsTaskParam.of(task.getTaskId()));
-        } catch (Throwable e) {
-            LOG.error("Invoke worker exists task error: {}", worker, e);
+        } catch (Throwable t) {
+            LOG.error("Invoke worker exists task error: {}", worker, t);
             // 若调用异常(如请求超时)，则默认worker已存在该task，等待下一次重试时再调用`existsTask`判断
             return true;
         }

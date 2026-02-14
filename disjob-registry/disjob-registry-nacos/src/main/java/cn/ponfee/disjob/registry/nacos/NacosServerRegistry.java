@@ -79,8 +79,8 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
             client.registerInstance(registryRootPath, instance);
             registered.add(server);
             log.info("Nacos server registered: {}, {}", registryRole, server);
-        } catch (Throwable e) {
-            throw new RegistryException("Nacos server register failed: " + server, e);
+        } catch (Throwable t) {
+            throw new RegistryException("Nacos server register failed: " + server, t);
         }
     }
 

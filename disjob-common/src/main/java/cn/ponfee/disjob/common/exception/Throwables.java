@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.common.exception;
 
-import cn.ponfee.disjob.common.concurrent.Threads;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -82,6 +81,19 @@ public final class Throwables {
         return "error@" + ClassUtils.getName(t.getClass());
     }
 
+    public static boolean isFatal(Throwable throwable) {
+        return throwable instanceof InterruptedException
+            || throwable instanceof LinkageError
+            || throwable instanceof VirtualMachineError
+            || ThreadDeathResolver.isThreadDeath(throwable);
+    }
+
+    public static void rethrowIfFatal(Throwable throwable) {
+        if (isFatal(throwable)) {
+            ExceptionUtils.rethrow(throwable);
+        }
+    }
+
     // -------------------------------------------------------------------------------interface definitions
 
     @FunctionalInterface
@@ -119,7 +131,7 @@ public final class Throwables {
                 runnable.run();
             } catch (Throwable t) {
                 LOG.error(message, t.getMessage());
-                Threads.interruptIfNecessary(t);
+                rethrowIfFatal(t);
             }
         }
 
@@ -128,7 +140,7 @@ public final class Throwables {
                 runnable.run();
             } catch (Throwable t) {
                 LOG.error(message.get(), t);
-                Threads.interruptIfNecessary(t);
+                rethrowIfFatal(t);
             }
         }
 
@@ -152,7 +164,7 @@ public final class Throwables {
                     runnable.run();
                 } catch (Throwable t) {
                     LOG.error(message.get(), t);
-                    Threads.interruptIfNecessary(t);
+                    rethrowIfFatal(t);
                 }
             };
         }
@@ -189,7 +201,7 @@ public final class Throwables {
                 return supplier.get();
             } catch (Throwable t) {
                 LOG.error(message.get(), t);
-                Threads.interruptIfNecessary(t);
+                rethrowIfFatal(t);
                 return defaultValue;
             }
         }
@@ -214,7 +226,7 @@ public final class Throwables {
                     return supplier.get();
                 } catch (Throwable t) {
                     LOG.error(message.get(), t);
-                    Threads.interruptIfNecessary(t);
+                    rethrowIfFatal(t);
                     return defaultValue;
                 }
             };
@@ -252,7 +264,7 @@ public final class Throwables {
                 return callable.call();
             } catch (Throwable t) {
                 LOG.error(message.get(), t);
-                Threads.interruptIfNecessary(t);
+                rethrowIfFatal(t);
                 return defaultValue;
             }
         }
@@ -277,7 +289,7 @@ public final class Throwables {
                     return supplier.call();
                 } catch (Throwable t) {
                     LOG.error(message.get(), t);
-                    Threads.interruptIfNecessary(t);
+                    rethrowIfFatal(t);
                     return defaultValue;
                 }
             };
@@ -318,7 +330,7 @@ public final class Throwables {
                 consumer.accept(arg);
             } catch (Throwable t) {
                 LOG.error(message.get(), t);
-                Threads.interruptIfNecessary(t);
+                rethrowIfFatal(t);
             }
         }
 
@@ -342,7 +354,7 @@ public final class Throwables {
                     consumer.accept(arg);
                 } catch (Throwable t) {
                     LOG.error(message.get(), t);
-                    Threads.interruptIfNecessary(t);
+                    rethrowIfFatal(t);
                 }
             };
         }
@@ -380,7 +392,7 @@ public final class Throwables {
                 return function.apply(arg);
             } catch (Throwable t) {
                 LOG.error(message.get(), t);
-                Threads.interruptIfNecessary(t);
+                rethrowIfFatal(t);
                 return defaultValue;
             }
         }
@@ -405,10 +417,26 @@ public final class Throwables {
                     return function.apply(arg);
                 } catch (Throwable t) {
                     LOG.error(message.get(), t);
-                    Threads.interruptIfNecessary(t);
+                    rethrowIfFatal(t);
                     return defaultValue;
                 }
             };
+        }
+    }
+
+    private static class ThreadDeathResolver {
+        private static final Class<?> THREAD_DEATH_CLASS = resolve();
+
+        private static boolean isThreadDeath(Throwable throwable) {
+            return THREAD_DEATH_CLASS != null && THREAD_DEATH_CLASS.isInstance(throwable);
+        }
+
+        private static Class<?> resolve() {
+            try {
+                return Class.forName("java.lang.ThreadDeath");
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
         }
     }
 

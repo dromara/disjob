@@ -17,9 +17,11 @@
 package cn.ponfee.disjob.common.base;
 
 import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.UuidUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -40,41 +42,37 @@ public class RetryTemplate {
 
     private static final Logger LOG = LoggerFactory.getLogger(RetryTemplate.class);
 
-    public static void execute(ThrowingRunnable<Throwable> action, int retryMaxCount, long retryBackoffPeriod) throws Throwable {
+    public static void execute(ThrowingRunnable<Throwable> action, int retryMaxCount, long retryBackoffPeriod) {
         execute(action.toSupplier(null), retryMaxCount, retryBackoffPeriod);
     }
 
-    public static <T> T execute(ThrowingSupplier<T, Throwable> action, int retryMaxCount, long retryBackoffPeriod) throws Throwable {
+    public static <T> T execute(ThrowingSupplier<T, Throwable> action, int retryMaxCount, long retryBackoffPeriod) {
         Assert.isTrue(retryMaxCount >= 0, "Retry max count cannot less than 0.");
         Assert.isTrue(retryBackoffPeriod > 0, "Retry backoff period must be greater than 0.");
-        int i = 0;
-        Throwable firstEx = null;
-        String retryId = null;
-        do {
+        Throwable throwable = null;
+        String traceId = null;
+        for (int i = 0; i <= retryMaxCount; i++) {
             try {
                 return action.get();
-            } catch (InterruptedException e) {
-                LOG.error("Thread interrupted, abort retry.");
-                throw e;
-            } catch (Throwable e) {
-                if (firstEx == null) {
-                    firstEx = e;
+            } catch (Throwable t) {
+                Throwables.rethrowIfFatal(t);
+                if (throwable == null) {
+                    throwable = t;
                 }
                 if (i < retryMaxCount) {
                     // log and sleep if not the last loop
-                    if (retryId == null) {
-                        retryId = UuidUtils.uuid32();
+                    if (traceId == null) {
+                        traceId = UuidUtils.uuid32();
                     }
-                    LOG.error("Execute failed, will retry: " + (i + 1) + ", " + retryId, e);
-                    Thread.sleep((i + 1) * retryBackoffPeriod);
+                    LOG.error("Execute failed will retry: {}, {}", i + 1, traceId, t);
+                    Threads.sleep((i + 1) * retryBackoffPeriod);
                 } else {
                     // retryId is null if not retried
-                    LOG.error("Execute failed, exit retry: " + retryId, e);
+                    LOG.error("Execute failed will exit: {}, {}", i + 1, traceId, t);
                 }
             }
-        } while (++i <= retryMaxCount);
-
-        throw firstEx;
+        }
+        return ExceptionUtils.rethrow(throwable);
     }
 
     public static void executeQuietly(ThrowingRunnable<Throwable> action, int retryMaxCount, long retryBackoffPeriod) {
@@ -82,12 +80,28 @@ public class RetryTemplate {
     }
 
     public static <T> T executeQuietly(ThrowingSupplier<T, Throwable> action, int retryMaxCount, long retryBackoffPeriod) {
-        try {
-            return execute(action, retryMaxCount, retryBackoffPeriod);
-        } catch (Throwable t) {
-            Threads.interruptIfNecessary(t);
-            return null;
+        Assert.isTrue(retryMaxCount >= 0, "Retry max count cannot less than 0.");
+        Assert.isTrue(retryBackoffPeriod > 0, "Retry backoff period must be greater than 0.");
+        String traceId = null;
+        for (int i = 0; i <= retryMaxCount; i++) {
+            try {
+                return action.get();
+            } catch (Throwable t) {
+                Throwables.rethrowIfFatal(t);
+                if (i < retryMaxCount) {
+                    // log and sleep if not the last loop
+                    if (traceId == null) {
+                        traceId = UuidUtils.uuid32();
+                    }
+                    LOG.error("Execute failed quietly retry: {}, {}", i + 1, traceId, t);
+                    Threads.sleep((i + 1) * retryBackoffPeriod);
+                } else {
+                    // retryId is null if not retried
+                    LOG.error("Execute failed quietly exit: {}, {}", i + 1, traceId, t);
+                }
+            }
         }
+        return null;
     }
 
 }

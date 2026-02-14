@@ -54,8 +54,8 @@ public class JobExecutorUtils {
             }
         } catch (JobException e) {
             throw e;
-        } catch (Throwable e) {
-            throw new JobException(JobCodeMsg.INVALID_JOB_EXECUTOR, e.getMessage());
+        } catch (Throwable t) {
+            throw new JobException(JobCodeMsg.INVALID_JOB_EXECUTOR, t.getMessage());
         }
     }
 

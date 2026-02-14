@@ -175,7 +175,7 @@ public class SchedGroupService extends SingletonClassConstraint {
                 CACHE.set(Cache.of(groupMapper.findAll()));
             } catch (Throwable t) {
                 LOG.error("Refresh sched group error.", t);
-                Threads.interruptIfNecessary(t);
+                Threads.reinterruptIfInterruptedException(t);
             } finally {
                 LOCK.unlock();
             }

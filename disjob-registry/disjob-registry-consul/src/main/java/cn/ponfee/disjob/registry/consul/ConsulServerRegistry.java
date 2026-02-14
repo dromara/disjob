@@ -230,7 +230,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                     }
                 } catch (Throwable t) {
                     log.error("Get consul health services occur error.", t);
-                    Threads.interruptIfNecessary(t);
+                    Threads.reinterruptIfInterruptedException(t);
                 }
             }
         }

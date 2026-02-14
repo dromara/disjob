@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.worker.util;
 
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
@@ -153,7 +152,7 @@ public final class ProcessUtils {
             }
         } catch (Throwable t) {
             log.error("Process execute error: {}", task, t);
-            Threads.interruptIfNecessary(t);
+            Throwables.rethrowIfFatal(t);
             return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
         } finally {
             destroy(process);
@@ -181,9 +180,7 @@ public final class ProcessUtils {
             return process.waitFor();
         } catch (InterruptedException e) {
             error.accept("Process execute interrupted: " + ExceptionUtils.getStackTrace(e));
-            Thread.currentThread().interrupt();
-            // return error code: -1
-            return -1;
+            return ExceptionUtils.rethrow(e);
         } finally {
             try {
                 process.destroy();

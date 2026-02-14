@@ -18,9 +18,11 @@ package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
+import cn.ponfee.disjob.common.exception.Try;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -30,11 +32,7 @@ import org.springframework.util.Assert;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_NESTED;
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
 /**
  * Spring transaction utility.
@@ -50,53 +48,75 @@ public class TransactionUtils {
      */
     private static final int AFFECTED_ONE_ROW = 1;
 
-    public static boolean isNotAffectedRow(int totalAffectedRow) {
-        return totalAffectedRow < AFFECTED_ONE_ROW;
+    // ------------------------------------------------------------------is methods
+
+    public static boolean isNoAffectedRow(int actualAffectedRow) {
+        return actualAffectedRow < AFFECTED_ONE_ROW;
     }
 
-    public static boolean isOneAffectedRow(int totalAffectedRow) {
-        return totalAffectedRow == AFFECTED_ONE_ROW;
+    public static boolean isOneAffectedRow(int actualAffectedRow) {
+        return actualAffectedRow == AFFECTED_ONE_ROW;
     }
 
-    public static boolean hasAffectedRow(int totalAffectedRow) {
-        return totalAffectedRow >= AFFECTED_ONE_ROW;
+    public static boolean hasAffectedRow(int actualAffectedRow) {
+        return actualAffectedRow >= AFFECTED_ONE_ROW;
     }
 
-    public static void assertNotAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
-        if (totalAffectedRow >= AFFECTED_ONE_ROW) {
+    public static boolean isAffectedRow(int actualAffectedRow, int expectedAffectedRow) {
+        return actualAffectedRow == expectedAffectedRow;
+    }
+
+    // ------------------------------------------------------------------assert methods
+
+    public static void assertNoAffectedRow(int actualAffectedRow, Supplier<String> errorMsgSupplier) {
+        if (actualAffectedRow >= AFFECTED_ONE_ROW) {
             throw new IllegalStateException(errorMsgSupplier.get());
         }
     }
 
-    public static void assertNotAffectedRow(int totalAffectedRow, String errorMsg) {
-        if (totalAffectedRow >= AFFECTED_ONE_ROW) {
+    public static void assertNoAffectedRow(int actualAffectedRow, String errorMsg) {
+        if (actualAffectedRow >= AFFECTED_ONE_ROW) {
             throw new IllegalStateException(errorMsg);
         }
     }
 
-    public static void assertOneAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
-        if (totalAffectedRow != AFFECTED_ONE_ROW) {
+    public static void assertOneAffectedRow(int actualAffectedRow, Supplier<String> errorMsgSupplier) {
+        if (actualAffectedRow != AFFECTED_ONE_ROW) {
             throw new IllegalStateException(errorMsgSupplier.get());
         }
     }
 
-    public static void assertOneAffectedRow(int totalAffectedRow, String errorMsg) {
-        if (totalAffectedRow != AFFECTED_ONE_ROW) {
+    public static void assertOneAffectedRow(int actualAffectedRow, String errorMsg) {
+        if (actualAffectedRow != AFFECTED_ONE_ROW) {
             throw new IllegalStateException(errorMsg);
         }
     }
 
-    public static void assertHasAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
-        if (totalAffectedRow < AFFECTED_ONE_ROW) {
+    public static void assertHasAffectedRow(int actualAffectedRow, Supplier<String> errorMsgSupplier) {
+        if (actualAffectedRow < AFFECTED_ONE_ROW) {
             throw new IllegalStateException(errorMsgSupplier.get());
         }
     }
 
-    public static void assertHasAffectedRow(int totalAffectedRow, String errorMsg) {
-        if (totalAffectedRow < AFFECTED_ONE_ROW) {
+    public static void assertHasAffectedRow(int actualAffectedRow, String errorMsg) {
+        if (actualAffectedRow < AFFECTED_ONE_ROW) {
             throw new IllegalStateException(errorMsg);
         }
     }
+
+    public static void assertAffectedRow(int actualAffectedRow, int expectedAffectedRow, Supplier<String> errorMsgSupplier) {
+        if (actualAffectedRow != expectedAffectedRow) {
+            throw new IllegalStateException(errorMsgSupplier.get());
+        }
+    }
+
+    public static void assertAffectedRow(int actualAffectedRow, int expectedAffectedRow, String errorMsg) {
+        if (actualAffectedRow != expectedAffectedRow) {
+            throw new IllegalStateException(errorMsg);
+        }
+    }
+
+    // ------------------------------------------------------------------other methods
 
     public static void doAfterTransactionCommit(Collection<Runnable> actions) {
         if (CollectionUtils.isNotEmpty(actions)) {
@@ -167,21 +187,18 @@ public class TransactionUtils {
      * 创建一个新事务，如果当前存在事务，则将这个事务挂起。
      * <p>内部事务与外部事务相互独立，互不依赖，互不影响。
      *
-     * @param txManager    the txManager
-     * @param action       the action
-     * @param errorHandler the error handler
+     * @param txManager the txManager
+     * @param action    the action
      * @return run action result, return null if transaction commit failed
      */
-    public static <R> R doInRequiresNewTransaction(PlatformTransactionManager txManager,
-                                                   ThrowingSupplier<R, Throwable> action,
-                                                   Consumer<Throwable> errorHandler) {
-        return doInPropagationTransaction(txManager, action, errorHandler, PROPAGATION_REQUIRES_NEW);
+    public static <R> Try<R> doInRequiresNewTransaction(PlatformTransactionManager txManager,
+                                                        ThrowingSupplier<R, Throwable> action) {
+        return doInPropagationTransaction(txManager, action, TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
-    public static boolean doInNestedTransaction(TransactionTemplate transactionTemplate,
-                                                ThrowingRunnable<Throwable> action,
-                                                Consumer<Throwable> errorHandler) {
-        return Boolean.TRUE.equals(doInNestedTransaction(transactionTemplate, action.toSupplier(true), errorHandler));
+    public static Try<Void> doInNestedTransaction(TransactionTemplate transactionTemplate,
+                                                  ThrowingRunnable<Throwable> action) {
+        return doInNestedTransaction(transactionTemplate, action.toSupplier(null));
     }
 
     /**
@@ -194,15 +211,13 @@ public class TransactionUtils {
      *
      * @param transactionTemplate the transaction template
      * @param action              the action
-     * @param errorHandler        the error handler, execute after transaction rollback
      * @return run action result, return null if transaction commit failed
      */
-    public static <R> R doInNestedTransaction(TransactionTemplate transactionTemplate,
-                                              ThrowingSupplier<R, Throwable> action,
-                                              Consumer<Throwable> errorHandler) {
+    public static <R> Try<R> doInNestedTransaction(TransactionTemplate transactionTemplate,
+                                                   ThrowingSupplier<R, Throwable> action) {
         if (TransactionSynchronizationManager.isActualTransactionActive()) {
             PlatformTransactionManager txManager = transactionTemplate.getTransactionManager();
-            return doInPropagationTransaction(txManager, action, errorHandler, PROPAGATION_NESTED);
+            return doInPropagationTransaction(txManager, action, TransactionDefinition.PROPAGATION_NESTED);
         } else {
             throw new IllegalStateException("Do nested transaction must be in parent transaction.");
         }
@@ -210,10 +225,9 @@ public class TransactionUtils {
 
     // ----------------------------------------------------------------------private methods
 
-    private static <R> R doInPropagationTransaction(PlatformTransactionManager txManager,
-                                                    ThrowingSupplier<R, Throwable> action,
-                                                    Consumer<Throwable> errorHandler,
-                                                    int transactionPropagation) {
+    private static <R> Try<R> doInPropagationTransaction(PlatformTransactionManager txManager,
+                                                         ThrowingSupplier<R, Throwable> action,
+                                                         int transactionPropagation) {
         Objects.requireNonNull(txManager, "Transaction manager cannot be null.");
         DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
         txDefinition.setPropagationBehavior(transactionPropagation);
@@ -221,11 +235,10 @@ public class TransactionUtils {
         try {
             R result = action.get();
             txManager.commit(status);
-            return result;
+            return Try.success(result);
         } catch (Throwable t) {
             txManager.rollback(status);
-            errorHandler.accept(t);
-            return null;
+            return Try.failure(t);
         }
     }
 

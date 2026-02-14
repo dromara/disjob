@@ -64,7 +64,7 @@ public class LoopThread extends Thread {
     public void run() {
         LOG.info("Loop thread begin.");
         if (delayMs > 0) {
-            ThrowingRunnable.doChecked(() -> Thread.sleep(delayMs));
+            Threads.sleep(delayMs);
         }
         while (state.isRunning()) {
             try {
@@ -74,8 +74,8 @@ public class LoopThread extends Thread {
                 LOG.warn("Loop thread interrupted {}: {}", super.getName(), e.getMessage());
                 terminate();
                 break;
-            } catch (Throwable e) {
-                LOG.error("Loop thread error.", e);
+            } catch (Throwable t) {
+                LOG.error("Loop thread error.", t);
             }
         }
         LOG.info("Loop thread end.");

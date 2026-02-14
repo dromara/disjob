@@ -19,7 +19,7 @@ package cn.ponfee.disjob.id.snowflake.zk;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Bytes;
@@ -27,6 +27,7 @@ import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
@@ -136,25 +137,15 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
         this.workerIdParentPath = snowflakeRootPath + "/id";
         this.serverTagPath = serverTagParentPath + SEP + serverTag;
 
-        try {
-            RetryTemplate.execute(() -> createPersistent(snowflakeRootPath), 3, 1000L);
-            RetryTemplate.execute(() -> createPersistent(serverTagParentPath), 3, 1000L);
-            RetryTemplate.execute(() -> createPersistent(workerIdParentPath), 3, 1000L);
-        } catch (Throwable e) {
-            Threads.interruptIfNecessary(e);
-            throw new Error("Zk snowflake server initialize error.", e);
-        }
+        RetryTemplate.execute(() -> createPersistent(snowflakeRootPath), 3, 1000L);
+        RetryTemplate.execute(() -> createPersistent(serverTagParentPath), 3, 1000L);
+        RetryTemplate.execute(() -> createPersistent(workerIdParentPath), 3, 1000L);
 
-        try {
-            // workerId取值范围：[0, workerIdMaxCount)
-            int workerIdMaxCount = 1 << workerIdBitLength;
-            this.workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdMaxCount), 5, 2000L);
-            this.workerIdPath = workerIdParentPath + SEP + workerId;
-            this.snowflake = new Snowflake(workerIdBitLength, sequenceBitLength, workerId);
-        } catch (Throwable e) {
-            Threads.interruptIfNecessary(e);
-            throw new Error("Zk snowflake server registry worker error.", e);
-        }
+        // workerId取值范围：[0, workerIdMaxCount)
+        int workerIdMaxCount = 1 << workerIdBitLength;
+        this.workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdMaxCount), 5, 2000L);
+        this.workerIdPath = workerIdParentPath + SEP + workerId;
+        this.snowflake = new Snowflake(workerIdBitLength, sequenceBitLength, workerId);
 
         curatorFramework.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(this));
 
@@ -289,11 +280,11 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
                 LOG.info("Created snowflake zk worker success: {}, {}, {}", serverTag, usableWorkerId, currentTime);
                 return usableWorkerId;
             } catch (Throwable t) {
+                LOG.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath0, t.getMessage());
                 if (isCreatedWorkerIdPath) {
                     ThrowingRunnable.doCaught(() -> deletePath(workerIdPath0));
                 }
-                LOG.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath0, t.getMessage());
-                Threads.interruptIfNecessary(t);
+                ExceptionUtils.rethrow(t);
             }
         }
         throw new IllegalStateException("Cannot found usable zk worker id: " + serverTagParentPath);
@@ -364,7 +355,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             } catch (Throwable t) {
                 sessionId = UNKNOWN_SESSION_ID;
                 LOG.warn("Curator snowflake client state changed, get session instance error.", t);
-                Threads.interruptIfNecessary(t);
+                Throwables.rethrowIfFatal(t);
             }
             if (state == ConnectionState.CONNECTED) {
                 lastSessionId = sessionId;
@@ -381,7 +372,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
                     lastSessionId = sessionId;
                 }
 
-                ThrowingRunnable.doCaught(() -> RetryTemplate.execute(zkDistributedSnowflake::onReconnected, 3, 1000));
+                RetryTemplate.executeQuietly(zkDistributedSnowflake::onReconnected, 3, 1000);
             }
         }
     }

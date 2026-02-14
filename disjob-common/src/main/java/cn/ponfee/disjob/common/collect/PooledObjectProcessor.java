@@ -75,9 +75,9 @@ public class PooledObjectProcessor<K, V> {
                 if (requiredCreate()) {
                     try {
                         value = creator.apply(key);
-                    } catch (Throwable e) {
+                    } catch (Throwable t) {
                         counter.incrementAndGet();
-                        return ExceptionUtils.rethrow(e);
+                        return ExceptionUtils.rethrow(t);
                     }
                     if (value != null) {
                         LOG.debug("Created new object.");

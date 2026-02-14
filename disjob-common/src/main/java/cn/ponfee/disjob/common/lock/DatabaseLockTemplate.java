@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.common.lock;
 
 import cn.ponfee.disjob.common.base.RetryTemplate;
-import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,12 +73,7 @@ public final class DatabaseLockTemplate implements LockTemplate {
         jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL);
 
         // initialize lock
-        try {
-            RetryTemplate.execute(this::initializeLockIfNecessary, 3, 1000L);
-        } catch (Throwable e) {
-            Threads.interruptIfNecessary(e);
-            throw new Error("Initialize lock '" + lockName + "' failed.", e);
-        }
+        RetryTemplate.execute(this::initializeLockIfNecessary, 3, 1000L);
     }
 
     @Override

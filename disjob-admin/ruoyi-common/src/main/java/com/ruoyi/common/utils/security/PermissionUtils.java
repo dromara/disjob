@@ -77,8 +77,7 @@ public class PermissionUtils
         {
             msg = MessageUtils.message(EXPORT_PERMISSION, permission);
         }
-        else if (StringUtils.endsWithAny(permission,
-                new String[] { PermissionConstants.VIEW_PERMISSION, PermissionConstants.LIST_PERMISSION }))
+        else if (StringUtils.endsWithAny(permission, PermissionConstants.VIEW_PERMISSION, PermissionConstants.LIST_PERMISSION))
         {
             msg = MessageUtils.message(VIEW_PERMISSION, permission);
         }

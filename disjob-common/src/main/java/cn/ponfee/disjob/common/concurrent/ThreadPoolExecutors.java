@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.SystemUtils;
@@ -278,7 +279,7 @@ public final class ThreadPoolExecutors {
         } catch (Throwable t) {
             LOG.error("Shutdown ExecutorService occur error.", t);
             ThrowingRunnable.doCaught(executorService::shutdownNow);
-            Threads.interruptIfNecessary(t);
+            Throwables.rethrowIfFatal(t);
             return false;
         }
     }
@@ -305,7 +306,7 @@ public final class ThreadPoolExecutors {
             if (!hasCallShutdownNow) {
                 ThrowingRunnable.doCaught(executorService::shutdownNow);
             }
-            Threads.interruptIfNecessary(t);
+            Throwables.rethrowIfFatal(t);
         }
         return isSafeTerminated;
     }

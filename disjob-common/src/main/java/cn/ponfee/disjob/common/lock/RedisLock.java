@@ -16,12 +16,10 @@
 
 package cn.ponfee.disjob.common.lock;
 
+import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
 import cn.ponfee.disjob.common.util.Bytes;
 import cn.ponfee.disjob.common.util.UuidUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
@@ -88,7 +86,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class RedisLock implements Lock, java.io.Serializable {
     private static final long serialVersionUID = -5820879641400425639L;
-    private static final Logger LOG = LoggerFactory.getLogger(RedisLock.class);
 
     /**
      * <pre>
@@ -206,12 +203,7 @@ public class RedisLock implements Lock, java.io.Serializable {
     @Override
     public void lock() {
         for (int round = 0; !acquire(); round++) {
-            try {
-                Thread.sleep(computeSleepMillis(round));
-            } catch (InterruptedException e) {
-                LOG.error("Redis lock sleep occur interrupted exception.", e);
-                ExceptionUtils.rethrow(e);
-            }
+            Threads.sleep(computeSleepMillis(round));
         }
     }
 

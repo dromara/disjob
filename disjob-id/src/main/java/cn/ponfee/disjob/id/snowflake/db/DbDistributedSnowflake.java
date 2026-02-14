@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
@@ -126,15 +125,10 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
         // create table
         jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL);
 
-        try {
-            // workerId取值范围：[0, workerIdMaxCount)
-            int workerIdMaxCount = 1 << workerIdBitLength;
-            int workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdMaxCount), 5, 2000L);
-            this.snowflake = new Snowflake(workerIdBitLength, sequenceBitLength, workerId);
-        } catch (Throwable e) {
-            Threads.interruptIfNecessary(e);
-            throw new Error("Db snowflake server initialize error.", e);
-        }
+        // workerId取值范围：[0, workerIdMaxCount)
+        int workerIdMaxCount = 1 << workerIdBitLength;
+        int workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdMaxCount), 5, 2000L);
+        this.snowflake = new Snowflake(workerIdBitLength, sequenceBitLength, workerId);
 
         commonScheduledPool().scheduleWithFixedDelay(this::heartbeat, 0, HEARTBEAT_PERIOD_MS, TimeUnit.MILLISECONDS);
     }

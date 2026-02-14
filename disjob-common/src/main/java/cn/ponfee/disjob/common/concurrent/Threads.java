@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.concurrent;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,14 @@ public final class Threads {
 
     public static String getName(Thread thread) {
         return thread == null ? null : thread.getName();
+    }
+
+    public static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            ExceptionUtils.rethrow(e);
+        }
     }
 
     /**
@@ -78,7 +87,12 @@ public final class Threads {
         LOG.info("Stop thread end [{}]", thread.getName());
     }
 
-    public static void interruptIfNecessary(Throwable t) {
+    /**
+     * Re-interrupt if occur InterruptedException
+     *
+     * @param t the throwable
+     */
+    public static void reinterruptIfInterruptedException(Throwable t) {
         if (t instanceof InterruptedException) {
             Thread.currentThread().interrupt();
         }
@@ -115,7 +129,7 @@ public final class Threads {
                 if (caught) {
                     ThrowingRunnable.doCaught(() -> Thread.sleep(sleepTime));
                 } else {
-                    ThrowingRunnable.doChecked(() -> Thread.sleep(sleepTime));
+                    sleep(sleepTime);
                 }
             }
             if (supplier.getAsBoolean()) {
@@ -170,7 +184,7 @@ public final class Threads {
             thread.stop();
             LOG.warn("Invoke java.lang.Thread#stop() method end: {}", thread.getName());
         } catch (Throwable t) {
-            LOG.error("Invoke java.lang.Thread#stop() method failed: " + thread.getName(), t);
+            LOG.error("Invoke java.lang.Thread#stop() method failed: {}", thread.getName(), t);
         }
     }
 
@@ -178,9 +192,9 @@ public final class Threads {
         if (joinTimeoutMills > 0) {
             try {
                 thread.join(joinTimeoutMills);
-            } catch (Throwable e) {
-                LOG.error("Join thread terminal interrupted: " + thread.getName(), e);
-                interruptIfNecessary(e);
+            } catch (Throwable t) {
+                LOG.error("Join thread terminal interrupted: {}", thread.getName(), t);
+                reinterruptIfInterruptedException(t);
             }
         }
         return isStopped(thread);

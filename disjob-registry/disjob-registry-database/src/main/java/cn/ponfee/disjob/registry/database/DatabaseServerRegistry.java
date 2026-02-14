@@ -18,7 +18,7 @@ package cn.ponfee.disjob.registry.database;
 
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
-import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.exception.Try;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
@@ -125,13 +125,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     @Override
     public boolean isConnected() {
-        try {
-            jdbcTemplateWrapper.existsTable(TABLE_NAME);
-            return true;
-        } catch (Throwable t) {
-            Threads.interruptIfNecessary(t);
-            return false;
-        }
+        return Try.run(() -> jdbcTemplateWrapper.existsTable(TABLE_NAME)).isSuccess();
     }
 
     // ------------------------------------------------------------------Registry
@@ -172,7 +166,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     // ------------------------------------------------------------------Discovery
 
     @Override
-    public void discoverServers() throws Throwable {
+    public void discoverServers() {
         RetryTemplate.execute(() -> refreshDiscoveredServers(getServers(discoveryRoleName)), 3, 1000L);
     }
 
