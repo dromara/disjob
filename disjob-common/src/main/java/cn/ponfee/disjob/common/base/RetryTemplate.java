@@ -59,15 +59,14 @@ public class RetryTemplate {
                 if (throwable == null) {
                     throwable = t;
                 }
+                if (traceId == null) {
+                    traceId = UuidUtils.uuid32();
+                }
                 if (i < retryMaxCount) {
                     // log and sleep if not the last loop
-                    if (traceId == null) {
-                        traceId = UuidUtils.uuid32();
-                    }
                     LOG.error("Execute failed will retry: {}, {}", i + 1, traceId, t);
                     Threads.sleep((i + 1) * retryBackoffPeriod);
                 } else {
-                    // retryId is null if not retried
                     LOG.error("Execute failed will exit: {}, {}", i + 1, traceId, t);
                 }
             }
@@ -88,15 +87,13 @@ public class RetryTemplate {
                 return action.get();
             } catch (Throwable t) {
                 Throwables.rethrowIfFatal(t);
+                if (traceId == null) {
+                    traceId = UuidUtils.uuid32();
+                }
                 if (i < retryMaxCount) {
-                    // log and sleep if not the last loop
-                    if (traceId == null) {
-                        traceId = UuidUtils.uuid32();
-                    }
                     LOG.error("Execute failed quietly retry: {}, {}", i + 1, traceId, t);
                     Threads.sleep((i + 1) * retryBackoffPeriod);
                 } else {
-                    // retryId is null if not retried
                     LOG.error("Execute failed quietly exit: {}, {}", i + 1, traceId, t);
                 }
             }

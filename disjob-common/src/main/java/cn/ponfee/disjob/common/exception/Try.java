@@ -96,11 +96,6 @@ public interface Try<R> extends Serializable {
         return isSuccess() ? this : supplier.get();
     }
 
-    default Try<R> orElseGet(Throwables.ThrowingSupplier<R, ?> supplier) {
-        Objects.requireNonNull(supplier, "supplier is null");
-        return isSuccess() ? this : call(supplier);
-    }
-
     final class Success<R> implements Try<R>, Serializable {
         private static final long serialVersionUID = 1L;
         private final R value;

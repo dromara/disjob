@@ -227,10 +227,10 @@ public class TransactionUtils {
 
     private static <R> Try<R> doInPropagationTransaction(PlatformTransactionManager txManager,
                                                          ThrowingSupplier<R, Throwable> action,
-                                                         int transactionPropagation) {
+                                                         int propagationBehavior) {
         Objects.requireNonNull(txManager, "Transaction manager cannot be null.");
         DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
-        txDefinition.setPropagationBehavior(transactionPropagation);
+        txDefinition.setPropagationBehavior(propagationBehavior);
         TransactionStatus status = txManager.getTransaction(txDefinition);
         try {
             R result = action.get();

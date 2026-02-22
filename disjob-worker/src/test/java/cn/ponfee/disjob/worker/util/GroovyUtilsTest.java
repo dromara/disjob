@@ -101,31 +101,27 @@ public class GroovyUtilsTest {
     public void testClosureLambda() {
         Closure<?> closure = (Closure<?>) groovyShell.parse("{ a,b -> a+b }").run();
         Object result = closure.call(2, 3);
-        System.out.println("type: " + result.getClass() + ", value: " + result);
-        assertThat(result).isEqualTo(5);
+        assertThat("type=" + result.getClass().getName() + ", value=" + result).isEqualTo("type=java.lang.Integer, value=5");
 
         closure = (Closure<?>) groovyShell.parse("{ (a,b) -> a+b }").run();
         result = closure.call(2, 3);
-        System.out.println("type: " + result.getClass() + ", value: " + result);
-        assertThat(result).isEqualTo(5);
+        assertThat("type=" + result.getClass().getName() + ", value=" + result).isEqualTo("type=java.lang.Integer, value=5");
 
         // { (a,b) -> Integer.sum(a,b) }
         closure = (Closure<?>) groovyShell.parse("Integer::sum").run();
         result = closure.call(2, 3);
-        System.out.println("type: " + result.getClass() + ", value: " + result);
-        assertThat(result).isEqualTo(5);
+        assertThat("type=" + result.getClass().getName() + ", value=" + result).isEqualTo("type=java.lang.Integer, value=5");
 
         // { it -> Math.sqrt(it) }
         closure = (Closure<?>) groovyShell.parse("Math::sqrt").run();
         result = closure.call(2);
-        System.out.println("type: " + result.getClass() + ", value: " + result);
+        assertThat("type=" + result.getClass().getName() + ", value=" + result.toString().substring(0, 10)).isEqualTo("type=java.lang.Double, value=1.41421356");
         assertThat(Math.abs((double) result - Math.sqrt(2)) < 0.000000000001D).isTrue();
 
         // stream reduce
         closure = (Closure<?>) groovyShell.parse("{ it -> it.stream().reduce(0, Integer::sum) }").run();
         result = closure.call(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-        System.out.println("type: " + result.getClass() + ", value: " + result);
-        assertThat(result).isEqualTo(45);
+        assertThat("type=" + result.getClass().getName() + ", value=" + result).isEqualTo("type=java.lang.Integer, value=45");
     }
 
     @Test
