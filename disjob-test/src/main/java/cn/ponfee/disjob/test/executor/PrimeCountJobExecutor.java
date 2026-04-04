@@ -18,7 +18,6 @@ package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.test.base.Prime;
-import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.executor.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -112,10 +111,7 @@ public class PrimeCountJobExecutor extends JobExecutor {
         long delta = blockSize - 1, next = execution.getNext();
         long nextSavepointTimeMillis = System.currentTimeMillis() + SAVEPOINT_INTERVAL_MS;
         while (next <= n) {
-            if (super.isStopped() || Thread.currentThread().isInterrupted()) {
-                savepoint.save(Jsons.toJson(execution));
-                throw new PauseTaskException();
-            }
+            pauseIfStopped(savepoint, execution);
 
             long count = Prime.MillerRabin.countPrimes(next, Math.min(next + delta, n));
             Thread.sleep(97 + ThreadLocalRandom.current().nextLong(197));

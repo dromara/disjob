@@ -38,7 +38,7 @@ import java.util.function.Supplier;
  * }
  *
  * Case3: {@code
- * SchedJob job = LazyLoader.of(SchedJob.class, jobMapper::get, jobId);
+ * SchedJob job = LazyLoader.createProxy(SchedJob.class, jobMapper::get, jobId);
  * }
  * </pre>
  *
@@ -59,16 +59,16 @@ public class LazyLoader<T> implements Supplier<T> {
         return new LazyLoader<>(loader);
     }
 
-    public static <T, R extends T> R of(Class<T> type, Supplier<R> loader) {
-        return of(type, of(loader));
-    }
-
     public static <T, A> LazyLoader<T> of(Function<A, T> loader, A arg) {
         return new LazyLoader<>(() -> loader.apply(arg));
     }
 
-    public static <T, A, R extends T> R of(Class<T> type, Function<A, R> loader, A arg) {
-        return of(type, of(loader, arg));
+    public static <T, R extends T> R createProxy(Class<T> type, Supplier<R> loader) {
+        return newProxyInstance(type, of(loader));
+    }
+
+    public static <T, A, R extends T> R createProxy(Class<T> type, Function<A, R> loader, A arg) {
+        return newProxyInstance(type, of(loader, arg));
     }
 
     @Override
@@ -116,7 +116,7 @@ public class LazyLoader<T> implements Supplier<T> {
      * @return 代理对象
      */
     @SuppressWarnings("unchecked")
-    private static <T, R extends T> R of(Class<T> type, final LazyLoader<R> lazyLoader) {
+    private static <T, R extends T> R newProxyInstance(Class<T> type, final LazyLoader<R> lazyLoader) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(type);
         // 1、proxy == (R) enhancer.create()；2、`methodProxy`为`org.springframework.cglib.proxy.MethodProxy`类的实例；

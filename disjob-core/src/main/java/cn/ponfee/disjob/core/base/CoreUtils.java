@@ -21,7 +21,6 @@ import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.NetUtils;
 import com.google.common.cache.Cache;
@@ -34,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -81,9 +81,9 @@ public class CoreUtils {
         throw new Error("Not found available server host.");
     }
 
-    public static <R> R doInSynchronized(Long lock, ThrowingSupplier<R, ?> action) throws Throwable {
+    public static <R> R doInSynchronized(Long lock, Callable<R> action) throws Exception {
         synchronized (INSTANCE_LOCK_POOL.intern(lock)) {
-            return action.get();
+            return action.call();
         }
     }
 

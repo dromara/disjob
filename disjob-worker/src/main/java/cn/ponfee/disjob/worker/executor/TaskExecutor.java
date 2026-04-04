@@ -16,6 +16,9 @@
 
 package cn.ponfee.disjob.worker.executor;
 
+import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.worker.exception.PauseTaskException;
+
 /**
  * Task executor
  *
@@ -47,6 +50,21 @@ abstract class TaskExecutor {
      */
     public final boolean isStopped() {
         return stopped;
+    }
+
+    /**
+     * Pause task if stopped
+     *
+     * @param savepoint the savepoint
+     * @param data      the execute snapshot data
+     * @throws Exception if occur error
+     */
+    protected final void pauseIfStopped(Savepoint savepoint, Object data) throws Exception {
+        String message = isStopped() ? "Task stopped" : (Thread.currentThread().isInterrupted() ? "Thread interrupted" : null);
+        if (message != null) {
+            savepoint.save(data == null ? null : (data instanceof CharSequence ? data.toString() : Jsons.toJson(data)));
+            throw new PauseTaskException(message);
+        }
     }
 
     /**

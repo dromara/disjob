@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.worker.base;
 
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.supervisor.dto.StartTaskParam;
@@ -23,10 +24,14 @@ import cn.ponfee.disjob.core.supervisor.dto.StartTaskResult;
 import cn.ponfee.disjob.core.supervisor.dto.StopTaskParam;
 import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
+import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import cn.ponfee.disjob.worker.executor.JobExecutor;
+import cn.ponfee.disjob.worker.executor.Savepoint;
+import cn.ponfee.disjob.worker.util.JobExecutorUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
+import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.Objects;
@@ -40,6 +45,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Getter
 final class WorkerTask {
 
+    private final AtomicReference<Operation> operation;
     private final long taskId;
     private final long instanceId;
     private final Long wnstanceId;
@@ -51,23 +57,14 @@ final class WorkerTask {
     private final RouteStrategy routeStrategy;
     private final ShutdownStrategy shutdownStrategy;
     private final int executeTimeout;
-    private final String jobExecutor;
+    private final String executor;
     private final Worker worker;
 
-    /**
-     * 操作类型
-     */
     @Getter(AccessLevel.NONE)
-    private final AtomicReference<Operation> operationRef;
-
-    /**
-     * 任务执行器
-     */
-    @Getter(AccessLevel.NONE)
-    private final AtomicReference<JobExecutor> taskExecutorRef = new AtomicReference<>();
+    private volatile JobExecutor jobExecutor;
 
     WorkerTask(ExecuteTaskParam param) {
-        this.operationRef = new AtomicReference<>(Objects.requireNonNull(param.getOperation()));
+        this.operation = new AtomicReference<>(Objects.requireNonNull(param.getOperation()));
         this.taskId = param.getTaskId();
         this.instanceId = param.getInstanceId();
         this.wnstanceId = param.getWnstanceId();
@@ -79,7 +76,7 @@ final class WorkerTask {
         this.routeStrategy = Objects.requireNonNull(param.getRouteStrategy());
         this.shutdownStrategy = Objects.requireNonNull(param.getShutdownStrategy());
         this.executeTimeout = param.getExecuteTimeout();
-        this.jobExecutor = param.getJobExecutor();
+        this.executor = param.getJobExecutor();
         this.worker = Objects.requireNonNull(param.getWorker());
     }
 
@@ -90,20 +87,35 @@ final class WorkerTask {
     }
 
     Operation getOperation() {
-        return operationRef.get();
+        return operation.get();
     }
 
     boolean updateOperation(Operation expect, Operation update) {
-        return !Objects.equals(expect, update)
-            && operationRef.compareAndSet(expect, update);
+        return !Objects.equals(expect, update) && operation.compareAndSet(expect, update);
     }
 
-    void bindTaskExecutor(JobExecutor executor) {
-        taskExecutorRef.set(executor);
+    synchronized ExecutionTask init(StartTaskResult startTaskResult) throws Exception {
+        Assert.isNull(jobExecutor, "Job executor already Initialized.");
+        Assert.notNull(startTaskResult, "Start task result cannot be null.");
+        this.jobExecutor = JobExecutorUtils.loadJobExecutor(executor);
+        ExecutionTask executionTask = buildExecutionTask(startTaskResult);
+        jobExecutor.init(executionTask);
+        return executionTask;
+    }
+
+    ExecutionResult execute(ExecutionTask executionTask, Savepoint savepoint) throws Exception {
+        return jobExecutor.execute(executionTask, savepoint);
+    }
+
+    void destroy() {
+        final JobExecutor executor = jobExecutor;
+        if (executor != null) {
+            ThrowingRunnable.doCaught(executor::destroy, () -> "Destroy task executor error: " + taskId);
+        }
     }
 
     void stop() {
-        JobExecutor executor = taskExecutorRef.get();
+        final JobExecutor executor = jobExecutor;
         if (executor != null) {
             executor.stop();
         }
@@ -117,30 +129,6 @@ final class WorkerTask {
         return StopTaskParam.of(wnstanceId, instanceId, taskId, worker.serialize(), ops, toState, errorMsg);
     }
 
-    ExecutionTask toExecutionTask(StartTaskResult source) {
-        if (source == null) {
-            return null;
-        }
-
-        ExecutionTask target = new ExecutionTask();
-        target.setJobId(jobId);
-        target.setRetryCount(retryCount);
-        target.setRetriedCount(retriedCount);
-        target.setBroadcast(routeStrategy.isBroadcast());
-        target.setJobType(jobType);
-        target.setWnstanceId(wnstanceId);
-        target.setInstanceId(instanceId);
-        target.setTriggerTime(new Date(triggerTime));
-
-        target.setTaskId(source.getTaskId());
-        target.setTaskNo(source.getTaskNo());
-        target.setTaskCount(source.getTaskCount());
-        target.setExecuteSnapshot(source.getExecuteSnapshot());
-        target.setTaskParam(source.getTaskParam());
-
-        return target;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -151,17 +139,37 @@ final class WorkerTask {
         }
         WorkerTask that = (WorkerTask) obj;
         return this.taskId == that.taskId
-            && this.operationRef.get() == that.operationRef.get();
+            && this.operation.get() == that.operation.get();
     }
 
     @Override
     public int hashCode() {
-        return Long.hashCode(taskId) + operationRef.get().ordinal() * 31;
+        return Long.hashCode(taskId) + operation.get().ordinal() * 31;
     }
 
     @Override
     public String toString() {
-        return taskId + "-" + operationRef.get();
+        return taskId + "-" + operation.get();
+    }
+
+    private ExecutionTask buildExecutionTask(StartTaskResult source) {
+        ExecutionTask target = new ExecutionTask();
+        target.setTaskId(taskId);
+        target.setJobId(jobId);
+        target.setRetryCount(retryCount);
+        target.setRetriedCount(retriedCount);
+        target.setBroadcast(routeStrategy.isBroadcast());
+        target.setJobType(jobType);
+        target.setWnstanceId(wnstanceId);
+        target.setInstanceId(instanceId);
+        target.setTriggerTime(new Date(triggerTime));
+
+        target.setTaskNo(source.getTaskNo());
+        target.setTaskCount(source.getTaskCount());
+        target.setExecuteSnapshot(source.getExecuteSnapshot());
+        target.setTaskParam(source.getTaskParam());
+
+        return target;
     }
 
 }

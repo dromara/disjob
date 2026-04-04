@@ -165,7 +165,7 @@ public final class ProxyUtils {
                 case "hashCode":
                     return hashCode(proxy);
                 case "toString":
-                    return annotationType.getName() + "@" + hashCode(proxy);
+                    return annotationType.getName() + "@" + Integer.toHexString(hashCode(proxy));
                 // 以下方法在`java.lang.Object`类中用了final修饰，不会被覆写，实际调用不会走进来
                 case "getClass":
                 case "notify":

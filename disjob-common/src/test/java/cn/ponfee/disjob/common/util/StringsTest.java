@@ -107,4 +107,29 @@ public class StringsTest {
         Assertions.assertEquals("<b>作业ID：</b>1329633560065048576<br/>", String.format("<b>%s</b>%s<br/>", "作业ID：", 1329633560065048576L));
     }
 
+    @Test
+    public void test() {
+        System.out.println(true ? null : 0L);
+        System.out.println(true ? 0L : null);
+        System.out.println(false ? 0L : null);
+        System.out.println(false ? null : 0L);
+
+        Long value = null;
+        Assertions.assertThrows(NullPointerException.class, () -> System.out.println(true ? value : 0L));
+        Assertions.assertThrows(NullPointerException.class, () -> System.out.println(false ? 0L : value));
+
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            Long res1 = true ? value : 0L;
+            System.out.println(res1);
+        });
+        Long res2 = true ? 0L : value;
+        System.out.println(res2);
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            Long res3 = false ? 0L : value;
+            System.out.println(res3);
+        });
+        Long res4 = false ? value : 0L;
+        System.out.println(res4);
+    }
+
 }

@@ -71,7 +71,7 @@ import java.util.*;
  * <tr>
  * <td><code>Month</code></td>
  * <td>&nbsp;</td>
- * <td><code>0-11 or JAN-DEC</code></td>
+ * <td><code>1-12 or JAN-DEC</code></td>
  * <td>&nbsp;</td>
  * <td><code>, - * /</code></td>
  * </tr>
@@ -656,6 +656,10 @@ public final class CronExpression implements Serializable, Cloneable {
             addToSet(ALL_SPEC_INT, -1, incr, type);
             return i;
         } else if (c == 'L') {
+
+            if(type < DAY_OF_MONTH)
+                throw new ParseException("'L' not expected in seconds, minutes or hours fields.", i);
+
             i++;
             if (type == DAY_OF_WEEK) {
                 addToSet(7, 7, 0, type);
@@ -712,15 +716,15 @@ public final class CronExpression implements Serializable, Cloneable {
 
     private void checkIncrementRange(int incr, int type, int idxPos) throws ParseException {
         if (incr > 59 && (type == SECOND || type == MINUTE)) {
-            throw new ParseException("Increment > 60 : " + incr, idxPos);
+            throw new ParseException("Increment >= 60 : " + incr, idxPos);
         } else if (incr > 23 && (type == HOUR)) {
-            throw new ParseException("Increment > 24 : " + incr, idxPos);
+            throw new ParseException("Increment >= 24 : " + incr, idxPos);
         } else if (incr > 31 && (type == DAY_OF_MONTH)) {
-            throw new ParseException("Increment > 31 : " + incr, idxPos);
+            throw new ParseException("Increment >= 31 : " + incr, idxPos);
         } else if (incr > 7 && (type == DAY_OF_WEEK)) {
-            throw new ParseException("Increment > 7 : " + incr, idxPos);
+            throw new ParseException("Increment >= 7 : " + incr, idxPos);
         } else if (incr > 12 && (type == MONTH)) {
-            throw new ParseException("Increment > 12 : " + incr, idxPos);
+            throw new ParseException("Increment >= 12 : " + incr, idxPos);
         }
     }
 
@@ -1300,15 +1304,20 @@ public final class CronExpression implements Serializable, Cloneable {
                         day = -1;
                     }
                 }
+
+                boolean needAdvance = false;
                 if (smallestDay.isPresent()) {
                     if (day == -1 || smallestDay.get() < day) {
                         day = smallestDay.get();
+                        needAdvance = true;
                     }
                 } else if (day == -1) {
                     day = 1;
                     mon++;
+                    needAdvance = true;
                 }
-                if (day != t || mon != tmon) {
+
+                if (needAdvance && (day != t || mon != tmon)) {
                     cl.set(Calendar.SECOND, 0);
                     cl.set(Calendar.MINUTE, 0);
                     cl.set(Calendar.HOUR_OF_DAY, 0);
@@ -1318,6 +1327,7 @@ public final class CronExpression implements Serializable, Cloneable {
                     // are 1-based
                     continue;
                 }
+
             } else if (dayOfWSpec && !dayOfMSpec) { // get day by day of week rule
                 if (lastDayOfWeek) { // are we looking for the last XXX day of
                     // the month?
@@ -1530,12 +1540,53 @@ public final class CronExpression implements Serializable, Cloneable {
     }
 
     /**
-     * NOT YET IMPLEMENTED: Returns the time before the given time
+     * Returns the time before the given time
      * that the <code>CronExpression</code> matches.
+     *
+     * @param endTime a time for which the previous
+     *        matching time is returned
+     * @return the previous matching time before the given end time,
+     *         or null if there are no previous matching times
      */
     public Date getTimeBefore(Date endTime) {
-        // FUTURE_TODO: implement QUARTZ-423
-        return null;
+        // the current implementation is not a direct calculation, but rather
+        // uses getTimeAfter with a binary search to find the previous match time
+        long end = endTime.getTime();
+        long min = 0; // the epoch date is the minimum supported by this class
+        long max = end;
+        // check if it's satisfiable at all
+        Date date = new Date(min);
+        Date after = getTimeAfter(date);
+        if (after == null || after.getTime() >= end)
+            return null; // there are no after-times before end
+        // from this point forward min's time-after is always less than end,
+        // and max's time-after is always equal to or greater than end
+        // so we just need to shrink the interval until they meet.
+        // optimization - perform inverse binary search to find a tighter lower bound
+        long interval = 60 * 60 * 1000; // start with a reasonable interval
+        while (interval < max) {
+            date.setTime(max - interval);
+            after = getTimeAfter(date);
+            if (after != null && after.getTime() < max) {
+                min = date.getTime(); // found a closer min
+                break;
+            }
+            interval *= 2;
+        }
+        // perform a regular binary search to find the earliest moment
+        // whose time-after is equal to or greater than the end time -
+        // this moment is the previous match time itself
+        while (max - min > 1000) { // we can stop at 1 second resolution
+            long mid = (min + max) >>> 1;
+            date.setTime(mid);
+            after = getTimeAfter(date);
+            if (after != null && after.getTime() < end)
+                min = mid;
+            else
+                max = mid;
+        }
+        date.setTime(max - max % 1000); // round to second
+        return date;
     }
 
     /**
@@ -1592,7 +1643,7 @@ public final class CronExpression implements Serializable, Cloneable {
 
         final int lastDay = getLastDayOfMonth(mon, year);
         // For "L", "L-1", etc.
-        int smallestDay = Optional.ofNullable(set.ceiling(LAST_DAY_OFFSET_END - (lastDay - day)))
+        final int smallestDay = Optional.ofNullable(set.ceiling(LAST_DAY_OFFSET_END - (lastDay - day)))
             .map(d -> d - LAST_DAY_OFFSET_START + 1)
             .orElse(Integer.MAX_VALUE);
 
@@ -1600,10 +1651,14 @@ public final class CronExpression implements Serializable, Cloneable {
         SortedSet<Integer> st = set.subSet(day, LAST_DAY_OFFSET_START);
         // make sure we don't over-run a short month, such as february
         if (!st.isEmpty() && st.first() < smallestDay && st.first() <= lastDay) {
-            smallestDay = st.first();
+            return Optional.of(st.first());
         }
 
-        return smallestDay == Integer.MAX_VALUE ? Optional.empty() : Optional.of(smallestDay);
+        if (smallestDay == Integer.MAX_VALUE) {
+            return Optional.empty();
+        } else {
+            return Optional.of(smallestDay + lastDay - LAST_DAY_OFFSET_START + 1);
+        }
     }
 
     private void readObject(java.io.ObjectInputStream stream)

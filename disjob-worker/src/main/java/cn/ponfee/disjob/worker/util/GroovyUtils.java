@@ -161,7 +161,7 @@ public final class GroovyUtils {
         CLASS() {
             @Override
             protected <T> T evaluate(String scriptText, Map<String, Object> params) throws Exception {
-                Script script = (Script) parseClass(scriptText).newInstance();
+                Script script = (Script) parseClass(scriptText).getDeclaredConstructor().newInstance();
                 script.setBinding(new Binding(params));
                 return (T) script.run();
             }

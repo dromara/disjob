@@ -67,8 +67,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
 
     /**
      * Configuration database registry datasource.
-     *
-     * 当`havingValue=""`时，只要`属性有值&&不为false`则生效。
+     * <p>当`havingValue=""`时，只要`属性有值&&不为false`则生效。
      */
     @ConditionalOnProperty(name = DatabaseRegistryProperties.KEY_PREFIX + ".datasource.url")
     @ConditionalOnMissingBean(name = SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER)

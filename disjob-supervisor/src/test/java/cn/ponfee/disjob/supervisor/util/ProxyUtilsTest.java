@@ -185,7 +185,7 @@ class ProxyUtilsTest {
         org.assertj.core.api.Assertions.assertThat(ann.equals(ann)).isTrue();
         org.assertj.core.api.Assertions.assertThat(ann.equals(null)).isFalse();
 
-        org.assertj.core.api.Assertions.assertThat(ann.toString()).isEqualTo("cn.ponfee.disjob.supervisor.util.ProxyUtilsTest$Ann@" + ann.hashCode());
+        org.assertj.core.api.Assertions.assertThat(ann.toString()).isEqualTo("cn.ponfee.disjob.supervisor.util.ProxyUtilsTest$Ann@" + Integer.toHexString(ann.hashCode()));
 
         org.assertj.core.api.Assertions.assertThat(ann.equals()).isFalse();
 

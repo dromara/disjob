@@ -190,10 +190,10 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     @Test
     public void testLazyLoader() {
         long job1Id = 1003164910267351000L;
-        SchedJob job1 = LazyLoader.of(SchedJob.class, jobMapper::get, job1Id);
+        SchedJob job1 = LazyLoader.createProxy(SchedJob.class, jobMapper::get, job1Id);
         Assertions.assertEquals(job1Id, job1.getJobId());
 
-        SchedJob job2 = LazyLoader.of(SchedJob.class, jobMapper::get, 0L);
+        SchedJob job2 = LazyLoader.createProxy(SchedJob.class, jobMapper::get, 0L);
         Assertions.assertThrows(NullPointerException.class, job2::getJobId);
     }
 
