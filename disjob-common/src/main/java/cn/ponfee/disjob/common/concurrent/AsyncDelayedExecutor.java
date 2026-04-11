@@ -17,8 +17,7 @@
 package cn.ponfee.disjob.common.concurrent;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.SynchronousQueue;
@@ -43,9 +42,8 @@ import java.util.function.Consumer;
  * @param <E> the element type
  * @author Ponfee
  */
+@Slf4j
 public final class AsyncDelayedExecutor<E> extends Thread {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AsyncDelayedExecutor.class);
 
     /**
      * 数据处理器
@@ -80,14 +78,14 @@ public final class AsyncDelayedExecutor<E> extends Thread {
                 .workQueue(new SynchronousQueue<>())
                 .keepAliveTimeSeconds(300)
                 .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
-                .threadFactory(NamedThreadFactory.builder().prefix("async_delayed_executor").daemon(true).uncaughtExceptionHandler(LOG).build())
+                .threadFactory(NamedThreadFactory.builder().prefix("async_delayed_executor").daemon(true).uncaughtExceptionHandler(log).build())
                 .build();
         }
         this.asyncExecutor = executor;
 
         super.setName("async_delayed_boss-" + Integer.toHexString(hashCode()));
         super.setDaemon(false);
-        super.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOG));
+        super.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(log));
         super.start();
     }
 
@@ -116,14 +114,14 @@ public final class AsyncDelayedExecutor<E> extends Thread {
     public void run() {
         while (state.isRunning()) {
             if (super.isInterrupted()) {
-                LOG.error("Async delayed thread interrupted.");
+                log.error("Async delayed thread interrupted.");
                 break;
             }
             DelayedData<E> delayed;
             try {
                 delayed = queue.poll(2000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
-                LOG.warn("Delayed queue pool interrupted: {}", e.getMessage());
+                log.warn("Delayed queue pool interrupted: {}", e.getMessage());
                 Thread.currentThread().interrupt();
                 break;
             }

@@ -16,8 +16,7 @@
 
 package cn.ponfee.disjob.common.base;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
@@ -97,12 +96,11 @@ import java.util.PriorityQueue;
  *
  * @author Ponfee
  */
+@Slf4j
 public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements java.io.Serializable {
 
     private static final long serialVersionUID = 4500377208898808026L;
     private static final int PROCESS_SLOTS_SIZE = 2;
-
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
      * Tick duration milliseconds
@@ -175,9 +173,9 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
 
         boolean res = wheel[ringIndex].offer(timing);
         if (res) {
-            log.info("Timing wheel task success {}", timing);
+            log.info("Timing wheel task success: {}", timing);
         } else {
-            log.error("Timing wheel task failed {}", timing);
+            log.error("Timing wheel task failed: {}", timing);
         }
         return res;
     }

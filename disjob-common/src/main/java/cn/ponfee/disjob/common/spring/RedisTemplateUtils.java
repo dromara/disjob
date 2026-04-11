@@ -18,9 +18,8 @@ package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.ReturnType;
@@ -48,9 +47,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Ponfee
  */
+@Slf4j
 public class RedisTemplateUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RedisTemplateUtils.class);
 
     public static <T> T evalScript(RedisTemplate<?, ?> redisTemplate,
                                    RedisScript<T> script, byte[][] keys, byte[]... args) {
@@ -93,7 +91,7 @@ public class RedisTemplateUtils {
                 return conn.evalSha(script.getSha1(), returnType, numKeys, keysAndArgs);
             } catch (Exception e) {
                 if (exceptionContainsNoScriptError(e)) {
-                    LOG.info(e.getMessage());
+                    log.info(e.getMessage());
                     return conn.eval(script.getScriptAsString().getBytes(UTF_8), returnType, numKeys, keysAndArgs);
                 } else {
                     return ExceptionUtils.rethrow(e);

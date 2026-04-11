@@ -43,8 +43,8 @@ import java.util.stream.Collectors;
  * @author Ponfee
  */
 public abstract class ServerRegistry<R extends Server, D extends Server> implements Registry<R>, Discovery<D> {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     protected final char separator;
     protected final ServerRole registryRole;
     protected final String registryRootPath;

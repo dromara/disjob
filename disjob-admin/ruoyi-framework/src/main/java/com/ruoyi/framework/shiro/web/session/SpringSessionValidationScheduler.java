@@ -2,7 +2,6 @@ package com.ruoyi.framework.shiro.web.session;
 
 import com.ruoyi.common.config.thread.ThreadPoolConfig;
 import com.ruoyi.common.utils.Threads;
-import org.apache.shiro.session.mgt.DefaultSessionManager;
 import org.apache.shiro.session.mgt.SessionValidationScheduler;
 import org.apache.shiro.session.mgt.ValidatingSessionManager;
 import org.slf4j.Logger;
@@ -25,8 +24,6 @@ import java.util.concurrent.TimeUnit;
 public class SpringSessionValidationScheduler implements SessionValidationScheduler
 {
     private static final Logger log = LoggerFactory.getLogger(SpringSessionValidationScheduler.class);
-
-    public static final long DEFAULT_SESSION_VALIDATION_INTERVAL = DefaultSessionManager.DEFAULT_SESSION_VALIDATION_INTERVAL;
 
     /**
      * 定时器，用于处理超时的挂起请求，也用于连接断开时的重连。

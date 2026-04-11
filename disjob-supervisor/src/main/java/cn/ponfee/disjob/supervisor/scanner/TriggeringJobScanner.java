@@ -54,7 +54,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private final LockTemplate lockTemplate;
     private final long afterMilliseconds;
     private final ExecutorService processJobExecutor;
-    private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> log.warn("Not discovered any worker."));
+    private final PeriodExecutor logPrinter = new PeriodExecutor(30_000L, () -> log.warn("Not discovered any worker."));
 
     public TriggeringJobScanner(SupervisorProperties conf,
                                 JobManager jobManager,
@@ -71,7 +71,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         this.workerClient = workerClient;
         this.lockTemplate = lockTemplate;
         // heartbeat period duration: 2s * 3 = 6s
-        this.afterMilliseconds = (heartbeatPeriodMs * 3);
+        this.afterMilliseconds = heartbeatPeriodMs * 3;
         this.processJobExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
             .maximumPoolSize(Math.max(1, conf.getMaximumProcessJobPoolSize()))
@@ -112,7 +112,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         try {
             // check has available workers
             if (!workerClient.hasAliveWorker(job.getGroup())) {
-                updateNextScanTime(job, now, 60000L);
+                updateNextScanTime(job, now, 60_000L);
                 log.warn("Scan job none alive worker: {}, {}", job.getJobId(), job.getGroup());
                 return;
             }

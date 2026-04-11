@@ -34,9 +34,8 @@ import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -50,11 +49,10 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SchedJobService extends SingletonClassConstraint {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SchedJobService.class);
 
     private final JobManager jobManager;
     private final JobQuerier jobQuerier;
@@ -62,28 +60,28 @@ public class SchedJobService extends SingletonClassConstraint {
     // ------------------------------------------------------------------job
 
     public Long addJob(String user, SchedJobAddRequest req) throws JobException {
-        LOG.info("Adding job by {}: {}", user, req);
+        log.info("Adding job by {}: {}", user, req);
         return jobManager.addJob(req.tosSchedJob(user));
     }
 
     public void updateJob(String user, SchedJobUpdateRequest req) throws JobException {
-        LOG.info("Updating job by {}: {}", user, req);
+        log.info("Updating job by {}: {}", user, req);
         jobManager.updateJob(req.tosSchedJob(user));
     }
 
     public void deleteJob(String user, long jobId) {
-        LOG.info("Deleting job by {}: {}", user, jobId);
+        log.info("Deleting job by {}: {}", user, jobId);
         jobManager.deleteJob(user, jobId);
     }
 
     public void changeJobState(String user, long jobId, int toJobState) {
         JobState toState = JobState.of(toJobState);
-        LOG.info("Changing job state by {}: {}, {}", user, jobId, toState);
+        log.info("Changing job state by {}: {}, {}", user, jobId, toState);
         jobManager.changeJobState(user, jobId, toState);
     }
 
     public void manualTriggerJob(String user, long jobId) throws JobException {
-        LOG.info("Manual trigger job by {}: {}", user, jobId);
+        log.info("Manual trigger job by {}: {}", user, jobId);
         jobManager.manualTriggerJob(jobId);
     }
 
@@ -110,21 +108,21 @@ public class SchedJobService extends SingletonClassConstraint {
     // ------------------------------------------------------------------instance
 
     public void pauseInstance(String user, long instanceId) throws JobException {
-        LOG.info("Pausing instance by {}: {}", user, instanceId);
+        log.info("Pausing instance by {}: {}", user, instanceId);
         if (!jobManager.pauseInstance(instanceId)) {
             throw new JobException(JobCodeMsg.NOT_PAUSABLE_INSTANCE);
         }
     }
 
     public void cancelInstance(String user, long instanceId) throws JobException {
-        LOG.info("Canceling instance by {}: {}", user, instanceId);
+        log.info("Canceling instance by {}: {}", user, instanceId);
         if (!jobManager.cancelInstance(instanceId, Operation.MANUAL_CANCEL)) {
             throw new JobException(JobCodeMsg.NOT_CANCELABLE_INSTANCE);
         }
     }
 
     public void resumeInstance(String user, long instanceId) throws JobException {
-        LOG.info("Resuming instance by {}: {}", user, instanceId);
+        log.info("Resuming instance by {}: {}", user, instanceId);
         if (!jobManager.resumeInstance(instanceId)) {
             throw new JobException(JobCodeMsg.NOT_RESUMABLE_INSTANCE);
         }
@@ -132,12 +130,12 @@ public class SchedJobService extends SingletonClassConstraint {
 
     public void changeInstanceState(String user, long instanceId, int toExecuteState) {
         ExecuteState toState = ExecuteState.of(toExecuteState);
-        LOG.info("Changing instance state by {}: {}, {}", user, instanceId, toState);
+        log.info("Changing instance state by {}: {}, {}", user, instanceId, toState);
         jobManager.changeInstanceState(instanceId, toState);
     }
 
     public void deleteInstance(String user, long instanceId) {
-        LOG.info("Deleting instance by {}: {}", user, instanceId);
+        log.info("Deleting instance by {}: {}", user, instanceId);
         jobManager.deleteInstance(instanceId);
     }
 

@@ -87,8 +87,8 @@ public class NamedThreadFactory implements ThreadFactory {
             return this;
         }
 
-        public Builder uncaughtExceptionHandler(Logger log) {
-            this.uncaughtExceptionHandler = new LoggedUncaughtExceptionHandler(log);
+        public Builder uncaughtExceptionHandler(Logger logger) {
+            this.uncaughtExceptionHandler = new LoggedUncaughtExceptionHandler(logger);
             return this;
         }
 

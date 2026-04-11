@@ -25,6 +25,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Bytes;
 import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -33,8 +34,6 @@ import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import javax.annotation.PreDestroy;
@@ -68,10 +67,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Ponfee
  */
+@Slf4j
 public class ZkDistributedSnowflake extends SingletonClassConstraint implements IdGenerator, Closeable {
-    private static final Logger LOG = LoggerFactory.getLogger(ZkDistributedSnowflake.class);
 
-    private static final long HEARTBEAT_PERIOD_MS = 30000;
+    private static final long HEARTBEAT_PERIOD_MS = 30_000L;
 
     private static final String SEP = "/";
 
@@ -169,7 +168,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
     private void createPersistent(String path) throws Exception {
         try {
             curatorFramework.create().creatingParentsIfNeeded().forPath(path);
-            LOG.info("Created zk persistent path: {}", path);
+            log.info("Created zk persistent path: {}", path);
         } catch (KeeperException.NodeExistsException ignored) {
             // ignored
         }
@@ -180,7 +179,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             .creatingParentsIfNeeded()
             .withMode(CreateMode.EPHEMERAL)
             .forPath(path, data);
-        LOG.info("Created zk ephemeral path: {}", path);
+        log.info("Created zk ephemeral path: {}", path);
     }
 
     private void upsertEphemeral(String path, byte[] data) throws Exception {
@@ -198,7 +197,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
     private void deletePath(String path) throws Exception {
         try {
             curatorFramework.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
-            LOG.info("Deleted zk path: {}", path);
+            log.info("Deleted zk path: {}", path);
         } catch (KeeperException.NoNodeException ignored) {
             // ignored
         }
@@ -249,7 +248,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
 
     private int findUsableWorkerId(int workerIdMaxCount) throws Exception {
         // 捞取所有已注册的workerId
-        Set<Integer> usedWorkIds = curatorFramework.getChildren()
+        Set<Integer> usedWorkerIds = curatorFramework.getChildren()
             .forPath(serverTagParentPath)
             .stream()
             .map(e -> serverTagParentPath + SEP + e)
@@ -259,7 +258,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             .collect(Collectors.toSet());
         List<Integer> usableWorkerIds = IntStream.range(0, workerIdMaxCount)
             .boxed()
-            .filter(e -> !usedWorkIds.contains(e))
+            .filter(e -> !usedWorkerIds.contains(e))
             .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(usableWorkerIds)) {
             throw new IllegalStateException("Not found usable zk worker id.");
@@ -277,10 +276,10 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
                 isCreatedWorkerIdPath = true;
                 // create server tag ephemeral node: /snowflake/{bizTag}/tag/{serverTag}
                 upsertEphemeral(serverTagPath, Bytes.toBytes(usableWorkerId));
-                LOG.info("Created snowflake zk worker success: {}, {}, {}", serverTag, usableWorkerId, currentTime);
+                log.info("Created snowflake zk worker success: {}, {}, {}", serverTag, usableWorkerId, currentTime);
                 return usableWorkerId;
             } catch (Throwable t) {
-                LOG.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath0, t.getMessage());
+                log.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath0, t.getMessage());
                 if (isCreatedWorkerIdPath) {
                     ThrowingRunnable.doCaught(() -> deletePath(workerIdPath0));
                 }
@@ -313,7 +312,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             updateData(workerIdPath, WorkerIdData.of(currentTime, serverTag).serialize());
         }
 
-        LOG.info("Reuse zk worker id success: {}, {}", serverTag, currentWorkerId);
+        log.info("Reuse zk worker id success: {}, {}", serverTag, currentWorkerId);
 
         return currentWorkerId;
     }
@@ -354,21 +353,21 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
                 sessionId = client.getZookeeperClient().getZooKeeper().getSessionId();
             } catch (Throwable t) {
                 sessionId = UNKNOWN_SESSION_ID;
-                LOG.warn("Curator snowflake client state changed, get session instance error.", t);
+                log.warn("Curator snowflake client state changed, get session instance error.", t);
                 Throwables.rethrowIfFatal(t);
             }
             if (state == ConnectionState.CONNECTED) {
                 lastSessionId = sessionId;
-                LOG.info("Curator snowflake first connected, session={}", sessionId);
+                log.info("Curator snowflake first connected, session={}", sessionId);
             } else if (state == ConnectionState.LOST) {
-                LOG.warn("Curator snowflake session expired, session={}", lastSessionId);
+                log.warn("Curator snowflake session expired, session={}", lastSessionId);
             } else if (state == ConnectionState.SUSPENDED) {
-                LOG.warn("Curator snowflake connection lost, session={}", sessionId);
+                log.warn("Curator snowflake connection lost, session={}", sessionId);
             } else if (state == ConnectionState.RECONNECTED) {
                 if (lastSessionId == sessionId && sessionId != UNKNOWN_SESSION_ID) {
-                    LOG.warn("Curator snowflake recover connected, reuse old-session={}", sessionId);
+                    log.warn("Curator snowflake recover connected, reuse old-session={}", sessionId);
                 } else {
-                    LOG.warn("Curator snowflake recover connected, old-session={}, new-session={}", lastSessionId, sessionId);
+                    log.warn("Curator snowflake recover connected, old-session={}, new-session={}", lastSessionId, sessionId);
                     lastSessionId = sessionId;
                 }
 

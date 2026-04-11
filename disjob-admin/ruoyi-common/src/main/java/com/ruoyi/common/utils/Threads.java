@@ -12,7 +12,7 @@ import java.util.concurrent.*;
  */
 public class Threads
 {
-    private static final Logger logger = LoggerFactory.getLogger(Threads.class);
+    private static final Logger log = LoggerFactory.getLogger(Threads.class);
 
     /**
      * 停止线程池
@@ -33,7 +33,7 @@ public class Threads
                     pool.shutdownNow();
                     if (!pool.awaitTermination(120, TimeUnit.SECONDS))
                     {
-                        logger.info("Pool did not terminate");
+                        log.info("Pool did not terminate");
                     }
                 }
             }
@@ -75,7 +75,7 @@ public class Threads
         }
         if (t != null)
         {
-            logger.error(t.getMessage(), t);
+            log.error(t.getMessage(), t);
         }
     }
 }

@@ -39,19 +39,19 @@ public interface SupervisorRpcService {
     void subscribeWorkerEvent(RegistryEventType eventType, Worker worker);
 
     @PostMapping("/task_worker/update")
-    void updateTaskWorker(List<Long> taskIds, String worker) throws Exception;
+    void updateTaskWorker(List<Long> taskIds, String worker);
 
     @PostMapping("/task/start")
-    StartTaskResult startTask(StartTaskParam param) throws Exception;
+    StartTaskResult startTask(StartTaskParam param);
 
     @PostMapping("/task/stop")
-    boolean stopTask(StopTaskParam param) throws Exception;
+    boolean stopTask(StopTaskParam param);
 
     @PostMapping("/instance/pause")
-    boolean pauseInstance(long instanceId) throws Exception;
+    boolean pauseInstance(long instanceId);
 
     @PostMapping("/instance/cancel")
-    boolean cancelInstance(long instanceId, Operation operation) throws Exception;
+    boolean cancelInstance(long instanceId, Operation operation);
 
     /**
      * Savepoint the task execution snapshot data
@@ -60,9 +60,8 @@ public interface SupervisorRpcService {
      * @param worker          the worker
      * @param executeSnapshot the execution snapshot data
      * @return {@code true} if saved successful
-     * @throws Exception if occur exception
      */
     @PostMapping("/task/savepoint")
-    boolean savepoint(long taskId, String worker, String executeSnapshot) throws Exception;
+    boolean savepoint(long taskId, String worker, String executeSnapshot);
 
 }

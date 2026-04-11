@@ -28,8 +28,7 @@ import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.supervisor.scanner.ExpireInstanceScanner;
 import cn.ponfee.disjob.supervisor.scanner.TriggeringJobScanner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,9 +40,8 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Ponfee
  */
+@Slf4j
 public class SupervisorStartup extends SingletonClassConstraint implements Startable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SupervisorStartup.class);
 
     private final SupervisorProperties supervisorConf;
     private final Supervisor.Local localSupervisor;
@@ -73,28 +71,28 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
     @Override
     public void start() {
         if (!state.start()) {
-            LOG.warn("Supervisor start failed, current state: {}", state);
+            log.warn("Supervisor start failed, current state: {}", state);
             return;
         }
 
-        LOG.info("Supervisor start begin: {}", localSupervisor);
+        log.info("Supervisor start begin: {}", localSupervisor);
         waitingInstanceScanner.start();
         runningInstanceScanner.start();
         triggeringJobScanner.start();
         ThrowingRunnable.doCaught(supervisorRegistry::discoverServers);
         supervisorRegistry.register(localSupervisor);
         printBanner(supervisorConf.isPrintBannerEnabled());
-        LOG.info("Supervisor start end: {}", localSupervisor);
+        log.info("Supervisor start end: {}", localSupervisor);
     }
 
     @Override
     public void stop() {
         if (!state.stop()) {
-            LOG.warn("Supervisor stop failed, current state: {}", state);
+            log.warn("Supervisor stop failed, current state: {}", state);
             return;
         }
 
-        LOG.info("Supervisor stop begin: {}", localSupervisor);
+        log.info("Supervisor stop begin: {}", localSupervisor);
         ThrowingRunnable.doCaught(triggeringJobScanner::toStop);
         ThrowingRunnable.doCaught(runningInstanceScanner::toStop);
         ThrowingRunnable.doCaught(waitingInstanceScanner::toStop);
@@ -103,7 +101,7 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
         ThrowingRunnable.doCaught(triggeringJobScanner::close);
         ThrowingRunnable.doCaught(runningInstanceScanner::close);
         ThrowingRunnable.doCaught(waitingInstanceScanner::close);
-        LOG.info("Supervisor stop end: {}", localSupervisor);
+        log.info("Supervisor stop end: {}", localSupervisor);
     }
 
     public boolean isRunning() {
@@ -128,7 +126,7 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
             " Version   : " + JobConstants.DISJOB_VERSION + " ",
             ""
         );
-        LOG.info("Disjob supervisor banner\n\n{}\n", TablePrinter.HALF.print(null, banner));
+        log.info("Disjob supervisor banner\n\n{}\n", TablePrinter.HALF.print(null, banner));
     }
 
 }

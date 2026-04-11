@@ -28,9 +28,8 @@ import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.dispatch.route.ExecutionRouterRegistrar;
 import com.google.common.math.IntMath;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -45,9 +44,9 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
+@Slf4j
 @Component
 public final class TaskDispatcher implements Startable {
-    private static final Logger LOG = LoggerFactory.getLogger(TaskDispatcher.class);
 
     private final int retryMaxCount;
     private final long retryBackoffPeriod;
@@ -135,16 +134,15 @@ public final class TaskDispatcher implements Startable {
 
         for (DispatchTaskParam param : params) {
             ExecuteTaskParam task = param.task();
-            LOG.info("Task trace [{}] dispatching: {}, {}, {}", task.getTaskId(), task.getOperation(), task.getWorker(), param.retried());
+            log.info("Task trace [{}] dispatching: {}, {}, {}", task.getTaskId(), task.getOperation(), task.getWorker(), param.retried());
             try {
                 doDispatch(task);
-                LOG.info("Task trace [{}] dispatched: {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());
+                log.info("Task trace [{}] dispatched: {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());
             } catch (Throwable t) {
-                // dispatch failed, delay retry
                 if (t instanceof TaskDispatchException) {
-                    LOG.error("Dispatch task failed: {}, {}", t.getMessage(), param);
+                    log.error("Dispatch task failed: {}, {}", t.getMessage(), param);
                 } else {
-                    LOG.error("Dispatch task error: " + param, t);
+                    log.error("Dispatch task error: {}", param, t);
                 }
                 retry(param);
             }
@@ -156,7 +154,7 @@ public final class TaskDispatcher implements Startable {
         String group = first.group();
         List<Worker> workers = discoverWorker.getAliveServers(group);
         if (CollectionUtils.isEmpty(workers)) {
-            LOG.error("Not found available [{}] worker for assign task.", group);
+            log.error("Not found available [{}] worker for assign task.", group);
             return;
         }
 
@@ -178,7 +176,7 @@ public final class TaskDispatcher implements Startable {
     private void retry(DispatchTaskParam param) {
         ExecuteTaskParam task = param.task();
         if (param.retried() < retryMaxCount) {
-            LOG.info("Delay retrying dispatch task [{}]: {}", param.retried(), task);
+            log.info("Delay retrying dispatch task [{}]: {}", param.retried(), task);
             int count = param.retrying();
             if (task.getRouteStrategy().isNotBroadcast() && task.getOperation().isTrigger()) {
                 // clear assigned worker
@@ -187,7 +185,7 @@ public final class TaskDispatcher implements Startable {
             asyncDelayedExecutor.put(DelayedData.of(param, retryBackoffPeriod * IntMath.pow(count, 2)));
         } else {
             // discard
-            LOG.error("Dispatched task retried max count still failed: {}", task);
+            log.error("Dispatched task retried max count still failed: {}", task);
             eventPublisher.publishEvent(TaskDispatchFailedEvent.of(task));
         }
     }

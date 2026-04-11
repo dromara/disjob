@@ -21,9 +21,8 @@ import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.UuidUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 /**
@@ -38,9 +37,8 @@ import org.springframework.util.Assert;
  *
  * @author Ponfee
  */
+@Slf4j
 public class RetryTemplate {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RetryTemplate.class);
 
     public static void execute(ThrowingRunnable<Throwable> action, int retryMaxCount, long retryBackoffPeriod) {
         execute(action.toSupplier(null), retryMaxCount, retryBackoffPeriod);
@@ -64,10 +62,10 @@ public class RetryTemplate {
                 }
                 if (i < retryMaxCount) {
                     // log and sleep if not the last loop
-                    LOG.error("Execute failed will retry: {}, {}", i + 1, traceId, t);
+                    log.error("Execute failed will retry: {}, {}", i + 1, traceId, t);
                     Threads.sleep((i + 1) * retryBackoffPeriod);
                 } else {
-                    LOG.error("Execute failed will exit: {}, {}", i + 1, traceId, t);
+                    log.error("Execute failed will exit: {}, {}", i + 1, traceId, t);
                 }
             }
         }
@@ -91,10 +89,10 @@ public class RetryTemplate {
                     traceId = UuidUtils.uuid32();
                 }
                 if (i < retryMaxCount) {
-                    LOG.error("Execute failed quietly retry: {}, {}", i + 1, traceId, t);
+                    log.error("Execute failed quietly retry: {}, {}", i + 1, traceId, t);
                     Threads.sleep((i + 1) * retryBackoffPeriod);
                 } else {
-                    LOG.error("Execute failed quietly exit: {}, {}", i + 1, traceId, t);
+                    log.error("Execute failed quietly exit: {}, {}", i + 1, traceId, t);
                 }
             }
         }

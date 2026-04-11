@@ -17,12 +17,10 @@
 package cn.ponfee.disjob.common.concurrent;
 
 import cn.ponfee.disjob.common.exception.Throwables;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.SystemUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.util.concurrent.*;
@@ -41,9 +39,8 @@ import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
  *
  * @author Ponfee
  */
+@Slf4j
 public final class ThreadPoolExecutors {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutors.class);
 
     public static final String DISJOB_COMMON_THREAD_POOL_SIZE    = "disjob.common.thread.pool.size";
     public static final String DISJOB_COMMON_SCHEDULED_POOL_SIZE = "disjob.common.scheduled.pool.size";
@@ -267,20 +264,18 @@ public final class ThreadPoolExecutors {
      * Shutdown the ExecutorService safe
      *
      * @param executorService the executorService
-     * @return is safe shutdown
      */
-    public static boolean shutdown(ExecutorService executorService) {
+    public static void shutdown(ExecutorService executorService) {
         try {
             executorService.shutdown();
+            // noinspection StatementWithEmptyBody
             while (!executorService.awaitTermination(1, TimeUnit.SECONDS)) {
                 // do nothing
             }
-            return true;
         } catch (Throwable t) {
-            LOG.error("Shutdown ExecutorService occur error.", t);
-            ThrowingRunnable.doCaught(executorService::shutdownNow);
+            log.error("Loop await shutdown occur error.", t);
+            executorService.shutdownNow();
             Throwables.rethrowIfFatal(t);
-            return false;
         }
     }
 
@@ -289,26 +284,22 @@ public final class ThreadPoolExecutors {
      *
      * @param executorService the executorService
      * @param awaitSeconds    await time seconds
-     * @return {@code true} if safe terminate
      */
-    public static boolean shutdown(ExecutorService executorService, int awaitSeconds) {
-        boolean isSafeTerminated = false;
-        boolean hasCallShutdownNow = false;
+    public static void shutdown(ExecutorService executorService, int awaitSeconds) {
+        boolean shutdownNowCalled = false;
         try {
             executorService.shutdown();
-            isSafeTerminated = executorService.awaitTermination(awaitSeconds, TimeUnit.SECONDS);
-            if (!isSafeTerminated) {
-                hasCallShutdownNow = true;
+            if (!executorService.awaitTermination(awaitSeconds, TimeUnit.SECONDS)) {
+                shutdownNowCalled = true;
                 executorService.shutdownNow();
             }
         } catch (Throwable t) {
-            LOG.error("Shutdown ExecutorService occur error.", t);
-            if (!hasCallShutdownNow) {
-                ThrowingRunnable.doCaught(executorService::shutdownNow);
+            log.error("Timeout await shutdown occur error.", t);
+            if (!shutdownNowCalled) {
+                executorService.shutdownNow();
             }
             Throwables.rethrowIfFatal(t);
         }
-        return isSafeTerminated;
     }
 
     private static ThreadPoolExecutor makeCommonThreadPoolExecutor() {
@@ -319,7 +310,7 @@ public final class ThreadPoolExecutors {
             .workQueue(new ArrayBlockingQueue<>(poolSize * 20))
             .keepAliveTimeSeconds(600)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
-            .threadFactory(NamedThreadFactory.builder().prefix("disjob_common_thread_pool").daemon(true).uncaughtExceptionHandler(LOG).build())
+            .threadFactory(NamedThreadFactory.builder().prefix("disjob_common_thread_pool").daemon(true).uncaughtExceptionHandler(log).build())
             .build();
 
         ShutdownHookManager.addShutdownHook(0, threadPool::shutdown);
@@ -341,7 +332,7 @@ public final class ThreadPoolExecutors {
         String configSize = SystemUtils.getConfig(configKey);
         int coreSize = Runtime.getRuntime().availableProcessors();
         int poolSize = Numbers.bound(Numbers.toInt(configSize, coreSize * coreProcessorFactor), 16, MAX_CAP);
-        LOG.info("Configured common poll size {}: [{}, {}] -> {}", configKey, configSize, coreSize, poolSize);
+        log.info("Configured common poll size {}: [{}, {}] -> {}", configKey, configSize, coreSize, poolSize);
         return poolSize;
     }
 

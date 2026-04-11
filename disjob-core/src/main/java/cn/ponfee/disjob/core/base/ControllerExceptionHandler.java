@@ -21,9 +21,8 @@ import cn.ponfee.disjob.common.exception.BaseRuntimeException;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import com.google.common.collect.ImmutableList;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.http.HttpStatus;
@@ -42,11 +41,10 @@ import java.util.List;
  *
  * @author Ponfee
  */
+@Slf4j
 @ConditionalOnMissingClass("cn.ponfee.disjob.core.base.ControllerExceptionHandler") // 禁止以扫描包的方式创建Bean
 @RestControllerAdvice(basePackages = {"cn.ponfee.disjob.supervisor", "cn.ponfee.disjob.worker"})
 class ControllerExceptionHandler {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ControllerExceptionHandler.class);
 
     private static final List<Class<? extends Exception>> BIZ_EXCEPTIONS = ImmutableList.of(
         IllegalArgumentException.class,
@@ -60,9 +58,9 @@ class ControllerExceptionHandler {
     public void execute(HandlerMethod handlerMethod, HttpServletResponse response, Throwable t) throws IOException {
         String errorMsg = ExceptionUtils.getRootCauseMessage(t);
         if (BIZ_EXCEPTIONS.stream().anyMatch(e -> e.isInstance(t))) {
-            LOG.error("Handle biz exception {}: {}", t.getClass().getName(), errorMsg);
+            log.error("Handle biz exception {}: {}", t.getClass().getName(), errorMsg);
         } else {
-            LOG.error("Handle server exception", t);
+            log.error("Handle server exception", t);
         }
 
         response.setCharacterEncoding(JobConstants.UTF_8);

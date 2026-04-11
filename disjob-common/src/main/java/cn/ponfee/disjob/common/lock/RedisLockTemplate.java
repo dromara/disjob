@@ -16,8 +16,7 @@
 
 package cn.ponfee.disjob.common.lock;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Callable;
 
@@ -26,9 +25,8 @@ import java.util.concurrent.Callable;
  *
  * @author Ponfee
  */
+@Slf4j
 public class RedisLockTemplate implements LockTemplate {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RedisLockTemplate.class);
 
     private final RedisLock redisLock;
 
@@ -42,7 +40,7 @@ public class RedisLockTemplate implements LockTemplate {
             try {
                 return action.call();
             } catch (Throwable t) {
-                LOG.error("Executed in redis lock occur error.", t);
+                log.error("Executed in redis lock occur error.", t);
                 return null;
             } finally {
                 redisLock.unlock();

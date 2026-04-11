@@ -28,8 +28,7 @@ import cn.ponfee.disjob.core.worker.dto.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.WorkerConfigurator;
 import cn.ponfee.disjob.worker.util.JobExecutorUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -54,8 +53,8 @@ public interface WorkerRpcProvider extends WorkerRpcService {
         return ProxyUtils.create(new WorkerRpcLocal(localWorker, timingWheel, workerRegistry), WorkerRpcProvider.class);
     }
 
+    @Slf4j
     class WorkerRpcLocal implements InvocationHandler, WorkerRpcService {
-        private static final Logger LOG = LoggerFactory.getLogger(WorkerRpcLocal.class);
 
         private final Worker.Local localWorker;
         private final TimingWheel<ExecuteTaskParam> timingWheel;
@@ -101,28 +100,29 @@ public interface WorkerRpcProvider extends WorkerRpcService {
         @Override
         public boolean receiveTask(ExecuteTaskParam param) {
             if (param == null) {
-                LOG.error("Received task param cannot be null.");
+                log.error("Received task param cannot be null.");
                 return false;
             }
 
             localWorker.verifySupervisorAuthenticationToken(param);
             Worker assignedWorker = param.getWorker();
             if (!localWorker.matches(assignedWorker)) {
-                LOG.error("Received unmatched worker task: {}, {}, {}", param.getTaskId(), localWorker, assignedWorker);
+                log.error("Received unmatched worker task: {}, {}, {}", param.getTaskId(), localWorker, assignedWorker);
                 return false;
             }
+            
             if (!localWorker.getWorkerId().equals(assignedWorker.getWorkerId())) {
                 // 当Worker宕机后又快速启动(重启)的情况，Supervisor从本地缓存(或注册中心)拿到的仍是旧的workerId，但任务却派发给新的workerId(同机器同端口)
                 // 这种情况：1、可以剔除掉，等待Supervisor重新派发即可；2、也可以不剔除掉，短暂时间内该Worker的压力会是正常情况的2倍(注册中心还存有旧workerId)；
-                LOG.warn("Received former worker task: {}, {}, {}", param.getTaskId(), localWorker, assignedWorker);
+                log.warn("Received former worker task: {}, {}, {}", param.getTaskId(), localWorker, assignedWorker);
                 param.setWorker(localWorker);
             }
 
             boolean res = timingWheel.offer(param);
             if (res) {
-                LOG.info("Task trace [{}] received: {}, {}", param.getTaskId(), param.getOperation(), param.getWorker());
+                log.info("Task trace [{}] received: {}, {}", param.getTaskId(), param.getOperation(), param.getWorker());
             } else {
-                LOG.error("Received task failed {}", param);
+                log.error("Received task failed: {}", param);
             }
             return res;
         }

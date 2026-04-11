@@ -24,6 +24,7 @@ import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +32,6 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -49,9 +49,8 @@ import java.util.function.Supplier;
  *
  * @author Ponfee
  */
+@Slf4j
 public final class ProcessUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
     public static final int SUCCESS_CODE = 0;
 
     public static Long getCurrentJvmProcessId() {
@@ -80,7 +79,7 @@ public final class ProcessUtils {
                 return ((Number) FieldUtils.readField(process, "pid", true)).longValue();
             }
         } catch (Throwable t) {
-            LOG.error("Get process id error.", t);
+            log.error("Get process id error.", t);
             return null;
         }
     }
@@ -96,8 +95,8 @@ public final class ProcessUtils {
             if (SystemUtils.IS_OS_WINDOWS) {
                 Process killProcess = new ProcessBuilder("taskkill", "/PID", String.valueOf(pid), "/F", "/T").start();
                 waitFor(killProcess, () -> "kill process id " + pid);
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Stop windows process verbose: {}, {}", pid, processVerbose(killProcess, charset));
+                if (log.isInfoEnabled()) {
+                    log.info("Stop windows process verbose: {}, {}", pid, processVerbose(killProcess, charset));
                 }
                 destroy(killProcess);
             } else if (SystemUtils.IS_OS_UNIX) {
@@ -115,18 +114,18 @@ public final class ProcessUtils {
                 // 2、kill current process id
                 Process killProcess = new ProcessBuilder("kill", "-9", String.valueOf(pid)).start();
                 waitFor(killProcess, () -> "kill process id " + pid);
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Stop unix process verbose: {}, {}", pid, processVerbose(killProcess, charset));
+                if (log.isInfoEnabled()) {
+                    log.info("Stop unix process verbose: {}, {}", pid, processVerbose(killProcess, charset));
                 }
                 destroy(killProcess);
             } else {
-                LOG.error("Stop process id unknown os name: {}, {}", SystemUtils.OS_NAME, pid);
+                log.error("Stop process id unknown os name: {}, {}", SystemUtils.OS_NAME, pid);
             }
         } catch (InterruptedException e) {
-            LOG.error("Kill process id interrupted: {}", pid);
+            log.error("Kill process id interrupted: {}", pid);
             ExceptionUtils.rethrow(e);
         } catch (Throwable t) {
-            LOG.error("Kill process id error: {}", pid, t);
+            log.error("Kill process id error: {}", pid, t);
         }
     }
 
@@ -212,7 +211,7 @@ public final class ProcessUtils {
             try {
                 process.destroy();
             } catch (Throwable t) {
-                LOG.error("Destroy process error: {}", process.getClass().getName(), t);
+                log.error("Destroy process error: {}", process.getClass().getName(), t);
             }
         }
     }
@@ -237,7 +236,7 @@ public final class ProcessUtils {
     private static void waitFor(Process process, Supplier<String> messageSupplier) throws InterruptedException {
         int code = process.waitFor();
         if (code != SUCCESS_CODE) {
-            LOG.error("Process execute failed[{}]: {}", code, messageSupplier.get());
+            log.error("Process execute failed[{}]: {}", code, messageSupplier.get());
         }
     }
 

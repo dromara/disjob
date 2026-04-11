@@ -44,10 +44,9 @@ import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.exception.KeyAlreadyExistsException;
 import cn.ponfee.disjob.supervisor.exception.KeyNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -65,9 +64,9 @@ import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
  *
  * @author Ponfee
  */
+@Slf4j
 @Service
 public class ServerInvokeService extends SingletonClassConstraint {
-    private static final Logger LOG = LoggerFactory.getLogger(ServerInvokeService.class);
 
     private final WorkerClient workerClient;
     private final Registry<Supervisor> supervisorRegistry;
@@ -153,7 +152,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
             Consumer<Supervisor> action = supervisor -> publishOperationEvent(supervisor, eventType, eventTime, eventData);
             MultithreadExecutors.run(supervisors, action, ThreadPoolExecutors.commonThreadPool());
         } catch (Exception e) {
-            LOG.error("Publish operation event to other supervisor error.", e);
+            log.error("Publish operation event to other supervisor error.", e);
         }
     }
 
@@ -167,7 +166,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
             metrics = supervisorRpcProxy.destination(supervisor).getMetrics();
             responseTime = System.currentTimeMillis() - start;
         } catch (Throwable t) {
-            LOG.warn("Gets supervisor metrics occur error: {} {}", supervisor, t.getMessage());
+            log.warn("Gets supervisor metrics occur error: {}, {}", supervisor, t.getMessage());
         }
 
         SupervisorMetricsResponse response;
@@ -191,7 +190,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
             metrics = workerClient.destination(worker).getMetrics(new GetMetricsParam());
             responseTime = System.currentTimeMillis() - start;
         } catch (Throwable t) {
-            LOG.warn("Gets worker metrics occur error: {} {}", worker, t.getMessage());
+            log.warn("Gets worker metrics occur error: {}, {}", worker, t.getMessage());
         }
 
         WorkerMetricsResponse response;

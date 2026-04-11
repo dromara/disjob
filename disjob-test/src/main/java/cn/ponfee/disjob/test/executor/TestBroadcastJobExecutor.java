@@ -19,8 +19,7 @@ package cn.ponfee.disjob.test.executor;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.worker.executor.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
 import java.util.Date;
@@ -34,9 +33,8 @@ import java.util.stream.IntStream;
  *
  * @author Ponfee
  */
+@Slf4j
 public class TestBroadcastJobExecutor extends JobExecutor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TestBroadcastJobExecutor.class);
 
     @Override
     public List<String> split(SplitParam param) throws JobException {
@@ -48,13 +46,13 @@ public class TestBroadcastJobExecutor extends JobExecutor {
 
     @Override
     public void init(ExecutionTask task) {
-        LOG.debug("Broadcast job init.");
+        log.debug("Broadcast job init.");
     }
 
     @Override
     public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         Thread.sleep(5000 + ThreadLocalRandom.current().nextLong(10000));
-        LOG.info("Broadcast job execute done: {}, {}", task.getTaskId(), task.isBroadcast());
+        log.info("Broadcast job execute done: {}, {}", task.getTaskId(), task.isBroadcast());
         savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return ExecutionResult.success();
     }

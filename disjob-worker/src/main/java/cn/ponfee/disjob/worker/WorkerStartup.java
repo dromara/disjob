@@ -32,8 +32,7 @@ import cn.ponfee.disjob.registry.rpc.DiscoveryUngroupedServerRestProxy;
 import cn.ponfee.disjob.worker.base.TimingWheelRotator;
 import cn.ponfee.disjob.worker.base.WorkerThreadPool;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -45,9 +44,8 @@ import java.util.Objects;
  *
  * @author Ponfee
  */
+@Slf4j
 public class WorkerStartup extends SingletonClassConstraint implements Startable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WorkerStartup.class);
 
     private final WorkerProperties workerConf;
     private final Worker.Local localWorker;
@@ -82,31 +80,31 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
     @Override
     public void start() {
         if (!state.start()) {
-            LOG.warn("Worker start failed, current state: {}", state);
+            log.warn("Worker start failed, current state: {}", state);
             return;
         }
 
-        LOG.info("Worker start begin: {}", localWorker);
+        log.info("Worker start begin: {}", localWorker);
         workerThreadPool.start();
         timingWheelRotator.start();
         ThrowingRunnable.doCaught(workerRegistry::discoverServers);
         workerRegistry.register(localWorker);
         printBanner(workerConf.isPrintBannerEnabled());
-        LOG.info("Worker start end: {}", localWorker);
+        log.info("Worker start end: {}", localWorker);
     }
 
     @Override
     public void stop() {
         if (!state.stop()) {
-            LOG.warn("Worker stop failed, current state: {}", state);
+            log.warn("Worker stop failed, current state: {}", state);
             return;
         }
 
-        LOG.info("Worker stop begin: {}", localWorker);
+        log.info("Worker stop begin: {}", localWorker);
         ThrowingRunnable.doCaught(workerRegistry::close);
         ThrowingRunnable.doCaught(timingWheelRotator::close);
         ThrowingRunnable.doCaught(workerThreadPool::close);
-        LOG.info("Worker stop end: {}", localWorker);
+        log.info("Worker stop end: {}", localWorker);
     }
 
     public boolean isRunning() {
@@ -131,7 +129,7 @@ public class WorkerStartup extends SingletonClassConstraint implements Startable
             " Version: " + JobConstants.DISJOB_VERSION + " ",
             ""
         );
-        LOG.info("Disjob worker banner\n\n{}\n", TablePrinter.HALF.print(null, banner));
+        log.info("Disjob worker banner\n\n{}\n", TablePrinter.HALF.print(null, banner));
     }
 
 }

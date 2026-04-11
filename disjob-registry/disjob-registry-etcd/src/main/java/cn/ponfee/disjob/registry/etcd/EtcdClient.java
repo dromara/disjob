@@ -43,13 +43,12 @@ import io.etcd.jetcd.watch.WatchResponse;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.PreDestroy;
 import java.io.Closeable;
@@ -65,9 +64,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Ponfee
  */
+@Slf4j
 public class EtcdClient implements Closeable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(EtcdClient.class);
 
     private static final List<ConnectivityState> CONNECTED_STATUS_LIST = ImmutableList.of(
         ConnectivityState.READY, ConnectivityState.IDLE
@@ -123,7 +121,7 @@ public class EtcdClient implements Closeable {
                         listener.onDisconnected(this);
                     }
                 } catch (Throwable t) {
-                    LOG.error("Notify connection state changed occur error: " + currConnectState, t);
+                    log.error("Notify connection state changed occur error: {}", currConnectState, t);
                 }
             }
             this.lastConnectState = currConnectState;
@@ -272,7 +270,7 @@ public class EtcdClient implements Closeable {
             ConnectivityState state = managedChannel.getState(false);
             return CONNECTED_STATUS_LIST.contains(state);
         } catch (Throwable t) {
-            LOG.error("Detect etcd is connected error", t);
+            log.error("Detect etcd is connected error", t);
             return false;
         }
     }
@@ -326,7 +324,7 @@ public class EtcdClient implements Closeable {
             .workQueue(new LinkedBlockingQueue<>(2))
             .keepAliveTimeSeconds(600)
             .rejectedHandler(ThreadPoolExecutors.DISCARD)
-            .threadFactory(NamedThreadFactory.builder().prefix("etcd_event_listener").daemon(true).uncaughtExceptionHandler(LOG).build())
+            .threadFactory(NamedThreadFactory.builder().prefix("etcd_event_listener").daemon(true).uncaughtExceptionHandler(log).build())
             .build();
 
         EventListener(String parentKey, CountDownLatch latch, Consumer<List<String>> listener) {
@@ -358,7 +356,7 @@ public class EtcdClient implements Closeable {
                     List<String> children = getKeyChildren(parentKey);
                     listener.accept(children);
                 } catch (Throwable t) {
-                    LOG.error("Get key '" + parentKey + "' children occur error.", t);
+                    log.error("Get key '{}' children occur error.", parentKey, t);
                 }
             });
         }

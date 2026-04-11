@@ -43,7 +43,8 @@ import java.util.function.Function;
  * @author Ponfee
  */
 public class JobExecutorMapping {
-    private static final Logger LOG = LoggerFactory.getLogger(JobExecutorMapping.class);
+
+    private static final Logger log = LoggerFactory.getLogger(JobExecutorMapping.class);
     private static final Map<String, Class<? extends JobExecutor>> JOB_EXECUTOR_MAP;
 
     static {
@@ -77,8 +78,8 @@ public class JobExecutorMapping {
     static void init() {
         Function<Class<?>, String> classToString = c -> "class@" + c.getName();
         String newLine = Files.SYSTEM_LINE_SEPARATOR;
-        int lMaxLen = JOB_EXECUTOR_MAP.keySet().stream().mapToInt(String::length).max().getAsInt();
-        int rMaxLen = JOB_EXECUTOR_MAP.values().stream().mapToInt(e -> classToString.apply(e).length()).max().getAsInt();
+        int lMaxLen = JOB_EXECUTOR_MAP.keySet().stream().mapToInt(String::length).max().orElse(0);
+        int rMaxLen = JOB_EXECUTOR_MAP.values().stream().mapToInt(e -> classToString.apply(e).length()).max().orElse(0);
         int contentLen = lMaxLen + rMaxLen + 9;
 
         StringBuilder builder = new StringBuilder(newLine);
@@ -115,9 +116,9 @@ public class JobExecutorMapping {
             if (executorClass != null) {
                 // maybe spring bean name
                 FieldUtils.writeField(param, fieldName, executorClass.getName(), true);
-                LOG.info("Parse jobExecutor: [{}] -> [{}]", jobExecutor, executorClass.getName());
+                log.info("Parse jobExecutor: [{}] -> [{}]", jobExecutor, executorClass.getName());
             } else {
-                LOG.error("Parse jobExecutor error: {}, {}", param, fieldName);
+                log.error("Parse jobExecutor error: {}, {}", param, fieldName);
             }
         }
     }

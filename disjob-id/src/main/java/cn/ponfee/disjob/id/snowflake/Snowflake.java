@@ -20,9 +20,8 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.util.Maths;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.SystemUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * <pre>
@@ -51,9 +50,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Ponfee
  */
+@Slf4j
 public final class Snowflake implements IdGenerator {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Snowflake.class);
 
     /**
      * 起始基准时间点(2015-03-01T00:00:00.000)
@@ -148,7 +146,7 @@ public final class Snowflake implements IdGenerator {
                 throw new ClockMovedBackwardsException("Clock moved backwards " + offset + "ms exceed 50ms.");
             }
 
-            LOG.warn("Clock moved backwards {}ms, will be wait moment.", offset);
+            log.warn("Clock moved backwards {}ms, will be wait moment.", offset);
             try {
                 super.wait(offset << 1);
                 timestamp = timeGen();
@@ -188,7 +186,7 @@ public final class Snowflake implements IdGenerator {
      * @return next timestamp
      */
     private long tillNextMillis(long lastTimestamp) {
-        LOG.warn("Snowflake til next millis.");
+        log.warn("Snowflake til next millis.");
 
         long timestamp;
         do {

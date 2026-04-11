@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.base.TablePrinter;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.date.Dates;
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.NetUtils;
@@ -27,13 +28,11 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheStats;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -44,14 +43,13 @@ import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_BOUND_SERVER_HOST;
  *
  * @author Ponfee
  */
+@Slf4j
 public class CoreUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(CoreUtils.class);
 
     /**
      * Instance lock pool
      */
-    public static final Interner<Long> INSTANCE_LOCK_POOL = Interners.newWeakInterner();
+    private static final Interner<Long> INSTANCE_LOCK_POOL = Interners.newWeakInterner();
 
     public static String getLocalHost() {
         return getLocalHost(SpringContextHolder.getProperty(DISJOB_BOUND_SERVER_HOST));
@@ -81,25 +79,30 @@ public class CoreUtils {
         throw new Error("Not found available server host.");
     }
 
-    public static <R> R doInSynchronized(Long lock, Callable<R> action) throws Exception {
-        synchronized (INSTANCE_LOCK_POOL.intern(lock)) {
-            return action.call();
+    public static <R> R doInSynchronized(Long lockKey, Supplier<R> action) {
+        // synchronized ( Long.toString(lock).intern() )
+        synchronized (INSTANCE_LOCK_POOL.intern(lockKey)) {
+            return action.get();
         }
     }
 
-    public static void doInSynchronized(Long lock, ThrowingRunnable<?> action, Supplier<String> message) {
+    public static void doInSynchronized(Long lockKey, ThrowingRunnable<?> action, Supplier<String> message) {
         try {
-            doInSynchronized(lock, action);
+            synchronized (INSTANCE_LOCK_POOL.intern(lockKey)) {
+                action.run();
+            }
         } catch (Throwable t) {
-            LOG.error(message.get(), t);
+            log.error(message.get(), t);
             if (isCurrentThreadInterrupted(t)) {
                 boolean interrupted = Thread.currentThread().isInterrupted();
-                LOG.info("Do synchronized retry interrupted {}, {}", interrupted, message.get());
+                log.info("Do synchronized retry interrupted {}, {}", interrupted, message.get());
                 ThreadPoolExecutors.commonThreadPool().execute(() -> {
                     try {
-                        doInSynchronized(lock, action);
+                        synchronized (INSTANCE_LOCK_POOL.intern(lockKey)) {
+                            action.run();
+                        }
                     } catch (Throwable e) {
-                        LOG.error("Do synchronized retry error, {}", message.get(), e);
+                        log.error("Do synchronized retry error, {}", message.get(), e);
                     }
                 });
             }
@@ -162,27 +165,20 @@ public class CoreUtils {
             return false;
         }
         if (!NetUtils.isValidLocalHost(host)) {
-            LOG.warn("Invalid server host configured {}: {}", from, host);
+            log.warn("Invalid server host configured {}: {}", from, host);
             return false;
         }
         if (!NetUtils.isReachableHost(host)) {
-            LOG.warn("Unreachable server host configured {}: {}", from, host);
+            log.warn("Unreachable server host configured {}: {}", from, host);
         }
         return true;
-    }
-
-    private static void doInSynchronized(Long lock, ThrowingRunnable<?> action) throws Throwable {
-        // Long.toString(lock).intern()
-        synchronized (INSTANCE_LOCK_POOL.intern(lock)) {
-            action.run();
-        }
     }
 
     private static boolean isCurrentThreadInterrupted(Throwable t) {
         if (t == null) {
             return false;
         }
-        if (t instanceof java.lang.ThreadDeath || t instanceof InterruptedException) {
+        if (t instanceof InterruptedException || Throwables.isThreadDeath(t)) {
             return true;
         }
         Thread curThread = Thread.currentThread();

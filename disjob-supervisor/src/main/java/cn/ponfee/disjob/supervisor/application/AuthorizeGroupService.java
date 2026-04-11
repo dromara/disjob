@@ -26,10 +26,9 @@ import cn.ponfee.disjob.supervisor.exception.KeyNotFoundException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -43,9 +42,9 @@ import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonSched
  *
  * @author Ponfee
  */
+@Slf4j
 @Service
 public class AuthorizeGroupService extends SingletonClassConstraint {
-    private static final Logger LOG = LoggerFactory.getLogger(AuthorizeGroupService.class);
 
     /**
      * SQL中`group IN (a, b, ..., x)`允许的最大长度
@@ -64,7 +63,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
         .build();
     @SuppressWarnings("all")
     private final PeriodExecutor cacheStatsPrinter =
-        new PeriodExecutor(120_000, () -> LOG.info("\n\n{}\n", CoreUtils.buildCacheStats(jobGroupCache, "Job group cache")));
+        new PeriodExecutor(120_000, () -> log.info("\n\n{}\n", CoreUtils.buildCacheStats(jobGroupCache, "Job group cache")));
 
     public AuthorizeGroupService(JobQuerier jobQuerier) {
         this.jobQuerier = jobQuerier;
@@ -137,10 +136,10 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
 
         group = jobQuerier.getJobGroup(jobId);
         if (group != null) {
-            LOG.info("Loaded caching group: {}, {}", jobId, group);
+            log.info("Loaded caching group: {}, {}", jobId, group);
             jobGroupCache.put(jobId, group);
         } else {
-            LOG.warn("Job not exists: {}", jobId);
+            log.warn("Job not exists: {}", jobId);
         }
         return group;
     }

@@ -16,9 +16,8 @@
 
 package cn.ponfee.disjob.common.collect;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.concurrent.*;
@@ -30,9 +29,8 @@ import java.util.function.Function;
  *
  * @author Ponfee
  */
+@Slf4j
 public class PooledObjectProcessor<K, V> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(PooledObjectProcessor.class);
 
     private final ConcurrentMap<K, SubPool> pool = new ConcurrentHashMap<>();
     private final int size;
@@ -80,7 +78,7 @@ public class PooledObjectProcessor<K, V> {
                         return ExceptionUtils.rethrow(t);
                     }
                     if (value != null) {
-                        LOG.debug("Created new object.");
+                        log.debug("Created new object.");
                         return value;
                     } else {
                         counter.incrementAndGet();

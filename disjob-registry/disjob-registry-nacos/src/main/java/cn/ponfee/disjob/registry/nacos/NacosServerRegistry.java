@@ -92,7 +92,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
             client.deregisterInstance(registryRootPath, instance);
             log.info("Nacos server deregister success: {}", server);
         } catch (Throwable t) {
-            log.error("Nacos server deregister error: " + server, t);
+            log.error("Nacos server deregister error: {}", server, t);
         }
     }
 

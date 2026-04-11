@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.exception.Throwables;
 import org.slf4j.Logger;
 
 import java.util.Objects;
@@ -43,12 +44,12 @@ public final class LoggedUncaughtExceptionHandler implements Thread.UncaughtExce
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        if (e instanceof java.lang.ThreadDeath) {
-            log.warn("Uncaught exception handle, thread death: {}, {}", t.getName(), e.getMessage());
+        if (Throwables.isThreadDeath(e)) {
+            log.warn("Uncaught exception thread death: {}, {}", t.getName(), e.getMessage());
         } else if (e instanceof InterruptedException) {
-            log.warn("Uncaught exception handle, thread interrupted: {}, {}", t.getName(), e.getMessage());
+            log.warn("Uncaught exception thread interrupted: {}, {}", t.getName(), e.getMessage());
         } else {
-            log.error("Uncaught exception handle, occur error: " + t.getName(), e);
+            log.error("Uncaught exception occur error: {}", t.getName(), e);
         }
     }
 

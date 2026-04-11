@@ -16,9 +16,8 @@
 
 package cn.ponfee.disjob.common.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * <pre>
@@ -30,9 +29,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Ponfee
  */
+@Slf4j
 public final class SystemUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SystemUtils.class);
 
     public static String getConfig(String name) {
         String value = null;
@@ -43,7 +41,7 @@ public final class SystemUtils {
                 return value;
             }
         } catch (Exception e) {
-            LOG.error("Get system property occur error: {}", name, e);
+            log.error("Get system property occur error: {}", name, e);
         }
 
         try {
@@ -53,7 +51,7 @@ public final class SystemUtils {
                 return value;
             }
         } catch (Exception e) {
-            LOG.error("Get system env occur error: {}", name, e);
+            log.error("Get system env occur error: {}", name, e);
         }
 
         return value;

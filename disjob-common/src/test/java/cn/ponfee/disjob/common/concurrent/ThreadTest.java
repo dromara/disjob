@@ -16,9 +16,8 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -28,8 +27,8 @@ import java.util.concurrent.SynchronousQueue;
  *
  * @author Ponfee
  */
+@Slf4j
 class ThreadTest {
-    private static final Logger log = LoggerFactory.getLogger(ThreadTest.class);
 
     @Test
     void testMaximumPoolSize__CALLER_RUNS() {

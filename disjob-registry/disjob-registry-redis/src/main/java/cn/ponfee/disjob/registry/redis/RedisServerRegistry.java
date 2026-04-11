@@ -160,7 +160,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             publishServerEvent(RegistryEventType.DEREGISTER, server);
             log.info("Redis server deregister success: {}", server);
         } catch (Throwable t) {
-            log.error("Redis server deregister error: " + server, t);
+            log.error("Redis server deregister error: {}", server, t);
         }
     }
 
@@ -207,7 +207,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             D server = deserializeServer(array[1], discoveryRole);
             subscribeServerEvent(eventType, server);
         } catch (Throwable t) {
-            log.error("Handle message error: " + message + ", " + channel, t);
+            log.error("Handle message error: {}, {}", message, channel, t);
         }
     }
 

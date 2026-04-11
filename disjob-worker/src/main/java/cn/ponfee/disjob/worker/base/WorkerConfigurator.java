@@ -34,7 +34,7 @@ public class WorkerConfigurator {
 
     static synchronized void setWorkerThreadPool(WorkerThreadPool threadPool) {
         if (workerThreadPool != null) {
-            throw new AssertionError("WorkerThreadPool already set.");
+            throw new IllegalStateException("WorkerThreadPool already set.");
         }
         workerThreadPool = threadPool;
     }

@@ -16,8 +16,7 @@
 
 package cn.ponfee.disjob.common.base;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
 import java.util.Set;
@@ -28,9 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Ponfee
  */
+@Slf4j
 public abstract class SingletonClassConstraint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SingletonClassConstraint.class);
     private static final Set<Class<?>> MUTEX = ConcurrentHashMap.newKeySet();
 
     protected SingletonClassConstraint() {
@@ -44,7 +43,7 @@ public abstract class SingletonClassConstraint {
 
     public static synchronized void constrain(Class<?> clazz) {
         if (MUTEX.add(clazz)) {
-            LOG.info("Class '{}' instance are created.", clazz);
+            log.info("Class '{}' instance are created.", clazz);
         } else {
             throw new Error("Class '" + clazz + "' instance already created.");
         }

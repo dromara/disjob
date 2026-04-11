@@ -55,7 +55,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
                     try {
                         c.createEphemeral(buildRegistryPath(server), CREATE_EPHEMERAL_FAIL_RETRIES);
                     } catch (Throwable t) {
-                        log.error("Re-registry server to zookeeper occur error: " + server, t);
+                        log.error("Re-registry server to zookeeper occur error: {}", server, t);
                     }
                 }
             });

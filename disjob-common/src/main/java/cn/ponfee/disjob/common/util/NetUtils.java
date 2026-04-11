@@ -17,9 +17,8 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.*;
 import java.util.*;
@@ -51,9 +50,8 @@ import java.util.stream.Stream;
  *
  * @author Ponfee
  */
+@Slf4j
 public final class NetUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(NetUtils.class);
 
     public static final String IGNORED_NETWORK_INTERFACE   = "disjob.network.interface.ignored";
     public static final String PREFERRED_NETWORK_INTERFACE = "disjob.network.interface.preferred";
@@ -302,7 +300,7 @@ public final class NetUtils {
                 }
             }
         } catch (Throwable t) {
-            LOG.warn("Failed to get network interface: {}", t.getMessage());
+            log.warn("Failed to get network interface: {}", t.getMessage());
             return null;
         }
 
@@ -312,7 +310,7 @@ public final class NetUtils {
                 if (getReachableAddress(networkInterface) != null) {
                     return networkInterface;
                 } else {
-                    LOG.warn("Preferred network interface not has reachable address: {}", networkInterface.getDisplayName());
+                    log.warn("Preferred network interface not has reachable address: {}", networkInterface.getDisplayName());
                 }
             }
         }
@@ -417,7 +415,7 @@ public final class NetUtils {
                 return address;
             }
         } catch (Throwable t) {
-            LOG.warn("Failed to get network address: {}", t.getMessage());
+            log.warn("Failed to get network address: {}", t.getMessage());
         }
 
         InetAddress localAddress = null;
@@ -428,7 +426,7 @@ public final class NetUtils {
                 return address;
             }
         } catch (Throwable t) {
-            LOG.warn("Failed to get local host address: {} ", t.getMessage());
+            log.warn("Failed to get local host address: {} ", t.getMessage());
         }
 
         return localAddress;
@@ -472,7 +470,7 @@ public final class NetUtils {
                 }
             } catch (Throwable t) {
                 // if regex is invalid regular expression, will be thrown PatternSyntaxException
-                LOG.warn("exception occurred: " + networkNames + " matches " + regex, t);
+                log.warn("exception occurred: {} matches {}", networkNames, regex, t);
             }
         }
         return false;

@@ -54,11 +54,10 @@ import cn.ponfee.disjob.supervisor.exception.KeyAlreadyExistsException;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
 import cn.ponfee.disjob.supervisor.model.*;
 import com.google.common.base.Joiner;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -84,10 +83,10 @@ import static com.google.common.collect.ImmutableList.of;
  *
  * @author Ponfee
  */
+@Slf4j
 @Component
 public class JobManager {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JobManager.class);
     private static final Comparator<Tuple2<Worker, Long>> WORKLOAD_COMPARATOR = Comparator.comparingLong(e -> e.b);
     private static final List<Integer> RS_TERMINABLE = of(RunState.WAITING.value(), RunState.RUNNING.value(), RunState.PAUSED.value());
     private static final List<Integer> RS_RUNNABLE   = of(RunState.WAITING.value(), RunState.PAUSED.value());
@@ -250,10 +249,10 @@ public class JobManager {
         if (isOneAffectedRow(jobMapper.updateNextTriggerTime(job))) {
             triggerJob(job, RunType.SCHEDULE, triggerTime);
             if (job.isDisabled()) {
-                LOG.warn("Disabled sched job: {}, {}", job.getJobId(), "trigger job success");
+                log.warn("Disabled sched job: {}, {}", job.getJobId(), "trigger job success");
             }
         } else {
-            LOG.warn("Schedule trigger job failed: {}, {}", job.getJobId(), triggerTime);
+            log.warn("Schedule trigger job failed: {}, {}", job.getJobId(), triggerTime);
         }
     }
 
@@ -287,7 +286,7 @@ public class JobManager {
                 return;
             }
             if (!taskMapper.terminate(taskId, null, ExecuteState.DISPATCH_FAILED, ExecuteState.WAITING, null, null)) {
-                LOG.warn("Terminate dispatch failed task unsuccessful: {}", taskId);
+                log.warn("Terminate dispatch failed task unsuccessful: {}", taskId);
             }
         });
     }
@@ -302,14 +301,14 @@ public class JobManager {
         param.check();
         return doInSynchronizedTransaction0(param.getInstanceId(), param.getWnstanceId(), lockInstanceId -> {
             String startRequestId = param.getStartRequestId();
-            LOG.info("Task trace [{}] starting: {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
+            log.info("Task trace [{}] starting: {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
             Date now = new Date();
             // 如果先`get`查一次然后`start`，最后再`get`查会返回之前get时的一级缓存
             if (isNoAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), startRequestId, now))) {
                 if (!taskMapper.checkStartIdempotent(param.getTaskId(), param.getWorker(), startRequestId)) {
                     return StartTaskResult.failure("Start task failure.");
                 }
-                LOG.info("Start task idempotent: {}, {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
+                log.info("Start task idempotent: {}, {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
             }
             if (isNoAffectedRow(instanceMapper.start(param.getInstanceId(), now))) {
                 SchedInstance instance = instanceMapper.get(param.getInstanceId());
@@ -328,7 +327,7 @@ public class JobManager {
     public boolean stopTask(StopTaskParam param) {
         param.check();
         Operation ops = param.getOperation();
-        LOG.info("Task trace [{}] stopping: {}, {}, {}", param.getTaskId(), ops, param.getToState(), param.getWorker());
+        log.info("Task trace [{}] stopping: {}, {}, {}", param.getTaskId(), ops, param.getToState(), param.getWorker());
         return doInSynchronizedTransaction(param.getInstanceId(), param.getWnstanceId(), instance -> {
             Assert.isTrue(!instance.isWorkflowLead(), () -> "Stop task instance cannot be workflow lead: " + instance);
             if (instance.isTerminal()) {
@@ -339,7 +338,7 @@ public class JobManager {
             String errMsg = param.getErrorMsg();
             if (!taskMapper.terminate(param.getTaskId(), param.getWorker(), toState, ExecuteState.EXECUTING, executeEndTime, errMsg)) {
                 // usual is worker invoke http timeout, then retry
-                LOG.warn("Conflict stop executing task: {}, {}", param.getTaskId(), toState);
+                log.warn("Conflict stop executing task: {}, {}", param.getTaskId(), toState);
                 return false;
             }
 
@@ -352,7 +351,7 @@ public class JobManager {
                 }
                 Date nextScanTime = new Date(System.currentTimeMillis() + conf.getShutdownTaskDelayResumeMs());
                 if (isNoAffectedRow(instanceMapper.updateNextScanTime(instance.getInstanceId(), nextScanTime, instance.getVersion()))) {
-                    LOG.warn("Resume task renew instance update time failed: {}", param.getTaskId());
+                    log.warn("Resume task renew instance update time failed: {}", param.getTaskId());
                 }
                 return true;
             }
@@ -411,7 +410,7 @@ public class JobManager {
                 Tuple3<SchedJob, SchedInstance, List<SchedTask>> tuple = buildDispatchParam(instanceId, changedTaskRows);
                 dispatch(false, tuple.a, tuple.b, tuple.c);
             }
-            LOG.info("Force change state success {}, {}", instanceId, toExecuteState);
+            log.info("Force change state success {}, {}", instanceId, toExecuteState);
         });
     }
 
@@ -438,7 +437,7 @@ public class JobManager {
                     assertHasAffectedRow(taskMapper.deleteByInstanceId(id), () -> "Delete task failed: " + id);
                 }
             }
-            LOG.info("Delete sched instance success {}", instanceId);
+            log.info("Delete sched instance success {}", instanceId);
         });
     }
 
@@ -450,7 +449,7 @@ public class JobManager {
      */
     public boolean purgeInstance(SchedInstance inst) {
         Long instanceId = inst.getInstanceId();
-        LOG.info("Purge instance: {}", instanceId);
+        log.info("Purge instance: {}", instanceId);
         return doInSynchronizedTransaction(instanceId, inst.getWnstanceId(), instance -> {
             Assert.isTrue(!instance.isWorkflowLead(), () -> "Purge instance cannot be workflow lead: " + instance);
             // instance run state must in (10, 20)
@@ -459,7 +458,7 @@ public class JobManager {
             }
             List<SchedTask> tasks = taskMapper.findBaseByInstanceId(instanceId);
             if (tasks.stream().anyMatch(SchedTask::isWaiting) || workerClient.hasAliveTask(tasks)) {
-                LOG.warn("Purge instance failed, has waiting or alive executing task: {}", tasks);
+                log.warn("Purge instance failed, has waiting or alive executing task: {}", tasks);
                 return false;
             }
 
@@ -479,7 +478,7 @@ public class JobManager {
 
             instance.markTerminated(tuple.a, tuple.b);
             processTerminatedInstance(instance);
-            LOG.warn("Purge instance {} to state {}", instanceId, tuple.a);
+            log.warn("Purge instance {} to state {}", instanceId, tuple.a);
             return true;
         });
     }
@@ -491,7 +490,7 @@ public class JobManager {
      * @return {@code true} if paused successfully
      */
     public boolean pauseInstance(long instanceId) {
-        LOG.info("Pause instance: {}", instanceId);
+        log.info("Pause instance: {}", instanceId);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
             return Functions.executeIfTrue(instance.isPausable(), () -> pauseInstance(instance));
         });
@@ -505,7 +504,7 @@ public class JobManager {
      * @return {@code true} if canceled successfully
      */
     public boolean cancelInstance(long instanceId, Operation ops) {
-        LOG.info("Cancel instance: {}, {}", instanceId, ops);
+        log.info("Cancel instance: {}, {}", instanceId, ops);
         Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
             return Functions.executeIfTrue(!instance.isTerminal(), () -> cancelInstance(instance, ops));
@@ -519,7 +518,7 @@ public class JobManager {
      * @return {@code true} if resumed successfully
      */
     public boolean resumeInstance(long instanceId) {
-        LOG.info("Resume instance: {}", instanceId);
+        log.info("Resume instance: {}", instanceId);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
             return Functions.executeIfTrue(instance.isPaused(), () -> resumeInstance(instance));
         });
@@ -635,7 +634,7 @@ public class JobManager {
     private List<Tuple2<Worker, Long>> calculateWorkload(SchedJob job, SchedInstance instance) {
         List<Worker> workers = workerClient.getAliveWorkers(job.getGroup());
         if (CollectionUtils.isEmpty(workers)) {
-            LOG.error("Not found available worker for calculate workload: {}", job.getGroup());
+            log.error("Not found available worker for calculate workload: {}", job.getGroup());
             return Collections.emptyList();
         }
         List<SchedTask> pausableTasks = taskMapper.findBaseByInstanceIdAndStates(instance.getInstanceId(), ES_PAUSABLE);
@@ -679,10 +678,8 @@ public class JobManager {
     }
 
     private <T> T doInSynchronizedTransaction0(long instanceId, Long wnstanceId, LongFunction<T> action) {
-        Long lockInstanceId = wnstanceId != null ? wnstanceId : (Long) instanceId;
-        synchronized (CoreUtils.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
-            return transactionTemplate.execute(status -> action.apply(lockInstanceId));
-        }
+        final Long lock = (wnstanceId != null) ? wnstanceId : (Long) instanceId;
+        return CoreUtils.doInSynchronized(lock, () -> transactionTemplate.execute(status -> action.apply(lock)));
     }
 
     private Tuple2<RunState, Date> obtainRunState(List<SchedTask> tasks) {
@@ -862,7 +859,7 @@ public class JobManager {
         List<SchedTask> tasks = splitRetryTask(job, failed, retryInstance);
         if (tasks.isEmpty()) {
             // the broadcast failed task worker all dead then terminate retry
-            LOG.warn("Retry instance split tasks is empty: {}, {}", job, failed);
+            log.warn("Retry instance split tasks is empty: {}, {}", job, failed);
             return null;
         }
 
@@ -922,7 +919,7 @@ public class JobManager {
     private void dependJob(SchedInstance parent, SchedDepend depend) throws JobException {
         SchedJob childJob = getRequiredJob(depend.getChildJobId());
         if (childJob.isDisabled()) {
-            LOG.warn("Depend child job disabled: {}", childJob);
+            log.warn("Depend child job disabled: {}", childJob);
             return;
         }
 
@@ -932,7 +929,7 @@ public class JobManager {
         if (result.isSuccess()) {
             ti.dispatch((job, instance, tasks) -> dispatch(false, job, instance, tasks));
         } else {
-            LOG.error("Create depend instance failed: {}, {}", childJob, parent, result.getCause());
+            log.error("Create depend instance failed: {}, {}", childJob, parent, result.getCause());
         }
     }
 
@@ -953,9 +950,9 @@ public class JobManager {
                 ExecuteState toState = ops.toState().isTerminal() ? ExecuteState.EXECUTE_ABORTED : ops.toState();
                 ExecuteState fromState = ExecuteState.EXECUTING;
                 if (taskMapper.terminate(task.getTaskId(), task.getWorker(), toState, fromState, executeEndTime, null)) {
-                    LOG.info("Terminate dead worker executing task success: {}", task);
+                    log.info("Terminate dead worker executing task success: {}", task);
                 } else {
-                    LOG.error("Terminate dead worker executing task failed: {}", task);
+                    log.error("Terminate dead worker executing task failed: {}", task);
                 }
             }
         }
@@ -998,7 +995,7 @@ public class JobManager {
         SchedInstance original = instance.isRunRetry() ? instanceMapper.get(instance.getPnstanceId()) : instance;
         SchedJob job = jobMapper.get(original.getJobId());
         if (job == null) {
-            LOG.error("Sched job not found: {}", original);
+            log.error("Sched job not found: {}", original);
             return;
         }
 
@@ -1014,7 +1011,7 @@ public class JobManager {
                 nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), original.getRunEndTime()).getTime();
             }
             boolean updated = isOneAffectedRow(jobMapper.updateFixedNextTriggerTime(job.getJobId(), lastTriggerTime, nextTriggerTime));
-            LOG.info("Renew fixed next trigger time: {}, {}, {}, {}", job.getJobId(), lastTriggerTime, nextTriggerTime, updated);
+            log.info("Renew fixed next trigger time: {}, {}, {}, {}", job.getJobId(), lastTriggerTime, nextTriggerTime, updated);
         }
 
         // 3、publish alert instance event
@@ -1066,7 +1063,7 @@ public class JobManager {
         if (result.isSuccess()) {
             CollectionUtils.emptyIfNull(result.get()).forEach(Runnable::run);
         } else {
-            LOG.error("Process workflow node error: {}", node, result.getCause());
+            log.error("Process workflow node error: {}", node, result.getCause());
             updateWorkflowLeadState(lead, RunState.CANCELED, RS_RUNNABLE);
         }
     }

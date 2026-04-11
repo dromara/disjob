@@ -21,10 +21,9 @@ import cn.ponfee.disjob.alert.email.configuration.EmailAlertSenderProperties;
 import cn.ponfee.disjob.alert.sender.AlertRecipientMapper;
 import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.common.collect.Collects;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jndi.JndiLocatorDelegate;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -42,10 +41,10 @@ import java.util.Map;
  *
  * @author Ponfee
  */
+@Slf4j
 public class EmailAlertSender extends AlertSender {
 
     public static final String CHANNEL = "email";
-    private static final Logger LOG = LoggerFactory.getLogger(EmailAlertSender.class);
 
     private final EmailAlertSenderProperties config;
     private final JavaMailSenderImpl sender;
@@ -54,13 +53,13 @@ public class EmailAlertSender extends AlertSender {
         super(CHANNEL, "Email", mapper);
         this.config = config;
         this.sender = createMailSender(config);
-        LOG.info("Email alert sender initialized: {}", config);
+        log.info("Email alert sender initialized: {}", config);
     }
 
     @Override
     protected void send(AlertEvent alertEvent, Map<String, String> alertRecipientMap, String alertWebhook) {
         if (MapUtils.isEmpty(alertRecipientMap)) {
-            LOG.warn("Alert email recipient map is empty.");
+            log.warn("Alert email recipient map is empty.");
             return;
         }
         try {
@@ -72,9 +71,9 @@ public class EmailAlertSender extends AlertSender {
             mimeMessageHelper.setText(alertEvent.buildContent("<b>%s</b>%s<br/>"), true);
             mimeMessageHelper.setSentDate(new Date());
             sender.send(mimeMessage);
-            LOG.info("Alert event email send success: {}", alertRecipientMap.values());
+            log.info("Alert event email send success: {}", alertRecipientMap.values());
         } catch (Exception e) {
-            LOG.error("Alert event email send error: {}", alertRecipientMap.values(), e);
+            log.error("Alert event email send error: {}", alertRecipientMap.values(), e);
         }
     }
 

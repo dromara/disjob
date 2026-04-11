@@ -50,7 +50,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
  */
 public class VertxWebServer extends AbstractVerticle {
 
-    private static final Logger LOG = LoggerFactory.getLogger(VertxWebServer.class);
+    private static final Logger log = LoggerFactory.getLogger(VertxWebServer.class);
 
     private final int port;
     private final String prefixPath;
@@ -70,13 +70,13 @@ public class VertxWebServer extends AbstractVerticle {
 
         vertx0.deployVerticle(this);
         if (super.vertx != vertx0) {
-            LOG.warn("Not a same vertx: super.vertx({}) != vertx0({})", super.vertx, vertx0);
+            log.warn("Not a same vertx: super.vertx({}) != vertx0({})", super.vertx, vertx0);
         }
     }
 
     public final void close() {
         if (super.vertx == null) {
-            LOG.error("Cannot close un-deployed vertx.");
+            log.error("Cannot close un-deployed vertx.");
             return;
         }
 
@@ -88,9 +88,9 @@ public class VertxWebServer extends AbstractVerticle {
         });
         try {
             boolean res = countDownLatch.await(60, TimeUnit.SECONDS);
-            LOG.info("Close vertx success {}.", res);
+            log.info("Close vertx success {}.", res);
         } catch (InterruptedException e) {
-            LOG.error("Close vertx interrupted.", e);
+            log.error("Close vertx interrupted.", e);
             Thread.currentThread().interrupt();
         }
     }

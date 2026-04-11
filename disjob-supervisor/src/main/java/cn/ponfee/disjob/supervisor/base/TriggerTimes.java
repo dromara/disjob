@@ -57,7 +57,7 @@ public final class TriggerTimes {
         Date last = (job.getLastTriggerTime() != null) ? new Date(job.getLastTriggerTime()) : null;
         Date next = computeNextTriggerTime0(job, last, now);
         if (last != null && next != null && !next.after(last)) {
-            throw new IllegalStateException("Next trigger time must be after last: " + last + ", " + last);
+            throw new IllegalStateException("Next trigger time must be after last: " + next + ", " + last);
         }
         Date end = job.getEndTime();
         return next == null || (end != null && next.after(end)) ? null : next.getTime();

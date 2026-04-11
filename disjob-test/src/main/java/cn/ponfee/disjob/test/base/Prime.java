@@ -17,8 +17,7 @@
 package cn.ponfee.disjob.test.base;
 
 import com.google.common.math.LongMath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
 import java.math.RoundingMode;
@@ -31,9 +30,8 @@ import java.util.List;
  *
  * @author Ponfee
  */
+@Slf4j
 public class Prime {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Prime.class);
 
     public static class Power {
         public static long countPrimes(long m, long n) {
@@ -192,7 +190,7 @@ public class Prime {
                     count += 1;
                 }
             }
-            LOG.info("Count primes: [{}, {}]({})={}", a, n, size, count);
+            log.info("Count primes: [{}, {}]({})={}", a, n, size, count);
             return count;
         }
     }

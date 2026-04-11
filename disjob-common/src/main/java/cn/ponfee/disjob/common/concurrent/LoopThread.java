@@ -16,18 +16,17 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Loop thread
  *
  * @author Ponfee
  */
+@Slf4j
 public class LoopThread extends Thread {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LoopThread.class);
 
     private final TripleState state = TripleState.create();
     private final long periodMs;
@@ -43,7 +42,7 @@ public class LoopThread extends Thread {
         super.setName(name);
         super.setDaemon(daemon);
         super.setPriority(priority);
-        super.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOG));
+        super.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(log));
         this.periodMs = periodMs;
         this.delayMs = delayMs;
         this.action = action;
@@ -62,23 +61,25 @@ public class LoopThread extends Thread {
 
     @Override
     public void run() {
-        LOG.info("Loop thread begin.");
+        log.info("Loop thread begin.");
         if (delayMs > 0) {
             Threads.sleep(delayMs);
         }
         while (state.isRunning()) {
             try {
                 action.run();
+                // noinspection BusyWait
                 Thread.sleep(periodMs);
-            } catch (InterruptedException e) {
-                LOG.warn("Loop thread interrupted {}: {}", super.getName(), e.getMessage());
-                terminate();
-                break;
             } catch (Throwable t) {
-                LOG.error("Loop thread error.", t);
+                if (Throwables.isFatal(t)) {
+                    terminate();
+                    log.warn("Loop thread terminated {}: {}({})", super.getName(), t.getClass().getName(), t.getMessage());
+                } else {
+                    log.error("Loop thread error: {}", super.getName(), t);
+                }
             }
         }
-        LOG.info("Loop thread end.");
+        log.info("Loop thread end.");
     }
 
     @Override
@@ -91,12 +92,12 @@ public class LoopThread extends Thread {
     }
 
     public boolean terminate() {
-        if (state.stop()) {
+        boolean result = state.stop();
+        if (result) {
             // interrupt this thread sleep in run method
             ThrowingRunnable.doCaught(super::interrupt);
-            return true;
         }
-        return false;
+        return result;
     }
 
 }

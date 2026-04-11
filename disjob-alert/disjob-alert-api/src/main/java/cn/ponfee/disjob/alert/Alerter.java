@@ -26,11 +26,10 @@ import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.supervisor.GroupInfoService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.event.EventListener;
 
@@ -46,6 +45,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  *
  * @author Ponfee
  */
+@Slf4j
 public class Alerter extends SingletonClassConstraint implements DisposableBean {
 
     /**
@@ -67,11 +67,6 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
      * AlertRecipientMapper spring bean name prefix
      */
     public static final String RECIPIENT_MAPPER_BEAN_NAME_PREFIX = KEY_PREFIX + ".recipient_mapper";
-
-    /**
-     * Logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(Alerter.class);
 
     /**
      * The alerter config
@@ -110,7 +105,7 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
         try {
             alert(event);
         } catch (Throwable t) {
-            LOG.warn("Alert event occur error: {}", event, t);
+            log.warn("Alert event occur error: {}", event, t);
         }
     }
 
@@ -132,7 +127,7 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
             .keepAliveTimeSeconds(pool.getKeepAliveTimeSeconds())
             .allowCoreThreadTimeOut(pool.isAllowCoreThreadTimeOut())
             .threadFactory(NamedThreadFactory.builder().prefix("alert_async_send_thread").build())
-            .rejectedHandler((task, executor) -> LOG.warn("Alert event be discard: {}", ((AlertTask) task).event))
+            .rejectedHandler((task, executor) -> log.warn("Alert event be discard: {}", ((AlertTask) task).event))
             .build();
     }
 
@@ -171,7 +166,7 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
                 key -> new SlidingWindow(sendRateLimit.getMaxRequests(), sendRateLimit.getWindowSizeInMillis())
             );
             if (!slidingWindow.tryAcquire()) {
-                LOG.warn("Alert event rate limited: {}", event);
+                log.warn("Alert event rate limited: {}", event);
                 return;
             }
 
@@ -179,7 +174,7 @@ public class Alerter extends SingletonClassConstraint implements DisposableBean 
                 try {
                     sender.send(event, alertRecipients, alertWebhook);
                 } catch (Throwable t) {
-                    LOG.error("Alert event send error: {}", event, t);
+                    log.error("Alert event send error: {}", event, t);
                 }
             });
         }

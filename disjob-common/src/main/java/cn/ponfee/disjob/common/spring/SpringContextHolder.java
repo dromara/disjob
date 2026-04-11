@@ -215,7 +215,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
         }
 
         if (!factory.isSingleton(beanName)) {
-            throw new IllegalStateException("Bean name is not a prototype bean: " + beanName);
+            throw new IllegalStateException("Bean name is not a singleton bean: " + beanName);
         }
 
         return bean;

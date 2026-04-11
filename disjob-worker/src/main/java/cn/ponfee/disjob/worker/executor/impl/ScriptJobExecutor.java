@@ -27,11 +27,10 @@ import cn.ponfee.disjob.worker.executor.Savepoint;
 import cn.ponfee.disjob.worker.util.ProcessUtils;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -59,8 +58,8 @@ import static org.apache.commons.lang3.SystemUtils.OS_NAME;
  *
  * @author Ponfee
  */
+@Slf4j
 public class ScriptJobExecutor extends JobExecutor {
-    private static final Logger LOG = LoggerFactory.getLogger(ScriptJobExecutor.class);
 
     private static final String[] DOWNLOAD_PROTOCOL = {"http://", "https://", "ftp://"};
     private static final String WORKER_SCRIPT_DIR = SystemUtils.USER_HOME + "/disjob/worker/scripts/";
@@ -89,8 +88,8 @@ public class ScriptJobExecutor extends JobExecutor {
 
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
-        LOG.info("Script process id: {}, {}", task.getTaskId(), pid);
-        return ProcessUtils.complete(process, charset, task, LOG);
+        log.info("Script process id: {}, {}", task.getTaskId(), pid);
+        return ProcessUtils.complete(process, charset, task, log);
     }
 
     public enum ScriptType {

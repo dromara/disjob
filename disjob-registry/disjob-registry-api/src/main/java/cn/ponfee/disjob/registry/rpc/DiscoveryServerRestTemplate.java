@@ -24,9 +24,8 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.registry.Discovery;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
@@ -44,8 +43,8 @@ import java.util.concurrent.ThreadLocalRandom;
  * @param <D> the discovery type
  * @author Ponfee
  */
+@Slf4j
 final class DiscoveryServerRestTemplate<D extends Server> {
-    private static final Logger LOG = LoggerFactory.getLogger(DiscoveryServerRestTemplate.class);
 
     private final Discovery<D> discoverServer;
     private final RestTemplate restTemplate;
@@ -104,7 +103,7 @@ final class DiscoveryServerRestTemplate<D extends Server> {
                 if (throwable == null) {
                     throwable = t;
                 }
-                LOG.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(args), t.getMessage());
+                log.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(args), t.getMessage());
                 if (DestinationServerRestTemplate.isNotRetry(t)) {
                     break;
                 }

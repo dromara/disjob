@@ -37,10 +37,9 @@ import cn.ponfee.disjob.supervisor.exception.KeyAlreadyExistsException;
 import cn.ponfee.disjob.supervisor.exception.KeyNotFoundException;
 import cn.ponfee.disjob.supervisor.model.SchedGroup;
 import com.google.common.collect.ImmutableSet;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -62,9 +61,9 @@ import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
  *
  * @author Ponfee
  */
+@Slf4j
 @Service
 public class SchedGroupService extends SingletonClassConstraint {
-    private static final Logger LOG = LoggerFactory.getLogger(SchedGroupService.class);
 
     private static final Lock LOCK = new ReentrantLock();
     private static final AtomicReference<Cache> CACHE = new AtomicReference<>(Cache.empty());
@@ -174,7 +173,7 @@ public class SchedGroupService extends SingletonClassConstraint {
             try {
                 CACHE.set(Cache.of(groupMapper.findAll()));
             } catch (Throwable t) {
-                LOG.error("Refresh sched group error.", t);
+                log.error("Refresh sched group error.", t);
                 Threads.reinterruptIfInterruptedException(t);
             } finally {
                 LOCK.unlock();

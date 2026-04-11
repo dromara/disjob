@@ -26,9 +26,8 @@ import cn.ponfee.disjob.worker.executor.JobExecutor;
 import cn.ponfee.disjob.worker.executor.Savepoint;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.config.RequestConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -57,8 +56,8 @@ import java.util.Map;
  *
  * @author Ponfee
  */
+@Slf4j
 public class HttpJobExecutor extends JobExecutor {
-    private static final Logger LOG = LoggerFactory.getLogger(HttpJobExecutor.class);
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 2000;
     private static final int DEFAULT_READ_TIMEOUT = 5000;
@@ -97,7 +96,7 @@ public class HttpJobExecutor extends JobExecutor {
             String body = responseEntity.getBody();
             return status.is2xxSuccessful() ? ExecutionResult.success(body) : ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), status + ": " + body);
         } catch (Throwable t) {
-            LOG.error("Http request error: " + task, t);
+            log.error("Http request error: {}", task, t);
             return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
         }
     }

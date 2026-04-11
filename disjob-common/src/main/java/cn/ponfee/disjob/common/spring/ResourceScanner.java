@@ -17,11 +17,10 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
@@ -65,8 +64,8 @@ import static org.springframework.core.io.support.ResourcePatternResolver.CLASSP
  * @author Ponfee
  * @see org.springframework.context.annotation.ClassPathBeanDefinitionScanner
  */
+@Slf4j
 public class ResourceScanner {
-    private static final Logger LOG = LoggerFactory.getLogger(ResourceScanner.class);
 
     /**
      * Prefix of resource schema.
@@ -136,7 +135,7 @@ public class ResourceScanner {
                     try {
                         result.add(Class.forName(reader.getClassMetadata().getClassName()));
                     } catch (Throwable t) {
-                        LOG.error("Load class occur error.", t);
+                        log.error("Load class occur error.", t);
                     }
                 }
             }
@@ -188,7 +187,7 @@ public class ResourceScanner {
                     try (InputStream input = resource.getInputStream()) {
                         result.put(resource.getFilename(), mapper.apply(input));
                     } catch (Throwable t) {
-                        LOG.error("Resource scan location pattern failed: " + locationPattern, t);
+                        log.error("Resource scan location pattern failed: {}", locationPattern, t);
                     }
                 }
             }

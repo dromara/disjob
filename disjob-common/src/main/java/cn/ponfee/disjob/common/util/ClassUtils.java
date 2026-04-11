@@ -24,10 +24,9 @@ import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.objenesis.ObjenesisHelper;
 import org.springframework.util.Assert;
 
@@ -48,9 +47,8 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
+@Slf4j
 public final class ClassUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ClassUtils.class);
 
     /**
      * Constructor cache
@@ -291,7 +289,7 @@ public final class ClassUtils {
                 return getConstructor0(type, parameterTypes);
             } catch (Exception e) {
                 // No such constructor, use placeholder
-                LOG.warn("Get constructor occur error: {}", e.getMessage());
+                log.warn("Get constructor occur error: {}", e.getMessage());
                 return Null.BROKEN_CONSTRUCTOR;
             }
         });
@@ -378,7 +376,7 @@ public final class ClassUtils {
                 return (tuple.b.equals(Modifier.isStatic(m.getModifiers())) && !m.isSynthetic()) ? m : null;
             } catch (Exception e) {
                 // No such method, use placeholder
-                LOG.info("Get method failed: {}", e.getMessage());
+                log.info("Get method failed: {}", e.getMessage());
                 return Null.BROKEN_METHOD;
             }
         });

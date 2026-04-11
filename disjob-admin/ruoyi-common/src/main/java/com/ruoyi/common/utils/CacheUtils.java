@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public class CacheUtils
 {
-    private static final Logger logger = LoggerFactory.getLogger(CacheUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(CacheUtils.class);
 
     private static final CacheManager cacheManager = SpringUtils.getBean(CacheManager.class);
 
@@ -131,7 +131,7 @@ public class CacheUtils
         {
             cache.remove(it.next());
         }
-        logger.info("清理缓存： {} => {}", cacheName, keys);
+        log.info("Remove all： {} => {}", cacheName, keys);
     }
 
     /**
@@ -156,7 +156,7 @@ public class CacheUtils
         {
             remove(it.next());
         }
-        logger.info("清理缓存： {} => {}", cacheName, keys);
+        log.info("Remove by key： {} => {}", cacheName, keys);
     }
 
     /**

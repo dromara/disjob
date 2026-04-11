@@ -17,9 +17,9 @@
 package cn.ponfee.disjob.common.concurrent;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.function.BooleanSupplier;
 
@@ -28,9 +28,8 @@ import java.util.function.BooleanSupplier;
  *
  * @author Ponfee
  */
+@Slf4j
 public final class Threads {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Threads.class);
 
     public static String getName(Thread thread) {
         return thread == null ? null : thread.getName();
@@ -82,9 +81,9 @@ public final class Threads {
      * @param joinMillis the joinMillis
      */
     public static void stopThread(Thread thread, long joinMillis) {
-        LOG.info("Stop thread start [{}]", thread.getName());
+        log.info("Stop thread start [{}]", thread.getName());
         stopThread0(thread, joinMillis);
-        LOG.info("Stop thread end [{}]", thread.getName());
+        log.info("Stop thread end [{}]", thread.getName());
     }
 
     /**
@@ -156,11 +155,11 @@ public final class Threads {
 
     private static void stopThread0(Thread thread, long joinMillis) {
         if (thread == Thread.currentThread()) {
-            LOG.info("Stop self thread [{}]\n{}", thread.getName(), getStackTrace());
+            log.info("Stop self thread [{}]\n{}", thread.getName(), getStackTrace());
             return;
         }
         if (isStopped(thread)) {
-            LOG.info("Thread already stopped [{}]", thread.getName());
+            log.info("Thread already stopped [{}]", thread.getName());
             return;
         }
 
@@ -180,11 +179,11 @@ public final class Threads {
         try {
             // 调用后，thread中正在执行的run方法内部会抛出java.lang.ThreadDeath异常
             // 如果在run方法内用 try{...} catch(Throwable e){} 捕获住，则线程不会停止执行
-            LOG.warn("Invoke java.lang.Thread#stop() method begin: {}", thread.getName());
+            log.warn("Invoke java.lang.Thread#stop() method begin: {}", thread.getName());
             thread.stop();
-            LOG.warn("Invoke java.lang.Thread#stop() method end: {}", thread.getName());
+            log.warn("Invoke java.lang.Thread#stop() method end: {}", thread.getName());
         } catch (Throwable t) {
-            LOG.error("Invoke java.lang.Thread#stop() method failed: {}", thread.getName(), t);
+            log.error("Invoke java.lang.Thread#stop() method failed: {}", thread.getName(), t);
         }
     }
 
@@ -193,7 +192,7 @@ public final class Threads {
             try {
                 thread.join(joinTimeoutMills);
             } catch (Throwable t) {
-                LOG.error("Join thread terminal interrupted: {}", thread.getName(), t);
+                log.error("Join thread terminal interrupted: {}", thread.getName(), t);
                 reinterruptIfInterruptedException(t);
             }
         }

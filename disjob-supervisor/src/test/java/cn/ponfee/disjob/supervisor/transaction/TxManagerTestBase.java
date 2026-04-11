@@ -16,12 +16,11 @@
 
 package cn.ponfee.disjob.supervisor.transaction;
 
+import cn.ponfee.disjob.common.exception.Try;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -34,7 +33,6 @@ import java.util.function.Supplier;
  * @author Ponfee
  */
 public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?, I>, I> extends SpringBootTestBase<S> {
-    private static final Logger LOG = LoggerFactory.getLogger(TxManagerTestBase.class);
 
     private final I id1, id2;
 
@@ -52,40 +50,31 @@ public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?
     @Test
     public void testWithoutTxHasError() {
         Map<I, String> before = bean.queryData(id1, id2);
-        try {
-            bean.testWithoutTxHasError(id1, id2);
-        } catch (Exception ignored) {
-        }
+        Assertions.assertTrue(Try.run(() -> bean.testWithoutTxHasError(id1, id2)).isFailure());
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertEquals(before.get(id2), after.get(id2));
-        LOG.info("-------------testWithoutTxHasError done " + before + ", " + after);
+        log.info("TestWithoutTxHasError end: {}, {}", before, after);
     }
 
     @Test
     public void testWithAnnotationTxHasError() {
         Map<I, String> before = bean.queryData(id1, id2);
-        try {
-            bean.testWithAnnotationTxHasError(id1, id2);
-        } catch (Exception ignored) {
-        }
+        Assertions.assertTrue(Try.run(() -> bean.testWithAnnotationTxHasError(id1, id2)).isFailure());
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertEquals(before.get(id1), after.get(id1));
         Assertions.assertEquals(before.get(id2), after.get(id2));
-        LOG.info("-------------testWithAnnotationTxHasError done" + before + ", " + after);
+        log.info("TestWithAnnotationTxHasError end: {}, {}", before, after);
     }
 
     @Test
     public void testWithTemplateTxHasError() {
         Map<I, String> before = bean.queryData(id1, id2);
-        try {
-            bean.testWithTemplateTxHasError(id1, id2);
-        } catch (Exception ignored) {
-        }
+        Assertions.assertTrue(Try.run(() -> bean.testWithTemplateTxHasError(id1, id2)).isFailure());
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertEquals(before.get(id1), after.get(id1));
         Assertions.assertEquals(before.get(id2), after.get(id2));
-        LOG.info("-------------testWithTemplateTxHasError done" + before + ", " + after);
+        log.info("TestWithTemplateTxHasError end: {}, {}", before, after);
     }
 
     @Test
@@ -95,7 +84,7 @@ public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertNotEquals(before.get(id2), after.get(id2));
-        LOG.info("-------------testWithoutTxNoneError done" + before + ", " + after);
+        log.info("TestWithoutTxNoneError end: {}, {}", before, after);
     }
 
     @Test
@@ -105,7 +94,7 @@ public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertNotEquals(before.get(id2), after.get(id2));
-        LOG.info("-------------testWithAnnotationTxNoneError done" + before + ", " + after);
+        log.info("TestWithAnnotationTxNoneError end: {}, {}", before, after);
     }
 
     @Test
@@ -115,7 +104,7 @@ public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertNotEquals(before.get(id2), after.get(id2));
-        LOG.info("-------------testWithTemplateTxNoneError done" + before + ", " + after);
+        log.info("TestWithTemplateTxNoneError end: {}, {}", before, after);
     }
 
 }

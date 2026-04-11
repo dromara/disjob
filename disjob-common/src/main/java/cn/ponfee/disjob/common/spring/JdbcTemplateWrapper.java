@@ -21,9 +21,8 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingConsumer;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -47,9 +46,8 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author Ponfee
  */
+@Slf4j
 public final class JdbcTemplateWrapper {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JdbcTemplateWrapper.class);
 
     public static final RowMapper<String> STRING_ROW_MAPPER = new SingleColumnRowMapper<>(String.class);
     public static final RowMapper<Long> LONG_ROW_MAPPER = new SingleColumnRowMapper<>(Long.class);
@@ -140,7 +138,7 @@ public final class JdbcTemplateWrapper {
             }
             jdbcTemplate.execute(createTableDdl);
             Assert.state(existsTable(key), () -> "Create table " + key + " failed.");
-            LOG.info("Created table {} success.", key);
+            log.info("Created table {} success.", key);
             return true;
         }, 3, 1000L));
     }

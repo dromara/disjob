@@ -25,8 +25,7 @@ import cn.ponfee.disjob.worker.executor.Savepoint;
 import cn.ponfee.disjob.worker.util.ProcessUtils;
 import lombok.Getter;
 import lombok.Setter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
@@ -55,8 +54,8 @@ import java.nio.charset.Charset;
  *
  * @author Ponfee
  */
+@Slf4j
 public class CommandJobExecutor extends JobExecutor {
-    private static final Logger LOG = LoggerFactory.getLogger(CommandJobExecutor.class);
 
     private Charset charset;
     private Long pid;
@@ -79,8 +78,8 @@ public class CommandJobExecutor extends JobExecutor {
 
         Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
-        LOG.info("Command process id: {}, {}", task.getTaskId(), pid);
-        return ProcessUtils.complete(process, charset, task, LOG);
+        log.info("Command process id: {}, {}", task.getTaskId(), pid);
+        return ProcessUtils.complete(process, charset, task, log);
     }
 
     @Getter

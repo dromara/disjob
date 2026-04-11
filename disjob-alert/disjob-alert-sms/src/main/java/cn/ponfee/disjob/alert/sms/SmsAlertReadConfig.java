@@ -19,6 +19,7 @@ package cn.ponfee.disjob.alert.sms;
 import cn.ponfee.disjob.alert.sms.configuration.SmsAlertSenderProperties;
 import cn.ponfee.disjob.alert.sms.configuration.SmsAlertSenderProperties.SmsBlendProperties;
 import com.google.common.collect.ImmutableMap;
+import lombok.extern.slf4j.Slf4j;
 import org.dromara.sms4j.aliyun.config.AlibabaConfig;
 import org.dromara.sms4j.cloopen.config.CloopenConfig;
 import org.dromara.sms4j.core.datainterface.SmsReadConfig;
@@ -29,8 +30,6 @@ import org.dromara.sms4j.jdcloud.config.JdCloudConfig;
 import org.dromara.sms4j.provider.config.BaseConfig;
 import org.dromara.sms4j.tencent.config.TencentConfig;
 import org.dromara.sms4j.unisms.config.UniConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -45,9 +44,8 @@ import java.util.function.Supplier;
  *
  * @author TJxiaobao
  */
+@Slf4j
 public class SmsAlertReadConfig implements SmsReadConfig, ApplicationListener<ContextRefreshedEvent> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SmsAlertReadConfig.class);
 
     private final SmsAlertSenderProperties config;
 
@@ -63,7 +61,7 @@ public class SmsAlertReadConfig implements SmsReadConfig, ApplicationListener<Co
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         SmsFactory.createSmsBlend(this);
-        LOG.info("Sms alert read config refreshed.");
+        log.info("Sms alert read config refreshed.");
     }
 
     @Override

@@ -19,10 +19,9 @@ package cn.ponfee.disjob.worker.util;
 import cn.ponfee.disjob.common.collect.PooledObjectProcessor;
 import groovy.lang.*;
 import groovy.util.Expando;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptEngine;
 import javax.script.SimpleBindings;
@@ -37,10 +36,9 @@ import java.util.regex.Pattern;
  *
  * @author Ponfee
  */
+@Slf4j
 @SuppressWarnings("unchecked")
 public final class GroovyUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(GroovyUtils.class);
 
     /**
      * Pattern of qualified class name
@@ -84,7 +82,7 @@ public final class GroovyUtils {
         try {
             return parseClass(text);
         } catch (Exception e) {
-            LOG.warn("Parse source class code occur error.", e);
+            log.warn("Parse source class code occur error.", e);
             return null;
         }
     }

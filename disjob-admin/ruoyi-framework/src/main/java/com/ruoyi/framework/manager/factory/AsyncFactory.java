@@ -1,7 +1,10 @@
 package com.ruoyi.framework.manager.factory;
 
 import com.ruoyi.common.constant.Constants;
-import com.ruoyi.common.utils.*;
+import com.ruoyi.common.utils.AddressUtils;
+import com.ruoyi.common.utils.ServletUtils;
+import com.ruoyi.common.utils.ShiroUtils;
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.http.UserAgentUtils;
 import com.ruoyi.common.utils.spring.SpringUtils;
 import com.ruoyi.framework.shiro.session.OnlineSession;
@@ -24,7 +27,7 @@ import java.util.TimerTask;
  */
 public class AsyncFactory
 {
-    private static final Logger sys_user_logger = LoggerFactory.getLogger("sys-user");
+    private static final Logger log = LoggerFactory.getLogger(AsyncFactory.class);
 
     /**
      * 同步session到数据库
@@ -97,13 +100,13 @@ public class AsyncFactory
             {
                 String address = AddressUtils.getRealAddressByIP(ip);
                 StringBuilder s = new StringBuilder();
-                s.append(LogUtils.getBlock(ip));
+                s.append(getBlock(ip));
                 s.append(address);
-                s.append(LogUtils.getBlock(username));
-                s.append(LogUtils.getBlock(status));
-                s.append(LogUtils.getBlock(message));
+                s.append(getBlock(username));
+                s.append(getBlock(status));
+                s.append(getBlock(message));
                 // 打印信息到日志
-                sys_user_logger.info(s.toString(), args);
+                log.info(s.toString(), args);
                 // 获取客户端操作系统
                 String os = UserAgentUtils.getOperatingSystem(userAgent);
                 // 获取客户端浏览器
@@ -130,4 +133,9 @@ public class AsyncFactory
             }
         };
     }
+
+    private static String getBlock(Object msg) {
+        return "[" + (msg == null ? "" : msg) + "]";
+    }
+
 }

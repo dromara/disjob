@@ -20,9 +20,8 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.supervisor.base.OperationEventType;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -40,10 +39,10 @@ import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonSched
  *
  * @author Ponfee
  */
+@Slf4j
 @Service
 public class OperationEventService extends SingletonClassConstraint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OperationEventService.class);
     private static final long PERIOD_MS = 3000L;
     private static final Map<OperationEventType, Pair<Date, String>> MAP = new ConcurrentHashMap<>();
 
@@ -72,9 +71,9 @@ public class OperationEventService extends SingletonClassConstraint {
             if (pair != null) {
                 try {
                     process(eventType, pair.getLeft(), pair.getRight());
-                    LOG.info("Process operation event success: {}, {}", eventType, pair);
+                    log.info("Process operation event success: {}, {}", eventType, pair);
                 } catch (Throwable t) {
-                    LOG.error("Process operation event error: " + eventType + ", " + pair, t);
+                    log.error("Process operation event error: {}, {}", eventType, pair, t);
                 }
             }
         }
@@ -86,7 +85,7 @@ public class OperationEventService extends SingletonClassConstraint {
             groupService.refresh();
         } else {
             state = false;
-            LOG.error("Unsupported subscribe operation event type: {}", eventType);
+            log.error("Unsupported subscribe operation event type: {}", eventType);
         }
 
         if (state) {

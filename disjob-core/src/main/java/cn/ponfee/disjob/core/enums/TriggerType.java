@@ -176,7 +176,8 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
             Date next = start.after(targetTime) ? start : period.next(start, targetTime, conf.getStep(), 1).begin();
             result.add(next);
             while (--count > 0) {
-                result.add(next = period.next(next, conf.getStep(), 1).begin());
+                next = period.next(next, conf.getStep(), 1).begin();
+                result.add(next);
             }
             return result;
         }
@@ -207,7 +208,8 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
             Assert.isTrue(interval > 0, () -> name() + " invalid trigger value: " + triggerValue);
             List<Date> result = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
-                result.add(lastTriggerTime = Dates.plusSeconds(lastTriggerTime, interval));
+                lastTriggerTime = Dates.plusSeconds(lastTriggerTime, interval);
+                result.add(lastTriggerTime);
             }
             return result;
         }

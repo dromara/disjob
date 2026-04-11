@@ -125,7 +125,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             client.deleteKey(buildRegistryServerId(server));
             log.info("Etcd server deregister success: {}", server);
         } catch (Throwable t) {
-            log.error("Etcd server deregister error: " + server, t);
+            log.error("Etcd server deregister error: {}", server, t);
         }
     }
 
@@ -205,7 +205,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         Consumer<Throwable> onError = t -> {
             if (t instanceof EtcdException) {
                 EtcdException e = (EtcdException) t;
-                log.error("Keep alive on error: " + e.getErrorCode(), t);
+                log.error("Keep alive on error: {}", e.getErrorCode(), t);
                 if (e.getErrorCode() != ErrorCode.NOT_FOUND) {
                     // ttl has expired
                     keepAliveRecover();

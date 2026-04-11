@@ -19,6 +19,7 @@ package cn.ponfee.disjob.registry.consul;
 import cn.ponfee.disjob.common.concurrent.LoggedUncaughtExceptionHandler;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.ServerRegistry;
@@ -123,7 +124,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             }
             log.info("Consul server deregister success: {}", server);
         } catch (Throwable t) {
-            log.error("Consul server deregister error: " + server, t);
+            log.error("Consul server deregister error: {}", server, t);
         }
     }
 
@@ -197,9 +198,9 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                 if (e.getStatusCode() == 404) {
                     ThrowingRunnable.doCaught(() -> register(server), () -> "Not found server register failed: " + server);
                 }
-                log.warn("Check pass server operation exception: " + server + ", check id: " + checkId, e);
+                log.warn("Check pass server operation exception: {}, check id: {}", server, checkId, e);
             } catch (Throwable t) {
-                log.error("Check pass server error: " + server + ", check id: " + checkId, t);
+                log.error("Check pass server error: {}, check id: {}", server, checkId, t);
             }
         }
     }
@@ -230,7 +231,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                     }
                 } catch (Throwable t) {
                     log.error("Get consul health services occur error.", t);
-                    Threads.reinterruptIfInterruptedException(t);
+                    Throwables.rethrowIfFatal(t);
                 }
             }
         }

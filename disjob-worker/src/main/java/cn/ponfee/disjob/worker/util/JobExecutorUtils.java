@@ -49,8 +49,7 @@ public class JobExecutorUtils {
             VerifyParam verifyParam = new VerifyParam(param.getRouteStrategy().isBroadcast(), param.getJobParam());
             for (String jobExecutorStr : jobExecutors) {
                 JobExecutor jobExecutor = loadJobExecutor(jobExecutorStr);
-                boolean result = jobExecutor.verify(verifyParam);
-                Assert.isTrue(result, () -> "Verify job failed: " + param);
+                Assert.isTrue(jobExecutor.verify(verifyParam), () -> "Verify job failed: " + param);
             }
         } catch (JobException e) {
             throw e;

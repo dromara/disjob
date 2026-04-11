@@ -154,7 +154,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             publishServerEvent(RegistryEventType.DEREGISTER, server);
             log.info("Database server deregister success: {}", server);
         } catch (Throwable t) {
-            log.error("Database server deregister error: " + server, t);
+            log.error("Database server deregister error: {}", server, t);
         }
     }
 

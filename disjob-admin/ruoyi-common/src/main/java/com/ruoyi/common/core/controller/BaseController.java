@@ -28,9 +28,9 @@ import java.util.List;
  *
  * @author ruoyi
  */
-public class BaseController
+public abstract class BaseController
 {
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {

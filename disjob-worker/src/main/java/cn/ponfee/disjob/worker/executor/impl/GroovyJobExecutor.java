@@ -54,11 +54,9 @@ public class GroovyJobExecutor extends JobExecutor {
         );
 
         Object result = GroovyUtils.Evaluator.SCRIPT.eval(scriptText, params);
-        if (result instanceof ExecutionResult) {
-            return (ExecutionResult) result;
-        } else {
-            return ExecutionResult.success(result == null ? null : result.toString());
-        }
+        return result instanceof ExecutionResult ?
+            (ExecutionResult) result :
+            ExecutionResult.success(result == null ? null : result.toString());
     }
 
 }

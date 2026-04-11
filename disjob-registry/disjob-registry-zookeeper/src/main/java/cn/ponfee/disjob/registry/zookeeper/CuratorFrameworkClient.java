@@ -18,6 +18,7 @@ package cn.ponfee.disjob.registry.zookeeper;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.registry.zookeeper.configuration.ZookeeperRegistryProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -28,8 +29,6 @@ import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.Closeable;
@@ -47,8 +46,8 @@ import java.util.function.Consumer;
  *
  * @author Ponfee
  */
+@Slf4j
 public class CuratorFrameworkClient implements Closeable {
-    private static final Logger LOG = LoggerFactory.getLogger(CuratorFrameworkClient.class);
 
     private final Map<String, ChildChangedWatcher> watchers = new ConcurrentHashMap<>();
     private final CuratorFramework curatorFramework;
@@ -79,7 +78,7 @@ public class CuratorFrameworkClient implements Closeable {
         try {
             curatorFramework.create().creatingParentsIfNeeded().forPath(path);
         } catch (KeeperException.NodeExistsException e) {
-            LOG.debug("Node path already exists: {}, {}", path, e.getMessage());
+            log.debug("Persistent node path already exists: {}, {}", path, e.getMessage());
         }
     }
 
@@ -87,7 +86,7 @@ public class CuratorFrameworkClient implements Closeable {
         try {
             curatorFramework.create().withMode(CreateMode.EPHEMERAL).forPath(path);
         } catch (KeeperException.NodeExistsException e) {
-            LOG.debug("Node path already exists: {}, {}", path, e.getMessage());
+            log.debug("Ephemeral node path already exists: {}, {}", path, e.getMessage());
             if (retries > 0) {
                 deletePath(path);
                 createEphemeral(path, --retries);
@@ -118,7 +117,7 @@ public class CuratorFrameworkClient implements Closeable {
         try {
             curatorFramework.delete()/*.guaranteed()*/.deletingChildrenIfNeeded().forPath(path);
         } catch (KeeperException.NoNodeException e) {
-            LOG.debug("Node path not exists: {}, {}", path, e.getMessage());
+            log.debug("Node path not exists: {}, {}", path, e.getMessage());
         }
     }
 
@@ -256,7 +255,7 @@ public class CuratorFrameworkClient implements Closeable {
         @Override
         public void process(WatchedEvent event) throws Exception {
             ThrowingRunnable.doCaught(latch::await);
-            LOG.info("Watched event type: {}", event.getType());
+            log.info("Watched event type: {}", event.getType());
 
             final Consumer<List<String>> action = listener;
             if (action == null || event.getType() == Watcher.Event.EventType.None) {
@@ -277,20 +276,20 @@ public class CuratorFrameworkClient implements Closeable {
                 sessionId = client.getZookeeperClient().getZooKeeper().getSessionId();
             } catch (Throwable t) {
                 sessionId = UNKNOWN_SESSION_ID;
-                LOG.warn("Curator client state changed, get session instance error.", t);
+                log.warn("Curator client state changed, get session instance error.", t);
             }
             if (state == ConnectionState.CONNECTED) {
                 lastSessionId = sessionId;
-                LOG.info("Curator first connected, session={}", sessionId);
+                log.info("Curator first connected, session={}", sessionId);
             } else if (state == ConnectionState.LOST) {
-                LOG.warn("Curator session expired, session={}", lastSessionId);
+                log.warn("Curator session expired, session={}", lastSessionId);
             } else if (state == ConnectionState.SUSPENDED) {
-                LOG.warn("Curator connection lost, session={}", sessionId);
+                log.warn("Curator connection lost, session={}", sessionId);
             } else if (state == ConnectionState.RECONNECTED) {
                 if (lastSessionId == sessionId && sessionId != UNKNOWN_SESSION_ID) {
-                    LOG.warn("Curator recover connected, reuse old-session={}", sessionId);
+                    log.warn("Curator recover connected, reuse old-session={}", sessionId);
                 } else {
-                    LOG.warn("Curator recover connected, old-session={}, new-session={}", lastSessionId, sessionId);
+                    log.warn("Curator recover connected, old-session={}, new-session={}", lastSessionId, sessionId);
                     lastSessionId = sessionId;
                 }
                 reconnectCallback.call(CuratorFrameworkClient.this);

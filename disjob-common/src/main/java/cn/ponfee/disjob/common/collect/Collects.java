@@ -132,12 +132,6 @@ public class Collects {
         return properties;
     }
 
-    /**
-     * Returns the duplicates elements for list
-     *
-     * @param list the list
-     * @return a set of duplicates elements for list
-     */
     public static <T, R> List<R> duplicate(List<T> list, Function<T, R> mapper) {
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();

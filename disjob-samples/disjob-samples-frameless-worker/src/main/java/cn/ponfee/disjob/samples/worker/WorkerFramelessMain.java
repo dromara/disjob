@@ -66,7 +66,7 @@ public class WorkerFramelessMain {
         JobExecutorMapping.init();
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(WorkerFramelessMain.class);
+    private static final Logger log = LoggerFactory.getLogger(WorkerFramelessMain.class);
 
     public static void main(String[] args) throws Exception {
         // 1、load config
@@ -89,9 +89,9 @@ public class WorkerFramelessMain {
         WorkerStartup workerStartup = new WorkerStartup(workerProps, localWorker, timingWheel, retryProps, workerRegistry, restTemplate, null);
 
         // 4、do start
-        LOG.info("Frameless worker starting...");
+        log.info("Frameless worker starting...");
         start(vertxWebServer, workerStartup);
-        LOG.info("Frameless worker started.");
+        log.info("Frameless worker started.");
     }
 
     // -----------------------------------------------------------------------------------------------private methods

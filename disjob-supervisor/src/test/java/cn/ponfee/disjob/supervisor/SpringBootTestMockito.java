@@ -25,6 +25,8 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.lang.reflect.Field;
@@ -81,6 +83,8 @@ public abstract class SpringBootTestMockito {
     static {
         init();
     }
+
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     // Only reset mock field which is defined in SpringBootTestMockito
     private static final List<Field> MOCKED_FIELDS = FieldUtils.getAllFieldsList(SpringBootTestMockito.class)

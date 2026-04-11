@@ -18,8 +18,7 @@ package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.worker.executor.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
 import java.util.List;
@@ -32,9 +31,9 @@ import java.util.stream.IntStream;
  *
  * @author Ponfee
  */
+@Slf4j
 public class NoopJobExecutor extends JobExecutor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NoopJobExecutor.class);
     public static volatile long major = 9997;
     public static volatile long minor = 19997;
 
@@ -47,14 +46,14 @@ public class NoopJobExecutor extends JobExecutor {
 
     @Override
     public void init(ExecutionTask task) {
-        LOG.debug("Noop job init.");
+        log.debug("Noop job init.");
     }
 
     @Override
     public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
-        LOG.info("task execute start: {}", task.getTaskId());
+        log.info("task execute start: {}", task.getTaskId());
         Thread.sleep(major + ThreadLocalRandom.current().nextLong(minor));
-        LOG.info("task execute done: {}", task.getTaskId());
+        log.info("task execute done: {}", task.getTaskId());
         savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return ExecutionResult.success();
     }

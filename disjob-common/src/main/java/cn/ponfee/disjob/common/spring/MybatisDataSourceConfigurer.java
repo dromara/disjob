@@ -23,6 +23,7 @@ import com.google.common.base.CaseFormat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,8 +34,6 @@ import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -117,8 +116,8 @@ public @interface MybatisDataSourceConfigurer {
 
     // ----------------------------------------------------------------------------------------class defined
 
+    @Slf4j
     class MybatisDataSourceRegistrar implements /*EnvironmentAware,*/ ImportBeanDefinitionRegistrar {
-        private static final Logger LOG = LoggerFactory.getLogger(MybatisDataSourceRegistrar.class);
         private static final String KEY_PREFIX = "disjob.datasource.";
 
         private final Environment environment;
@@ -142,7 +141,7 @@ public @interface MybatisDataSourceConfigurer {
 
             String url = environment.getProperty(dataSourceConfigPrefixKey + ".url");
             if (StringUtils.isBlank(url)) {
-                LOG.warn("Datasource '{}' not configured url value.", dataSourceName);
+                log.warn("Datasource '{}' not configured url value.", dataSourceName);
                 return;
             }
             String type = environment.getProperty(dataSourceConfigPrefixKey + ".type");
@@ -201,7 +200,7 @@ public @interface MybatisDataSourceConfigurer {
             BeanDefinitionBuilder transactionTemplateBdb = newBeanDefinitionBuilder(TransactionTemplate.class, primary);
             transactionTemplateBdb.addConstructorArgReference(dataSourceName + TX_MANAGER_NAME_SUFFIX);
             registry.registerBeanDefinition(dataSourceName + TX_TEMPLATE_NAME_SUFFIX, transactionTemplateBdb.getBeanDefinition());
-            LOG.info("Datasource '{}' registered bean definition.", dataSourceName);
+            log.info("Datasource '{}' registered bean definition.", dataSourceName);
         }
 
         public static void checkPackageDatasourceName(Class<?> basePackageClass, String expectDsName) {

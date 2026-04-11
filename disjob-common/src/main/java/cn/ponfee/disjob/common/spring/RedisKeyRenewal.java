@@ -16,8 +16,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -30,9 +29,8 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Ponfee
  */
+@Slf4j
 public class RedisKeyRenewal {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RedisKeyRenewal.class);
 
     private final Lock lock = new ReentrantLock();
 
@@ -80,9 +78,9 @@ public class RedisKeyRenewal {
 
                 redisTemplate.execute((RedisCallback<?>) conn -> conn.pExpire(byteKey, ttlMillis));
                 this.nextRenewTimeMillis = System.currentTimeMillis() + intervalMillis;
-                LOG.debug("Renewed redis key '{}' successful.", stringKey);
+                log.debug("Renewed redis key '{}' successful.", stringKey);
             } catch (Throwable t) {
-                LOG.warn("Renew redis key '{}' occur error.", stringKey, t);
+                log.warn("Renew redis key '{}' occur error.", stringKey, t);
             } finally {
                 lock.unlock();
             }

@@ -19,8 +19,7 @@ package cn.ponfee.disjob.test.executor;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.test.base.Constants;
 import cn.ponfee.disjob.worker.executor.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -36,11 +35,10 @@ import java.util.stream.IntStream;
  *
  * @author Ponfee
  */
+@Slf4j
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Service("BJobExecutor")
 public class BJobExecutor extends JobExecutor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(BJobExecutor.class);
 
     @Override
     public List<String> split(SplitParam param) {
@@ -52,7 +50,7 @@ public class BJobExecutor extends JobExecutor {
     @Override
     public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000L);
-        LOG.info("execution finished.");
+        log.info("execution finished.");
         savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return ExecutionResult.success();
     }

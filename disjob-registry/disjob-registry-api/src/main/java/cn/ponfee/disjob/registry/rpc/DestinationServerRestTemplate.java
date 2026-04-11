@@ -25,9 +25,8 @@ import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.core.supervisor.SupervisorRpcService;
 import cn.ponfee.disjob.core.worker.Worker;
 import com.google.common.collect.ImmutableSet;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
@@ -46,8 +45,8 @@ import java.util.Set;
  *
  * @author Ponfee
  */
+@Slf4j
 final class DestinationServerRestTemplate {
-    private static final Logger LOG = LoggerFactory.getLogger(DestinationServerRestTemplate.class);
 
     private static final Set<HttpStatus> RETRYABLE_HTTP_STATUS = ImmutableSet.of(
         // 4xx：408、429
@@ -119,7 +118,7 @@ final class DestinationServerRestTemplate {
                 if (throwable == null) {
                     throwable = t;
                 }
-                LOG.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(args), t.getMessage());
+                log.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(args), t.getMessage());
                 if (isNotRetry(t)) {
                     break;
                 }

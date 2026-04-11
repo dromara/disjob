@@ -26,8 +26,6 @@ import org.apache.commons.codec.digest.HmacUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -46,20 +44,19 @@ import java.util.Map;
 public class ImAlertSender extends AlertSender {
 
     public static final String CHANNEL = "im";
-    private static final Logger LOG = LoggerFactory.getLogger(ImAlertSender.class);
 
     private final ImAlertSenderProperties config;
 
     public ImAlertSender(ImAlertSenderProperties config, AlertRecipientMapper mapper) {
         super(CHANNEL, "Instant Messaging", mapper);
         this.config = config;
-        LOG.info("Instant Messaging alert sender initialized: {}", config);
+        log.info("Instant Messaging alert sender initialized: {}", config);
     }
 
     @Override
     protected void send(AlertEvent alertEvent, Map<String, String> alertRecipientMap, String alertWebhook) {
         if (StringUtils.isBlank(alertWebhook)) {
-            LOG.warn("Alert instant messaging webhook is empty.");
+            log.warn("Alert instant messaging webhook is empty.");
             return;
         }
 
@@ -70,9 +67,9 @@ public class ImAlertSender extends AlertSender {
         try {
             String payload = buildPayload(title, message, supplier);
             doPost(alertWebhook, payload);
-            LOG.info("Alert event instant messaging sent success: {}, {}", supplier, alertWebhook);
+            log.info("Alert event instant messaging sent success: {}, {}", supplier, alertWebhook);
         } catch (Exception e) {
-            LOG.error("Alert event instant messaging sent error: {}, {}", supplier, alertWebhook, e);
+            log.error("Alert event instant messaging sent error: {}, {}", supplier, alertWebhook, e);
         }
     }
 
