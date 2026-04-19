@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.common.util;
 
 import org.apache.commons.io.file.PathUtils;
-import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -76,24 +75,7 @@ public final class Files {
 
     public static final String MAC_LINE_SEPARATOR = "\r"; // mac file line separator spec \r  CR
 
-    public static final String SYSTEM_LINE_SEPARATOR; // system file line separator
-
-    static {
-        /*
-        String separator = java.security.AccessController.doPrivileged(
-            new sun.security.action.GetPropertyAction("line.separator")
-        );
-        if (separator == null || separator.length() == 0) {
-            separator = System.getProperty("line.separator", "\n");
-        }
-        SYSTEM_LINE_SEPARATOR = separator;
-        */
-        StringBuilderWriter buffer = new StringBuilderWriter(4);
-        PrintWriter out = new PrintWriter(buffer);
-        out.println();
-        SYSTEM_LINE_SEPARATOR = buffer.toString();
-        out.close();
-    }
+    public static final String SYSTEM_LINE_SEPARATOR = getSystemLineSeparator();
 
     public static String tmpDir() {
         String tmpDir = SystemUtils.JAVA_IO_TMPDIR;
@@ -248,8 +230,10 @@ public final class Files {
 
     // ---------------------------------------------------------------read line
 
-    public static List<String> readLines(File file, String charset) throws FileNotFoundException {
-        return readLines(new FileInputStream(file), charset);
+    public static List<String> readLines(File file, String charset) throws IOException {
+        try (FileInputStream fis = new FileInputStream(file)) {
+            return readLines(fis, charset);
+        }
     }
 
     public static List<String> readLines(InputStream input, String charset) {
@@ -385,6 +369,15 @@ public final class Files {
             // ignored
         }
         return factory.newDocumentBuilder().parse(inputStream);
+    }
+
+    private static String getSystemLineSeparator() {
+        // System.getProperty("line.separator", "\n");
+        StringWriter out = new StringWriter(4);
+        try (PrintWriter writer = new PrintWriter(out, true)) {
+            writer.println();
+        }
+        return out.toString();
     }
 
 }

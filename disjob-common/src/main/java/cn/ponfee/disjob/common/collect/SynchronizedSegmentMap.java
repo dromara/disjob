@@ -122,7 +122,12 @@ public class SynchronizedSegmentMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean isEmpty() {
-        return size() == 0;
+        for (Map<K, V> map : segments) {
+            if (!map.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

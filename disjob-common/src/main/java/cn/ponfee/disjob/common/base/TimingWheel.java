@@ -173,9 +173,9 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
 
         boolean res = wheel[ringIndex].offer(timing);
         if (res) {
-            log.info("Timing wheel task success: {}", timing);
+            log.info("Timing wheel task offer success: {}", timing);
         } else {
-            log.error("Timing wheel task failed: {}", timing);
+            log.error("Timing wheel task offer failed: {}", timing);
         }
         return res;
     }
@@ -206,7 +206,7 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
                     break;
                 }
                 if (first.timing() > maximumTiming) {
-                    log.info("Re offer first element because timing exceed maximum value: {}, {}", first, maximumTiming);
+                    log.info("Re-offer first element because timing exceeds maximum value: {}, {}", first, maximumTiming);
                     ringTick.offer(first);
                     break;
                 }

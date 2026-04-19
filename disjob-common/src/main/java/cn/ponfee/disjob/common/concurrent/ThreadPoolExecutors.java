@@ -118,14 +118,15 @@ public final class ThreadPoolExecutors {
      * @return ThreadPoolExecutor
      */
     public static ThreadPoolExecutor commonThreadPool() {
-        if (commonThreadPool == null) {
+        ThreadPoolExecutor pool;
+        if ((pool = commonThreadPool) == null) {
             synchronized (ThreadPoolExecutors.class) {
-                if (commonThreadPool == null) {
-                    commonThreadPool = makeCommonThreadPoolExecutor();
+                if ((pool = commonThreadPool) == null) {
+                    commonThreadPool = (pool = makeCommonThreadPoolExecutor());
                 }
             }
         }
-        return commonThreadPool;
+        return pool;
     }
 
     /**
@@ -134,14 +135,15 @@ public final class ThreadPoolExecutors {
      * @return ScheduledThreadPoolExecutor
      */
     public static ScheduledThreadPoolExecutor commonScheduledPool() {
-        if (commonScheduledPool == null) {
+        ScheduledThreadPoolExecutor pool;
+        if ((pool = commonScheduledPool) == null) {
             synchronized (ThreadPoolExecutors.class) {
-                if (commonScheduledPool == null) {
-                    commonScheduledPool = makeCommonScheduledPoolExecutor();
+                if ((pool = commonScheduledPool) == null) {
+                    commonScheduledPool = (pool = makeCommonScheduledPoolExecutor());
                 }
             }
         }
-        return commonScheduledPool;
+        return pool;
     }
 
     // ----------------------------------------------------------builder

@@ -84,7 +84,7 @@ public final class VersionUtils {
     private static JarFile getJarFile(URL url) throws Exception {
         URLConnection connection = url.openConnection();
         if (connection instanceof JarURLConnection) {
-            // 对于springboot的url为`file:/path/xxx.jar!/BOOT-INF/lib/commons-lang3-3.12.0.jar!/`
+            // For springboot, the url is like `file:/path/xxx.jar!/BOOT-INF/lib/commons-lang3-3.12.0.jar!/`
             return ((JarURLConnection) connection).getJarFile();
         } else {
             return new JarFile(Files.toFile(url));

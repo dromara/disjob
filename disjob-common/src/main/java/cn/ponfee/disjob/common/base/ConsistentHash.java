@@ -154,7 +154,7 @@ public class ConsistentHash<T> {
      */
     public void addNode(T pNode, int vNodeCount) {
         if (vNodeCount < 0) {
-            throw new IllegalArgumentException("Invalid virtual node counts :" + vNodeCount);
+            throw new IllegalArgumentException("Invalid virtual node counts: " + vNodeCount);
         }
         int existingReplicas = getExistingReplicas(pNode);
         for (int i = 0; i < vNodeCount; i++) {
@@ -196,7 +196,8 @@ public class ConsistentHash<T> {
     }
 
     public int getExistingReplicas(T pNode) {
-        return (int) ring.entrySet().stream().filter(e -> e.getValue().isVirtualNodeOf(pNode)).count();
+        final String pNodeKey = keyMapper.apply(pNode);
+        return (int) ring.values().stream().filter(e -> e.physicalKey.equals(pNodeKey)).count();
     }
 
 }

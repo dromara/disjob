@@ -34,8 +34,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class Tokens {
 
+    /** Token expiration time in milliseconds (1 minute) */
     private static final long EXPIRATION_MILLISECONDS = 60_000L;
+
+    /** Authentication mode identifier */
     private static final String AUTHENTICATION_MODE = "authentication";
+
+    /** Signature mode identifier */
     private static final String SIGNATURE_MODE = "signature";
 
     public static String createAuthentication(String tokenKey, TokenType type, String group) {

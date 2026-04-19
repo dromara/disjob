@@ -74,6 +74,7 @@ public class LoopThread extends Thread {
                 if (Throwables.isFatal(t)) {
                     terminate();
                     log.warn("Loop thread terminated {}: {}({})", super.getName(), t.getClass().getName(), t.getMessage());
+                    break;
                 } else {
                     log.error("Loop thread error: {}", super.getName(), t);
                 }

@@ -173,18 +173,16 @@ public final class NetUtils {
      * @return first valid local IP
      */
     public static String getLocalHost() {
-        if (localHost != null) {
-            return localHost;
-        }
-
-        synchronized (NetUtils.class) {
-            if (localHost != null) {
-                return localHost;
+        String host;
+        if ((host = localHost) == null) {
+            synchronized (NetUtils.class) {
+                if ((host = localHost) == null) {
+                    host = Optional.ofNullable(getLocalAddress()).map(InetAddress::getHostAddress).orElse(LOCAL_IP_ADDRESS);
+                    localHost = host;
+                }
             }
-            String hostAddress = Optional.ofNullable(getLocalAddress()).map(InetAddress::getHostAddress).orElse(LOCAL_IP_ADDRESS);
-            NetUtils.localHost = hostAddress;
-            return hostAddress;
         }
+        return host;
     }
 
     /**

@@ -311,8 +311,9 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
         ConfigurableListableBeanFactory factory = getConfigurableListableBeanFactory();
         if (factory instanceof DefaultSingletonBeanRegistry) {
             ((DefaultSingletonBeanRegistry) factory).destroySingleton(beanName);
+        } else {
+            throw new UnsupportedOperationException("Unsupported destroy singleton bean: " + getObjectClassName(factory));
         }
-        throw new UnsupportedOperationException("Unsupported destroy Singleton: " + getObjectClassName(factory));
     }
 
     /**

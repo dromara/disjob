@@ -62,10 +62,10 @@ public class RetryTemplate {
                 }
                 if (i < retryMaxCount) {
                     // log and sleep if not the last loop
-                    log.error("Execute failed will retry: {}, {}", i + 1, traceId, t);
+                    log.error("Execute failed will retry: {}/{}, {}", i + 1, retryMaxCount, traceId, t);
                     Threads.sleep((i + 1) * retryBackoffPeriod);
                 } else {
-                    log.error("Execute failed will exit: {}, {}", i + 1, traceId, t);
+                    log.error("Execute failed will exit: {}/{}, {}", i + 1, retryMaxCount, traceId, t);
                 }
             }
         }
@@ -89,10 +89,10 @@ public class RetryTemplate {
                     traceId = UuidUtils.uuid32();
                 }
                 if (i < retryMaxCount) {
-                    log.error("Execute failed quietly retry: {}, {}", i + 1, traceId, t);
+                    log.error("Execute failed quietly retry: {}/{}, {}", i + 1, retryMaxCount, traceId, t);
                     Threads.sleep((i + 1) * retryBackoffPeriod);
                 } else {
-                    log.error("Execute failed quietly exit: {}, {}", i + 1, traceId, t);
+                    log.error("Execute failed quietly exit: {}/{}, {}", i + 1, retryMaxCount, traceId, t);
                 }
             }
         }

@@ -220,8 +220,13 @@ public class ScriptJobExecutor extends JobExecutor {
 
     private static void chmodFile(String scriptPath) throws Exception {
         //Runtime.getRuntime().exec(new String[]{"/bin/chmod", "755", scriptPath}).waitFor();
-        int code = new ProcessBuilder("/bin/chmod", "755", scriptPath).start().waitFor();
-        Assert.state(code == 0, () -> "Chmod script file '" + scriptPath + "' failed, code: " + code);
+        Process process = new ProcessBuilder("/bin/chmod", "755", scriptPath).start();
+        try {
+            int code = process.waitFor();
+            Assert.state(code == 0, () -> "Chmod script file '" + scriptPath + "' failed, code: " + code);
+        } finally {
+            process.destroy();
+        }
     }
 
 }

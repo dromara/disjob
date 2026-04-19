@@ -151,24 +151,19 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         log.info("Close worker thread pool start...");
-
         // stop this boss thread
         if (Thread.currentThread() != this) {
             ThrowingRunnable.doCaught(super::interrupt);
             ThrowingRunnable.doCaught(() -> Threads.stopThread(this, 6000L));
         }
-
         // stop idle pool thread
         List<WorkerThread> idleWorkerThreads = Collects.drainAll(idlePool);
         idleWorkerThreads.forEach(e -> ThrowingRunnable.doCaught(e::interrupt));
         idleWorkerThreads.forEach(e -> ThrowingRunnable.doCaught(e::doStop));
-
         // clear task queue
         ThrowingRunnable.doCaught(taskQueue::clear);
-
         // stop active pool thread
         ThrowingRunnable.doCaught(activePool::close);
-
         log.info("Close worker thread pool end.");
     }
 
@@ -318,9 +313,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         ScheduledFuture<?> cancelTimeoutFuture = null;
         try {
             StartTaskResult startTaskResult = CoreUtils.doInSynchronized(
-                task.getLockInstanceId(),
-                () -> supervisorRpcClient.startTask(task.toStartTaskParam())
-            );
+                task.getLockInstanceId(), () -> supervisorRpcClient.startTask(task.toStartTaskParam()));
             if (!startTaskResult.isSuccess()) {
                 log.warn("Start task failed: {}, {}", task, startTaskResult.getFailedMessage());
                 return;
@@ -354,12 +347,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
             if (phase == 0) {
                 log.warn("Start task error: {}", task, t);
                 if (task.getRouteStrategy().isNotBroadcast()) {
-                    // reset task worker
+                    // reset sched_task.worker to null value
                     List<Long> list = Collections.singletonList(task.getTaskId());
-                    ThrowingRunnable.doCaught(
-                        () -> supervisorRpcClient.updateTaskWorker(list, null),
-                        () -> "Reset task worker error: " + task
-                    );
+                    ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(list, null));
                 }
             } else {
                 if (Throwables.isThreadDeath(t)) {
@@ -389,11 +379,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
         final long expectTime = System.currentTimeMillis() + task.getExecuteTimeout();
         return commonScheduledPool().schedule(() -> {
             long delayedTime = System.currentTimeMillis() - expectTime;
-            Operation ops = Operation.TIMEOUT_CANCEL;
-            Pair<WorkerThread, WorkerTask> pair = activePool.takeThread(task.getTaskId(), task, ops);
+            Pair<WorkerThread, WorkerTask> pair = activePool.takeThread(task.getTaskId(), task, Operation.TIMEOUT_CANCEL);
             if (pair != null) {
                 log.error("Stop timeout task: {}, {}", task.getTaskId(), delayedTime);
-                stopTask(pair.getLeft(), pair.getRight(), ops);
+                stopTask(pair.getLeft(), pair.getRight(), Operation.TIMEOUT_CANCEL);
             } else {
                 log.info("Skip timeout task: {}, {}", task.getTaskId(), delayedTime);
             }
@@ -407,7 +396,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private void stopTask(WorkerTask task, Operation ops, ExecuteState toState, String errorMsg) {
         Assert.notNull(ops, "Stop task operation cannot be null.");
         if (!task.updateOperation(ops, null)) {
-            // stop failed
             log.info("Stop task failed: {}, {}, {}", task.getTaskId(), ops, toState);
             return;
         }
@@ -506,14 +494,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         private void close() {
             log.info("Close active thread pool start: {}", super.size());
-            ExecutorService cachedExecutor = Executors.newCachedThreadPool(r ->
-                Threads.newThread("close_active_thread_pool", true, Thread.MAX_PRIORITY, r, log)
-            );
-            try {
-                MultithreadExecutors.run(super.values(), WorkerThread::close, cachedExecutor);
-            } finally {
-                cachedExecutor.shutdown();
-            }
+            ExecutorService cachedExecutor = Executors.newCachedThreadPool();
+            MultithreadExecutors.run(super.values(), WorkerThread::close, cachedExecutor);
+            cachedExecutor.shutdown();
             log.info("Close active thread pool end: {}", super.size());
         }
     }
@@ -589,7 +572,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private void toStop() {
             if (state.stop()) {
                 workerThreadCounter.decrementAndGet();
-                WorkerTask task = currentTask;
+                final WorkerTask task = currentTask;
                 if (task != null) {
                     ThrowingRunnable.doCaught(task::stop);
                 }

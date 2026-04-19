@@ -120,12 +120,12 @@ public final class JdbcTemplateWrapper {
                 ThrowingRunnable.doCaught(con::rollback, "Connection rollback occur error: {}");
                 return ExceptionUtils.rethrow(t);
             } finally {
+                if (psCreator != null) {
+                    psCreator.close();
+                }
                 if (originalAutoCommit) {
                     // isClosed: connection is proxy by CloseSuppressingInvocationHandler, always false
                     ThrowingRunnable.doCaught(() -> con.setAutoCommit(true), "Restore auto-commit occur error: {}");
-                }
-                if (psCreator != null) {
-                    psCreator.close();
                 }
             }
         });

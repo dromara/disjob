@@ -69,7 +69,7 @@ public class HttpJobExecutor extends JobExecutor {
         HttpJobRequest req = Jsons.fromJson(task.getTaskParam(), HttpJobRequest.class);
 
         Assert.hasText(req.method, "Http method cannot be empty.");
-        HttpMethod method = HttpMethod.valueOf(req.method.toUpperCase());
+        HttpMethod method = HttpMethod.valueOf(req.method.trim().toUpperCase());
         if (RestTemplateUtils.QUERY_PARAM_METHODS.contains(method)) {
             Assert.isNull(req.body, () -> "Http method '" + req.method + "' not supported request body.");
         }
