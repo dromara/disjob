@@ -17,9 +17,9 @@
 #set($parentheseIndex=$column.columnComment.indexOf("（"))
 #if($parentheseIndex != -1)
 #set($comment=$column.columnComment.substring(0, $parentheseIndex))
-#else  
+#else
 #set($comment=$column.columnComment)
-#end  
+#end
 #if($column.htmlType == "input")
                             <li>
                                 <label>${comment}：</label>
@@ -98,6 +98,9 @@
         $(function() {
             var options = {
                 url: prefix + "/list",
+#if($genView)
+                viewUrl: prefix + "/view/{id}",
+#end
                 createUrl: prefix + "/add",
                 updateUrl: prefix + "/edit/{id}",
                 removeUrl: prefix + "/remove",
@@ -134,13 +137,16 @@
                     field: '${javaField}',
                     title: '${comment}'
                 },
-#end                
+#end
 #end
                 {
                     title: '操作',
                     align: 'center',
                     formatter: function(value, row, index) {
                         var actions = [];
+#if($genView)
+                        actions.push('<a class="btn btn-info btn-xs" href="javascript:void(0)" onclick="$.operate.view(\'' + row.${pkColumn.javaField} + '\')"><i class="fa fa-eye"></i>查看</a> ');
+#end
                         actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.${pkColumn.javaField} + '\')"><i class="fa fa-edit"></i>编辑</a> ');
                         actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.${pkColumn.javaField} + '\')"><i class="fa fa-remove"></i>删除</a>');
                         return actions.join('');

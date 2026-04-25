@@ -2,9 +2,9 @@ package com.ruoyi.framework.shiro.web.filter.online;
 
 import com.ruoyi.common.constant.ShiroConstants;
 import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.core.session.OnlineSession;
 import com.ruoyi.common.enums.OnlineStatus;
 import com.ruoyi.common.utils.ShiroUtils;
-import com.ruoyi.framework.shiro.session.OnlineSession;
 import com.ruoyi.framework.shiro.session.OnlineSessionDAO;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;

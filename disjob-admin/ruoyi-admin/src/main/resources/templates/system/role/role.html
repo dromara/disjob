@@ -36,7 +36,7 @@
 					</div>
 				</form>
 			</div>
-		
+
 			<div class="btn-group-sm" id="toolbar" role="group">
 				<a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="system:role:add">
 	                <i class="fa fa-plus"></i> 新增
@@ -51,7 +51,7 @@
 		            <i class="fa fa-download"></i> 导出
 		        </a>
 	        </div>
-	        
+
 	        <div class="col-sm-12 select-table table-striped">
 			    <table id="bootstrap-table"></table>
 			</div>
@@ -62,7 +62,7 @@
 		var editFlag = [[${@permission.hasPermi('system:role:edit')}]];
 		var removeFlag = [[${@permission.hasPermi('system:role:remove')}]];
 		var prefix = ctx + "system/role";
-		
+
 
 		$(function() {
 		    var options = {
@@ -71,6 +71,7 @@
 		        updateUrl: prefix + "/edit/{id}",
 		        removeUrl: prefix + "/remove",
 		        exportUrl: prefix + "/export",
+            viewUrl: prefix + "/view/{id}",
 		        sortName: "roleSort",
 		        modalName: "角色",
 		        columns: [{
@@ -83,7 +84,10 @@
 		        {
 		            field: 'roleName',
 		            title: '角色名称',
-		            sortable: true
+                sortable: true,
+                formatter: function(value, row, index) {
+                  return '<a href="javascript:void(0)" onclick="$.operate.view(\'' + row.roleId + '\')">' + value + '</a>';
+                }
 		        },
 		        {
 		            field: 'roleKey',
@@ -150,19 +154,19 @@
 		    };
 		    $.table.init(options);
 		});
-		
+
 		/* 角色管理-分配数据权限 */
 		function authDataScope(roleId) {
 		    var url = prefix + '/authDataScope/' + roleId;
 		    $.modal.open("分配数据权限", url);
 		}
-		
+
 		/* 角色管理-分配用户 */
 		function authUser(roleId) {
 		    var url = prefix + '/authUser/' + roleId;
 		    $.modal.openTab("分配用户", url);
 		}
-		
+
 		/* 角色状态显示 */
 		function statusTools(row) {
 		    if (row.status == 1) {
@@ -171,7 +175,7 @@
     			return '<i class=\"fa fa-toggle-on text-info fa-2x\" onclick="disable(\'' + row.roleId + '\')"></i> ';
     		}
 		}
-		
+
 		/* 角色管理-停用 */
 		function disable(roleId) {
 			$.modal.confirm("确认要停用角色吗？", function() {

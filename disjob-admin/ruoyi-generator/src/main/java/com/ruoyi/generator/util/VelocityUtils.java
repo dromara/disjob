@@ -64,6 +64,7 @@ public class VelocityUtils
         velocityContext.put("permissionPrefix", getPermissionPrefix(moduleName, businessName));
         velocityContext.put("columns", genTable.getColumns());
         velocityContext.put("table", genTable);
+        setExtensionsContext(velocityContext, genTable.getOptions());
         setMenuVelocityContext(velocityContext, genTable);
         if (GenConstants.TPL_TREE.equals(tplCategory))
         {
@@ -74,6 +75,13 @@ public class VelocityUtils
             setSubVelocityContext(velocityContext, genTable);
         }
         return velocityContext;
+    }
+
+    public static void setExtensionsContext(VelocityContext context, String options)
+    {
+        JSONObject paramsObj = JSONObject.parseObject(options);
+        boolean genView = genView(paramsObj);
+        context.put("genView", genView);
     }
 
     public static void setMenuVelocityContext(VelocityContext context, GenTable genTable)
@@ -129,8 +137,11 @@ public class VelocityUtils
      *
      * @return 模板列表
      */
-    public static List<String> getTemplateList(String tplCategory)
+    public static List<String> getTemplateList(GenTable table)
     {
+        String tplCategory = table.getTplCategory();
+        JSONObject paramsObj = JSONObject.parseObject(table.getOptions());
+        boolean isView = genView(paramsObj);
         List<String> templates = new ArrayList<>();
         templates.add("vm/java/domain.java.vm");
         templates.add("vm/java/mapper.java.vm");
@@ -151,6 +162,10 @@ public class VelocityUtils
         {
             templates.add("vm/html/list.html.vm");
             templates.add("vm/java/sub-domain.java.vm");
+        }
+        if (isView)
+        {
+            templates.add("vm/html/view.html.vm");
         }
         templates.add("vm/html/add.html.vm");
         templates.add("vm/html/edit.html.vm");
@@ -225,6 +240,10 @@ public class VelocityUtils
         else if (template.contains("edit.html.vm"))
         {
             fileName = StringUtils.format("{}/edit.html", htmlPath);
+        }
+        else if (template.contains("view.html.vm"))
+        {
+            fileName = StringUtils.format("{}/view.html", htmlPath);
         }
         else if (template.contains("sql.vm"))
         {
@@ -349,6 +368,21 @@ public class VelocityUtils
     }
 
     /**
+     * 扩展功能/生成详情页
+     *
+     * @param paramsObj 生成其他选项
+     * @return 是否生成详细页
+     */
+    public static boolean genView(JSONObject paramsObj)
+    {
+        if (StringUtils.isNotNull(paramsObj) && paramsObj.containsKey(GenConstants.GEN_VIEW))
+        {
+            return paramsObj.getBoolean(GenConstants.GEN_VIEW);
+        }
+        return false;
+    }
+
+    /**
      * 获取树名称
      *
      * @param paramsObj 生成其他选项
@@ -425,5 +459,4 @@ public class VelocityUtils
         }
         return colSmNum;
     }
-
 }

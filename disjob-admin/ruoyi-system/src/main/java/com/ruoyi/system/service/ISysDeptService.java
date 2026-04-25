@@ -115,4 +115,12 @@ public interface ISysDeptService
      * @param deptId 部门id
      */
     void checkDeptDataScope(Long deptId);
+
+    /**
+     * 保存部门排序
+     *
+     * @param deptIds 部门ID数组
+     * @param orderNums 排序数组
+     */
+    void updateDeptSort(String[] deptIds, String[] orderNums);
 }

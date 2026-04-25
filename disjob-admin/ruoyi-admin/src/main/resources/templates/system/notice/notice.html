@@ -30,7 +30,7 @@
 					</div>
 				</form>
 			</div>
-			
+
 	        <div class="btn-group-sm" id="toolbar" role="group">
 		        <a class="btn btn-success" onclick="$.operate.addFull()" shiro:hasPermission="system:notice:add">
 		            <i class="fa fa-plus"></i> 新增
@@ -42,7 +42,7 @@
 		            <i class="fa fa-remove"></i> 删除
 		        </a>
 	        </div>
-	        
+
 	        <div class="col-sm-12 select-table table-striped">
 	            <table id="bootstrap-table"></table>
 	        </div>
@@ -68,8 +68,8 @@
 		            checkbox: true
 		        },
 				{
-					field : 'noticeId', 
-					title : '序号' 
+					field : 'noticeId',
+					title : '序号'
 				},
 				{
 					field : 'noticeTitle',
@@ -95,8 +95,8 @@
 		            }
 		        },
 				{
-					field : 'createBy', 
-					title : '创建者' 
+					field : 'createBy',
+					title : '创建者'
 				},
 				{
 		            field: 'createTime',
@@ -108,6 +108,7 @@
 		            align: 'center',
 		            formatter: function(value, row, index) {
 		            	var actions = [];
+		            	actions.push('<a class="btn btn-info btn-xs" href="javascript:void(0)" onclick="showReadUsers(\'' + row.noticeId + '\', \'' + row.noticeTitle + '\')"><i class="fa fa-eye"></i>阅读用户</a> ');
 		            	actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.editFull(\'' + row.noticeId + '\')"><i class="fa fa-edit"></i>编辑</a> ');
                         actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.noticeId + '\')"><i class="fa fa-remove"></i>删除</a>');
 						return actions.join('');
@@ -116,6 +117,12 @@
             };
             $.table.init(options);
         });
+
+        // 阅读用户
+        function showReadUsers(noticeId, noticeTitle) {
+            var url = ctx + "system/notice/readUsers/" + noticeId;
+            $.modal.popupRight("「" + noticeTitle + "」阅读用户", url, '800px');
+        }
     </script>
 </body>
 </html>

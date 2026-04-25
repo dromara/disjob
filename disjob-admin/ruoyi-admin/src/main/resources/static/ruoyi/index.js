@@ -69,6 +69,10 @@ $(window).bind("load resize", function() {
 });
 
 function openToCurrentTab(obj) {
+    // 懒加载：若 iframe 还没有 src（如首页初始 iframe），激活时赋值
+    if (!$(obj).attr('src') && $(obj).data('id')) {
+        $(obj).attr('src', $(obj).data('id'));
+    }
     if (isScrollToTop) {
         $(obj).show().siblings('.RuoYi_iframe').hide();
     } else {
@@ -88,7 +92,7 @@ function syncMenuTab(dataId) {
             $(".nav ul li, .nav li").removeClass("selected");
             $dataObj.parent("li").addClass("selected");
             setIframeUrl(dataId);
-            
+
             // 顶部菜单同步处理
             var tabStr = $dataObj.parents(".tab-pane").attr("id");
             if ($.common.isNotEmpty(tabStr)) {
@@ -517,7 +521,7 @@ $(function() {
     $('#fullScreen').on('click', function () {
     	$(document).toggleFullScreen();
     });
-    
+
     // 锁定屏幕
     $('#lockScreen').on('click', function () {
     	storage.set('lockPath', $('.page-tabs-content').find('.active').attr('data-id'));

@@ -1,7 +1,6 @@
 package com.ruoyi.common.utils;
 
 import com.ruoyi.common.core.domain.entity.SysUser;
-import com.ruoyi.common.utils.bean.BeanUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.session.Session;
@@ -33,14 +32,7 @@ public class ShiroUtils
 
     public static SysUser getSysUser()
     {
-        SysUser user = null;
-        Object obj = getSubject().getPrincipal();
-        if (StringUtils.isNotNull(obj))
-        {
-            user = new SysUser();
-            BeanUtils.copyBeanProp(user, obj);
-        }
-        return user;
+        return (SysUser) getSubject().getPrincipal();
     }
 
     public static void setSysUser(SysUser user)

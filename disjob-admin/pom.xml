@@ -40,7 +40,7 @@
     <kaptcha.version>2.3.3</kaptcha.version>
     <pagehelper-spring-boot-starter.version>2.1.1</pagehelper-spring-boot-starter.version>
     <fastjson.version>2.0.61</fastjson.version>
-    <oshi-core.version>6.10.0</oshi-core.version>
+    <oshi-core.version>6.12.0</oshi-core.version>
     <poi-ooxml.version>5.5.1</poi-ooxml.version>
     <yauaa.version>7.32.0</yauaa.version>
     <velocity-engine-core.version>2.4.1</velocity-engine-core.version>

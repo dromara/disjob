@@ -1,7 +1,7 @@
 package com.ruoyi.framework.shiro.web.filter.sync;
 
 import com.ruoyi.common.constant.ShiroConstants;
-import com.ruoyi.framework.shiro.session.OnlineSession;
+import com.ruoyi.common.core.session.OnlineSession;
 import com.ruoyi.framework.shiro.session.OnlineSessionDAO;
 import org.apache.shiro.web.filter.PathMatchingFilter;
 

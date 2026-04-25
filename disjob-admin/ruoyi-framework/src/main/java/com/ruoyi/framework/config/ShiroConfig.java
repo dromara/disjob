@@ -460,7 +460,7 @@ public class ShiroConfig
         }
     }
 
-    static class AnonymousPermitConfigurer {
+    private static class AnonymousPermitConfigurer {
 
         AnonymousPermitConfigurer(CustomShiroFilterFactoryBean customShiroFilterFactoryBean,
                                   RequestMappingHandlerMapping requestMappingHandlerMapping) {

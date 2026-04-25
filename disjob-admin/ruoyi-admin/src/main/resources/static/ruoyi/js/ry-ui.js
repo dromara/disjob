@@ -1024,13 +1024,15 @@ var table = {
                 closeItem(dataId);
             },
             // 右侧弹出窗口打开
-            popupRight: function(title, url){
-                var width = 150;
+            popupRight: function(title, url, width, height){
+                var defaultWidth = 150;
                 if (top.location !== self.location) {
                     if ($(top.window).outerWidth() < 400) {
-                        width = 50;
+                        defaultWidth = 50;
                     }
                 }
+                var finalWidth = width || ($(window).outerWidth() - defaultWidth) + 'px';
+                var finalHeight = height || '100%';
                 top.layer.open({
                     type: 2,
                     offset: 'r',
@@ -1039,7 +1041,7 @@ var table = {
                     title: title,
                     shade: 0.3,
                     shadeClose: true,
-                    area: [($(window).outerWidth() - width) + 'px', '100%'],
+                    area: [finalWidth, finalHeight],
                     content: url
                 });
             },
@@ -1690,7 +1692,9 @@ var table = {
                 if (!format) format = "yyyy-MM-dd";
                 switch (typeof date) {
                 case "string":
-                    date = new Date(date.replace(/-/g, "/"));
+                    date = date.replace("T", " ");
+                    date = date.replace(/-/g, "/");
+                    date = new Date(date);
                     break;
                 case "number":
                     date = new Date(date);

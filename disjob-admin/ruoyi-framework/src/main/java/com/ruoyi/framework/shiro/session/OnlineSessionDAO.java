@@ -1,5 +1,6 @@
 package com.ruoyi.framework.shiro.session;
 
+import com.ruoyi.common.core.session.OnlineSession;
 import com.ruoyi.common.enums.OnlineStatus;
 import com.ruoyi.framework.manager.AsyncManager;
 import com.ruoyi.framework.manager.factory.AsyncFactory;

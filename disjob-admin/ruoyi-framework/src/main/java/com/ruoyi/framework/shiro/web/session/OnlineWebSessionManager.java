@@ -1,10 +1,10 @@
 package com.ruoyi.framework.shiro.web.session;
 
 import com.ruoyi.common.constant.ShiroConstants;
+import com.ruoyi.common.core.session.OnlineSession;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.common.utils.spring.SpringUtils;
-import com.ruoyi.framework.shiro.session.OnlineSession;
 import com.ruoyi.system.domain.SysUserOnline;
 import com.ruoyi.system.service.ISysUserOnlineService;
 import org.apache.commons.lang3.time.DateUtils;

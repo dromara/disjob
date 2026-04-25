@@ -1,4 +1,4 @@
-package com.ruoyi.framework.shiro.session;
+package com.ruoyi.common.core.session;
 
 import com.ruoyi.common.enums.OnlineStatus;
 import org.apache.commons.lang3.builder.ToStringBuilder;

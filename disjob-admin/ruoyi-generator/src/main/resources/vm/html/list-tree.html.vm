@@ -17,9 +17,9 @@
 #set($parentheseIndex=$column.columnComment.indexOf("（"))
 #if($parentheseIndex != -1)
 #set($comment=$column.columnComment.substring(0, $parentheseIndex))
-#else  
+#else
 #set($comment=$column.columnComment)
-#end  
+#end
 #if($column.htmlType == "input")
                             <li>
                                 <label>${comment}：</label>
@@ -52,7 +52,7 @@
                                 <input type="text" class="time-input" id="startTime" placeholder="开始时间" name="params[begin${AttrName}]"/>
                                 <span>-</span>
                                 <input type="text" class="time-input" id="endTime" placeholder="结束时间" name="params[end${AttrName}]"/>
-                            </li>                
+                            </li>
 #end
 #end
 #end
@@ -101,6 +101,9 @@
                 uniqueId: "${pkColumn.javaField}",
                 expandColumn: 0,
                 url: prefix + "/list",
+#if($genView)
+                viewUrl: prefix + "/view/{id}",
+#end
                 createUrl: prefix + "/add/{id}",
                 updateUrl: prefix + "/edit/{id}",
                 removeUrl: prefix + "/remove/{id}",
@@ -131,7 +134,7 @@
                     title: '${comment}',
                     align: 'left'
                 },
-#end                
+#end
 #end
                 {
                     title: '操作',
@@ -139,6 +142,9 @@
                     align: 'left',
                     formatter: function(value, row, index) {
                         var actions = [];
+#if($genView)
+                        actions.push('<a class="btn btn-info btn-xs" href="javascript:void(0)" onclick="$.operate.view(\'' + row.${pkColumn.javaField} + '\')"><i class="fa fa-eye"></i>查看</a> ');
+#end
                         actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.${pkColumn.javaField} + '\')"><i class="fa fa-edit"></i>编辑</a> ');
                         actions.push('<a class="btn btn-info  btn-xs ' + addFlag + '" href="javascript:void(0)" onclick="$.operate.add(\'' + row.${pkColumn.javaField} + '\')"><i class="fa fa-plus"></i>新增</a> ');
                         actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.${pkColumn.javaField} + '\')"><i class="fa fa-remove"></i>删除</a>');
