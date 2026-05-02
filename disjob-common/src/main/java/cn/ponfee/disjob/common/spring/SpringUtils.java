@@ -50,11 +50,15 @@ public final class SpringUtils {
 
     /**
      * Spring-boot web server port key
+     *
+     * @see org.springframework.boot.autoconfigure.web.ServerProperties#getPort()
      */
     public static final String SPRING_BOOT_SERVER_PORT = "server.port";
 
     /**
      * Spring-boot web server servlet context-path key
+     *
+     * @see org.springframework.boot.autoconfigure.web.ServerProperties#getServlet().getContextPath()
      */
     public static final String SPRING_BOOT_CONTEXT_PATH = "server.servlet.context-path";
 

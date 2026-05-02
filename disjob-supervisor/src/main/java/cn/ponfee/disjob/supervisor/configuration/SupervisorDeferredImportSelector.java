@@ -56,25 +56,25 @@ class SupervisorDeferredImportSelector implements DeferredImportSelector {
 
         @ConditionalOnMissingBean
         @Bean
-        public GroupInfoService groupInfoService() {
+        GroupInfoService groupInfoService() {
             return DefaultGroupInfoService.INSTANCE;
         }
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
-        public LockTemplate scanWaitingInstanceLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
+        LockTemplate scanWaitingInstanceLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
             return new DatabaseLockTemplate(jdbcTemplate, SupervisorConstants.LOCK_SCAN_WAITING_INSTANCE);
         }
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
-        public LockTemplate scanRunningInstanceLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
+        LockTemplate scanRunningInstanceLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
             return new DatabaseLockTemplate(jdbcTemplate, SupervisorConstants.LOCK_SCAN_RUNNING_INSTANCE);
         }
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
-        public LockTemplate scanTriggeringJobLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
+        LockTemplate scanTriggeringJobLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
             return new DatabaseLockTemplate(jdbcTemplate, SupervisorConstants.LOCK_SCAN_TRIGGERING_JOB);
         }
     }
@@ -86,7 +86,7 @@ class SupervisorDeferredImportSelector implements DeferredImportSelector {
 
         @ConditionalOnMissingBean
         @Bean
-        public Alerter alerter(AlerterProperties alerterConfig, GroupInfoService groupInfoService) {
+        Alerter alerter(AlerterProperties alerterConfig, GroupInfoService groupInfoService) {
             return new Alerter(alerterConfig, groupInfoService);
         }
     }

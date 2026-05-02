@@ -41,7 +41,7 @@ class WorkerDeferredImportSelector implements DeferredImportSelector {
 
         @ConditionalOnMissingBean
         @Bean
-        public TimingWheel<ExecuteTaskParam> timingWheel(WorkerProperties config) {
+        TimingWheel<ExecuteTaskParam> timingWheel(WorkerProperties config) {
             return new TaskTimingWheel(config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
         }
     }

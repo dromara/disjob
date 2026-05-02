@@ -16,20 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.configuration;
 
-import cn.ponfee.disjob.common.spring.SpringUtils;
-import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.BasicDeferredImportSelector;
-import cn.ponfee.disjob.core.base.CoreUtils;
-import cn.ponfee.disjob.core.supervisor.GroupInfoService;
-import cn.ponfee.disjob.core.supervisor.Supervisor;
-import cn.ponfee.disjob.supervisor.SupervisorStartup;
-import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor.EnableSupervisorConfiguration;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.context.WebServerApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
@@ -59,32 +46,11 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Documented
 @Import({
-    EnableSupervisorConfiguration.class,
     BasicDeferredImportSelector.class,
+    SupervisorConfiguration.class,
     SupervisorDeferredImportSelector.class,
     SupervisorLifecycle.class,
 })
 public @interface EnableSupervisor {
-
-    @EnableConfigurationProperties(SupervisorProperties.class)
-    @ComponentScan(basePackageClasses = SupervisorStartup.class)
-    class EnableSupervisorConfiguration {
-
-        @Bean
-        public Supervisor.Local localSupervisor(WebServerApplicationContext webServerApplicationContext,
-                                                ServerProperties serverProperties,
-                                                GroupInfoService groupInfoService) {
-            int port = SpringUtils.getWebServerPort(webServerApplicationContext);
-            String contextPath = Strings.trimPath(serverProperties.getServlet().getContextPath());
-            Object[] args = {CoreUtils.getLocalHost(), port, contextPath, groupInfoService};
-            try {
-                // create local supervisor: Supervisor.class.getDeclaredClasses()[0]
-                return ClassUtils.invoke(Supervisor.Local.class, "create", args);
-            } catch (Exception e) {
-                // cannot happen
-                throw new Error("Creates Supervisor.Local instance occur error.", e);
-            }
-        }
-    }
 
 }

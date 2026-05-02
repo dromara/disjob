@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.supervisor.component;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
+import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
@@ -65,17 +66,16 @@ public class WorkerClient {
                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                         @Nullable WorkerRpcService workerRpcProvider,
                         @Nullable Worker.Local localWorker) {
+        retry.check();
+
         this.discoverWorker = discoverWorker;
 
-        retry.check();
         Predicate<String> localGroupMatcher = localWorker != null ? localWorker::equalsGroup : group -> false;
         this.groupedProxy = DiscoveryGroupedServerRestProxy.of(
-            WorkerRpcService.class, workerRpcProvider, localGroupMatcher, discoverWorker, restTemplate, retry
-        );
+            WorkerRpcService.class, workerRpcProvider, localGroupMatcher, discoverWorker, restTemplate, retry);
 
         this.destinationProxy = DestinationServerRestProxy.of(
-            WorkerRpcService.class, workerRpcProvider, localWorker, restTemplate, RetryProperties.none()
-        );
+            WorkerRpcService.class, workerRpcProvider, localWorker, restTemplate, RetryProperties.none());
     }
 
     public List<Worker> getAliveWorkers(String group) {
@@ -157,6 +157,7 @@ public class WorkerClient {
             return destination(worker).existsTask(ExistsTaskParam.of(task.getTaskId()));
         } catch (Throwable t) {
             log.error("Invoke worker exists task error: {}", worker, t);
+            Threads.reinterruptIfInterruptedException(t);
             // 若调用异常(如请求超时)，则默认worker已存在该task，等待下一次重试时再调用`existsTask`判断
             return true;
         }
