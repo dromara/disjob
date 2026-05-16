@@ -43,8 +43,8 @@ public class ZookeeperServerRegistryAutoConfiguration extends BaseServerRegistry
      */
     @ConditionalOnBean(Supervisor.Local.class)
     @Bean
-    public SupervisorRegistry supervisorRegistry(ZookeeperRegistryProperties config,
-                                                 @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+    SupervisorRegistry supervisorRegistry(ZookeeperRegistryProperties config,
+                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
         return new ZookeeperSupervisorRegistry(config, restTemplate);
     }
 
@@ -53,8 +53,8 @@ public class ZookeeperServerRegistryAutoConfiguration extends BaseServerRegistry
      */
     @ConditionalOnBean(Worker.Local.class)
     @Bean
-    public WorkerRegistry workerRegistry(ZookeeperRegistryProperties config,
-                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+    WorkerRegistry workerRegistry(ZookeeperRegistryProperties config,
+                                  @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
         return new ZookeeperWorkerRegistry(config, restTemplate);
     }
 

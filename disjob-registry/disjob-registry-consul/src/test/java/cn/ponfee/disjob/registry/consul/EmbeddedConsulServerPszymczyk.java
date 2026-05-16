@@ -39,7 +39,7 @@ public final class EmbeddedConsulServerPszymczyk {
         System.out.println("Embedded pszymczyk consul server starting...");
 
         ConsulProcess consul = ConsulStarterBuilder.consulStarter()
-            .withConsulVersion("1.20.1")
+            .withConsulVersion("1.22.7")
             .withConsulBinaryDownloadDirectory(createConsulBinaryDownloadDirectory())
             .withHttpPort(8500)
             .buildAndStart();

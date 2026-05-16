@@ -16,19 +16,13 @@
 
 package cn.ponfee.disjob.supervisor.configuration;
 
-import cn.ponfee.disjob.alert.Alerter;
-import cn.ponfee.disjob.alert.base.AlerterProperties;
-import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.common.lock.DatabaseLockTemplate;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.supervisor.GroupInfoService;
 import cn.ponfee.disjob.supervisor.base.DefaultGroupInfoService;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DeferredImportSelector;
 import org.springframework.core.type.AnnotationMetadata;
@@ -46,13 +40,10 @@ class SupervisorDeferredImportSelector implements DeferredImportSelector {
     @SuppressWarnings("NullableProblems")
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-        return new String[]{
-            SupervisorDeferredConfiguration.class.getName(),
-            AlerterDeferredConfiguration.class.getName(),
-        };
+        return new String[]{SupervisorDeferredConfiguration.class.getName()};
     }
 
-    private static class SupervisorDeferredConfiguration {
+    static class SupervisorDeferredConfiguration {
 
         @ConditionalOnMissingBean
         @Bean
@@ -76,18 +67,6 @@ class SupervisorDeferredImportSelector implements DeferredImportSelector {
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
         LockTemplate scanTriggeringJobLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
             return new DatabaseLockTemplate(jdbcTemplate, SupervisorConstants.LOCK_SCAN_TRIGGERING_JOB);
-        }
-    }
-
-    @ConditionalOnExpression(Alerter.ENABLED_KEY_EXPRESSION)
-    @ConditionalOnBean(AlertSender.class)
-    @EnableConfigurationProperties(AlerterProperties.class)
-    private static class AlerterDeferredConfiguration {
-
-        @ConditionalOnMissingBean
-        @Bean
-        Alerter alerter(AlerterProperties alerterConfig, GroupInfoService groupInfoService) {
-            return new Alerter(alerterConfig, groupInfoService);
         }
     }
 

@@ -48,7 +48,7 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
     }
 
     @EnableConfigurationProperties({HttpProperties.class, RetryProperties.class})
-    private static class BasicDeferredConfiguration {
+    static class BasicDeferredConfiguration {
 
         private static final String DATE_CONFIGURER_KEY = "disjob.jackson.date-configurer.mode";
 
@@ -62,39 +62,39 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
          */
         @ConditionalOnMissingBean
         @Bean
-        public SpringContextHolder springContextHolder() {
+        SpringContextHolder springContextHolder() {
             return new SpringContextHolder();
         }
 
         @ConditionalOnMissingBean(name = JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
         @Bean(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
-        public RestTemplate restTemplate(HttpProperties http, @Nullable ObjectMapper objectMapper) {
+        RestTemplate restTemplate(HttpProperties http, @Nullable ObjectMapper objectMapper) {
             http.check();
             return RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         }
 
         @ConditionalOnMissingBean
         @Bean
-        public RpcControllerConfigurer rpcControllerConfigurer() {
+        RpcControllerConfigurer rpcControllerConfigurer() {
             return new RpcControllerConfigurer();
         }
 
         @ConditionalOnProperty(name = DATE_CONFIGURER_KEY, havingValue = "multiple")
         @Bean
-        public JacksonDateConfigurer.Multiple multipleJacksonDateConfigurer(List<ObjectMapper> list) {
+        JacksonDateConfigurer.Multiple multipleJacksonDateConfigurer(List<ObjectMapper> list) {
             return new JacksonDateConfigurer.Multiple(list);
         }
 
         @ConditionalOnProperty(name = DATE_CONFIGURER_KEY, havingValue = "primary", matchIfMissing = true)
         @Bean
-        public JacksonDateConfigurer.Primary primaryJacksonDateConfigurer(@Nullable ObjectMapper objectMapper) {
+        JacksonDateConfigurer.Primary primaryJacksonDateConfigurer(@Nullable ObjectMapper objectMapper) {
             return new JacksonDateConfigurer.Primary(objectMapper);
         }
 
         @ConditionalOnExpression("${disjob.controller.exception-handler.enabled:true}")
         @Order(0)
         @Bean
-        public ControllerExceptionHandler controllerExceptionHandler() {
+        ControllerExceptionHandler controllerExceptionHandler() {
             return new ControllerExceptionHandler();
         }
     }

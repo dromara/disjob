@@ -16,8 +16,6 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
-import com.google.common.primitives.Ints;
-
 import java.util.Objects;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +48,7 @@ public class DelayedData<E> implements Delayed {
     @SuppressWarnings("unchecked")
     @Override
     public int compareTo(Delayed o) {
-        return Ints.saturatedCast(this.fireTime - ((DelayedData<E>) o).fireTime);
+        return Long.compare(this.fireTime, ((DelayedData<E>) o).fireTime);
     }
 
     public E getData() {

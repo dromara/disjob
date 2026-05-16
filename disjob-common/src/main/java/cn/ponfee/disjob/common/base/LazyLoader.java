@@ -95,11 +95,16 @@ public class LazyLoader<T> implements Supplier<T> {
     // ------------------------------------------------------------------------private methods
 
     @SuppressWarnings("OptionalAssignedToNull")
-    private synchronized Optional<T> holder() {
-        if (holder == null) {
-            holder = Optional.ofNullable(loader.get());
+    private Optional<T> holder() {
+        Optional<T> h;
+        if ((h = holder) == null) {
+            synchronized (this) {
+                if ((h = holder) == null) {
+                    holder = (h = Optional.ofNullable(loader.get()));
+                }
+            }
         }
-        return holder;
+        return h;
     }
 
     /**

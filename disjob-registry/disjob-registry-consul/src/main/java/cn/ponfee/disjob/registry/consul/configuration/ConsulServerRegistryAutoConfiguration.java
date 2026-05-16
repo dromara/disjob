@@ -43,8 +43,8 @@ public class ConsulServerRegistryAutoConfiguration extends BaseServerRegistryAut
      */
     @ConditionalOnBean(Supervisor.Local.class)
     @Bean
-    public SupervisorRegistry supervisorRegistry(ConsulRegistryProperties config,
-                                                 @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+    SupervisorRegistry supervisorRegistry(ConsulRegistryProperties config,
+                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
         return new ConsulSupervisorRegistry(config, restTemplate);
     }
 
@@ -53,8 +53,8 @@ public class ConsulServerRegistryAutoConfiguration extends BaseServerRegistryAut
      */
     @ConditionalOnBean(Worker.Local.class)
     @Bean
-    public WorkerRegistry workerRegistry(ConsulRegistryProperties config,
-                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+    WorkerRegistry workerRegistry(ConsulRegistryProperties config,
+                                  @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
         return new ConsulWorkerRegistry(config, restTemplate);
     }
 

@@ -93,8 +93,8 @@ public class EmbeddedH2DatabaseServer {
 
         // 加载脚本方式三：
         jdbcTemplate.execute((ConnectionCallback<Void>) conn -> {
-            try {
-                String script = IOUtils.toString(new FileInputStream(scriptPath), StandardCharsets.UTF_8);
+            try (FileInputStream fis = new FileInputStream(scriptPath)) {
+                String script = IOUtils.toString(fis, StandardCharsets.UTF_8);
                 RunScript.execute(conn, new StringReader(script));
             } catch (IOException e) {
                 throw new RuntimeException(e);

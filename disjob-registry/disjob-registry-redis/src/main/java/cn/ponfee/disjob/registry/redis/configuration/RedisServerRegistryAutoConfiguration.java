@@ -25,12 +25,10 @@ import cn.ponfee.disjob.registry.configuration.BaseServerRegistryAutoConfigurati
 import cn.ponfee.disjob.registry.redis.RedisSupervisorRegistry;
 import cn.ponfee.disjob.registry.redis.RedisWorkerRegistry;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.Ordered;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.client.RestTemplate;
 
@@ -41,7 +39,6 @@ import java.util.Objects;
  *
  * @author Ponfee
  */
-@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(RedisRegistryProperties.class)
 public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAutoConfiguration {
 
@@ -65,7 +62,7 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      */
     @ConditionalOnMissingBean
     @Bean
-    public StringRedisTemplateWrapper stringRedisTemplateWrapper(StringRedisTemplate stringRedisTemplate) {
+    StringRedisTemplateWrapper stringRedisTemplateWrapper(StringRedisTemplate stringRedisTemplate) {
         return new StringRedisTemplateWrapper(stringRedisTemplate);
     }
 
@@ -81,9 +78,9 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      */
     @ConditionalOnBean(Supervisor.Local.class)
     @Bean
-    public SupervisorRegistry supervisorRegistry(RedisRegistryProperties config,
-                                                 @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                                 StringRedisTemplateWrapper wrapper) {
+    SupervisorRegistry supervisorRegistry(RedisRegistryProperties config,
+                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                                          StringRedisTemplateWrapper wrapper) {
         return new RedisSupervisorRegistry(config, restTemplate, wrapper.stringRedisTemplate);
     }
 
@@ -92,9 +89,9 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      */
     @ConditionalOnBean(Worker.Local.class)
     @Bean
-    public WorkerRegistry workerRegistry(RedisRegistryProperties config,
-                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                         StringRedisTemplateWrapper wrapper) {
+    WorkerRegistry workerRegistry(RedisRegistryProperties config,
+                                  @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                                  StringRedisTemplateWrapper wrapper) {
         return new RedisWorkerRegistry(config, restTemplate, wrapper.stringRedisTemplate);
     }
 

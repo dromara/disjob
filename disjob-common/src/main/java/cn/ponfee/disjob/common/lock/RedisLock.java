@@ -357,7 +357,10 @@ public class RedisLock implements Lock, java.io.Serializable {
     }
 
     private long computeSleepMillis(int round) {
-        return round < 5 ? sleepMillis : Math.min(sleepMillis * (round - 3), 2000);
+        if (round < 5) {
+            return sleepMillis;
+        }
+        return Math.min(sleepMillis * (round - 3L), 2000L);
     }
 
 }

@@ -43,8 +43,8 @@ public class NacosServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      */
     @ConditionalOnBean(Supervisor.Local.class)
     @Bean
-    public SupervisorRegistry supervisorRegistry(NacosRegistryProperties config,
-                                                 @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+    SupervisorRegistry supervisorRegistry(NacosRegistryProperties config,
+                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
         return new NacosSupervisorRegistry(config, restTemplate);
     }
 
@@ -53,8 +53,8 @@ public class NacosServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      */
     @ConditionalOnBean(Worker.Local.class)
     @Bean
-    public WorkerRegistry workerRegistry(NacosRegistryProperties config,
-                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+    WorkerRegistry workerRegistry(NacosRegistryProperties config,
+                                  @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
         return new NacosWorkerRegistry(config, restTemplate);
     }
 

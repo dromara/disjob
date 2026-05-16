@@ -29,7 +29,7 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * Embedded zookeeper server.
- * docker pull zookeeper:3.9.3
+ * docker pull zookeeper:3.9.5
  *
  * <a href="https://hub.docker.com/_/zookeeper/tags">docker官网查看版本</a>
  *
@@ -37,7 +37,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class EmbeddedZookeeperServerTestcontainers {
 
-    private static final String NACOS_DOCKER_IMAGE_NAME = "zookeeper:3.9.3";
+    private static final String NACOS_DOCKER_IMAGE_NAME = "zookeeper:3.9.5";
     private static final List<String> PORT_BINDINGS = Collections.singletonList("2181:2181/tcp");
 
     public static void main(String[] args) throws Exception {

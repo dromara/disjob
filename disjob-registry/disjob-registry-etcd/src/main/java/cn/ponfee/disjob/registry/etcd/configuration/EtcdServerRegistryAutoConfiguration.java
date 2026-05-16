@@ -43,8 +43,8 @@ public class EtcdServerRegistryAutoConfiguration extends BaseServerRegistryAutoC
      */
     @ConditionalOnBean(Supervisor.Local.class)
     @Bean
-    public SupervisorRegistry supervisorRegistry(EtcdRegistryProperties config,
-                                                 @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+    SupervisorRegistry supervisorRegistry(EtcdRegistryProperties config,
+                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
         return new EtcdSupervisorRegistry(config, restTemplate);
     }
 
@@ -53,8 +53,8 @@ public class EtcdServerRegistryAutoConfiguration extends BaseServerRegistryAutoC
      */
     @ConditionalOnBean(Worker.Local.class)
     @Bean
-    public WorkerRegistry workerRegistry(EtcdRegistryProperties config,
-                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+    WorkerRegistry workerRegistry(EtcdRegistryProperties config,
+                                  @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
         return new EtcdWorkerRegistry(config, restTemplate);
     }
 

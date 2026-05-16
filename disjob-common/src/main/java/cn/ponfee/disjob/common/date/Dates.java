@@ -24,7 +24,6 @@ import org.apache.commons.lang3.time.FastDateFormat;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjusters;
@@ -148,7 +147,7 @@ public class Dates {
             return false;
         }
         try {
-            new SimpleDateFormat(pattern).parse(dateStr);
+            FastDateFormat.getInstance(pattern).parse(dateStr);
             return true;
         } catch (Exception ignored) {
             return false;
@@ -164,7 +163,7 @@ public class Dates {
      */
     public static Date parse(String dateStr, String pattern) {
         try {
-            return new SimpleDateFormat(pattern).parse(dateStr);
+            return FastDateFormat.getInstance(pattern).parse(dateStr);
         } catch (ParseException e) {
             return ExceptionUtils.rethrow(e);
         }
@@ -178,7 +177,7 @@ public class Dates {
      * @return 当前日期字符串
      */
     public static String format(Date date, String pattern) {
-        return date != null ? new SimpleDateFormat(pattern).format(date) : null;
+        return date != null ? FastDateFormat.getInstance(pattern).format(date) : null;
     }
 
     /**

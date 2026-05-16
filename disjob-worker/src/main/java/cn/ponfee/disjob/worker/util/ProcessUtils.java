@@ -18,6 +18,7 @@ package cn.ponfee.disjob.worker.util;
 
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
@@ -204,17 +205,16 @@ public final class ProcessUtils {
         }
     }
 
-    // -------------------------------------------------------------------------private methods
-
-    private static void destroy(Process process) {
+    public static void destroy(Process process) {
         if (process != null) {
-            try {
-                process.destroy();
-            } catch (Throwable t) {
-                log.error("Destroy process error: {}", process.getClass().getName(), t);
-            }
+            // drain the process output streams to prevent child process blocking
+            IOUtils.closeQuietly(process.getInputStream());
+            IOUtils.closeQuietly(process.getErrorStream());
+            ThrowingRunnable.doCaught(process::destroy);
         }
     }
+
+    // -------------------------------------------------------------------------private methods
 
     private static void read(InputStream input, Charset charset, Consumer<String> consumer) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, charset))) {

@@ -20,12 +20,10 @@ import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.alert.email.EmailAlertSender;
 import cn.ponfee.disjob.alert.sender.AlertRecipientMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.Ordered;
 
 /**
  * EmailAlertSender auto configuration
@@ -33,7 +31,6 @@ import org.springframework.core.Ordered;
  * @author Ponfee
  */
 @ConditionalOnExpression(Alerter.ENABLED_KEY_EXPRESSION)
-@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(EmailAlertSenderProperties.class)
 public class EmailAlertSenderAutoConfiguration {
 
@@ -41,13 +38,13 @@ public class EmailAlertSenderAutoConfiguration {
 
     @ConditionalOnMissingBean(name = EMAIL_RECIPIENT_MAPPER_BEAN_NAME)
     @Bean(EMAIL_RECIPIENT_MAPPER_BEAN_NAME)
-    public AlertRecipientMapper emailRecipientMapper() {
+    AlertRecipientMapper emailRecipientMapper() {
         return new AlertRecipientMapper();
     }
 
     @Bean
-    public EmailAlertSender emailAlertSender(EmailAlertSenderProperties config,
-                                             @Qualifier(EMAIL_RECIPIENT_MAPPER_BEAN_NAME) AlertRecipientMapper mapper) {
+    EmailAlertSender emailAlertSender(EmailAlertSenderProperties config,
+                                      @Qualifier(EMAIL_RECIPIENT_MAPPER_BEAN_NAME) AlertRecipientMapper mapper) {
         return new EmailAlertSender(config, mapper);
     }
 

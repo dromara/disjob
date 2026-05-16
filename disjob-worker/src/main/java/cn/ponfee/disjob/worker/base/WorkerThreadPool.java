@@ -36,7 +36,6 @@ import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import cn.ponfee.disjob.worker.executor.Savepoint;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
 
@@ -197,7 +196,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
             }
         } catch (Throwable t) {
-            ExceptionUtils.rethrow(t);
+            log.error("Boss thread break: {}({})", t.getClass().getName(), t.getMessage());
+            Threads.reinterruptIfInterruptedException(t);
         } finally {
             close();
         }

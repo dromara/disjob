@@ -225,7 +225,7 @@ public class ScriptJobExecutor extends JobExecutor {
             int code = process.waitFor();
             Assert.state(code == 0, () -> "Chmod script file '" + scriptPath + "' failed, code: " + code);
         } finally {
-            process.destroy();
+            ProcessUtils.destroy(process);
         }
     }
 

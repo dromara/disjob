@@ -35,9 +35,9 @@ import static cn.ponfee.disjob.test.db.DBUtils.*;
  * <pre>
  * Docker mysql for testcontainers
  *
- * docker pull mysql:8.4.3
+ * docker pull mysql:8.4.9
  *
- * SELECT VERSION()  ->  8.4.3
+ * SELECT VERSION()  ->  8.4.9
  *
  * dependency maven junit:junit
  *
@@ -53,7 +53,7 @@ public class EmbeddedMysqlServerTestcontainers {
     private static final List<String> PORT_BINDINGS = Collections.singletonList("3306:3306");
 
     public static void main(String[] args) throws Exception {
-        DockerImageName dockerImage = DockerImageName.parse("mysql:8.4.3").asCompatibleSubstituteFor("mysql");
+        DockerImageName dockerImage = DockerImageName.parse("mysql:8.4.9").asCompatibleSubstituteFor("mysql");
         try (MySQLContainer<?> mySqlContainer = new MySQLContainer<>(dockerImage)
             // resource file: “resources/mysql_conf_override/my.cnf”
             .withConfigurationOverride("mysql_conf_override")

@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import com.google.common.primitives.Ints;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -301,6 +302,21 @@ public class NumbersTest {
         //Assertions.assertEquals(123.12d, Numbers.toWrapDouble("123.12"));
     }
 
+    @Test
+    public void testEncodeHex() {
+        Assertions.assertEquals(saturatedCast(10L, 5L), Long.compare(10L, 5L));
+        Assertions.assertEquals(saturatedCast(5L, 10L), Long.compare(5L, 10L));
+
+        Assertions.assertEquals(saturatedCast(5L, -10L), Long.compare(5L, -10L));
+        Assertions.assertEquals(saturatedCast(-10L, 5L), Long.compare(-10L, 5L));
+
+        Assertions.assertEquals(saturatedCast(-5L, 10L), Long.compare(-5L, 10L));
+        Assertions.assertEquals(saturatedCast(10L, -5L), Long.compare(10L, -5L));
+
+        Assertions.assertEquals(saturatedCast(-5L, -10L), Long.compare(-5L, -10L));
+        Assertions.assertEquals(saturatedCast(-10L, -5L), Long.compare(-10L, -5L));
+    }
+
     private static long sum(long... array) {
         return LongStream.of(array).sum();
     }
@@ -316,6 +332,11 @@ public class NumbersTest {
             .divide(new BigDecimal(divisor), MathContext.DECIMAL128)
             .setScale(0, RoundingMode.UP)
             .longValue();
+    }
+
+    private int saturatedCast(long a, long b) {
+        int res = Ints.saturatedCast(a - b);
+        return Integer.compare(res, 0);
     }
 
 }

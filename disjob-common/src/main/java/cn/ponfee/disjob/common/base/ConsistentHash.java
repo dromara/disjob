@@ -171,8 +171,7 @@ public class ConsistentHash<T> {
     public void removeNode(T pNode) {
         Iterator<Integer> it = ring.keySet().iterator();
         while (it.hasNext()) {
-            Integer key = it.next();
-            VirtualNode virtualNode = ring.get(key);
+            VirtualNode virtualNode = ring.get(it.next());
             if (virtualNode.isVirtualNodeOf(pNode)) {
                 it.remove();
             }

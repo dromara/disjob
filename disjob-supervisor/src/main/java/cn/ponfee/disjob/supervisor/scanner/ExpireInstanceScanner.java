@@ -59,6 +59,9 @@ public class ExpireInstanceScanner extends AbstractHeartbeatThread {
                                  JobQuerier jobQuerier,
                                  WorkerClient workerClient,
                                  LockTemplate lockTemplate) {
+        // heartbeatPeriodMs:
+        //   WAITING default: (15000 * 2) / 3 = 10000
+        //   RUNNING default: (30000 * 2) / 3 = 20000
         super(obtainHeartbeatPeriodMs(scanRunState, conf));
         Assert.state(MUTEX.add(scanRunState), () -> "Expire Instance Scanner '" + scanRunState + "' already created.");
 
@@ -68,8 +71,6 @@ public class ExpireInstanceScanner extends AbstractHeartbeatThread {
         this.jobQuerier = jobQuerier;
         this.workerClient = workerClient;
         this.lockTemplate = lockTemplate;
-        // WAITING default: (15000 * 2) / 3 * 12 = 120000
-        // RUNNING default: (30000 * 2) / 3 * 12 = 240000
         this.beforeMilliseconds = (heartbeatPeriodMs * 12);
     }
 

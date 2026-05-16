@@ -35,14 +35,12 @@ import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.Ordered;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
 
@@ -51,7 +49,6 @@ import org.springframework.web.client.RestTemplate;
  *
  * @author Ponfee
  */
-@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(DatabaseRegistryProperties.class)
 public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryAutoConfiguration implements DisposableBean {
 
@@ -72,7 +69,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     @ConditionalOnProperty(name = DatabaseRegistryProperties.KEY_PREFIX + ".datasource.url")
     @ConditionalOnMissingBean(name = SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER)
     @Bean(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER)
-    public JdbcTemplateWrapper databaseRegistryJdbcTemplateWrapper(DatabaseRegistryProperties props) {
+    JdbcTemplateWrapper databaseRegistryJdbcTemplateWrapper(DatabaseRegistryProperties props) {
         DatabaseRegistryProperties.DataSourceConfig p = props.getDatasource();
         HikariConfig cfg = new HikariConfig();
         cfg.setDriverClassName(StringUtils.getIfBlank(p.getDriverClassName(), () -> DatabaseDriver.fromJdbcUrl(p.getUrl()).getDriverClassName()));
@@ -115,9 +112,9 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
      */
     @ConditionalOnBean(Supervisor.Local.class)
     @Bean
-    public SupervisorRegistry supervisorRegistry(DatabaseRegistryProperties config,
-                                                 @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                                 @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
+    SupervisorRegistry supervisorRegistry(DatabaseRegistryProperties config,
+                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                                          @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
         return new DatabaseSupervisorRegistry(config, restTemplate, wrapper);
     }
 
@@ -126,9 +123,9 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
      */
     @ConditionalOnBean(Worker.Local.class)
     @Bean
-    public WorkerRegistry workerRegistry(DatabaseRegistryProperties config,
-                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                         @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
+    WorkerRegistry workerRegistry(DatabaseRegistryProperties config,
+                                  @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                                  @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
         return new DatabaseWorkerRegistry(config, restTemplate, wrapper);
     }
 

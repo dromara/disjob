@@ -37,7 +37,7 @@ class WorkerDeferredImportSelector implements DeferredImportSelector {
         return new String[]{WorkerDeferredConfiguration.class.getName()};
     }
 
-    private static class WorkerDeferredConfiguration {
+    static class WorkerDeferredConfiguration {
 
         @ConditionalOnMissingBean
         @Bean

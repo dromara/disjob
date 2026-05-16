@@ -30,7 +30,7 @@ import java.util.concurrent.CountDownLatch;
  *
  * io.etcd:jetcd-launcher:0.7.7
  *
- * docker pull gcr.io/etcd-development/etcd:v3.5.17
+ * docker pull gcr.io/etcd-development/etcd:v3.6.11
  * </pre>
  *
  * <a href="https://github.com/etcd-io/etcd/releases">github官网查看版本</a>
@@ -39,7 +39,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class EmbeddedEtcdServerTestcontainers {
 
-    private static final String ETCD_DOCKER_IMAGE_NAME = "gcr.io/etcd-development/etcd:v3.5.17";
+    private static final String ETCD_DOCKER_IMAGE_NAME = "gcr.io/etcd-development/etcd:v3.6.11";
     private static final List<String> PORT_BINDINGS = Arrays.asList("2379:2379/tcp", "2380:2380/tcp", "8080:8080/tcp");
 
     public static void main(String[] args) throws Exception {

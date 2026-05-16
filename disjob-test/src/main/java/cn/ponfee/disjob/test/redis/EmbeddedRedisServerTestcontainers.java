@@ -31,12 +31,12 @@ import java.util.concurrent.CountDownLatch;
  * Embedded redis server.
  *
  * <pre>
- *   docker pull redis:7.4.2
+ *   docker pull redis:7.4.8
  *
  *   docker run --name test_redis \
  *     --privileged=true \
  *     -p 6379:6379 \
- *     -d redis:7.4.2
+ *     -d redis:7.4.8
  *
  * username: 无需用户名
  * password: 123456
@@ -48,7 +48,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class EmbeddedRedisServerTestcontainers {
 
-    private static final String NACOS_DOCKER_IMAGE_NAME = "redis:7.4.2";
+    private static final String NACOS_DOCKER_IMAGE_NAME = "redis:7.4.8";
     private static final List<String> PORT_BINDINGS = Collections.singletonList("6379:6379/tcp");
 
     public static void main(String[] args) throws Exception {

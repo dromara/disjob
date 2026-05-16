@@ -29,8 +29,8 @@ import java.util.concurrent.CountDownLatch;
  * Embedded consul server based testcontainers.
  * <a href="https://www.testcontainers.org/modules/consul/">testcontainers consul</a>
  * 1、startup local docker environment
- * 2、pull docker consul image: docker pull hashicorp/consul:1.20.1
- * 3、"hashicorp/consul:1.20.1" is docker {image-name:version}
+ * 2、pull docker consul image: docker pull hashicorp/consul:1.22.7
+ * 3、"hashicorp/consul:1.22.7" is docker {image-name:version}
  *
  * Other:
  *  本地搜索：docker search consul --limit 20
@@ -44,7 +44,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class EmbeddedConsulServerTestcontainers {
 
-    private static final String CONSUL_DOCKER_IMAGE_NAME = "hashicorp/consul:1.20.1";
+    private static final String CONSUL_DOCKER_IMAGE_NAME = "hashicorp/consul:1.22.7";
     private static final List<String> PORT_BINDINGS = Arrays.asList("8500:8500/tcp", "8502:8502/tcp");
 
     public static void main(String[] args) throws Exception {
