@@ -19,6 +19,11 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-worker</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <scope>runtime</scope>
+    </dependency>
     <!-- 引入`disjob-test`模块中的一些内置`JobExecutor`用于测试，实际开发中应去除此依赖 -->
     <dependency>
       <groupId>cn.ponfee</groupId>
