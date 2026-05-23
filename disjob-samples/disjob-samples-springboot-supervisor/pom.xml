@@ -45,7 +45,7 @@
           <include>log4j2.xml</include>
           <include>application-mysql.yml</include>
           <include>application-supervisor.yml</include>
-          <include>application-registry-redis.yml</include>
+          <include>application-registry-etcd.yml</include>
           <include>application-web.yml</include>
         </includes>
       </resource>
