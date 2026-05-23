@@ -118,7 +118,7 @@ public class HttpJobExecutor extends JobExecutor {
     private static RequestConfig getRequestConfig(Integer connectionTimeout, Integer readTimeout) {
         RequestConfig.Builder builder = null;
         if (connectionTimeout != null && connectionTimeout != DEFAULT_CONNECT_TIMEOUT) {
-            builder = RequestConfig.custom().setConnectionRequestTimeout(connectionTimeout);
+            builder = RequestConfig.custom().setConnectTimeout(connectionTimeout);
         }
         if (readTimeout != null && readTimeout != DEFAULT_READ_TIMEOUT) {
             (builder == null ? (builder = RequestConfig.custom()) : builder).setSocketTimeout(readTimeout);

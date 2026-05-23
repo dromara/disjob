@@ -107,7 +107,7 @@ public class DBUtils {
         ddlStatement.execute("DROP TABLE IF EXISTS test");
         JdbcUtils.closeStatement(ddlStatement);
 
-        conn.close();
+        JdbcUtils.closeConnection(conn);
     }
 
     public static void testJdbcTemplate(JdbcTemplate jdbcTemplate) {

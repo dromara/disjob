@@ -19,6 +19,7 @@ package cn.ponfee.disjob.worker.util;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
@@ -42,6 +43,7 @@ import java.lang.management.ManagementFactory;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -107,8 +109,12 @@ public final class ProcessUtils {
                 waitFor(findChildPidProcess, () -> "find child process id for " + pid);
                 try (InputStream inputStream = findChildPidProcess.getInputStream()) {
                     // stop all child process
-                    List<String> childPidList = IOUtils.readLines(inputStream, charset);
-                    childPidList.stream().filter(StringUtils::isNotBlank).forEach(e -> killProcess(Long.parseLong(e.trim()), charset));
+                    IOUtils.readLines(inputStream, charset)
+                        .stream()
+                        .filter(StringUtils::isNotBlank)
+                        .map(e -> ThrowingSupplier.doCaught(() -> Long.parseLong(e)))
+                        .filter(Objects::nonNull)
+                        .forEach(e -> killProcess(e, charset));
                 }
                 destroy(findChildPidProcess);
 

@@ -58,7 +58,7 @@ public abstract class AlertSender extends SingletonClassConstraint {
         Assert.hasText(name, "Alert sender name cannot be blank.");
         this.channel = channel.trim();
         this.name = name.trim();
-        this.alertRecipientMapper = Objects.requireNonNull(mapper);
+        this.alertRecipientMapper = Objects.requireNonNull(mapper, "Alert recipient mapper cannot be null.");
         register(this);
     }
 
@@ -100,7 +100,7 @@ public abstract class AlertSender extends SingletonClassConstraint {
     }
 
     private static synchronized void register(AlertSender alertSender) {
-        String channel = alertSender.channel;
+        final String channel = alertSender.channel;
         if (ALERT_SENDERS.containsKey(channel)) {
             throw new Error("Alert sender channel '" + channel + "' already registered!");
         }

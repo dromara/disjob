@@ -20,6 +20,7 @@ import cn.ponfee.disjob.alert.base.AlertEvent;
 import cn.ponfee.disjob.alert.im.configuration.ImAlertSenderProperties;
 import cn.ponfee.disjob.alert.sender.AlertRecipientMapper;
 import cn.ponfee.disjob.alert.sender.AlertSender;
+import cn.ponfee.disjob.common.util.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
@@ -60,44 +61,45 @@ public class ImAlertSender extends AlertSender {
             return;
         }
 
-        String title = alertEvent.buildTitle();
-        String content = alertEvent.buildContent("**%s**%s\n");
-        String message = StringUtils.replaceEach(content, new String[]{"\\", "\"", "\n"}, new String[]{"\\\\", "\\\"", "\\n"});
         ImAlertSupplier supplier = config.getSupplier();
+        HttpURLConnection connection = null;
+        OutputStream writeStream = null;
+        InputStream readStream = null;
         try {
+            String title = alertEvent.buildTitle();
+            String content = alertEvent.buildContent("**%s**%s\n");
+            String message = StringUtils.replaceEach(content, new String[]{"\\", "\"", "\n"}, new String[]{"\\\\", "\\\"", "\\n"});
             String payload = buildPayload(title, message, supplier);
-            doPost(alertWebhook, payload);
-            log.info("Alert event instant messaging sent success: {}, {}", supplier, alertWebhook);
-        } catch (Exception e) {
-            log.error("Alert event instant messaging sent error: {}, {}", supplier, alertWebhook, e);
-        }
-    }
 
-    // -----------------------------------------------------------private methods
-
-    private void doPost(String alertWebhook, String payload) throws Exception {
-        URL url = new URL(alertWebhook);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-        log.info("Alert instant messaging webhook request: {}, {}", alertWebhook, payload);
-        try (OutputStream writeStream = connection.getOutputStream()) {
+            connection = (HttpURLConnection) new URL(alertWebhook).openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setDoOutput(true);
+            log.info("Alert instant messaging webhook request: {}, {}", alertWebhook, payload);
+            writeStream = connection.getOutputStream();
             writeStream.write(payload.getBytes(StandardCharsets.UTF_8));
-        }
 
-        int responseCode = connection.getResponseCode();
-        // http status code: 1xx, 2xx, 3xx
-        boolean isSuccess = responseCode < 400;
-        try (InputStream readStream = isSuccess ? connection.getInputStream() : connection.getErrorStream()) {
+            int responseCode = connection.getResponseCode();
+            // http status code: 1xx, 2xx, 3xx
+            boolean isSuccess = responseCode < 400;
+            readStream = isSuccess ? connection.getInputStream() : connection.getErrorStream();
             String responseBody = IOUtils.toString(readStream, StandardCharsets.UTF_8);
             if (isSuccess) {
                 log.info("Alert instant messaging webhook success: {}, {}", responseCode, responseBody);
             } else {
                 log.error("Alert instant messaging webhook failed: {}, {}", responseCode, responseBody);
             }
+            log.info("Alert event instant messaging sent success: {}, {}", supplier, alertWebhook);
+        } catch (Exception e) {
+            log.error("Alert event instant messaging sent error: {}, {}", supplier, alertWebhook, e);
+        } finally {
+            IOUtils.closeQuietly(readStream);
+            IOUtils.closeQuietly(writeStream);
+            ObjectUtils.applyIfNotNull(connection, HttpURLConnection::disconnect);
         }
     }
+
+    // -----------------------------------------------------------private methods
 
     private String buildPayload(String title, String message, ImAlertSupplier supplier) {
         switch (supplier) {

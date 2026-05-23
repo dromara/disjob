@@ -670,7 +670,8 @@ public class Dates {
     // -------------------------------------------------------------private methods
 
     private static String formatDouble(double value) {
-        return BigDecimal.valueOf(value).setScale(3, RoundingMode.DOWN).toString().substring(0, 5);
+        String str = BigDecimal.valueOf(value).setScale(3, RoundingMode.DOWN).toString();
+        return str.length() > 5 ? str.substring(0, 5) : str;
     }
 
     private static LocalDateTime startOfDay0(Date date) {

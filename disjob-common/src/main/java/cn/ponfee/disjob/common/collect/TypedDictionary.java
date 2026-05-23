@@ -38,11 +38,11 @@ public interface TypedDictionary<K, V> {
     }
 
     default V put(K key, V value) {
-        throw new UnsupportedOperationException("Cannot suppoerted put key value operation.");
+        throw new UnsupportedOperationException("Cannot supported put key value operation.");
     }
 
     default V remove(Object key) {
-        throw new UnsupportedOperationException("Cannot suppoerted remove key operation.");
+        throw new UnsupportedOperationException("Cannot supported remove key operation.");
     }
 
     default boolean containsKey(Object key) {
@@ -50,7 +50,7 @@ public interface TypedDictionary<K, V> {
     }
 
     default boolean containsValue(Object value) {
-        throw new UnsupportedOperationException("Cannot suppoerted contains value operation.");
+        throw new UnsupportedOperationException("Cannot supported contains value operation.");
     }
 
     default V getRequired(K key) {

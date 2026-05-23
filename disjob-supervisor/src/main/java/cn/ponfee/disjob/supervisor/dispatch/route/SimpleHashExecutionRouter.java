@@ -47,8 +47,9 @@ public class SimpleHashExecutionRouter extends ExecutionRouter {
 
     @Override
     protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
+        long size = workers.size();
         for (ExecuteTaskParam task : tasks) {
-            int index = (int) (hashFunction.applyAsLong(task) % workers.size());
+            int index = (int) Math.floorMod(hashFunction.applyAsLong(task), size);
             task.setWorker(workers.get(index));
         }
     }

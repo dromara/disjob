@@ -16,8 +16,6 @@
 
 package cn.ponfee.disjob.common.collect;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Sliding window
  *
@@ -38,7 +36,7 @@ public class SlidingWindow {
     /**
      * Current request count
      */
-    private final AtomicInteger requestCount;
+    private volatile int requestCount;
 
     /**
      * Window start time
@@ -48,7 +46,7 @@ public class SlidingWindow {
     public SlidingWindow(int maxRequests, long windowSizeInMillis) {
         this.maxRequests = maxRequests;
         this.windowSizeInMillis = windowSizeInMillis;
-        this.requestCount = new AtomicInteger(0);
+        this.requestCount = 0;
         this.windowStart = System.currentTimeMillis();
     }
 
@@ -59,10 +57,10 @@ public class SlidingWindow {
         long now = System.currentTimeMillis();
         if (now - windowStart > windowSizeInMillis) {
             windowStart = now;
-            requestCount.set(0);
+            requestCount = 0;
         }
-        if (requestCount.get() < maxRequests) {
-            requestCount.incrementAndGet();
+        if (requestCount < maxRequests) {
+            requestCount++;
             return true;
         }
         return false;

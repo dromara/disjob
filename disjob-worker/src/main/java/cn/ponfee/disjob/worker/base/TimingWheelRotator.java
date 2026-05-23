@@ -100,36 +100,21 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
 
         final List<ExecuteTaskParam> tasks = timingWheel.poll();
         if (CollectionUtils.isNotEmpty(tasks)) {
-            processExecutor.execute(() -> processTasks(tasks));
+            processExecutor.execute(() -> {
+                updateTasks(tasks);
+                submitTasks(tasks);
+            });
         }
     }
 
-    private void processTasks(List<ExecuteTaskParam> tasks) {
-        tasks = Collects.filter(tasks, e -> {
-            if (workerThreadPool.existsTask(e.getTaskId())) {
-                // Task was repeated dispatch
-                log.warn("Polled task has been exists: {}", e.getTaskId());
-                return false;
-            }
-            return true;
-        });
-
-        updateTaskWorker(tasks);
-        for (ExecuteTaskParam e : tasks) {
-            String triggerTime = Dates.DATETIME_MILLI_FORMAT.format(e.getTriggerTime());
-            boolean state = workerThreadPool.submit(new WorkerTask(e));
-            log.info("Task trace [{}] triggered: {}, {}, {}, {}", e.getTaskId(), e.getOperation(), e.getWorker(), triggerTime, state);
-        }
-    }
-
-    private void updateTaskWorker(List<ExecuteTaskParam> list) {
-        List<Long> taskIds = list.stream()
-            // 广播任务分派的worker不可修改，需要剔除
-            .filter(e -> e.getRouteStrategy().isNotBroadcast())
+    private void updateTasks(List<ExecuteTaskParam> tasks) {
+        List<Long> taskIds = tasks.stream()
+            // 筛选：触发器任务 && 非广播任务(广播任务的worker不可修改) && 不存在于线程池中
+            .filter(e -> e.getOperation().isTrigger() && e.getRouteStrategy().isNotBroadcast() && isNotExists(e))
             .map(ExecuteTaskParam::getTaskId)
             .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(taskIds)) {
-            String worker = Collects.getFirst(list).getWorker().serialize();
+            String worker = Collects.getFirst(tasks).getWorker().serialize();
             for (List<Long> ids : Lists.partition(taskIds, JobConstants.PROCESS_BATCH_SIZE)) {
                 try {
                     supervisorRpcClient.updateTaskWorker(ids, worker);
@@ -139,6 +124,19 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
                 }
             }
         }
+    }
+
+    private void submitTasks(List<ExecuteTaskParam> tasks) {
+        // 筛选：非触发器任务(暂停、恢复、取消) || 不存在于线程池中的任务
+        tasks.stream().filter(e -> e.getOperation().isNotTrigger() || isNotExists(e)).forEach(e -> {
+            String triggerTime = Dates.DATETIME_MILLI_FORMAT.format(e.getTriggerTime());
+            boolean res = workerThreadPool.submit(new WorkerTask(e));
+            log.info("Task trace [{}] triggered: {}, {}, {}, {}", e.getTaskId(), e.getOperation(), e.getWorker(), triggerTime, res);
+        });
+    }
+
+    private boolean isNotExists(ExecuteTaskParam task) {
+        return !workerThreadPool.existsTask(task.getTaskId());
     }
 
 }

@@ -83,7 +83,11 @@ public class Tokens {
 
         String actual = array[0];
         String expiration = array[1];
-        if (Long.parseLong(expiration) < System.currentTimeMillis()) {
+        try {
+            if (Long.parseLong(expiration) < System.currentTimeMillis()) {
+                return false;
+            }
+        } catch (NumberFormatException e) {
             return false;
         }
 

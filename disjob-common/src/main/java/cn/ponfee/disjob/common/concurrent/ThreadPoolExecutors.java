@@ -42,8 +42,8 @@ import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
 @Slf4j
 public final class ThreadPoolExecutors {
 
-    public static final String DISJOB_COMMON_THREAD_POOL_SIZE    = "disjob.common.thread.pool.size";
-    public static final String DISJOB_COMMON_SCHEDULED_POOL_SIZE = "disjob.common.scheduled.pool.size";
+    public static final String DISJOB_COMMON_THREAD_POOL_SIZE    = "disjob_common_thread_pool_size";
+    public static final String DISJOB_COMMON_SCHEDULED_POOL_SIZE = "disjob_common_scheduled_pool_size";
 
     private static volatile ThreadPoolExecutor commonThreadPool;
     private static volatile ScheduledThreadPoolExecutor commonScheduledPool;

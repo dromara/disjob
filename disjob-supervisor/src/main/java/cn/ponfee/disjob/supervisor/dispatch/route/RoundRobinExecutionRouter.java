@@ -57,8 +57,10 @@ public class RoundRobinExecutionRouter extends ExecutionRouter {
         String group = workers.get(0).getGroup();
         AtomicCounter counter = groupedCounterMap.computeIfAbsent(group, counterFactory);
         long value = counter.getAndAdd(tasks.size());
+        long size = workers.size();
         for (ExecuteTaskParam task : tasks) {
-            int index = (int) (value++ % workers.size());
+            // 使用Math.floorMod防御性处理：counter长期运行后long可能溢出为负值，普通`%`运算会产生负索引导致数组越界
+            int index = (int) Math.floorMod(value++, size);
             task.setWorker(workers.get(index));
         }
     }

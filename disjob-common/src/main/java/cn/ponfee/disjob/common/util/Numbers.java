@@ -398,7 +398,7 @@ public final class Numbers {
      * @return array
      */
     public static List<Tuple2<Integer, Integer>> partition(int number, int size) {
-        Assert.isTrue(number >= 0, "Number must be greater than 0.");
+        Assert.isTrue(number >= 0, "Number must be greater than or equal to 0.");
         Assert.isTrue(size > 0, "Size must be greater than 0.");
         if (number == 0) {
             return Collections.singletonList(Tuple2.of(0, 0));

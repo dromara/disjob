@@ -57,11 +57,21 @@ public class WorkflowGraph {
     }
 
     public Map<DAGEdge, SchedWorkflow> predecessors(DAGNode node) {
-        return find(graph.predecessors(node));
+        Set<DAGNode> preNodes = graph.predecessors(node);
+        if (CollectionUtils.isEmpty(preNodes)) {
+            return Collections.emptyMap();
+        }
+        return map.entrySet()
+            .stream()
+            .filter(e -> preNodes.contains(e.getKey().getTarget()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public Map<DAGEdge, SchedWorkflow> successors(DAGNode node) {
-        return find(graph.successors(node));
+        return map.entrySet()
+            .stream()
+            .filter(e -> node.equals(e.getKey().getSource()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public Map<DAGEdge, SchedWorkflow> map() {
@@ -81,16 +91,6 @@ public class WorkflowGraph {
     }
 
     // --------------------------------------------------------------private methods
-
-    private Map<DAGEdge, SchedWorkflow> find(Set<DAGNode> nodes) {
-        if (CollectionUtils.isEmpty(nodes)) {
-            return Collections.emptyMap();
-        }
-        return map.entrySet()
-            .stream()
-            .filter(e -> nodes.contains(e.getKey().getTarget()))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
 
     private static Map<DAGEdge, SchedWorkflow> buildMap(List<SchedWorkflow> workflows) {
         return Collections.unmodifiableMap(

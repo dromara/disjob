@@ -53,8 +53,8 @@ import java.util.stream.Stream;
 @Slf4j
 public final class NetUtils {
 
-    public static final String IGNORED_NETWORK_INTERFACE   = "disjob.network.interface.ignored";
-    public static final String PREFERRED_NETWORK_INTERFACE = "disjob.network.interface.preferred";
+    public static final String IGNORED_NETWORK_INTERFACE   = "disjob_network_interface_ignored";
+    public static final String PREFERRED_NETWORK_INTERFACE = "disjob_network_interface_preferred";
 
     // returned port range is [30000, 39999]
     private static final int RND_PORT_START = 30000;
