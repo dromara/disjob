@@ -284,7 +284,7 @@ public class SchedJob extends BaseEntity {
     public long computeRetryTriggerTime(int failCount) {
         Assert.isTrue(!RetryType.NONE.equalsValue(retryType), () -> "Sched job '" + jobId + "' retry type is NONE.");
         Assert.isTrue(retryCount > 0, () -> "Sched job '" + jobId + "' retry count must greater than 0, but actual " + retryCount);
-        Assert.isTrue(failCount <= retryCount, () -> "Sched job '" + jobId + "' retried " + failCount + " exceed " + retryCount + " limit.");
+        Assert.isTrue(failCount <= retryCount, () -> "Sched job '" + jobId + "' exceed max retries: " + failCount + " > " + retryCount + ".");
         // exponential backoff
         return System.currentTimeMillis() + (long) retryInterval * IntMath.pow(failCount, 2);
     }

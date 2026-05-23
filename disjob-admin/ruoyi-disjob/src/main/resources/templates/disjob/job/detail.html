@@ -23,13 +23,13 @@
       <div class="form-group">
         <label class="col-sm-3 control-label is-required">Job状态：</label>
         <div class="col-sm-9">
-          <p class="form-control-static">[( ${@disjobService.desc('JobStatus', job.jobStatus)} )]</p>
+          <p class="form-control-static" th:text="${@disjobService.desc('JobStatus', job.jobStatus)}"></p>
         </div>
       </div>
       <div class="form-group">
         <label class="col-sm-3 control-label is-required">Job类型：</label>
         <div class="col-sm-9">
-          <p class="form-control-static">[( ${@disjobService.desc('JobType', job.jobType)} )]</p>
+          <p class="form-control-static" th:text="${@disjobService.desc('JobType', job.jobType)}"></p>
         </div>
       </div>
       <div class="form-group">
@@ -91,25 +91,25 @@
       <div class="form-group">
         <label class="col-sm-3 control-label is-required">执行冲突策略：</label>
         <div class="col-sm-9">
-          <p class="form-control-static">[( ${@disjobService.desc('CollisionStrategy', job.collisionStrategy)} )]</p>
+          <p class="form-control-static" th:text="${@disjobService.desc('CollisionStrategy', job.collisionStrategy)}"></p>
         </div>
       </div>
       <div class="form-group">
         <label class="col-sm-3 control-label is-required">过期策略：</label>
         <div class="col-sm-9">
-          <p class="form-control-static">[( ${@disjobService.desc('MisfireStrategy', job.misfireStrategy)} )]</p>
+          <p class="form-control-static" th:text="${@disjobService.desc('MisfireStrategy', job.misfireStrategy)}"></p>
         </div>
       </div>
       <div class="form-group">
         <label class="col-sm-3 control-label is-required">路由策略：</label>
         <div class="col-sm-9">
-          <p class="form-control-static">[( ${@disjobService.desc('RouteStrategy', job.routeStrategy)} )]</p>
+          <p class="form-control-static" th:text="${@disjobService.desc('RouteStrategy', job.routeStrategy)}"></p>
         </div>
       </div>
       <div class="form-group">
         <label class="col-sm-3 control-label is-required">Worker关机的执行策略：</label>
         <div class="col-sm-9">
-          <p class="form-control-static">[( ${@disjobService.desc('ShutdownStrategy', job.shutdownStrategy)} )]</p>
+          <p class="form-control-static" th:text="${@disjobService.desc('ShutdownStrategy', job.shutdownStrategy)}"></p>
         </div>
       </div>
       <div class="form-group">

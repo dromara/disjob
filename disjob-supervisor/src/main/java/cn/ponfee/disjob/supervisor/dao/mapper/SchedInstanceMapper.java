@@ -76,7 +76,7 @@ public interface SchedInstanceMapper {
 
     SchedInstance getRetrying(long instanceId);
 
-    List<SchedInstance> findRunRetry(long instanceId);
+    List<SchedInstance> findRetry(long instanceId);
 
     List<SchedInstance> findWorkflowNode(long wnstanceId);
 

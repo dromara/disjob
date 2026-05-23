@@ -87,8 +87,8 @@ public final class ModelConverter {
         return result;
     }
 
-    public static AlertInstanceEvent toAlertInstanceEvent(SchedJob job, SchedInstance original, SchedInstance current) {
-        AlertType alertType = original.isCompleted() ? AlertType.NOTICE : AlertType.ALARM;
+    public static AlertInstanceEvent toAlertInstanceEvent(SchedJob job, SchedInstance source, SchedInstance current) {
+        AlertType alertType = source.isCompleted() ? AlertType.NOTICE : AlertType.ALARM;
         if (!alertType.matches(job.getAlertOptions())) {
             return null;
         }
@@ -98,13 +98,13 @@ public final class ModelConverter {
         event.setJobName(job.getJobName());
         event.setJobId(job.getJobId());
         event.setAlertType(alertType);
-        event.setInstanceId(original.getInstanceId());
-        event.setRunType(RunType.of(original.getRunType()));
-        event.setRunStatus(RunStatus.of(original.getRunStatus()));
-        event.setTriggerTime(new Date(original.getTriggerTime()));
-        event.setRunStartTime(original.getRunStartTime());
+        event.setInstanceId(source.getInstanceId());
+        event.setRunType(RunType.of(source.getRunType()));
+        event.setRunStatus(RunStatus.of(source.getRunStatus()));
+        event.setTriggerTime(new Date(source.getTriggerTime()));
+        event.setRunStartTime(source.getRunStartTime());
         event.setRunEndTime(current.getRunEndTime());
-        // 如果是DAG任务，original和current都是为lead实例，此时的retryTimes始终为0
+        // 如果是DAG任务，source和current都是为lead实例，此时的retryTimes始终为0
         event.setRetryTimes(current.getRetryTimes());
         return event;
     }

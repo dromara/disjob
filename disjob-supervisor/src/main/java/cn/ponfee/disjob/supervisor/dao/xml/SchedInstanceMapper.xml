@@ -141,7 +141,7 @@
       AND run_status &lt; 40
   </select>
 
-  <select id="findRunRetry" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
+  <select id="findRetry" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM sched_instance
     WHERE pnstance_id = #{instanceId,jdbcType=BIGINT}

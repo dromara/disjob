@@ -147,8 +147,8 @@ public class SchedInstance extends BaseEntity {
                                    long jobId, RunType runType, long triggerTime, int retryTimes) {
         Long rnstanceId = null, pnstanceId = null;
         if (parent != null) {
-            rnstanceId = parent.obtainRnstanceId();
-            pnstanceId = parent.obtainOriginalInstanceId();
+            rnstanceId = parent.obtainRootInstanceId();
+            pnstanceId = parent.obtainSourceInstanceId();
         }
         SchedInstance instance = new SchedInstance();
         instance.setInstanceId(instanceId);
@@ -168,15 +168,15 @@ public class SchedInstance extends BaseEntity {
      *
      * @return root instance id
      */
-    public long obtainRnstanceId() {
+    public long obtainRootInstanceId() {
         if (rnstanceId != null) {
             return rnstanceId;
         }
         return pnstanceId != null ? pnstanceId : instanceId;
     }
 
-    public long obtainOriginalInstanceId() {
-        return isRunRetry() ? pnstanceId : instanceId;
+    public long obtainSourceInstanceId() {
+        return isRetry() ? pnstanceId : instanceId;
     }
 
     public int obtainRetryTimes() {
@@ -229,7 +229,7 @@ public class SchedInstance extends BaseEntity {
      * @return {@code true} if current is retry instance
      */
     @Transient
-    public boolean isRunRetry() {
+    public boolean isRetry() {
         return RunType.RETRY.equalsValue(runType);
     }
 

@@ -29,7 +29,7 @@ class DispatchTaskParam {
 
     private final ExecuteTaskParam task;
     private final String group;
-    private int retried = 0;
+    private int retries = 0;
 
     DispatchTaskParam(ExecuteTaskParam task, String group) {
         this.task = task;
@@ -45,11 +45,11 @@ class DispatchTaskParam {
     }
 
     int retrying() {
-        return ++this.retried;
+        return ++this.retries;
     }
 
-    int retried() {
-        return retried;
+    int retries() {
+        return retries;
     }
 
     @Override
@@ -57,7 +57,7 @@ class DispatchTaskParam {
         return new StringJoiner(", ", DispatchTaskParam.class.getSimpleName() + "[", "]")
             .add("task=" + task)
             .add("group=" + (group != null ? "'" + group + "'" : "null"))
-            .add("retried=" + retried)
+            .add("retries=" + retries)
             .toString();
     }
 

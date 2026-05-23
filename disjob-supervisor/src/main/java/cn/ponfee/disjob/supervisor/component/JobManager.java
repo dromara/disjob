@@ -427,9 +427,9 @@ public class JobManager {
                     assertHasAffectedRow(row, () -> "Delete workflow task failed: " + nodeInstance);
                 }
             } else {
-                Assert.isTrue(!instance.getRetrying(), "Cannot delete retrying original instance.");
-                Assert.isTrue(!instance.isRunRetry(), "Cannot delete run retry sub instance.");
-                Set<Long> instanceIds = instanceMapper.findRunRetry(instanceId)
+                Assert.isTrue(!instance.getRetrying(), "Cannot delete retrying source instance.");
+                Assert.isTrue(!instance.isRetry(), "Cannot delete retry sub instance.");
+                Set<Long> instanceIds = instanceMapper.findRetry(instanceId)
                     .stream().map(SchedInstance::getInstanceId).collect(Collectors.toSet());
                 instanceIds.add(instanceId);
                 for (Long id : instanceIds) {
@@ -898,7 +898,7 @@ public class JobManager {
             return taskMapper.findLargeByInstanceId(failed.getInstanceId())
                 .stream()
                 .filter(SchedTask::isFailure)
-                // Broadcast task must be retried with the same worker
+                // Broadcast task must retry with the same worker
                 .filter(e -> !job.isBroadcast() || workerClient.isAliveWorker(e.worker()))
                 .map(e -> SchedTask.of(e.getTaskParam(), generateId(), retry.getInstanceId(), e.getTaskNo(), e.getTaskCount(), e.getWorker()))
                 .collect(Collectors.toList());
@@ -969,7 +969,7 @@ public class JobManager {
     }
 
     private void startRetrying(SchedInstance instance) {
-        if (!instance.isRunRetry()) {
+        if (!instance.isRetry()) {
             RunStatus status = RunStatus.CANCELED;
             boolean updated = instanceMapper.updateRetrying(instance.getInstanceId(), true, status, status);
             Assert.state(updated, () -> "Start retrying failed: " + instance);
@@ -977,8 +977,8 @@ public class JobManager {
     }
 
     private void stopRetrying(SchedInstance instance, RunStatus toStatus) {
-        if (instance.isRunRetry()) {
-            long id = instance.obtainOriginalInstanceId();
+        if (instance.isRetry()) {
+            long id = instance.obtainSourceInstanceId();
             boolean updated = instanceMapper.updateRetrying(id, false, toStatus, RunStatus.CANCELED);
             Assert.state(updated, () -> "Stop retrying failed: " + toStatus + ", " + instance);
         }
@@ -987,35 +987,35 @@ public class JobManager {
     private void afterTerminatedInstance(SchedInstance instance) {
         Assert.isTrue(instance.isTerminal(), () -> "Renew fixed instance status must be terminal: " + instance);
         Assert.isTrue(!instance.isWorkflowNode(), () -> "Renew fixed instance cannot be workflow node: " + instance);
-        if (instance.isRunRetry()) {
+        if (instance.isRetry()) {
             stopRetrying(instance, RunStatus.of(instance.getRunStatus()));
         }
 
-        // 1、get original instance if run retry
-        SchedInstance original = instance.isRunRetry() ? instanceMapper.get(instance.getPnstanceId()) : instance;
-        SchedJob job = jobMapper.get(original.getJobId());
+        // 1、get source instance if retry
+        SchedInstance source = instance.isRetry() ? instanceMapper.get(instance.getPnstanceId()) : instance;
+        SchedJob job = jobMapper.get(source.getJobId());
         if (job == null) {
-            log.error("Sched job not found: {}", original);
+            log.error("Sched job not found: {}", source);
             return;
         }
 
         // 2、if fixed trigger type job then update the job next trigger time
-        if (job.isEnabled() && job.isFixedTriggerType() && original.isRunSchedule()) {
+        if (job.isEnabled() && job.isFixedTriggerType() && source.isRunSchedule()) {
             TriggerType triggerType = TriggerType.of(job.getTriggerType());
-            long lastTriggerTime = original.getTriggerTime(), nextTriggerTime;
+            long lastTriggerTime = source.getTriggerTime(), nextTriggerTime;
             if (triggerType == TriggerType.FIXED_RATE) {
-                Date time = triggerType.computeNextTriggerTime(job.getTriggerValue(), new Date(original.getTriggerTime()));
-                nextTriggerTime = Dates.max(time, original.getRunEndTime()).getTime();
+                Date time = triggerType.computeNextTriggerTime(job.getTriggerValue(), new Date(source.getTriggerTime()));
+                nextTriggerTime = Dates.max(time, source.getRunEndTime()).getTime();
             } else {
                 // TriggerType.FIXED_DELAY
-                nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), original.getRunEndTime()).getTime();
+                nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), source.getRunEndTime()).getTime();
             }
             boolean updated = isOneAffectedRow(jobMapper.updateFixedNextTriggerTime(job.getJobId(), lastTriggerTime, nextTriggerTime));
             log.info("Renew fixed next trigger time: {}, {}, {}, {}", job.getJobId(), lastTriggerTime, nextTriggerTime, updated);
         }
 
         // 3、publish alert instance event
-        AlertInstanceEvent event = ModelConverter.toAlertInstanceEvent(job, original, instance);
+        AlertInstanceEvent event = ModelConverter.toAlertInstanceEvent(job, source, instance);
         if (event != null) {
             doAfterTransactionCommit(() -> eventPublisher.publishEvent(event));
         }
@@ -1165,7 +1165,7 @@ public class JobManager {
             // predecessor instance下的task是全部执行成功的
             List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId());
             SchedInstance prev;
-            if (retryType == RetryType.FAILED && (prev = instanceMapper.get(e.getInstanceId())).isRunRetry()) {
+            if (retryType == RetryType.FAILED && (prev = instanceMapper.get(e.getInstanceId())).isRetry()) {
                 Set<Long> instanceIds = instanceMapper.findChildren(prev.getPnstanceId(), RunType.RETRY.value())
                     .stream()
                     .map(SchedInstance::getInstanceId)

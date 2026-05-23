@@ -134,7 +134,7 @@ public final class TaskDispatcher implements Startable {
 
         for (DispatchTaskParam param : params) {
             ExecuteTaskParam task = param.task();
-            log.info("Task trace [{}] dispatching: {}, {}, {}", task.getTaskId(), task.getOperation(), task.getWorker(), param.retried());
+            log.info("Task trace [{}] dispatching: {}, {}, {}", task.getTaskId(), task.getOperation(), task.getWorker(), param.retries());
             try {
                 doDispatch(task);
                 log.info("Task trace [{}] dispatched: {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());
@@ -175,8 +175,8 @@ public final class TaskDispatcher implements Startable {
 
     private void retry(DispatchTaskParam param) {
         ExecuteTaskParam task = param.task();
-        if (param.retried() < retryMaxCount) {
-            log.info("Delay retrying dispatch task [{}]: {}", param.retried(), task);
+        if (param.retries() < retryMaxCount) {
+            log.info("Dispatch task retry delay: {}, {}", param.retries(), task);
             int count = param.retrying();
             if (task.getRouteStrategy().isNotBroadcast() && task.getOperation().isTrigger()) {
                 // clear assigned worker
@@ -185,7 +185,7 @@ public final class TaskDispatcher implements Startable {
             asyncDelayedExecutor.put(DelayedData.of(param, retryBackoffPeriod * IntMath.pow(count, 2)));
         } else {
             // discard
-            log.error("Dispatching task retried exceed max count: {}", task);
+            log.error("Dispatch task retry exceeded: {}", task);
             eventPublisher.publishEvent(TaskDispatchFailedEvent.of(task));
         }
     }
