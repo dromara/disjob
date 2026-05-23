@@ -185,7 +185,7 @@ public final class TaskDispatcher implements Startable {
             asyncDelayedExecutor.put(DelayedData.of(param, retryBackoffPeriod * IntMath.pow(count, 2)));
         } else {
             // discard
-            log.error("Dispatched task retried max count still failed: {}", task);
+            log.error("Dispatching task retried exceed max count: {}", task);
             eventPublisher.publishEvent(TaskDispatchFailedEvent.of(task));
         }
     }

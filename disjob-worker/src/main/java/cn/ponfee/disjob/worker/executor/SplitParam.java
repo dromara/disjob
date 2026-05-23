@@ -50,10 +50,10 @@ public class SplitParam extends ToJsonString implements java.io.Serializable {
     private int retryCount;
 
     /**
-     * sched_instance.retried_count
+     * sched_instance.retry_times
      * <p>当前是第几次重试，如果当前非重试执行，则为0
      */
-    private int retriedCount;
+    private int retryTimes;
 
     /**
      * Worker数量

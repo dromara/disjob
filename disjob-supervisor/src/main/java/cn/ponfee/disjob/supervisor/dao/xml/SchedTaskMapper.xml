@@ -9,7 +9,7 @@
   <sql id="Large_Column_List">
     <include refid="Base_Column_List" />,
     execute_start_time, execute_end_time, task_param,
-    execute_snapshot, dispatch_failed_count, error_msg
+    execute_snapshot, dispatch_failures, error_msg
   </sql>
 
   <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
@@ -59,11 +59,11 @@
     </if>
   </select>
 
-  <update id="incrementDispatchFailedCount">
+  <update id="incrementDispatchFailures">
     UPDATE sched_task
-    SET dispatch_failed_count = (#{currentDispatchFailedCount,jdbcType=TINYINT} + 1)
+    SET dispatch_failures = (#{currentDispatchFailures,jdbcType=TINYINT} + 1)
     WHERE task_id = #{taskId,jdbcType=BIGINT}
-      AND dispatch_failed_count = #{currentDispatchFailedCount,jdbcType=TINYINT}
+      AND dispatch_failures = #{currentDispatchFailures,jdbcType=TINYINT}
       AND execute_status = 10
   </update>
 
@@ -73,7 +73,7 @@
     SET execute_status = 20,
         execute_start_time = IFNULL(execute_start_time, #{executeStartTime,jdbcType=TIMESTAMP}),
         worker = #{worker,jdbcType=VARCHAR},
-        start_request_id = #{startRequestId,jdbcType=VARCHAR}
+        start_idempotency_key = #{startIdempotencyKey,jdbcType=VARCHAR}
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_status = 10
   </update>
@@ -85,7 +85,7 @@
       WHERE task_id = #{taskId,jdbcType=BIGINT}
         AND execute_status = 20
         AND worker = #{worker,jdbcType=VARCHAR}
-        AND start_request_id = #{startRequestId,jdbcType=VARCHAR}
+        AND start_idempotency_key = #{startIdempotencyKey,jdbcType=VARCHAR}
     ) e
   </select>
 

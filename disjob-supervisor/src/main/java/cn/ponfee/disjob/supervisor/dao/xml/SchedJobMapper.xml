@@ -5,8 +5,8 @@
   <sql id="Base_Column_List">
     job_id, `group`, job_name, job_type, job_status, job_executor, job_param,
     retry_type, retry_count, retry_interval, trigger_type, trigger_value, start_time, end_time,
-    execute_timeout, collided_strategy, misfire_strategy, route_strategy, shutdown_strategy,
-    alert_options, last_trigger_time, next_trigger_time, next_scan_time, scan_failed_count,
+    execute_timeout, collision_strategy, misfire_strategy, route_strategy, shutdown_strategy,
+    alert_options, last_trigger_time, next_trigger_time, next_scan_time, scan_failures,
     version, updated_by, created_by, updated_at, created_at
   </sql>
 
@@ -34,7 +34,7 @@
       start_time,
       end_time,
       execute_timeout,
-      collided_strategy,
+      collision_strategy,
       misfire_strategy,
       route_strategy,
       shutdown_strategy,
@@ -58,7 +58,7 @@
       #{startTime,jdbcType=TIMESTAMP},
       #{endTime,jdbcType=TIMESTAMP},
       #{executeTimeout,jdbcType=INTEGER},
-      #{collidedStrategy,jdbcType=TINYINT},
+      #{collisionStrategy,jdbcType=TINYINT},
       #{misfireStrategy,jdbcType=TINYINT},
       #{routeStrategy,jdbcType=TINYINT},
       #{shutdownStrategy,jdbcType=TINYINT},
@@ -93,7 +93,7 @@
         start_time = #{startTime,jdbcType=TIMESTAMP},
         end_time = #{endTime,jdbcType=TIMESTAMP},
         execute_timeout = #{executeTimeout,jdbcType=INTEGER},
-        collided_strategy = #{collidedStrategy,jdbcType=TINYINT},
+        collision_strategy = #{collisionStrategy,jdbcType=TINYINT},
         misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
         shutdown_strategy = #{shutdownStrategy,jdbcType=TINYINT},
         alert_options = #{alertOptions,jdbcType=TINYINT},
@@ -140,7 +140,7 @@
   <update id="updateNextScanTime">
     UPDATE sched_job
     SET next_scan_time = #{nextScanTime,jdbcType=TIMESTAMP},
-        scan_failed_count = #{scanFailedCount,jdbcType=INTEGER},
+        scan_failures = #{scanFailures,jdbcType=INTEGER},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND version = #{version,jdbcType=INTEGER}
@@ -163,7 +163,7 @@
     SET job_status = #{jobStatus,jdbcType=TINYINT},
         last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT},
         next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
-        scan_failed_count = 0,
+        scan_failures = 0,
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND job_status = 1

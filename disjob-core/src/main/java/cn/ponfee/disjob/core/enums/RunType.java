@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
+import lombok.Getter;
 
 /**
  * The run type enum definition.
@@ -24,6 +25,7 @@ import cn.ponfee.disjob.common.base.IntValueEnum;
  *
  * @author Ponfee
  */
+@Getter
 public enum RunType implements IntValueEnum<RunType> {
 
     /**
@@ -48,18 +50,23 @@ public enum RunType implements IntValueEnum<RunType> {
 
     ;
 
+    /**
+     * Trigger time dedup key value
+     */
+    public static final long DEDUP_KEY_VALUE = 0L;
+
     private final int value;
 
     /**
-     * Trigger time whether is unique
+     * Trigger time whether is deduplication
      */
-    private final boolean requiredUnique;
+    private final boolean dedupByTriggerTime;
 
     private final String desc;
 
-    RunType(int value, boolean requiredUnique, String desc) {
+    RunType(int value, boolean dedupByTriggerTime, String desc) {
         this.value = value;
-        this.requiredUnique = requiredUnique;
+        this.dedupByTriggerTime = dedupByTriggerTime;
         this.desc = desc;
     }
 
@@ -73,15 +80,11 @@ public enum RunType implements IntValueEnum<RunType> {
         return desc;
     }
 
-    public boolean isRequiredUnique() {
-        return requiredUnique;
-    }
-
-    public long getUniqueFlag() {
-        if (requiredUnique) {
-            return 0L;
+    public long getDedupKey() {
+        if (dedupByTriggerTime) {
+            return DEDUP_KEY_VALUE;
         }
-        throw new UnsupportedOperationException(this + " cannot supported unique flag.");
+        throw new UnsupportedOperationException(this + " cannot supported dedup key.");
     }
 
     public static RunType of(int value) {

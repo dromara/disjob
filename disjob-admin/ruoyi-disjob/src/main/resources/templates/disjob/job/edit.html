@@ -94,8 +94,8 @@
       <div class="form-group">
         <label class="col-sm-3 control-label is-required">执行冲突策略：</label>
         <div class="col-sm-9">
-          <select name="collidedStrategy" class="form-control m-b" th:with="enum=${@disjobService.enums('CollidedStrategy')}">
-            <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}" th:field="*{collidedStrategy}"></option>
+          <select name="collisionStrategy" class="form-control m-b" th:with="enum=${@disjobService.enums('CollisionStrategy')}">
+            <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}" th:field="*{collisionStrategy}"></option>
           </select>
         </div>
       </div>

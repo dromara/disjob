@@ -94,7 +94,7 @@ public class SchedJob extends BaseEntity {
     private Integer retryCount;
 
     /**
-     * 实例失败的重试间隔(毫秒)，阶梯递增(square of sched_instance.retried_count)
+     * 实例失败的重试间隔(毫秒)，阶梯递增(square of sched_instance.retry_times)
      */
     private Integer retryInterval;
 
@@ -128,9 +128,9 @@ public class SchedJob extends BaseEntity {
     /**
      * 冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并发执行；2-顺序执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务；
      *
-     * @see CollidedStrategy
+     * @see CollisionStrategy
      */
-    private Integer collidedStrategy;
+    private Integer collisionStrategy;
 
     /**
      * 过期策略：1-立即触发执行一次；2-跳过所有被错过的；3-执行所有被错过的；
@@ -154,7 +154,7 @@ public class SchedJob extends BaseEntity {
     private Integer shutdownStrategy;
 
     /**
-     * 告警选项(存储位运算`xor`的结果)：1-警报；2-通知；3-全选；
+     * 告警选项(bitwise OR)：1-警报；2-通知；3-全选；
      */
     private Integer alertOptions;
 
@@ -176,7 +176,7 @@ public class SchedJob extends BaseEntity {
     /**
      * 连续扫描失败的次数，连续失败次数达到阈值后自动禁用(set job_status=0)
      */
-    private Integer scanFailedCount;
+    private Integer scanFailures;
 
     /**
      * 行记录版本号
@@ -263,16 +263,16 @@ public class SchedJob extends BaseEntity {
         return true;
     }
 
-    public int incrementAndGetScanFailedCount() {
-        return ++this.scanFailedCount;
+    public int incrementAndGetScanFailures() {
+        return ++this.scanFailures;
     }
 
-    public boolean retryable(RunStatus runStatus, int retriedCount) {
+    public boolean retryable(RunStatus runStatus, int retryTimes) {
         Assert.state(runStatus.isTerminal(), "Run status must be terminated.");
         if (!runStatus.isFailure()) {
             return false;
         }
-        return !RetryType.NONE.equalsValue(retryType) && retriedCount < retryCount;
+        return !RetryType.NONE.equalsValue(retryType) && retryTimes < retryCount;
     }
 
     /**
@@ -299,7 +299,7 @@ public class SchedJob extends BaseEntity {
         this.jobStatus = defaultIfNull(jobStatus, JobStatus.DISABLED.value());
         this.retryType = defaultIfNull(retryType, RetryType.NONE.value());
         this.executeTimeout = defaultIfNull(executeTimeout, 0);
-        this.collidedStrategy = defaultIfNull(collidedStrategy, CollidedStrategy.CONCURRENT.value());
+        this.collisionStrategy = defaultIfNull(collisionStrategy, CollisionStrategy.CONCURRENT.value());
         this.misfireStrategy = defaultIfNull(misfireStrategy, MisfireStrategy.FIRE_ONCE_NOW.value());
         this.shutdownStrategy = defaultIfNull(shutdownStrategy, ShutdownStrategy.RESUME.value());
         this.triggerValue = StringUtils.trim(triggerValue);
@@ -307,7 +307,7 @@ public class SchedJob extends BaseEntity {
         // verify
         JobStatus.of(jobStatus);
         Assert.isTrue(executeTimeout >= 0, () -> "Invalid execute timeout: " + executeTimeout);
-        CollidedStrategy.of(collidedStrategy);
+        CollisionStrategy.of(collisionStrategy);
         MisfireStrategy.of(misfireStrategy);
         ShutdownStrategy.of(shutdownStrategy);
         AlertType.check(alertOptions);

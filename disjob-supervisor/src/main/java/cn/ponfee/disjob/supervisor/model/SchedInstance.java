@@ -78,9 +78,9 @@ public class SchedInstance extends BaseEntity {
     private Integer runType;
 
     /**
-     * 唯一标识(保证trigger_time唯一)：0-SCHEDULE/MANUAL；{instance_id}-其它场景；
+     * 去重键(保证trigger_time唯一)：0-SCHEDULE/MANUAL；{instance_id}-其它场景；
      */
-    private Long uniqueFlag;
+    private Long dedupKey;
 
     /**
      * 是否重试中
@@ -107,7 +107,7 @@ public class SchedInstance extends BaseEntity {
     /**
      * 当前是第几次重试(the maximum value is sched_job.retry_count)
      */
-    private Integer retriedCount;
+    private Integer retryTimes;
 
     /**
      * 工作流任务的当前节点(sched_workflow.cur_node，非工作流任务时为NULL)
@@ -127,8 +127,8 @@ public class SchedInstance extends BaseEntity {
     private Integer version;
 
     public static SchedInstance of(SchedInstance parent, long instanceId, long jobId,
-                                   RunType runType, long triggerTime, int retriedCount) {
-        return of(parent, parent.getWnstanceId(), instanceId, jobId, runType, triggerTime, retriedCount);
+                                   RunType runType, long triggerTime, int retryTimes) {
+        return of(parent, parent.getWnstanceId(), instanceId, jobId, runType, triggerTime, retryTimes);
     }
 
     /**
@@ -140,15 +140,15 @@ public class SchedInstance extends BaseEntity {
      * @param jobId        the job id
      * @param runType      the run type
      * @param triggerTime  the trigger time
-     * @param retriedCount the retried count
+     * @param retryTimes   the retry times
      * @return SchedInstance
      */
     public static SchedInstance of(SchedInstance parent, Long wnstanceId, long instanceId,
-                                   long jobId, RunType runType, long triggerTime, int retriedCount) {
+                                   long jobId, RunType runType, long triggerTime, int retryTimes) {
         Long rnstanceId = null, pnstanceId = null;
         if (parent != null) {
             rnstanceId = parent.obtainRnstanceId();
-            pnstanceId = parent.obtainRetryOriginalInstanceId();
+            pnstanceId = parent.obtainOriginalInstanceId();
         }
         SchedInstance instance = new SchedInstance();
         instance.setInstanceId(instanceId);
@@ -158,7 +158,7 @@ public class SchedInstance extends BaseEntity {
         instance.setJobId(jobId);
         instance.setRunType(runType.value());
         instance.setTriggerTime(triggerTime);
-        instance.setRetriedCount(retriedCount);
+        instance.setRetryTimes(retryTimes);
         instance.setRunStatus(RunStatus.WAITING.value());
         return instance;
     }
@@ -175,12 +175,12 @@ public class SchedInstance extends BaseEntity {
         return pnstanceId != null ? pnstanceId : instanceId;
     }
 
-    public long obtainRetryOriginalInstanceId() {
+    public long obtainOriginalInstanceId() {
         return isRunRetry() ? pnstanceId : instanceId;
     }
 
-    public int obtainRetriedCount() {
-        return retriedCount != null ? retriedCount : 0;
+    public int obtainRetryTimes() {
+        return retryTimes != null ? retryTimes : 0;
     }
 
     @Transient
@@ -242,10 +242,10 @@ public class SchedInstance extends BaseEntity {
         return StringUtils.isBlank(workflowCurNode) ? null : DAGNode.fromString(workflowCurNode);
     }
 
-    public void fillUniqueFlag() {
-        RunType type = RunType.of(runType);
+    public void fillDedupKey() {
+        boolean isUnique = RunType.of(runType).isDedupByTriggerTime();
         // Workflow node trigger time is not unique
-        this.uniqueFlag = (type.isRequiredUnique() && !isWorkflowNode()) ? type.getUniqueFlag() : instanceId;
+        this.dedupKey = (isUnique && !isWorkflowNode()) ? RunType.DEDUP_KEY_VALUE : instanceId;
     }
 
     public void markTerminated(RunStatus runStatus, Date runEndTime) {

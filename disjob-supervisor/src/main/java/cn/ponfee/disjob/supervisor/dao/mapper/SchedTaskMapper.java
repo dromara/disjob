@@ -40,16 +40,16 @@ public interface SchedTaskMapper {
 
     List<SchedTask> findLargeByInstanceIdAndStatuses(@Param("instanceId") long instanceId, @Param("statuses") List<Integer> statuses);
 
-    int incrementDispatchFailedCount(@Param("taskId") long taskId, @Param("currentDispatchFailedCount") int currentDispatchFailedCount);
+    int incrementDispatchFailures(@Param("taskId") long taskId, @Param("currentDispatchFailures") int currentDispatchFailures);
 
     int start(@Param("taskId") long taskId,
               @Param("worker") String worker,
-              @Param("startRequestId") String startRequestId,
+              @Param("startIdempotencyKey") String startIdempotencyKey,
               @Param("executeStartTime") Date executeStartTime);
 
     boolean checkStartIdempotent(@Param("taskId") long taskId,
                                  @Param("worker") String worker,
-                                 @Param("startRequestId") String startRequestId);
+                                 @Param("startIdempotencyKey") String startIdempotencyKey);
 
     int terminate(@Param("taskId") long taskId,
                   @Param("worker") String worker,

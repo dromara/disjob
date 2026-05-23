@@ -300,15 +300,15 @@ public class JobManager {
     public StartTaskResult startTask(StartTaskParam param) {
         param.check();
         return doInSynchronizedTransaction0(param.getInstanceId(), param.getWnstanceId(), lockInstanceId -> {
-            String startRequestId = param.getStartRequestId();
-            log.info("Task trace [{}] starting: {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
+            String startIdempotencyKey = param.getStartIdempotencyKey();
+            log.info("Task trace [{}] starting: {}, {}", param.getTaskId(), param.getWorker(), startIdempotencyKey);
             Date now = new Date();
             // 如果先`get`查一次然后`start`，最后再`get`查会返回之前get时的一级缓存
-            if (isNoAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), startRequestId, now))) {
-                if (!taskMapper.checkStartIdempotent(param.getTaskId(), param.getWorker(), startRequestId)) {
+            if (isNoAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), startIdempotencyKey, now))) {
+                if (!taskMapper.checkStartIdempotent(param.getTaskId(), param.getWorker(), startIdempotencyKey)) {
                     return StartTaskResult.failure("Start task failure.");
                 }
-                log.info("Start task idempotent: {}, {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
+                log.info("Start task idempotent: {}, {}, {}", param.getTaskId(), param.getWorker(), startIdempotencyKey);
             }
             if (isNoAffectedRow(instanceMapper.start(param.getInstanceId(), now))) {
                 SchedInstance instance = instanceMapper.get(param.getInstanceId());
@@ -527,7 +527,7 @@ public class JobManager {
     // ------------------------------------------------------------------private methods
 
     private void saveInstances(List<SchedInstance> instances, List<SchedWorkflow> workflows, List<SchedTask> tasks) {
-        instances.forEach(SchedInstance::fillUniqueFlag);
+        instances.forEach(SchedInstance::fillDedupKey);
         Collects.batchProcess(instances, instanceMapper::insertBatch, PROCESS_BATCH_SIZE);
         Collects.batchProcess(workflows, workflowMapper::insertBatch, PROCESS_BATCH_SIZE);
         Collects.batchProcess(tasks, taskMapper::insertBatch, PROCESS_BATCH_SIZE);
@@ -548,12 +548,12 @@ public class JobManager {
         if (!task.isWaiting()) {
             return false;
         }
-        int currentDispatchFailedCount = task.getDispatchFailedCount();
-        if (currentDispatchFailedCount >= conf.getTaskDispatchFailedCountThreshold()) {
+        int currentDispatchFailures = task.getDispatchFailures();
+        if (currentDispatchFailures >= conf.getMaximumTaskDispatchFailures()) {
             return true;
         }
-        return isOneAffectedRow(taskMapper.incrementDispatchFailedCount(taskId, currentDispatchFailedCount))
-            && (currentDispatchFailedCount + 1) == conf.getTaskDispatchFailedCountThreshold();
+        return isOneAffectedRow(taskMapper.incrementDispatchFailures(taskId, currentDispatchFailures))
+            && (currentDispatchFailures + 1) == conf.getMaximumTaskDispatchFailures();
     }
 
     private void parseTriggerConfig(SchedJob job) {
@@ -845,15 +845,15 @@ public class JobManager {
 
     private Long retryJob0(SchedInstance failed) throws JobException {
         SchedJob job = getRequiredJob(failed.getJobId());
-        int retriedCount = failed.obtainRetriedCount();
-        if (!job.retryable(RunStatus.of(failed.getRunStatus()), retriedCount)) {
+        int retryTimes = failed.obtainRetryTimes();
+        if (!job.retryable(RunStatus.of(failed.getRunStatus()), retryTimes)) {
             return null;
         }
 
         // build retry instance
         long retryInstanceId = generateId();
-        long triggerTime = job.computeRetryTriggerTime(++retriedCount);
-        SchedInstance retryInstance = SchedInstance.of(failed, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retriedCount);
+        long triggerTime = job.computeRetryTriggerTime(++retryTimes);
+        SchedInstance retryInstance = SchedInstance.of(failed, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retryTimes);
         retryInstance.setWorkflowCurNode(failed.getWorkflowCurNode());
         // build retry tasks
         List<SchedTask> tasks = splitRetryTask(job, failed, retryInstance);
@@ -978,7 +978,7 @@ public class JobManager {
 
     private void stopRetrying(SchedInstance instance, RunStatus toStatus) {
         if (instance.isRunRetry()) {
-            long id = instance.obtainRetryOriginalInstanceId();
+            long id = instance.obtainOriginalInstanceId();
             boolean updated = instanceMapper.updateRetrying(id, false, toStatus, RunStatus.CANCELED);
             Assert.state(updated, () -> "Stop retrying failed: " + toStatus + ", " + instance);
         }

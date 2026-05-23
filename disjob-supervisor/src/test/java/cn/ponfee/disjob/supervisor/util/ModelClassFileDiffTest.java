@@ -46,19 +46,19 @@ public class ModelClassFileDiffTest {
         assertThat(Objects.equals(null, null)).isTrue();
 
         // SchedJob ⇋ AddSchedJobRequest
-        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobAddRequest.class), "createdAt", "createdBy", "id", "updatedAt", "updatedBy", "lastTriggerTime", "version", "jobId", "nextTriggerTime", "nextScanTime", "scanFailedCount");
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobAddRequest.class), "createdAt", "createdBy", "id", "updatedAt", "updatedBy", "lastTriggerTime", "version", "jobId", "nextTriggerTime", "nextScanTime", "scanFailures");
 
         // SchedJob ⇋ UpdateSchedJobRequest
-        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobUpdateRequest.class), "createdAt", "createdBy", "id", "updatedAt", "updatedBy", "lastTriggerTime", "nextTriggerTime", "nextScanTime", "scanFailedCount");
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobUpdateRequest.class), "createdAt", "createdBy", "id", "updatedAt", "updatedBy", "lastTriggerTime", "nextTriggerTime", "nextScanTime", "scanFailures");
 
         // SchedJob ⇋ SchedJobResponse
-        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobResponse.class), "id", "nextScanTime", "scanFailedCount");
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobResponse.class), "id", "nextScanTime", "scanFailures");
 
         // SchedInstance ⇋ SchedInstanceResponse
-        assertSame(ClassUtils.fieldDiff(SchedInstance.class, SchedInstanceResponse.class), "version", "uniqueFlag", "createdAt", "runDuration", "id", "updatedAt", "isTreeLeaf", "tasks", "nextScanTime");
+        assertSame(ClassUtils.fieldDiff(SchedInstance.class, SchedInstanceResponse.class), "version", "dedupKey", "createdAt", "runDuration", "id", "updatedAt", "isTreeLeaf", "tasks", "nextScanTime");
 
         // SchedTask ⇋ SchedTaskResponse
-        assertSame(ClassUtils.fieldDiff(SchedTask.class, SchedTaskResponse.class), "createdAt", "id", "executeDuration", "updatedAt", "dispatchFailedCount");
+        assertSame(ClassUtils.fieldDiff(SchedTask.class, SchedTaskResponse.class), "createdAt", "id", "executeDuration", "updatedAt", "dispatchFailures");
 
         // SchedGroup ⇋ SchedGroupResponse
         assertSame(ClassUtils.fieldDiff(SchedGroup.class, SchedGroupResponse.class), "id");

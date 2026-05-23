@@ -76,7 +76,7 @@ public class AlertInstanceEvent extends AlertEvent {
     /**
      * 已重试的次数
      */
-    private int retriedCount;
+    private int retryTimes;
 
     @Override
     public String buildTitle() {
@@ -97,8 +97,8 @@ public class AlertInstanceEvent extends AlertEvent {
         content.append(String.format(format, "计划触发时间：", formatDate(triggerTime)));
         content.append(String.format(format, "运行开始时间：", formatDate(runStartTime)));
         content.append(String.format(format, "运行结束时间：", formatDate(runEndTime)));
-        if (retriedCount > 0) {
-            content.append(String.format(format, "已重试的次数：", retriedCount));
+        if (retryTimes > 0) {
+            content.append(String.format(format, "已重试的次数：", retryTimes));
         }
         return content.toString();
     }

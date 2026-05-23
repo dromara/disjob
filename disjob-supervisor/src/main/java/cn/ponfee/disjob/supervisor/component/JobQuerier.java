@@ -72,7 +72,7 @@ public class JobQuerier {
     }
 
     public SchedInstance getInstance(long jobId, long triggerTime, RunType runType) {
-        return instanceMapper.getByUniqueKey(jobId, triggerTime, runType.value(), runType.getUniqueFlag());
+        return instanceMapper.getByDedupKey(jobId, triggerTime, runType.value(), runType.getDedupKey());
     }
 
     /**

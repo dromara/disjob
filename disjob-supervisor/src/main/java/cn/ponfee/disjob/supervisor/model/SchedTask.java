@@ -96,7 +96,7 @@ public class SchedTask extends BaseEntity {
     /**
      * 任务派发失败的次数(失败次数达到阈值后需要终止)
      */
-    private Integer dispatchFailedCount;
+    private Integer dispatchFailures;
 
     /**
      * 执行错误信息

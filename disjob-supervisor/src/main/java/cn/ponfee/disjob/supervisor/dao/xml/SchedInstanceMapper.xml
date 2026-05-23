@@ -5,7 +5,7 @@
   <sql id="Base_Column_List">
     instance_id, rnstance_id, pnstance_id, wnstance_id, job_id,
     trigger_time, run_type, is_retrying AS retrying, run_status,
-    run_start_time, run_end_time, retried_count, next_scan_time,
+    run_start_time, run_end_time, retry_times, next_scan_time,
     workflow_cur_node, version
   </sql>
 
@@ -18,10 +18,10 @@
       job_id,
       trigger_time,
       run_type,
-      unique_flag,
+      dedup_key,
       run_status,
       run_start_time,
-      retried_count,
+      retry_times,
       workflow_cur_node
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
@@ -33,10 +33,10 @@
       #{item.jobId,jdbcType=BIGINT},
       #{item.triggerTime,jdbcType=BIGINT},
       #{item.runType,jdbcType=TINYINT},
-      #{item.uniqueFlag,jdbcType=BIGINT},
+      #{item.dedupKey,jdbcType=BIGINT},
       #{item.runStatus,jdbcType=TINYINT},
       #{item.runStartTime,jdbcType=TIMESTAMP},
-      #{item.retriedCount,jdbcType=TINYINT},
+      #{item.retryTimes,jdbcType=TINYINT},
       #{item.workflowCurNode,jdbcType=VARCHAR}
     )
     </foreach>
@@ -54,13 +54,13 @@
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
-  <select id="getByUniqueKey" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
+  <select id="getByDedupKey" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM sched_instance
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND trigger_time = #{triggerTime,jdbcType=BIGINT}
       AND run_type = #{runType,jdbcType=TINYINT}
-      AND unique_flag = #{uniqueFlag,jdbcType=BIGINT}
+      AND dedup_key = #{dedupKey,jdbcType=BIGINT}
   </select>
 
   <select id="getWnstanceId" parameterType="_long" resultType="long">

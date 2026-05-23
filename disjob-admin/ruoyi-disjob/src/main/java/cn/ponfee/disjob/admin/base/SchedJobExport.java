@@ -85,7 +85,7 @@ public class SchedJobExport {
     private Integer retryCount;
 
     /**
-     * 实例失败的重试间隔(毫秒)，阶梯递增(square of sched_instance.retried_count)
+     * 实例失败的重试间隔(毫秒)，阶梯递增(square of sched_instance.retry_times)
      */
     @Excel(name = "重试间隔(毫秒)")
     private Integer retryInterval;
@@ -124,7 +124,7 @@ public class SchedJobExport {
      * 冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并发执行；2-顺序执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务；
      */
     @Excel(name = "冲突策略")
-    private Integer collidedStrategy;
+    private Integer collisionStrategy;
 
     /**
      * 过期策略：1-立即触发执行一次；2-跳过所有被错过的；3-执行所有被错过的；
@@ -145,7 +145,7 @@ public class SchedJobExport {
     private Integer shutdownStrategy;
 
     /**
-     * 告警选项(存储位运算`xor`的结果)：1-警报；2-通知；3-全选；
+     * 告警选项(bitwise OR)：1-警报；2-通知；3-全选；
      */
     @Excel(name = "告警选项")
     private Integer alertOptions;
@@ -278,12 +278,12 @@ public class SchedJobExport {
         this.executeTimeout = executeTimeout;
     }
 
-    public Integer getCollidedStrategy() {
-        return collidedStrategy;
+    public Integer getCollisionStrategy() {
+        return collisionStrategy;
     }
 
-    public void setCollidedStrategy(Integer collidedStrategy) {
-        this.collidedStrategy = collidedStrategy;
+    public void setCollisionStrategy(Integer collisionStrategy) {
+        this.collisionStrategy = collisionStrategy;
     }
 
     public Integer getMisfireStrategy() {

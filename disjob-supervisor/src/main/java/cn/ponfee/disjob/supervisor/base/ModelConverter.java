@@ -65,7 +65,7 @@ public final class ModelConverter {
 
     public static SplitJobParam toSplitJobParam(SchedJob job, SchedInstance instance) {
         Assert.isTrue(JobType.of(job.getJobType()).isGeneral(), "Job must be general.");
-        return toSplitJobParam(job, instance.getRetriedCount(), job.getJobExecutor(), null);
+        return toSplitJobParam(job, instance.getRetryTimes(), job.getJobExecutor(), null);
     }
 
     public static SplitJobParam toSplitJobParam(SchedJob job, SchedInstance instance,
@@ -73,7 +73,7 @@ public final class ModelConverter {
         Assert.isTrue(JobType.of(job.getJobType()).isWorkflow(), "Job must be workflow.");
         Assert.isTrue(instance.isWorkflowNode(), () -> "Split job must be node instance: " + instance);
         String curJobExecutor = instance.parseWorkflowCurNode().getName();
-        return toSplitJobParam(job, instance.getRetriedCount(), curJobExecutor, predecessorInstances);
+        return toSplitJobParam(job, instance.getRetryTimes(), curJobExecutor, predecessorInstances);
     }
 
     public static StartTaskResult toStartTaskResult(SchedTask task) {
@@ -104,8 +104,8 @@ public final class ModelConverter {
         event.setTriggerTime(new Date(original.getTriggerTime()));
         event.setRunStartTime(original.getRunStartTime());
         event.setRunEndTime(current.getRunEndTime());
-        // 如果是DAG任务，original和current都是为lead实例，此时的retriedCount始终为0
-        event.setRetriedCount(current.getRetriedCount());
+        // 如果是DAG任务，original和current都是为lead实例，此时的retryTimes始终为0
+        event.setRetryTimes(current.getRetryTimes());
         return event;
     }
 
@@ -120,13 +120,13 @@ public final class ModelConverter {
         return target;
     }
 
-    private static SplitJobParam toSplitJobParam(SchedJob job, int retriedCount, String jobExecutor,
+    private static SplitJobParam toSplitJobParam(SchedJob job, int retryTimes, String jobExecutor,
                                                  List<WorkflowInstance> predecessorInstances) {
         SplitJobParam param = new SplitJobParam();
         param.setJobExecutor(jobExecutor);
         param.setJobParam(job.getJobParam());
         param.setRetryCount(job.getRetryCount());
-        param.setRetriedCount(retriedCount);
+        param.setRetryTimes(retryTimes);
         param.setJobType(JobType.of(job.getJobType()));
         param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
         param.setPredecessorInstances(predecessorInstances);

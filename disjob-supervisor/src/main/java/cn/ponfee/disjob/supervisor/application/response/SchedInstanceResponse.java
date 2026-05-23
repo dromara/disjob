@@ -61,7 +61,7 @@ public class SchedInstanceResponse extends ToJsonString implements Serializable 
     private Date runStartTime;
     private Date runEndTime;
     private Long runDuration;
-    private Integer retriedCount;
+    private Integer retryTimes;
     private String workflowCurNode;
 
     /**

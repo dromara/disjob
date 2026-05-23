@@ -47,7 +47,7 @@ import java.util.concurrent.SynchronousQueue;
 public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private final int scanBatchSize;
-    private final int jobScanFailedCountThreshold;
+    private final int maximumJobScanFailures;
     private final JobManager jobManager;
     private final JobQuerier jobQuerier;
     private final WorkerClient workerClient;
@@ -65,7 +65,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         SingletonClassConstraint.constrain(this);
 
         this.scanBatchSize = conf.getScanBatchSize();
-        this.jobScanFailedCountThreshold = conf.getJobScanFailedCountThreshold();
+        this.maximumJobScanFailures = conf.getMaximumJobScanFailures();
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
         this.workerClient = workerClient;
@@ -147,11 +147,11 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             disableJob(job, "scan process failed, " + e.getMessage());
         } catch (Throwable t) {
             log.error("Scan trigger job error: {}", job, t);
-            if (job.getScanFailedCount() >= jobScanFailedCountThreshold) {
+            if (job.getScanFailures() >= maximumJobScanFailures) {
                 disableJob(job, "scan over failed, " + t.getMessage());
             } else {
-                int scanFailedCount = job.incrementAndGetScanFailedCount();
-                updateNextScanTime(job, now, IntMath.pow(scanFailedCount, 2) * 5000L);
+                int scanFailures = job.incrementAndGetScanFailures();
+                updateNextScanTime(job, now, IntMath.pow(scanFailures, 2) * 5000L);
             }
         }
     }
@@ -206,9 +206,9 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
      * @return {@code true} will block the next trigger
      */
     private boolean shouldBlockCollidedTrigger(SchedJob job, Date now) {
-        CollidedStrategy collidedStrategy = CollidedStrategy.of(job.getCollidedStrategy());
+        CollisionStrategy collisionStrategy = CollisionStrategy.of(job.getCollisionStrategy());
         Long lastTriggerTime = job.getLastTriggerTime();
-        if (CollidedStrategy.CONCURRENT == collidedStrategy || lastTriggerTime == null) {
+        if (CollisionStrategy.CONCURRENT == collisionStrategy || lastTriggerTime == null) {
             return false;
         }
         SchedInstance lastInstance = jobQuerier.getInstance(job.getJobId(), lastTriggerTime, RunType.SCHEDULE);
@@ -216,7 +216,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             return false;
         }
         if (!RunStatus.of(lastInstance.getRunStatus()).isTerminal()) {
-            blockCollidedTrigger(job, lastInstance, collidedStrategy, now);
+            blockCollidedTrigger(job, lastInstance, collisionStrategy, now);
             return true;
         }
 
@@ -226,15 +226,15 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             return false;
         } else {
             SchedInstance retryingInstance = jobQuerier.getRetryingInstance(lastInstance.getInstanceId());
-            blockCollidedTrigger(job, retryingInstance, collidedStrategy, now);
+            blockCollidedTrigger(job, retryingInstance, collisionStrategy, now);
             return true;
         }
     }
 
-    private void blockCollidedTrigger(SchedJob job, SchedInstance instance, CollidedStrategy strategy, Date now) {
+    private void blockCollidedTrigger(SchedJob job, SchedInstance instance, CollisionStrategy strategy, Date now) {
         if (job.isFixedTriggerType()) {
             // job.getNextTriggerTime() != Long.MAX_VALUE
-            log.warn("Fixed trigger type instance collided: {}", instance);
+            log.warn("Fixed trigger type instance be collided: {}", instance);
         }
 
         if (job.getNextTriggerTime() > now.getTime()) {
@@ -243,7 +243,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             return;
         }
 
-        if (strategy == CollidedStrategy.DISCARD) {
+        if (strategy == CollisionStrategy.DISCARD) {
             // 丢弃执行：基于当前时间来更新下一次的执行时间
             Integer misfireStrategy = job.getMisfireStrategy();
             job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_LOST.value());
@@ -252,22 +252,22 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             job.setMisfireStrategy(misfireStrategy);
             if (job.getNextTriggerTime() == null || job.getNextTriggerTime() < now.getTime()) {
                 // It has not next triggered time, then stop the job
-                disableJob(job, "Collide disabled, invalid next trigger time: " + job.getNextTriggerTime());
+                disableJob(job, "Disable collided next trigger time: " + job.getNextTriggerTime());
             } else {
                 jobManager.updateJobNextTriggerTime(job);
                 updateNextScanTime(job, now, job.getNextTriggerTime() - now.getTime());
             }
-        } else if (strategy == CollidedStrategy.SEQUENTIAL) {
+        } else if (strategy == CollisionStrategy.SEQUENTIAL) {
             // 串行执行：更新下一次的扫描时间
             updateNextScanTime(job, now, 30000L);
-        } else if (strategy == CollidedStrategy.OVERRIDE) {
+        } else if (strategy == CollisionStrategy.OVERRIDE) {
             // 覆盖执行：先取消上一次的执行（或取消上一次的重试实例）
             if (instance != null) {
-                jobManager.cancelInstance(instance.getInstanceId(), Operation.COLLIDE_CANCEL);
+                jobManager.cancelInstance(instance.getInstanceId(), Operation.COLLISION_CANCEL);
             }
             updateNextScanTime(job, now, 3000L);
         } else {
-            throw new UnsupportedOperationException("Unsupported collided strategy: " + strategy);
+            throw new UnsupportedOperationException("Unsupported collision strategy: " + strategy);
         }
     }
 

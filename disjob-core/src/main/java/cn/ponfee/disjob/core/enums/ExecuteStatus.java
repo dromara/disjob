@@ -51,7 +51,7 @@ public enum ExecuteStatus implements IntValueEnum<ExecuteStatus> {
     COMPLETED(40, RunStatus.COMPLETED, "执行完成"),
 
     /**
-     * 派发失败取消(任务派发失败的次数sched_task.dispatch_failed_count > SupervisorProperties#taskDispatchFailedCountThreshold)
+     * 派发失败取消(任务派发失败的次数sched_task.dispatch_failures > SupervisorProperties#maximumTaskDispatchFailures)
      */
     DISPATCH_FAILED(50, RunStatus.CANCELED, "派发失败"),
 
@@ -86,9 +86,9 @@ public enum ExecuteStatus implements IntValueEnum<ExecuteStatus> {
     BROADCAST_ABORTED(56, RunStatus.CANCELED, "广播终止"),
 
     /**
-     * 执行冲突取消(sched_job.collided_strategy=3 并且 上次任务还未执行完成 时取消上次任务)
+     * 执行冲突取消(sched_job.collision_strategy=3 并且 上次任务还未执行完成 时取消上次任务)
      */
-    COLLIDE_CANCELED(57, RunStatus.CANCELED, "冲突取消"),
+    COLLISION_CANCELED(57, RunStatus.CANCELED, "冲突取消"),
 
     /**
      * Worker关机取消(sched_job.shutdown_strategy=3 并且 Worker正常关闭 时被取消)

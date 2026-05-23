@@ -93,7 +93,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setTriggerType(TriggerType.CRON.value());
         job.setTriggerValue("0/10 * * * * ?");
         job.setExecuteTimeout(3600000);
-        job.setCollidedStrategy(CollidedStrategy.CONCURRENT.value());
+        job.setCollisionStrategy(CollisionStrategy.CONCURRENT.value());
         job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_LOST.value());
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setShutdownStrategy(ShutdownStrategy.RESUME.value());
@@ -133,7 +133,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setNextTriggerTime(JavaUtilDateFormat.DEFAULT.parse(date).getTime());
         job.setExecuteTimeout(3600000);
         job.setMisfireStrategy(MisfireStrategy.FIRE_ONCE_NOW.value());
-        job.setCollidedStrategy(CollidedStrategy.CONCURRENT.value());
+        job.setCollisionStrategy(CollisionStrategy.CONCURRENT.value());
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setShutdownStrategy(ShutdownStrategy.RESUME.value());
         job.setAlertOptions(0);
@@ -172,7 +172,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setNextTriggerTime(JavaUtilDateFormat.DEFAULT.parse(date).getTime());
         job.setExecuteTimeout(3600000);
         job.setMisfireStrategy(MisfireStrategy.FIRE_ONCE_NOW.value());
-        job.setCollidedStrategy(CollidedStrategy.CONCURRENT.value());
+        job.setCollisionStrategy(CollisionStrategy.CONCURRENT.value());
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setShutdownStrategy(ShutdownStrategy.RESUME.value());
         job.setAlertOptions(0);

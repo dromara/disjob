@@ -19,12 +19,12 @@ package cn.ponfee.disjob.core.enums;
 import cn.ponfee.disjob.common.base.IntValueEnum;
 
 /**
- * The collided strategy enum definition.
- * <p>mapped by sched_job.collided_strategy
+ * The collision strategy enum definition.
+ * <p>mapped by sched_job.collision_strategy
  *
  * @author Ponfee
  */
-public enum CollidedStrategy implements IntValueEnum<CollidedStrategy> {
+public enum CollisionStrategy implements IntValueEnum<CollisionStrategy> {
 
     /**
      * 可同时并发执行(并行Parallel)
@@ -51,7 +51,7 @@ public enum CollidedStrategy implements IntValueEnum<CollidedStrategy> {
     private final int value;
     private final String desc;
 
-    CollidedStrategy(int value, String desc) {
+    CollisionStrategy(int value, String desc) {
         this.value = value;
         this.desc = desc;
     }
@@ -66,15 +66,15 @@ public enum CollidedStrategy implements IntValueEnum<CollidedStrategy> {
         return desc;
     }
 
-    public static CollidedStrategy of(int value) {
-        for (CollidedStrategy e : VALUES) {
+    public static CollisionStrategy of(int value) {
+        for (CollisionStrategy e : VALUES) {
             if (e.value() == value) {
                 return e;
             }
         }
-        throw new IllegalArgumentException("Invalid collided strategy value: " + value);
+        throw new IllegalArgumentException("Invalid collision strategy value: " + value);
     }
 
-    private static final CollidedStrategy[] VALUES = CollidedStrategy.values();
+    private static final CollisionStrategy[] VALUES = CollisionStrategy.values();
 
 }
