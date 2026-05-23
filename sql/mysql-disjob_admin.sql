@@ -571,7 +571,7 @@ create table sys_notice (
 -- 初始化-公告信息表数据
 -- ----------------------------
 insert into sys_notice values('1', 'Disjob框架介绍', '1', '<p><span style=\"color: rgb(230, 0, 0);\">项目介绍</span></p><p><font color=\"#333333\">一款分布式的任务调度与分布式计算框架，除了具备常规的任务调度功能外，还提供暂停/取消运行中的任务、恢复执行已暂停的任务、任务分片、失败重试、广播任务、任务依赖、工作流任务(DAG)、管理器与执行器分离部署、Web管理后台等能力。</font></p><p><img src=\"/disjob.png" style=\"width:100px;\"></p><p><span style=\"color: rgb(230, 0, 0);\">官网及演示</span></p><p><span style=\"color: rgb(51, 51, 51);\">演示地址：</span><a href=\"http://ponfee.cn:8000/index" target=\"_blank\">http://ponfee.cn:8000/index</a></p><p><span style=\"color: rgb(51, 51, 51);\">Github地址：</span><a href=\"https://github.com/dromara/disjob" target=\"_blank\">https://github.com/dromara/disjob</a></p><p><span style=\"color: rgb(51, 51, 51);\">Gitee地址：</span><a href=\"https://gitee.com/dromara/disjob" target=\"_blank\">https://gitee.com/dromara/disjob</a></p><p><span style=\"color: rgb(51, 51, 51);\">Gitcode地址：</span><a href=\"https://gitcode.com/dromara/disjob" target=\"_blank\">https://gitcode.com/dromara/disjob</a></p>', '0', 'admin', sysdate(), '', null, '管理员');
-insert into sys_notice values('2', 'Disjob版本发布', '2', '新版本：2.2.3', '0', 'admin', sysdate(), '', null, '管理员');
+insert into sys_notice values('2', 'Disjob版本发布', '2', '新版本：2.2.4', '0', 'admin', sysdate(), '', null, '管理员');
 
 -- ----------------------------
 -- 19、公告已读记录表
