@@ -1,5 +1,6 @@
 package com.ruoyi.framework.shiro.web;
 
+import jakarta.servlet.Filter;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.filter.InvalidRequestFilter;
@@ -11,8 +12,8 @@ import org.apache.shiro.web.mgt.WebSecurityManager;
 import org.apache.shiro.web.servlet.AbstractShiroFilter;
 import org.springframework.beans.factory.BeanInitializationException;
 
-import javax.servlet.Filter;
 import java.util.Map;
+
 
 /**
  * 自定义ShiroFilterFactoryBean解决资源中文路径问题

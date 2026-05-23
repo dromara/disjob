@@ -76,6 +76,11 @@ public class EmailAlertSenderProperties extends AlertSenderProperties {
     private Map<String, String> properties = new HashMap<>();
 
     /**
+     * SSL configuration.
+     */
+    private final Ssl ssl = new Ssl();
+
+    /**
      * Session JNDI name. When set, takes precedence over other Session settings.
      */
     private String jndiName;
@@ -84,5 +89,24 @@ public class EmailAlertSenderProperties extends AlertSenderProperties {
      * Testing email service connectivity on startup.
      */
     private boolean testConnection = false;
+
+    @Getter
+    @Setter
+    public static class Ssl {
+        /**
+         * Whether to enable SSL support. If enabled, 'mail.(protocol).ssl.enable'
+         * property is set to 'true'.
+         */
+        private boolean enabled = false;
+
+        /**
+         * SSL bundle name. If set, 'mail.(protocol).ssl.socketFactory' property is set to
+         * an SSLSocketFactory obtained from the corresponding SSL bundle.
+         * <p>
+         * Note that the STARTTLS command can use the corresponding SSLSocketFactory, even
+         * if the 'mail.(protocol).ssl.enable' property is not set.
+         */
+        private String bundle;
+    }
 
 }

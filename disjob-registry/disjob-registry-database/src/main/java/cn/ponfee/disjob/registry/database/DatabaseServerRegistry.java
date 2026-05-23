@@ -24,9 +24,9 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
+import jakarta.annotation.PreDestroy;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PreDestroy;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
