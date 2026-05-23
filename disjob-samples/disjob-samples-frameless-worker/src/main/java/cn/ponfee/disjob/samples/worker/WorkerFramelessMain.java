@@ -18,7 +18,6 @@ package cn.ponfee.disjob.samples.worker;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.ShutdownHookManager;
-import cn.ponfee.disjob.common.spring.RedisTemplateFactory;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.spring.YamlProperties;
@@ -33,8 +32,8 @@ import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.core.worker.WorkerRpcService;
 import cn.ponfee.disjob.core.worker.dto.ExecuteTaskParam;
 import cn.ponfee.disjob.registry.WorkerRegistry;
-import cn.ponfee.disjob.registry.redis.RedisWorkerRegistry;
-import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
+import cn.ponfee.disjob.registry.nacos.NacosWorkerRegistry;
+import cn.ponfee.disjob.registry.nacos.configuration.NacosRegistryProperties;
 import cn.ponfee.disjob.worker.WorkerStartup;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
@@ -43,7 +42,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -119,12 +117,8 @@ public class WorkerFramelessMain {
     }
 
     private static WorkerRegistry createWorkerRegistry(YamlProperties config, RestTemplate restTemplate) {
-        RedisRegistryProperties registryProps = config.bind(RedisRegistryProperties.KEY_PREFIX, RedisRegistryProperties.class);
-        RedisProperties redisProps = config.bind(RedisRegistryProperties.KEY_PREFIX, RedisProperties.class);
-        @SuppressWarnings("all")
-        RedisTemplateFactory redisTemplateFactory = new RedisTemplateFactory(redisProps);
-        ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, redisTemplateFactory::close);
-        return new RedisWorkerRegistry(registryProps, restTemplate, redisTemplateFactory.getStringRedisTemplate());
+        NacosRegistryProperties registryProps = config.bind(NacosRegistryProperties.KEY_PREFIX, NacosRegistryProperties.class);
+        return new NacosWorkerRegistry(registryProps, restTemplate);
     }
 
     private static VertxWebServer createVertxWebServer(Worker.Local localWorker, TimingWheel<ExecuteTaskParam> timingWheel,
