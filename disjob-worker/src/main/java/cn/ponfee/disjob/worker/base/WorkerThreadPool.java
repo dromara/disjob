@@ -24,7 +24,7 @@ import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.enums.ExecuteState;
+import cn.ponfee.disjob.core.enums.ExecuteStatus;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.supervisor.SupervisorRpcService;
 import cn.ponfee.disjob.core.supervisor.dto.StartTaskResult;
@@ -261,7 +261,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         if (pair == null) {
             log.warn("Not found executing task: {}, {}", taskId, ops);
             // 某些异常场景导致任务状态更新失败停留在EXECUTING且任务已从线程池中移除，在此处修复状态：EXECUTING -> (PAUSED|CANCELED)
-            stopTask(task, ops, ops.name() + " aborted EXECUTING state task");
+            stopTask(task, ops, ops.name() + " aborted EXECUTING status task");
         } else {
             stopTask(pair.getLeft(), pair.getRight(), ops);
         }
@@ -335,10 +335,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     boolean updated = task.updateOperation(ops, Operation.TRIGGER);
                     log.info("Execute task revert to trigger: {}, {}, {}", task.getTaskId(), ops, updated);
                 }
-                stopTask(task, Operation.TRIGGER, ExecuteState.COMPLETED, null);
+                stopTask(task, Operation.TRIGGER, ExecuteStatus.COMPLETED, null);
             } else {
                 log.error("Execute task failed: {}, {}", task, result);
-                stopTask(task, Operation.TRIGGER, ExecuteState.EXECUTE_FAILED, Objects.toString(result, "null"));
+                stopTask(task, Operation.TRIGGER, ExecuteStatus.EXECUTE_FAILED, Objects.toString(result, "null"));
             }
         } catch (OperationTaskException e) {
             log.error("Operation task exception: {}, {}, {}", e.operation(), task, e.getMessage());
@@ -360,8 +360,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 } else {
                     log.error("Execute task error: {}", task, t);
                 }
-                ExecuteState toState = (phase == 1) ? ExecuteState.INITIALIZE_EXCEPTION : ExecuteState.EXECUTE_EXCEPTION;
-                stopTask(task, Operation.TRIGGER, toState, Throwables.getRootCauseStackTrace(t, ERR_MSG_MAX_LENGTH));
+                ExecuteStatus toStatus = (phase == 1) ? ExecuteStatus.INITIALIZE_EXCEPTION : ExecuteStatus.EXECUTE_EXCEPTION;
+                stopTask(task, Operation.TRIGGER, toStatus, Throwables.getRootCauseStackTrace(t, ERR_MSG_MAX_LENGTH));
             }
             Throwables.rethrowIfFatal(t);
         } finally {
@@ -390,19 +390,19 @@ public class WorkerThreadPool extends Thread implements Closeable {
     }
 
     private void stopTask(WorkerTask task, Operation ops, String errorMsg) {
-        stopTask(task, ops, ops.toState(), errorMsg);
+        stopTask(task, ops, ops.toStatus(), errorMsg);
     }
 
-    private void stopTask(WorkerTask task, Operation ops, ExecuteState toState, String errorMsg) {
+    private void stopTask(WorkerTask task, Operation ops, ExecuteStatus toStatus, String errorMsg) {
         Assert.notNull(ops, "Stop task operation cannot be null.");
         if (!task.updateOperation(ops, null)) {
-            log.info("Stop task failed: {}, {}, {}", task.getTaskId(), ops, toState);
+            log.info("Stop task failed: {}, {}, {}", task.getTaskId(), ops, toStatus);
             return;
         }
         completedTaskCounter.incrementAndGet();
-        StopTaskParam param = task.toStopTaskParam(ops, toState, errorMsg);
-        log.info("Stop task operation: {}, {}, {}", task.getTaskId(), ops, toState);
-        Supplier<String> msgSupplier = () -> "Stop task error: " + task.getTaskId() + ", " + ops + ", " + toState;
+        StopTaskParam param = task.toStopTaskParam(ops, toStatus, errorMsg);
+        log.info("Stop task operation: {}, {}, {}", task.getTaskId(), ops, toStatus);
+        Supplier<String> msgSupplier = () -> "Stop task error: " + task.getTaskId() + ", " + ops + ", " + toStatus;
         CoreUtils.doInSynchronized(task.getLockInstanceId(), () -> supervisorRpcClient.stopTask(param), msgSupplier);
     }
 

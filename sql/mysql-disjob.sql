@@ -31,7 +31,7 @@ CREATE TABLE `sched_job` (
   `group`                 VARCHAR(60)              NOT NULL                               COMMENT '分组名称(可以理解为一个应用的appid，此job只会分派给所属组的Worker执行)',
   `job_name`              VARCHAR(60)              NOT NULL                               COMMENT 'Job名称',
   `job_type`              TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT 'Job类型：1-常规；2-工作流(DAG)；',
-  `job_state`             TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT 'Job状态：0-已禁用；1-已启用；',
+  `job_status`            TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT 'Job状态：0-已禁用；1-已启用；',
   `job_executor`          TEXT                     NOT NULL                               COMMENT 'Job执行器(支持：执行器类的全限定名、Spring bean name、DAG表达式、执行器源码等)',
   `job_param`             TEXT                               DEFAULT NULL                 COMMENT 'Job参数',
   `retry_type`            TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '实例失败的重试类型：0-不重试；1-只重试失败的Task；2-重试所有的Task；',
@@ -50,7 +50,7 @@ CREATE TABLE `sched_job` (
   `last_trigger_time`     BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '最近一次的触发时间(毫秒时间戳)',
   `next_trigger_time`     BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '下一次的触发时间(毫秒时间戳)',
   `next_scan_time`        DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '下一次的扫描时间',
-  `scan_failed_count`     TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '连续扫描失败的次数，连续失败次数达到阈值后自动禁用(set job_state=0)',
+  `scan_failed_count`     TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '连续扫描失败的次数，连续失败次数达到阈值后自动禁用(set job_status=0)',
   `version`               INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
   `is_deleted`            BIGINT         UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '是否已删除：0-否；{id}-是(用id来解决因软删引起的唯一索引冲突问题)；',
   `updated_by`            VARCHAR(60)                        DEFAULT NULL                 COMMENT '更新人',
@@ -60,7 +60,7 @@ CREATE TABLE `sched_job` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_jobid` (`job_id`),
   UNIQUE KEY `uk_group_jobname_isdeleted` (`group`, `job_name`, `is_deleted`),
-  KEY `ix_jobstate_nexttriggertime` (`job_state`, `next_trigger_time`) COMMENT '用于扫表',
+  KEY `ix_jobstatus_nexttriggertime` (`job_status`, `next_trigger_time`) COMMENT '用于扫表',
   KEY `ix_updatedat` (`updated_at`),
   KEY `ix_createdat` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='作业配置表';
@@ -87,7 +87,7 @@ CREATE TABLE `sched_instance` (
   `run_type`              TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '运行类型：1-SCHEDULE；2-DEPEND；3-RETRY；4-MANUAL(手动触发)；',
   `unique_flag`           BIGINT         UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '唯一标识(保证trigger_time唯一)：0-SCHEDULE/MANUAL；{instance_id}-其它场景；',
   `is_retrying`           TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '是否重试中：0-否；1-是；',
-  `run_state`             TINYINT        UNSIGNED  NOT NULL                               COMMENT '运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；',
+  `run_status`            TINYINT        UNSIGNED  NOT NULL                               COMMENT '运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；',
   `run_start_time`        DATETIME(3)                        DEFAULT NULL                 COMMENT '运行开始时间',
   `run_end_time`          DATETIME(3)                        DEFAULT NULL                 COMMENT '运行结束时间',
   `retried_count`         TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '当前是第几次重试(the maximum value is sched_job.retry_count)',
@@ -99,7 +99,7 @@ CREATE TABLE `sched_instance` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_instanceid` (`instance_id`),
   UNIQUE KEY `uk_jobid_triggertime_runtype_uniqueflag` (`job_id`, `trigger_time`, `run_type`, `unique_flag`),
-  KEY `ix_runstate_triggertime` (`run_state`, `trigger_time`) COMMENT '用于扫表',
+  KEY `ix_runstatus_triggertime` (`run_status`, `trigger_time`) COMMENT '用于扫表',
   KEY `ix_pnstanceid` (`pnstance_id`),
   KEY `ix_wnstanceid` (`wnstance_id`),
   KEY `ix_updatedat` (`updated_at`),
@@ -115,7 +115,7 @@ CREATE TABLE `sched_task` (
   `task_param`            TEXT                               DEFAULT NULL                 COMMENT 'job_executor执行task的参数(参考sched_job.job_param)',
   `execute_start_time`    DATETIME(3)                        DEFAULT NULL                 COMMENT '执行开始时间',
   `execute_end_time`      DATETIME(3)                        DEFAULT NULL                 COMMENT '执行结束时间',
-  `execute_state`         TINYINT        UNSIGNED  NOT NULL                               COMMENT '执行状态：10-等待执行；20-正在执行；30-暂停执行；40-执行完成；50-派发失败；51-初始化异常；52-执行失败；53-执行异常；54-执行超时；55-执行终止；56-广播终止；57-冲突取消；58-关机取消；59-手动取消；',
+  `execute_status`        TINYINT        UNSIGNED  NOT NULL                               COMMENT '执行状态：10-等待执行；20-正在执行；30-暂停执行；40-执行完成；50-派发失败；51-初始化异常；52-执行失败；53-执行异常；54-执行超时；55-执行终止；56-广播终止；57-冲突取消；58-关机取消；59-手动取消；',
   `execute_snapshot`      TEXT                               DEFAULT NULL                 COMMENT '保存的执行快照数据',
   `worker`                VARCHAR(255)                       DEFAULT NULL                 COMMENT '工作进程(JVM进程，GROUP:WORKER-ID:HOST:PORT)',
   `start_request_id`      VARCHAR(32)                        DEFAULT NULL                 COMMENT 'Start task时的请求ID，用于start请求超时重试幂等',
@@ -135,7 +135,7 @@ CREATE TABLE `sched_workflow` (
   `wnstance_id`           BIGINT         UNSIGNED  NOT NULL                               COMMENT 'sched_instance.wnstance_id',
   `pre_node`              VARCHAR(255)             NOT NULL                               COMMENT '前置任务节点(topology:ordinal:name)',
   `cur_node`              VARCHAR(255)             NOT NULL                               COMMENT '当前任务节点(topology:ordinal:name)',
-  `run_state`             TINYINT        UNSIGNED  NOT NULL                               COMMENT '运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；',
+  `run_status`            TINYINT        UNSIGNED  NOT NULL                               COMMENT '运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；',
   `instance_id`           BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '当前执行的sched_instance.instance_id(失败重试时会更新为重试的instance_id)',
   `updated_at`            DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`            DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -206,7 +206,7 @@ INSERT INTO `sched_group` (`group`, `own_user`, `supervisor_token`, `worker_toke
   ('app-demo', 'admin', '', '', '', 'disjob')
 ;
 
-INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_executor`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES
+INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_executor`, `job_status`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES
   (1003164910267351000, 'app-test', 'noop-job', 'cn.ponfee.disjob.test.executor.NoopJobExecutor', 1, 1, 1, '', 1, '0/40 * * * * ?', UNIX_TIMESTAMP()*1000),
   (1003164910267351001, 'app-test', 'http-job', 'cn.ponfee.disjob.worker.executor.impl.HttpJobExecutor', 1, 1, 1, '{"method":"GET", "url":"https://www.baidu.com"}', 1, '0/50 * * * * ?', UNIX_TIMESTAMP()*1000),
   (1003164910267351002, 'app-test', 'command-job', 'cn.ponfee.disjob.worker.executor.impl.CommandJobExecutor', 0, 1, 1, '{"cmdarray":["/bin/sh","-c","echo $(date +%Y/%m/%d)"]}', 1, '0/40 * * * * ?', UNIX_TIMESTAMP()*1000),

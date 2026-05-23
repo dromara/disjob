@@ -3,7 +3,7 @@
 <mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper">
 
   <sql id="Base_Column_List">
-    task_id, instance_id, task_no, task_count, execute_state, worker
+    task_id, instance_id, task_no, task_count, execute_status, worker
   </sql>
 
   <sql id="Large_Column_List">
@@ -19,7 +19,7 @@
       task_no,
       task_count,
       task_param,
-      execute_state,
+      execute_status,
       worker
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
@@ -29,7 +29,7 @@
       #{item.taskNo,jdbcType=INTEGER},
       #{item.taskCount,jdbcType=INTEGER},
       #{item.taskParam,jdbcType=LONGVARCHAR},
-      #{item.executeState,jdbcType=TINYINT},
+      #{item.executeStatus,jdbcType=TINYINT},
       #{item.worker,jdbcType=VARCHAR}
     )
     </foreach>
@@ -41,21 +41,21 @@
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </select>
 
-  <select id="findBaseByInstanceIdAndStates" resultType="cn.ponfee.disjob.supervisor.model.SchedTask">
+  <select id="findBaseByInstanceIdAndStatuses" resultType="cn.ponfee.disjob.supervisor.model.SchedTask">
     SELECT <include refid="Base_Column_List" />
     FROM sched_task
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-    <if test="states != null and !states.isEmpty()">
-      AND execute_state IN (<foreach collection="states" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+    <if test="statuses != null and !statuses.isEmpty()">
+      AND execute_status IN (<foreach collection="statuses" separator="," item="status">#{status,jdbcType=TINYINT}</foreach>)
     </if>
   </select>
 
-  <select id="findLargeByInstanceIdAndStates" resultType="cn.ponfee.disjob.supervisor.model.SchedTask">
+  <select id="findLargeByInstanceIdAndStatuses" resultType="cn.ponfee.disjob.supervisor.model.SchedTask">
     SELECT <include refid="Large_Column_List" />
     FROM sched_task
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-    <if test="states != null and !states.isEmpty()">
-      AND execute_state IN (<foreach collection="states" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+    <if test="statuses != null and !statuses.isEmpty()">
+      AND execute_status IN (<foreach collection="statuses" separator="," item="status">#{status,jdbcType=TINYINT}</foreach>)
     </if>
   </select>
 
@@ -64,18 +64,18 @@
     SET dispatch_failed_count = (#{currentDispatchFailedCount,jdbcType=TINYINT} + 1)
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND dispatch_failed_count = #{currentDispatchFailedCount,jdbcType=TINYINT}
-      AND execute_state = 10
+      AND execute_status = 10
   </update>
 
   <!-- use `IFNULL` function reason: possibly re-execute the paused task -->
   <update id="start">
     UPDATE sched_task
-    SET execute_state = 20,
+    SET execute_status = 20,
         execute_start_time = IFNULL(execute_start_time, #{executeStartTime,jdbcType=TIMESTAMP}),
         worker = #{worker,jdbcType=VARCHAR},
         start_request_id = #{startRequestId,jdbcType=VARCHAR}
     WHERE task_id = #{taskId,jdbcType=BIGINT}
-      AND execute_state = 10
+      AND execute_status = 10
   </update>
 
   <select id="checkStartIdempotent" resultType="_boolean">
@@ -83,7 +83,7 @@
       SELECT 1
       FROM sched_task
       WHERE task_id = #{taskId,jdbcType=BIGINT}
-        AND execute_state = 20
+        AND execute_status = 20
         AND worker = #{worker,jdbcType=VARCHAR}
         AND start_request_id = #{startRequestId,jdbcType=VARCHAR}
     ) e
@@ -97,48 +97,48 @@
         <if test="errorMsg!=null and errorMsg.length()>0">
           error_msg = #{errorMsg,jdbcType=VARCHAR},
         </if>
-        execute_state = #{toState,jdbcType=TINYINT}
+        execute_status = #{toStatus,jdbcType=TINYINT}
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       <if test="worker != null and worker != ''">
         AND worker = #{worker,jdbcType=VARCHAR}
       </if>
-      AND execute_state = #{fromState,jdbcType=TINYINT}
-      AND execute_state != #{toState,jdbcType=TINYINT}
-      AND execute_state IN (10, 20, 30)
+      AND execute_status = #{fromStatus,jdbcType=TINYINT}
+      AND execute_status != #{toStatus,jdbcType=TINYINT}
+      AND execute_status IN (10, 20, 30)
   </update>
 
-  <update id="updateStateByInstanceId">
+  <update id="updateStatusByInstanceId">
     UPDATE sched_task
     SET <if test="executeEndTime != null">
           execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
         </if>
-        execute_state = #{toState,jdbcType=TINYINT}
+        execute_status = #{toStatus,jdbcType=TINYINT}
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-      AND execute_state != #{toState,jdbcType=TINYINT}
-      AND execute_state IN (<foreach collection="fromStates" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+      AND execute_status != #{toStatus,jdbcType=TINYINT}
+      AND execute_status IN (<foreach collection="fromStatuses" separator="," item="status">#{status,jdbcType=TINYINT}</foreach>)
   </update>
 
-  <update id="forceChangeState">
+  <update id="forceChangeStatus">
     UPDATE sched_task
-    SET execute_state = #{toState,jdbcType=TINYINT}
+    SET execute_status = #{toStatus,jdbcType=TINYINT}
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-      AND execute_state != #{toState,jdbcType=TINYINT}
-      AND execute_state != 20
-      AND #{toState,jdbcType=TINYINT} != 20
+      AND execute_status != #{toStatus,jdbcType=TINYINT}
+      AND execute_status != 20
+      AND #{toStatus,jdbcType=TINYINT} != 20
   </update>
 
   <update id="savepoint">
     UPDATE sched_task
     SET execute_snapshot = #{executeSnapshot,jdbcType=LONGVARCHAR}
     WHERE task_id = #{taskId,jdbcType=BIGINT}
-      AND execute_state = 20
+      AND execute_status = 20
       AND worker = #{worker,jdbcType=VARCHAR}
   </update>
 
   <delete id="deleteByInstanceId" parameterType="_long">
     DELETE FROM sched_task
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM sched_task WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_state &lt; 40) t)=0
+      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM sched_task WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_status &lt; 40) t)=0
   </delete>
 
   <!-- 使用其它的批量方式需要添加jdbc参数：allowMultiQueries=true&rewriteBatchedStatements=true -->
@@ -154,7 +154,7 @@
     UPDATE sched_task
     SET worker = #{worker,jdbcType=VARCHAR}
     WHERE task_id IN (<foreach collection="taskIds" separator="," item="taskId">#{taskId,jdbcType=BIGINT}</foreach>)
-      AND execute_state = 10
+      AND execute_status = 10
   </update>
 
 </mapper>

@@ -460,7 +460,7 @@ disjob                                        # 主项目①pom.xml
                       <div class="highlight highlight-source-js notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="{
   &quot;group&quot;: &quot;app-test&quot;,
   &quot;jobName&quot;: &quot;prime-count-dag&quot;,
-  &quot;jobState&quot;: 1, // job状态：0-已禁用；1-已启用；
+  &quot;jobStatus&quot;: 1, // job状态：0-已禁用；1-已启用；
   &quot;jobType&quot;: 2,  // job类型：1-常规；2-工作流(DAG)；
   &quot;jobExecutor&quot;: &quot;cn.ponfee.disjob.test.executor.PrimeCountJobExecutor -&gt; cn.ponfee.disjob.test.executor.PrimeAccumulateJobExecutor&quot;,
   &quot;jobParam&quot;: &quot;{\&quot;m\&quot;:1,\&quot;n\&quot;:10000000000,\&quot;blockSize\&quot;:100000000,\&quot;parallel\&quot;:10}&quot;,
@@ -470,7 +470,7 @@ disjob                                        # 主项目①pom.xml
                             <pre><span class="pl-kos">{</span>
   <span class="pl-s">"group"</span>: <span class="pl-s">"app-test"</span><span class="pl-kos">,</span>
   <span class="pl-s">"jobName"</span>: <span class="pl-s">"prime-count-dag"</span><span class="pl-kos">,</span>
-  <span class="pl-s">"jobState"</span>: <span class="pl-c1">1</span><span class="pl-kos">,</span> <span class="pl-c">// job状态：0-已禁用；1-已启用；</span>
+  <span class="pl-s">"jobStatus"</span>: <span class="pl-c1">1</span><span class="pl-kos">,</span> <span class="pl-c">// job状态：0-已禁用；1-已启用；</span>
   <span class="pl-s">"jobType"</span>: <span class="pl-c1">2</span><span class="pl-kos">,</span>  <span class="pl-c">// job类型：1-常规；2-工作流(DAG)；</span>
   <span class="pl-s">"jobExecutor"</span>: <span class="pl-s">"cn.ponfee.disjob.test.executor.PrimeCountJobExecutor -&gt; cn.ponfee.disjob.test.executor.PrimeAccumulateJobExecutor"</span><span class="pl-kos">,</span>
   <span class="pl-s">"jobParam"</span>: <span class="pl-s">"{\"m\":1,\"n\":10000000000,\"blockSize\":100000000,\"parallel\":10}"</span><span class="pl-kos">,</span>

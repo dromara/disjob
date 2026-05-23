@@ -81,13 +81,13 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success();
     }
 
-    @PostMapping("/job/state/change")
-    public Result<Void> changeJobState(@RequestParam("jobId") long jobId,
-                                       @RequestParam("jobState") int jobState) {
+    @PostMapping("/job/status/change")
+    public Result<Void> changeJobStatus(@RequestParam("jobId") long jobId,
+                                        @RequestParam("jobStatus") int jobStatus) {
         String user = requestUser();
         authorizeGroupService.authorizeJob(user, requestGroup(), jobId);
 
-        schedJobService.changeJobState(user, jobId, jobState);
+        schedJobService.changeJobStatus(user, jobId, jobStatus);
         return Result.success();
     }
 
@@ -160,13 +160,13 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success();
     }
 
-    @PostMapping("/instance/state/change")
-    public Result<Void> changeInstanceState(@RequestParam("instanceId") long instanceId,
-                                            @RequestParam("targetExecuteState") int targetExecuteState) {
+    @PostMapping("/instance/status/change")
+    public Result<Void> changeInstanceStatus(@RequestParam("instanceId") long instanceId,
+                                             @RequestParam("targetExecuteStatus") int targetExecuteStatus) {
         String user = requestUser();
         authorizeGroupService.authorizeInstance(user, requestGroup(), instanceId);
 
-        schedJobService.changeInstanceState(user, instanceId, targetExecuteState);
+        schedJobService.changeInstanceStatus(user, instanceId, targetExecuteStatus);
         return Result.success();
     }
 

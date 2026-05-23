@@ -23,7 +23,7 @@ import cn.ponfee.disjob.common.dag.DAGExpression;
 import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.tuple.Tuple2;
-import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunStatus;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.worker.dto.SplitJobParam;
@@ -60,7 +60,7 @@ class WorkflowInstance extends TriggerInstance {
         long wnstanceId = jobManager.generateId();
         long jobId = job.getJobId();
         SchedInstance leadInstance = SchedInstance.of(parent, wnstanceId, wnstanceId, jobId, runType, triggerTime, 0);
-        leadInstance.setRunState(RunState.RUNNING.value());
+        leadInstance.setRunStatus(RunStatus.RUNNING.value());
         leadInstance.setRunStartTime(Dates.max(new Date(), new Date(triggerTime)));
         super.instance = leadInstance;
 
@@ -78,7 +78,7 @@ class WorkflowInstance extends TriggerInstance {
 
             long nodeInstanceId = jobManager.generateId();
             workflow.setInstanceId(nodeInstanceId);
-            workflow.setRunState(RunState.RUNNING.value());
+            workflow.setRunStatus(RunStatus.RUNNING.value());
 
             // 工作流的子任务实例的【root、parent、workflow】instance_id只与工作流相关联
             SchedInstance nodeInstance = SchedInstance.of(leadInstance, nodeInstanceId, jobId, runType, triggerTime, 0);

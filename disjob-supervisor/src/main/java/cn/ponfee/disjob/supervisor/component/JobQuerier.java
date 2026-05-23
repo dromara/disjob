@@ -18,7 +18,7 @@ package cn.ponfee.disjob.supervisor.component;
 
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Numbers;
-import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunStatus;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
@@ -86,8 +86,8 @@ public class JobQuerier {
         return jobMapper.findBeTriggering(maxNextTriggerTime, size);
     }
 
-    public List<SchedInstance> findExpireInstance(RunState runState, Date expireTime, int size) {
-        return instanceMapper.findExpireState(runState.value(), expireTime, size);
+    public List<SchedInstance> findExpireInstance(RunStatus runStatus, Date expireTime, int size) {
+        return instanceMapper.findExpireStatus(runStatus.value(), expireTime, size);
     }
 
     public SchedInstance getRetryingInstance(long instanceId) {

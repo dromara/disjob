@@ -3,7 +3,7 @@
 <mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper">
 
   <sql id="Base_Column_List">
-    job_id, `group`, job_name, job_type, job_state, job_executor, job_param,
+    job_id, `group`, job_name, job_type, job_status, job_executor, job_param,
     retry_type, retry_count, retry_interval, trigger_type, trigger_value, start_time, end_time,
     execute_timeout, collided_strategy, misfire_strategy, route_strategy, shutdown_strategy,
     alert_options, last_trigger_time, next_trigger_time, next_scan_time, scan_failed_count,
@@ -23,7 +23,7 @@
       `group`,
       job_name,
       job_type,
-      job_state,
+      job_status,
       job_executor,
       job_param,
       retry_type,
@@ -47,7 +47,7 @@
       #{group,jdbcType=VARCHAR},
       #{jobName,jdbcType=VARCHAR},
       #{jobType,jdbcType=TINYINT},
-      #{jobState,jdbcType=TINYINT},
+      #{jobStatus,jdbcType=TINYINT},
       #{jobExecutor,jdbcType=LONGVARCHAR},
       #{jobParam,jdbcType=LONGVARCHAR},
       #{retryType,jdbcType=TINYINT},
@@ -86,7 +86,7 @@
         next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
       </if>
 
-        job_state = #{jobState,jdbcType=TINYINT},
+        job_status = #{jobStatus,jdbcType=TINYINT},
         retry_type = #{retryType,jdbcType=TINYINT},
         retry_count = #{retryCount,jdbcType=TINYINT},
         retry_interval = #{retryInterval,jdbcType=INTEGER},
@@ -129,7 +129,7 @@
   <select id="findBeTriggering" resultType="cn.ponfee.disjob.supervisor.model.SchedJob">
     SELECT <include refid="Base_Column_List"/>
     FROM sched_job
-    WHERE job_state = 1
+    WHERE job_status = 1
       AND next_trigger_time &lt; #{maxNextTriggerTime}
       AND next_scan_time &lt; CURRENT_TIMESTAMP(3)
       AND is_deleted = 0
@@ -149,35 +149,35 @@
 
   <update id="disable">
     UPDATE sched_job
-    SET job_state = 0,
+    SET job_status = 0,
         next_trigger_time = null,
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
-      AND job_state = 1
+      AND job_status = 1
       AND version = #{version,jdbcType=INTEGER}
       AND is_deleted = 0
   </update>
 
   <update id="updateNextTriggerTime">
     UPDATE sched_job
-    SET job_state = #{jobState,jdbcType=TINYINT},
+    SET job_status = #{jobStatus,jdbcType=TINYINT},
         last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT},
         next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
         scan_failed_count = 0,
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
-      AND job_state = 1
+      AND job_status = 1
       AND version = #{version,jdbcType=INTEGER}
       AND is_deleted = 0
   </update>
 
-  <update id="updateState">
+  <update id="updateStatus">
     UPDATE sched_job
-    SET job_state = #{toState,jdbcType=TINYINT},
+    SET job_status = #{toStatus,jdbcType=TINYINT},
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
-      AND job_state = #{fromState,jdbcType=TINYINT}
+      AND job_status = #{fromStatus,jdbcType=TINYINT}
       AND is_deleted = 0
   </update>
 
@@ -187,7 +187,7 @@
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND is_deleted = 0
-      AND job_state = 1
+      AND job_status = 1
       AND trigger_type IN (5, 6)
       AND last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT}
       AND next_trigger_time = 9223372036854775807
@@ -199,7 +199,7 @@
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
-      AND job_state = 0
+      AND job_status = 0
       AND is_deleted = 0
   </update>
 
@@ -251,8 +251,8 @@
       <if test="jobType != null">
         AND job_type = #{jobType}
       </if>
-      <if test="jobState != null">
-        AND job_state = #{jobState}
+      <if test="jobStatus != null">
+        AND job_status = #{jobStatus}
       </if>
   </sql>
 

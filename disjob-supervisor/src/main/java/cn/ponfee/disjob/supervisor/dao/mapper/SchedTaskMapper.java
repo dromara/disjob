@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
-import cn.ponfee.disjob.core.enums.ExecuteState;
+import cn.ponfee.disjob.core.enums.ExecuteStatus;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
 import org.apache.ibatis.annotations.Param;
 
@@ -36,9 +36,9 @@ public interface SchedTaskMapper {
 
     SchedTask get(long taskId);
 
-    List<SchedTask> findBaseByInstanceIdAndStates(@Param("instanceId") long instanceId, @Param("states") List<Integer> states);
+    List<SchedTask> findBaseByInstanceIdAndStatuses(@Param("instanceId") long instanceId, @Param("statuses") List<Integer> statuses);
 
-    List<SchedTask> findLargeByInstanceIdAndStates(@Param("instanceId") long instanceId, @Param("states") List<Integer> states);
+    List<SchedTask> findLargeByInstanceIdAndStatuses(@Param("instanceId") long instanceId, @Param("statuses") List<Integer> statuses);
 
     int incrementDispatchFailedCount(@Param("taskId") long taskId, @Param("currentDispatchFailedCount") int currentDispatchFailedCount);
 
@@ -53,17 +53,17 @@ public interface SchedTaskMapper {
 
     int terminate(@Param("taskId") long taskId,
                   @Param("worker") String worker,
-                  @Param("toState") int toState,
-                  @Param("fromState") int fromState,
+                  @Param("toStatus") int toStatus,
+                  @Param("fromStatus") int fromStatus,
                   @Param("executeEndTime") Date executeEndTime,
                   @Param("errorMsg") String errorMsg);
 
-    int updateStateByInstanceId(@Param("instanceId") long instanceId,
-                                @Param("toState") int toState,
-                                @Param("fromStates") List<Integer> fromStates,
-                                @Param("executeEndTime") Date executeEndTime);
+    int updateStatusByInstanceId(@Param("instanceId") long instanceId,
+                                 @Param("toStatus") int toStatus,
+                                 @Param("fromStatuses") List<Integer> fromStatuses,
+                                 @Param("executeEndTime") Date executeEndTime);
 
-    int forceChangeState(@Param("instanceId") long instanceId, @Param("toState") int toState);
+    int forceChangeStatus(@Param("instanceId") long instanceId, @Param("toStatus") int toStatus);
 
     int savepoint(@Param("taskId") long taskId, @Param("worker") String worker, @Param("executeSnapshot") String executeSnapshot);
 
@@ -86,15 +86,15 @@ public interface SchedTaskMapper {
 
     // -------------------------------------------------default methods
 
-    default boolean terminate(long taskId, String worker, ExecuteState to, ExecuteState from, Date executeEndTime, String errorMsg) {
+    default boolean terminate(long taskId, String worker, ExecuteStatus to, ExecuteStatus from, Date executeEndTime, String errorMsg) {
         return isOneAffectedRow(terminate(taskId, worker, to.value(), from.value(), executeEndTime, errorMsg));
     }
 
     default List<SchedTask> findBaseByInstanceId(long instanceId) {
-        return findBaseByInstanceIdAndStates(instanceId, null);
+        return findBaseByInstanceIdAndStatuses(instanceId, null);
     }
 
     default List<SchedTask> findLargeByInstanceId(long instanceId) {
-        return findLargeByInstanceIdAndStates(instanceId, null);
+        return findLargeByInstanceIdAndStatuses(instanceId, null);
     }
 }

@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.core.enums.ExecuteState;
+import cn.ponfee.disjob.core.enums.ExecuteStatus;
 import cn.ponfee.disjob.core.worker.Worker;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import cn.ponfee.disjob.supervisor.component.JobManager;
@@ -102,7 +102,7 @@ public class JobManagerTest extends SpringBootTestBase<SchedJobMapper> {
             task.setInstanceId(instanceId);
             task.setTaskNo(i);
             task.setTaskCount(count);
-            task.setExecuteState(ExecuteState.WAITING.value());
+            task.setExecuteStatus(ExecuteStatus.WAITING.value());
             task.setCreatedAt(new Date());
             task.setUpdatedAt(new Date());
             tasks.add(task);

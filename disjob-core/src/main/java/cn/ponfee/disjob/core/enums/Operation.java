@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.core.enums;
 
-import static cn.ponfee.disjob.core.enums.ExecuteState.*;
+import static cn.ponfee.disjob.core.enums.ExecuteStatus.*;
 
 /**
  * Task operate type
@@ -72,20 +72,20 @@ public enum Operation {
 
     ;
 
-    private final ExecuteState fromState;
-    private final ExecuteState toState;
+    private final ExecuteStatus fromStatus;
+    private final ExecuteStatus toStatus;
 
-    Operation(ExecuteState fromState, ExecuteState toState) {
-        this.fromState = fromState;
-        this.toState = toState;
+    Operation(ExecuteStatus fromStatus, ExecuteStatus toStatus) {
+        this.fromStatus = fromStatus;
+        this.toStatus = toStatus;
     }
 
-    public ExecuteState fromState() {
-        return fromState;
+    public ExecuteStatus fromStatus() {
+        return fromStatus;
     }
 
-    public ExecuteState toState() {
-        return toState;
+    public ExecuteStatus toStatus() {
+        return toStatus;
     }
 
     public boolean isTrigger() {

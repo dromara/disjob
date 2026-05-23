@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.core.supervisor.dto;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.enums.ExecuteState;
+import cn.ponfee.disjob.core.enums.ExecuteStatus;
 import cn.ponfee.disjob.core.enums.Operation;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,19 +39,19 @@ public class StopTaskParam extends ToJsonString implements Serializable {
     private long instanceId;
     private long taskId;
     private Operation operation;
-    private ExecuteState toState;
+    private ExecuteStatus toStatus;
     private String errorMsg;
     private String worker;
 
     public static StopTaskParam of(Long wnstanceId, long instanceId, long taskId, String worker,
-                                   Operation operation, ExecuteState toState, String errorMsg) {
+                                   Operation operation, ExecuteStatus toStatus, String errorMsg) {
         StopTaskParam param = new StopTaskParam();
         param.setWnstanceId(wnstanceId);
         param.setInstanceId(instanceId);
         param.setTaskId(taskId);
         param.setWorker(worker);
         param.setOperation(operation);
-        param.setToState(toState);
+        param.setToStatus(toStatus);
         param.setErrorMsg(errorMsg);
 
         param.check();
@@ -61,10 +61,10 @@ public class StopTaskParam extends ToJsonString implements Serializable {
     public void check() {
         Assert.hasText(worker, "Stop task worker cannot be blank.");
         Assert.notNull(operation, "Stop task operation cannot be null.");
-        Assert.notNull(toState, "Stop task target state cannot be null.");
+        Assert.notNull(toStatus, "Stop task target status cannot be null.");
         // MANUAL_CANCEL: EXECUTING -> MANUAL_CANCELED
         // SHUTDOWN_RESUME: EXECUTING -> WAITING
-        Assert.isTrue(toState != ExecuteState.EXECUTING, "Stop task target state cannot be EXECUTING.");
+        Assert.isTrue(toStatus != ExecuteStatus.EXECUTING, "Stop task target status cannot be EXECUTING.");
     }
 
 }

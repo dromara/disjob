@@ -102,18 +102,18 @@ public interface SchedJobMapper {
                                    @Param("nextTriggerTime") long nextTriggerTime);
 
     /**
-     * Updates job state
+     * Updates job status
      *
-     * @param jobId     the job id
-     * @param updatedBy the updated by
-     * @param toState   the target state
-     * @param fromState the source state
+     * @param jobId      the job id
+     * @param updatedBy  the updated by
+     * @param toStatus   the target status
+     * @param fromStatus the source status
      * @return update sql affected rows
      */
-    int updateState(@Param("jobId") long jobId,
-                    @Param("updatedBy") String updatedBy,
-                    @Param("toState") int toState,
-                    @Param("fromState") int fromState);
+    int updateStatus(@Param("jobId") long jobId,
+                     @Param("updatedBy") String updatedBy,
+                     @Param("toStatus") int toStatus,
+                     @Param("fromStatus") int fromStatus);
 
     /**
      * Soft delete the job.

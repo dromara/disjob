@@ -58,7 +58,7 @@ public class SchedJobExport {
      * Job状态：0-已禁用；1-已启用；
      */
     @Excel(name = "Job状态")
-    private Integer jobState;
+    private Integer jobStatus;
 
     /**
      * Job执行器(支持：执行器类的全限定名、Spring bean name、DAG表达式、执行器源码等)
@@ -190,12 +190,12 @@ public class SchedJobExport {
         this.jobType = jobType;
     }
 
-    public Integer getJobState() {
-        return jobState;
+    public Integer getJobStatus() {
+        return jobStatus;
     }
 
-    public void setJobState(Integer jobState) {
-        this.jobState = jobState;
+    public void setJobStatus(Integer jobStatus) {
+        this.jobStatus = jobStatus;
     }
 
     public String getJobExecutor() {

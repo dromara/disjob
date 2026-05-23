@@ -16,8 +16,8 @@
   <th:block th:insert="~{include :: bootstrap-table-fixed-columns-js}" />
 
   <script th:inline="javascript">
-    const executeStates = [[${@disjobService.enums('ExecuteState')}]];
-    const stateMap = {10: "info", 20: "success", 30: "warning", 40: "primary", 50: "danger"};
+    const executeStatuses = [[${@disjobService.enums('ExecuteStatus')}]];
+    const statusMap = {10: "info", 20: "success", 30: "warning", 40: "primary", 50: "danger"};
 
     $(function () {
       const options = {
@@ -60,11 +60,11 @@
           }
         },
         {
-          field: 'executeState',
+          field: 'executeStatus',
           title: '执行状态',
           formatter: function (value, row, index) {
-            const label = $.table.selectData(executeStates, value, 'value', 'desc');
-            return $.common.sprintf("<span class='badge badge-%s'>%s</span>", stateMap[value > 50 ? 50 : value], label);
+            const label = $.table.selectData(executeStatuses, value, 'value', 'desc');
+            return $.common.sprintf("<span class='badge badge-%s'>%s</span>", statusMap[value > 50 ? 50 : value], label);
           }
         },
         {

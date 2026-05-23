@@ -46,7 +46,7 @@ public class SchedTaskResponse extends ToJsonString implements Serializable {
     private Date executeStartTime;
     private Date executeEndTime;
     private Long executeDuration;
-    private Integer executeState;
+    private Integer executeStatus;
     private String executeSnapshot;
     private String worker;
     private String errorMsg;

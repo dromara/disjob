@@ -37,7 +37,7 @@ public class SchedInstancePageRequest extends PageRequest {
     private Long jobId;
     private Long instanceId;
     private Integer runType;
-    private Integer runState;
+    private Integer runStatus;
     private Date startTime;
     private Date endTime;
 

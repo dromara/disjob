@@ -56,7 +56,7 @@ public class SchedInstanceResponse extends ToJsonString implements Serializable 
 
     private Long triggerTime;
     private Integer runType;
-    private Integer runState;
+    private Integer runStatus;
     private Boolean retrying;
     private Date runStartTime;
     private Date runEndTime;

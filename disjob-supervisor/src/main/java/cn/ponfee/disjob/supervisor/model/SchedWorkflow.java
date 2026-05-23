@@ -19,7 +19,7 @@ package cn.ponfee.disjob.supervisor.model;
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.model.BaseEntity;
-import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -53,9 +53,9 @@ public class SchedWorkflow extends BaseEntity {
     /**
      * 运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；
      *
-     * @see RunState
+     * @see RunStatus
      */
-    private Integer runState;
+    private Integer runStatus;
 
     /**
      * 当前执行的sched_instance.instance_id(失败重试时会更新为重试的instance_id)
@@ -67,7 +67,7 @@ public class SchedWorkflow extends BaseEntity {
         workflow.setWnstanceId(wnstanceId);
         workflow.setPreNode(preNode);
         workflow.setCurNode(curNode);
-        workflow.setRunState(RunState.WAITING.value());
+        workflow.setRunStatus(RunStatus.WAITING.value());
         return workflow;
     }
 
@@ -85,27 +85,27 @@ public class SchedWorkflow extends BaseEntity {
 
     @Transient
     public boolean isTerminal() {
-        return RunState.of(runState).isTerminal();
+        return RunStatus.of(runStatus).isTerminal();
     }
 
     @Transient
     public boolean isFailure() {
-        return RunState.of(runState).isFailure();
+        return RunStatus.of(runStatus).isFailure();
     }
 
     @Transient
     public boolean isRunning() {
-        return RunState.RUNNING.equalsValue(runState);
+        return RunStatus.RUNNING.equalsValue(runStatus);
     }
 
     @Transient
     public boolean isWaiting() {
-        return RunState.WAITING.equalsValue(runState);
+        return RunStatus.WAITING.equalsValue(runStatus);
     }
 
     @Transient
     public boolean isPaused() {
-        return RunState.PAUSED.equalsValue(runState);
+        return RunStatus.PAUSED.equalsValue(runStatus);
     }
 
 }

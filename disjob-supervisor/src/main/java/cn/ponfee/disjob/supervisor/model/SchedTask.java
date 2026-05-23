@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.model.BaseEntity;
-import cn.ponfee.disjob.core.enums.ExecuteState;
+import cn.ponfee.disjob.core.enums.ExecuteStatus;
 import cn.ponfee.disjob.core.worker.Worker;
 import lombok.Getter;
 import lombok.Setter;
@@ -79,9 +79,9 @@ public class SchedTask extends BaseEntity {
     /**
      * 执行状态：10-等待执行；20-正在执行；30-暂停执行；40-执行完成；50-派发失败；51-初始化异常；52-执行失败；53-执行异常；54-执行超时；55-执行终止；56-广播终止；57-冲突取消；58-关机取消；59-手动取消；
      *
-     * @see ExecuteState
+     * @see ExecuteStatus
      */
-    private Integer executeState;
+    private Integer executeStatus;
 
     /**
      * 保存的执行快照数据
@@ -123,7 +123,7 @@ public class SchedTask extends BaseEntity {
         task.setTaskNo(taskNo);
         task.setTaskCount(taskCount);
         task.setWorker(worker);
-        task.setExecuteState(ExecuteState.WAITING.value());
+        task.setExecuteStatus(ExecuteStatus.WAITING.value());
         return task;
     }
 
@@ -133,27 +133,27 @@ public class SchedTask extends BaseEntity {
 
     @Transient
     public boolean isWaiting() {
-        return ExecuteState.WAITING.equalsValue(executeState);
+        return ExecuteStatus.WAITING.equalsValue(executeStatus);
     }
 
     @Transient
     public boolean isExecuting() {
-        return ExecuteState.EXECUTING.equalsValue(executeState);
+        return ExecuteStatus.EXECUTING.equalsValue(executeStatus);
     }
 
     @Transient
     public boolean isPausable() {
-        return ExecuteState.of(executeState).isPausable();
+        return ExecuteStatus.of(executeStatus).isPausable();
     }
 
     @Transient
     public boolean isTerminal() {
-        return ExecuteState.of(executeState).isTerminal();
+        return ExecuteStatus.of(executeStatus).isTerminal();
     }
 
     @Transient
     public boolean isFailure() {
-        return ExecuteState.of(executeState).isFailure();
+        return ExecuteStatus.of(executeStatus).isFailure();
     }
 
 }

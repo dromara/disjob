@@ -125,8 +125,8 @@ final class WorkerTask {
         return StartTaskParam.of(jobId, wnstanceId, instanceId, taskId, jobType, worker.serialize(), UuidUtils.uuid32());
     }
 
-    StopTaskParam toStopTaskParam(Operation ops, ExecuteState toState, String errorMsg) {
-        return StopTaskParam.of(wnstanceId, instanceId, taskId, worker.serialize(), ops, toState, errorMsg);
+    StopTaskParam toStopTaskParam(Operation ops, ExecuteStatus toStatus, String errorMsg) {
+        return StopTaskParam.of(wnstanceId, instanceId, taskId, worker.serialize(), ops, toStatus, errorMsg);
     }
 
     @Override

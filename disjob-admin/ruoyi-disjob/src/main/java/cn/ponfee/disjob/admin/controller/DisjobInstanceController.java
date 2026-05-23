@@ -21,7 +21,7 @@ import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.Strings;
-import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunStatus;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.SchedJobService;
@@ -178,7 +178,7 @@ public class DisjobInstanceController extends BaseController {
         schedJobService.pauseInstance(user, instanceId);
         Threads.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
             SchedInstanceResponse instance = schedJobService.getInstance(instanceId, false);
-            return !RunState.of(instance.getRunState()).isPausable();
+            return !RunStatus.of(instance.getRunStatus()).isPausable();
         });
         return success();
     }
@@ -197,7 +197,7 @@ public class DisjobInstanceController extends BaseController {
         schedJobService.resumeInstance(user, instanceId);
         Threads.waitUntil(WAIT_SLEEP_ROUND, new long[]{500, 200}, () -> {
             SchedInstanceResponse instance = schedJobService.getInstance(instanceId, false);
-            return !RunState.PAUSED.equalsValue(instance.getRunState());
+            return !RunStatus.PAUSED.equalsValue(instance.getRunStatus());
         });
         return success();
     }
@@ -216,7 +216,7 @@ public class DisjobInstanceController extends BaseController {
         schedJobService.cancelInstance(user, instanceId);
         Threads.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
             SchedInstanceResponse instance = schedJobService.getInstance(instanceId, false);
-            return RunState.of(instance.getRunState()).isTerminal();
+            return RunStatus.of(instance.getRunStatus()).isTerminal();
         });
         return success();
     }

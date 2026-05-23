@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
-import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunStatus;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import org.apache.ibatis.annotations.Param;
@@ -59,20 +59,20 @@ public interface SchedInstanceMapper {
     int start(@Param("instanceId") long instanceId, @Param("runStartTime") Date runStartTime);
 
     int terminate(@Param("instanceId") long instanceId,
-                  @Param("toState") int toState,
-                  @Param("fromStates") List<Integer> fromStates,
+                  @Param("toStatus") int toStatus,
+                  @Param("fromStatuses") List<Integer> fromStatuses,
                   @Param("runEndTime") Date runEndTime);
 
-    int updateState(@Param("instanceId") long instanceId, @Param("toState") int toState, @Param("fromState") int fromState);
+    int updateStatus(@Param("instanceId") long instanceId, @Param("toStatus") int toStatus, @Param("fromStatus") int fromStatus);
 
     int updateRetrying(@Param("instanceId") long instanceId,
                        @Param("retrying") boolean retrying,
-                       @Param("toState") int toState,
-                       @Param("fromState") int fromState);
+                       @Param("toStatus") int toStatus,
+                       @Param("fromStatus") int fromStatus);
 
-    List<SchedInstance> findExpireState(@Param("runState") int runState,
-                                        @Param("expireTime") Date expireTime,
-                                        @Param("size") int size);
+    List<SchedInstance> findExpireStatus(@Param("runStatus") int runStatus,
+                                         @Param("expireTime") Date expireTime,
+                                         @Param("size") int size);
 
     SchedInstance getRetrying(long instanceId);
 
@@ -113,16 +113,16 @@ public interface SchedInstanceMapper {
 
     // -------------------------------------------------default methods
 
-    default boolean terminate(long instanceId, RunState toState, List<Integer> fromStates, Date runEndTime) {
-        return isOneAffectedRow(terminate(instanceId, toState.value(), fromStates, runEndTime));
+    default boolean terminate(long instanceId, RunStatus toStatus, List<Integer> fromStatuses, Date runEndTime) {
+        return isOneAffectedRow(terminate(instanceId, toStatus.value(), fromStatuses, runEndTime));
     }
 
-    default boolean updateState(long instanceId, RunState toState, RunState fromState) {
-        return isOneAffectedRow(updateState(instanceId, toState.value(), fromState.value()));
+    default boolean updateStatus(long instanceId, RunStatus toStatus, RunStatus fromStatus) {
+        return isOneAffectedRow(updateStatus(instanceId, toStatus.value(), fromStatus.value()));
     }
 
-    default boolean updateRetrying(long instanceId, boolean retrying, RunState toState, RunState fromState) {
-        return isOneAffectedRow(updateRetrying(instanceId, retrying, toState.value(), fromState.value()));
+    default boolean updateRetrying(long instanceId, boolean retrying, RunStatus toStatus, RunStatus fromStatus) {
+        return isOneAffectedRow(updateRetrying(instanceId, retrying, toStatus.value(), fromStatus.value()));
     }
 
 }

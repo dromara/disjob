@@ -36,7 +36,7 @@ public class SchedJobPageRequest extends PageRequest {
     private Set<String> groups;
     private String jobName;
     private Integer jobType;
-    private Integer jobState;
+    private Integer jobStatus;
 
     public void authorizeAndTruncateGroup(String user) {
         this.groups = AuthorizeGroupService.authorizeAndTruncateGroup(user, groups);

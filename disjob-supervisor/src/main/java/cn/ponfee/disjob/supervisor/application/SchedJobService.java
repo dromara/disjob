@@ -19,8 +19,8 @@ package cn.ponfee.disjob.supervisor.application;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.core.enums.ExecuteState;
-import cn.ponfee.disjob.core.enums.JobState;
+import cn.ponfee.disjob.core.enums.ExecuteStatus;
+import cn.ponfee.disjob.core.enums.JobStatus;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
@@ -74,10 +74,10 @@ public class SchedJobService extends SingletonClassConstraint {
         jobManager.deleteJob(user, jobId);
     }
 
-    public void changeJobState(String user, long jobId, int toJobState) {
-        JobState toState = JobState.of(toJobState);
-        log.info("Changing job state by {}: {}, {}", user, jobId, toState);
-        jobManager.changeJobState(user, jobId, toState);
+    public void changeJobStatus(String user, long jobId, int toJobStatus) {
+        JobStatus toStatus = JobStatus.of(toJobStatus);
+        log.info("Changing job status by {}: {}, {}", user, jobId, toStatus);
+        jobManager.changeJobStatus(user, jobId, toStatus);
     }
 
     public void manualTriggerJob(String user, long jobId) throws JobException {
@@ -128,10 +128,10 @@ public class SchedJobService extends SingletonClassConstraint {
         }
     }
 
-    public void changeInstanceState(String user, long instanceId, int toExecuteState) {
-        ExecuteState toState = ExecuteState.of(toExecuteState);
-        log.info("Changing instance state by {}: {}, {}", user, instanceId, toState);
-        jobManager.changeInstanceState(instanceId, toState);
+    public void changeInstanceStatus(String user, long instanceId, int toExecuteStatus) {
+        ExecuteStatus toStatus = ExecuteStatus.of(toExecuteStatus);
+        log.info("Changing instance status by {}: {}, {}", user, instanceId, toStatus);
+        jobManager.changeInstanceStatus(instanceId, toStatus);
     }
 
     public void deleteInstance(String user, long instanceId) {

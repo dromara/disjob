@@ -19,12 +19,12 @@ package cn.ponfee.disjob.core.enums;
 import cn.ponfee.disjob.common.base.IntValueEnum;
 
 /**
- * The job state enum definition.
- * <p>mapped by sched_job.job_state
+ * The job status enum definition.
+ * <p>mapped by sched_job.job_status
  *
  * @author Ponfee
  */
-public enum JobState implements IntValueEnum<JobState> {
+public enum JobStatus implements IntValueEnum<JobStatus> {
 
     /**
      * 已禁用
@@ -41,7 +41,7 @@ public enum JobState implements IntValueEnum<JobState> {
     private final int value;
     private final String desc;
 
-    JobState(int value, String desc) {
+    JobStatus(int value, String desc) {
         this.value = value;
         this.desc = desc;
     }
@@ -56,15 +56,15 @@ public enum JobState implements IntValueEnum<JobState> {
         return desc;
     }
 
-    public static JobState of(int value) {
-        for (JobState e : VALUES) {
+    public static JobStatus of(int value) {
+        for (JobStatus e : VALUES) {
             if (e.value() == value) {
                 return e;
             }
         }
-        throw new IllegalArgumentException("Invalid job state value: " + value);
+        throw new IllegalArgumentException("Invalid job status value: " + value);
     }
 
-    private static final JobState[] VALUES = JobState.values();
+    private static final JobStatus[] VALUES = JobStatus.values();
 
 }

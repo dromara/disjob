@@ -23,103 +23,103 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * The task executed state enum definition.
- * <p>mapped by sched_task.execute_state
+ * The task executed status enum definition.
+ * <p>mapped by sched_task.execute_status
  *
  * @author Ponfee
  */
-public enum ExecuteState implements IntValueEnum<ExecuteState> {
+public enum ExecuteStatus implements IntValueEnum<ExecuteStatus> {
 
     /**
      * 等待执行
      */
-    WAITING(10, RunState.WAITING, "等待执行"),
+    WAITING(10, RunStatus.WAITING, "等待执行"),
 
     /**
      * 正在执行
      */
-    EXECUTING(20, RunState.RUNNING, "正在执行"),
+    EXECUTING(20, RunStatus.RUNNING, "正在执行"),
 
     /**
      * 暂停执行
      */
-    PAUSED(30, RunState.PAUSED, "暂停执行"),
+    PAUSED(30, RunStatus.PAUSED, "暂停执行"),
 
     /**
      * 执行完成
      */
-    COMPLETED(40, RunState.COMPLETED, "执行完成"),
+    COMPLETED(40, RunStatus.COMPLETED, "执行完成"),
 
     /**
      * 派发失败取消(任务派发失败的次数sched_task.dispatch_failed_count > SupervisorProperties#taskDispatchFailedCountThreshold)
      */
-    DISPATCH_FAILED(50, RunState.CANCELED, "派发失败"),
+    DISPATCH_FAILED(50, RunStatus.CANCELED, "派发失败"),
 
     /**
      * 初始化异常取消
      */
-    INITIALIZE_EXCEPTION(51, RunState.CANCELED, "初始化异常"),
+    INITIALIZE_EXCEPTION(51, RunStatus.CANCELED, "初始化异常"),
 
     /**
      * 执行失败取消(`JobExecutor#execute`方法的返回结果为null或code!=0)
      */
-    EXECUTE_FAILED(52, RunState.CANCELED, "执行失败"),
+    EXECUTE_FAILED(52, RunStatus.CANCELED, "执行失败"),
 
     /**
      * 执行异常取消
      */
-    EXECUTE_EXCEPTION(53, RunState.CANCELED, "执行异常"),
+    EXECUTE_EXCEPTION(53, RunStatus.CANCELED, "执行异常"),
 
     /**
      * 执行超时取消(任务的执行耗时 > sched_job.execute_timeout > 0)
      */
-    EXECUTE_TIMEOUT(54, RunState.CANCELED, "执行超时"),
+    EXECUTE_TIMEOUT(54, RunStatus.CANCELED, "执行超时"),
 
     /**
      * 执行终止(如执行过程中Worker宕机)
      */
-    EXECUTE_ABORTED(55, RunState.CANCELED, "执行终止"),
+    EXECUTE_ABORTED(55, RunStatus.CANCELED, "执行终止"),
 
     /**
      * 广播任务终止(广播任务分派的Worker已下线导致未执行)
      */
-    BROADCAST_ABORTED(56, RunState.CANCELED, "广播终止"),
+    BROADCAST_ABORTED(56, RunStatus.CANCELED, "广播终止"),
 
     /**
      * 执行冲突取消(sched_job.collided_strategy=3 并且 上次任务还未执行完成 时取消上次任务)
      */
-    COLLIDE_CANCELED(57, RunState.CANCELED, "冲突取消"),
+    COLLIDE_CANCELED(57, RunStatus.CANCELED, "冲突取消"),
 
     /**
      * Worker关机取消(sched_job.shutdown_strategy=3 并且 Worker正常关闭 时被取消)
      */
-    SHUTDOWN_CANCELED(58, RunState.CANCELED, "关机取消"),
+    SHUTDOWN_CANCELED(58, RunStatus.CANCELED, "关机取消"),
 
     /**
      * 手动取消
      */
-    MANUAL_CANCELED(59, RunState.CANCELED, "手动取消"),
+    MANUAL_CANCELED(59, RunStatus.CANCELED, "手动取消"),
 
     ;
 
     /**
-     * State value
+     * Status value
      */
     private final int value;
 
     /**
-     * mapped sched_instance.run_state
+     * mapped sched_instance.run_status
      */
-    private final RunState runState;
+    private final RunStatus runStatus;
 
     /**
      * Description
      */
     private final String desc;
 
-    ExecuteState(int value, RunState runState, String desc) {
+    ExecuteStatus(int value, RunStatus runStatus, String desc) {
         this.value = value;
-        this.runState = runState;
+        this.runStatus = runStatus;
         this.desc = desc;
     }
 
@@ -133,8 +133,8 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
         return desc;
     }
 
-    public RunState runState() {
-        return runState;
+    public RunStatus runStatus() {
+        return runStatus;
     }
 
     public boolean isPausable() {
@@ -142,17 +142,17 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     }
 
     public boolean isTerminal() {
-        return runState.isTerminal();
+        return runStatus.isTerminal();
     }
 
     public boolean isFailure() {
-        return runState.isFailure();
+        return runStatus.isFailure();
     }
 
-    public static ExecuteState of(Integer value) {
-        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid execute state value: " + value);
+    public static ExecuteStatus of(Integer value) {
+        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid execute status value: " + value);
     }
 
-    private static final Map<Integer, ExecuteState> MAPPING = Enums.toMap(ExecuteState.class, ExecuteState::value);
+    private static final Map<Integer, ExecuteStatus> MAPPING = Enums.toMap(ExecuteStatus.class, ExecuteStatus::value);
 
 }

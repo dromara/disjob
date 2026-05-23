@@ -18,7 +18,7 @@ package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.model.BaseEntity;
-import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunStatus;
 import cn.ponfee.disjob.core.enums.RunType;
 import lombok.Getter;
 import lombok.Setter;
@@ -90,9 +90,9 @@ public class SchedInstance extends BaseEntity {
     /**
      * 运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；
      *
-     * @see RunState
+     * @see RunStatus
      */
-    private Integer runState;
+    private Integer runStatus;
 
     /**
      * 运行开始时间
@@ -159,7 +159,7 @@ public class SchedInstance extends BaseEntity {
         instance.setRunType(runType.value());
         instance.setTriggerTime(triggerTime);
         instance.setRetriedCount(retriedCount);
-        instance.setRunState(RunState.WAITING.value());
+        instance.setRunStatus(RunStatus.WAITING.value());
         return instance;
     }
 
@@ -200,27 +200,27 @@ public class SchedInstance extends BaseEntity {
 
     @Transient
     public boolean isRunning() {
-        return RunState.RUNNING.equalsValue(runState);
+        return RunStatus.RUNNING.equalsValue(runStatus);
     }
 
     @Transient
     public boolean isPausable() {
-        return RunState.of(runState).isPausable();
+        return RunStatus.of(runStatus).isPausable();
     }
 
     @Transient
     public boolean isPaused() {
-        return RunState.PAUSED.equalsValue(runState);
+        return RunStatus.PAUSED.equalsValue(runStatus);
     }
 
     @Transient
     public boolean isCompleted() {
-        return RunState.COMPLETED.equalsValue(runState);
+        return RunStatus.COMPLETED.equalsValue(runStatus);
     }
 
     @Transient
     public boolean isTerminal() {
-        return RunState.of(runState).isTerminal();
+        return RunStatus.of(runStatus).isTerminal();
     }
 
     /**
@@ -248,10 +248,10 @@ public class SchedInstance extends BaseEntity {
         this.uniqueFlag = (type.isRequiredUnique() && !isWorkflowNode()) ? type.getUniqueFlag() : instanceId;
     }
 
-    public void markTerminated(RunState runState, Date runEndTime) {
-        Assert.state(runState.isTerminal(), () -> "Invalid terminal run state: " + instanceId + ", " + runState);
+    public void markTerminated(RunStatus runStatus, Date runEndTime) {
+        Assert.state(runStatus.isTerminal(), () -> "Invalid terminal run status: " + instanceId + ", " + runStatus);
         Assert.state(runEndTime != null, () -> "Run end time cannot be null: " + instanceId);
-        this.runState = runState.value();
+        this.runStatus = runStatus.value();
         this.runEndTime = runEndTime;
     }
 

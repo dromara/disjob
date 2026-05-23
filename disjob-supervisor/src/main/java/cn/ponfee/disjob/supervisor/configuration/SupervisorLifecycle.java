@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.supervisor.configuration;
 
 import cn.ponfee.disjob.common.lock.LockTemplate;
-import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunStatus;
 import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
@@ -57,8 +57,8 @@ class SupervisorLifecycle implements SmartLifecycle {
         supervisorConf.check();
         this.supervisorStartup = new SupervisorStartup(
             supervisorConf, localSupervisor, supervisorRegistry, taskDispatcher,
-            new ExpireInstanceScanner(RunState.WAITING, supervisorConf, jobManager, jobQuerier, workerClient, scanWaitingInstanceLocker),
-            new ExpireInstanceScanner(RunState.RUNNING, supervisorConf, jobManager, jobQuerier, workerClient, scanRunningInstanceLocker),
+            new ExpireInstanceScanner(RunStatus.WAITING, supervisorConf, jobManager, jobQuerier, workerClient, scanWaitingInstanceLocker),
+            new ExpireInstanceScanner(RunStatus.RUNNING, supervisorConf, jobManager, jobQuerier, workerClient, scanRunningInstanceLocker),
             new TriggeringJobScanner(supervisorConf, jobManager, jobQuerier, workerClient, scanTriggeringJobLocker)
         );
     }

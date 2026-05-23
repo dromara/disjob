@@ -25,8 +25,8 @@
       <div class="form-group">
         <label class="col-sm-3 control-label is-required">Job状态：</label>
         <div class="col-sm-9">
-          <select name="jobState" class="form-control m-b" th:with="enum=${@disjobService.enums('JobState')}">
-            <option th:each="e : ${enum}" th:text="${e.desc.replaceFirst('^已','')}" th:value="${e.value}" th:field="*{jobState}"></option>
+          <select name="jobStatus" class="form-control m-b" th:with="enum=${@disjobService.enums('JobStatus')}">
+            <option th:each="e : ${enum}" th:text="${e.desc.replaceFirst('^\u5df2','')}" th:value="${e.value}" th:field="*{jobStatus}"></option>
           </select>
         </div>
       </div>

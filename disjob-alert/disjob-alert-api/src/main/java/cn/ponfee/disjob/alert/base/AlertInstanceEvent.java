@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.alert.base;
 
-import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunStatus;
 import cn.ponfee.disjob.core.enums.RunType;
 import lombok.Getter;
 import lombok.Setter;
@@ -56,7 +56,7 @@ public class AlertInstanceEvent extends AlertEvent {
     /**
      * 运行状态
      */
-    private RunState runState;
+    private RunStatus runStatus;
 
     /**
      * 触发时间
@@ -93,7 +93,7 @@ public class AlertInstanceEvent extends AlertEvent {
         content.append(String.format(format, "实例ID：", instanceId));
         // 运行信息
         content.append(String.format(format, "运行类型：", runType.desc()));
-        content.append(String.format(format, "运行状态：", runState.desc()));
+        content.append(String.format(format, "运行状态：", runStatus.desc()));
         content.append(String.format(format, "计划触发时间：", formatDate(triggerTime)));
         content.append(String.format(format, "运行开始时间：", formatDate(runStartTime)));
         content.append(String.format(format, "运行结束时间：", formatDate(runEndTime)));

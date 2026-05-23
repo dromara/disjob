@@ -19,12 +19,12 @@ package cn.ponfee.disjob.core.enums;
 import cn.ponfee.disjob.common.base.IntValueEnum;
 
 /**
- * The run state enum definition.
- * <p>mapped by sched_instance.run_state
+ * The run status enum definition.
+ * <p>mapped by sched_instance.run_status
  *
  * @author Ponfee
  */
-public enum RunState implements IntValueEnum<RunState> {
+public enum RunStatus implements IntValueEnum<RunStatus> {
 
     /**
      * 待运行
@@ -54,17 +54,17 @@ public enum RunState implements IntValueEnum<RunState> {
     ;
 
     /**
-     * State value
+     * Status value
      */
     private final int value;
 
     /**
-     * Whether is terminal state
+     * Whether is terminal status
      */
     private final boolean terminal;
 
     /**
-     * Whether is failure state
+     * Whether is failure status
      */
     private final boolean failure;
 
@@ -73,7 +73,7 @@ public enum RunState implements IntValueEnum<RunState> {
      */
     private final String desc;
 
-    RunState(int value, boolean terminal, boolean failure, String desc) {
+    RunStatus(int value, boolean terminal, boolean failure, String desc) {
         this.value = value;
         this.terminal = terminal;
         this.failure = failure;
@@ -102,15 +102,15 @@ public enum RunState implements IntValueEnum<RunState> {
         return failure;
     }
 
-    public static RunState of(int value) {
-        for (RunState e : VALUES) {
+    public static RunStatus of(int value) {
+        for (RunStatus e : VALUES) {
             if (e.value() == value) {
                 return e;
             }
         }
-        throw new IllegalArgumentException("Invalid run state value: " + value);
+        throw new IllegalArgumentException("Invalid run status value: " + value);
     }
 
-    private static final RunState[] VALUES = RunState.values();
+    private static final RunStatus[] VALUES = RunStatus.values();
 
 }

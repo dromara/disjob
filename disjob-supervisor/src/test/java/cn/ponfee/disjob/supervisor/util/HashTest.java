@@ -19,7 +19,7 @@ package cn.ponfee.disjob.supervisor.util;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.util.Bytes;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunStatus;
 import cn.ponfee.disjob.supervisor.base.SpringContextTest;
 import com.google.common.math.IntMath;
 import org.apache.commons.codec.binary.Hex;
@@ -75,8 +75,8 @@ public class HashTest {
 
     @Test
     public void testMD5() throws ClassNotFoundException {
-        System.out.println(RunState.class.getEnumConstants()[0]);
-        System.out.println(RunState.values()[0]);
+        System.out.println(RunStatus.class.getEnumConstants()[0]);
+        System.out.println(RunStatus.values()[0]);
 
         for (int i = 0; i < 100; i++) {
             if ((i & 0x07) == 0) {

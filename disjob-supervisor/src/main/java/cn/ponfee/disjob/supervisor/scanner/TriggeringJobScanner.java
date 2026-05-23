@@ -215,12 +215,12 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         if (lastInstance == null || lastInstance.isCompleted()) {
             return false;
         }
-        if (!RunState.of(lastInstance.getRunState()).isTerminal()) {
+        if (!RunStatus.of(lastInstance.getRunStatus()).isTerminal()) {
             blockCollidedTrigger(job, lastInstance, collidedStrategy, now);
             return true;
         }
 
-        // In here, the last instance state is `CANCELED`
+        // In here, the last instance status is `CANCELED`
         if (lastInstance.isWorkflow() || !Boolean.TRUE.equals(lastInstance.getRetrying())) {
             // 工作流(workflow)的重试不在lead实例上：如果`lead instance`为`CANCELED`状态，则表明整个工作流实例已经全部取消了
             return false;
@@ -288,7 +288,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         job.setNextTriggerTime(doComputeNextTriggerTime(job, now));
         if (job.getNextTriggerTime() == null) {
             // Disable the job if no next trigger time
-            job.setJobState(JobState.DISABLED.value());
+            job.setJobStatus(JobStatus.DISABLED.value());
         }
     }
 

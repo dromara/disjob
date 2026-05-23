@@ -51,7 +51,7 @@ public class SchedJobResponse extends ToJsonString implements Serializable {
     private String jobName;
     private Integer jobType;
     private String jobExecutor;
-    private Integer jobState;
+    private Integer jobStatus;
     private String jobParam;
     private Integer retryType;
     private Integer retryCount;

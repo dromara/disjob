@@ -3,7 +3,7 @@
 <mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedWorkflowMapper">
 
   <sql id="Base_Column_List">
-    wnstance_id, pre_node, cur_node, run_state, instance_id, updated_at
+    wnstance_id, pre_node, cur_node, run_status, instance_id, updated_at
   </sql>
 
   <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
@@ -11,7 +11,7 @@
       wnstance_id,
       pre_node,
       cur_node,
-      run_state,
+      run_status,
       instance_id
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
@@ -19,7 +19,7 @@
       #{item.wnstanceId,jdbcType=BIGINT},
       #{item.preNode,jdbcType=VARCHAR},
       #{item.curNode,jdbcType=VARCHAR},
-      #{item.runState,jdbcType=TINYINT},
+      #{item.runStatus,jdbcType=TINYINT},
       #{item.instanceId,jdbcType=BIGINT}
     )
     </foreach>
@@ -34,14 +34,14 @@
   <update id="update">
     UPDATE sched_workflow
     <set>
-      <if test="toState != null">run_state = #{toState,jdbcType=TINYINT},</if>
+      <if test="toStatus != null">run_status = #{toStatus,jdbcType=TINYINT},</if>
       <if test="toInstanceId != null">instance_id = #{toInstanceId,jdbcType=BIGINT},</if>
     </set>
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
       <if test="curNode != null and curNode != ''">
         AND cur_node = #{curNode,jdbcType=VARCHAR}
       </if>
-      AND run_state IN (<foreach collection="fromStates" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+      AND run_status IN (<foreach collection="fromStatuses" separator="," item="status">#{status,jdbcType=TINYINT}</foreach>)
       <if test="fromInstanceId != null">
         AND instance_id = #{fromInstanceId,jdbcType=BIGINT}
       </if>
@@ -49,16 +49,16 @@
 
   <update id="resumeWaiting" parameterType="_long">
     UPDATE sched_workflow
-    SET run_state = 10
+    SET run_status = 10
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
-      AND run_state = 30
+      AND run_status = 30
       AND instance_id IS NULL
   </update>
 
   <delete id="deleteByWnstanceId" parameterType="_long">
     DELETE FROM sched_workflow
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
-      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM sched_workflow WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT} AND run_state &lt; 40) t)=0
+      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM sched_workflow WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT} AND run_status &lt; 40) t)=0
   </delete>
 
 </mapper>

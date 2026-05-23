@@ -23,7 +23,7 @@ import cn.ponfee.disjob.core.dag.WorkflowInstance;
 import cn.ponfee.disjob.core.dag.WorkflowTask;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunStatus;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.supervisor.dto.StartTaskResult;
 import cn.ponfee.disjob.core.worker.dto.SplitJobParam;
@@ -100,7 +100,7 @@ public final class ModelConverter {
         event.setAlertType(alertType);
         event.setInstanceId(original.getInstanceId());
         event.setRunType(RunType.of(original.getRunType()));
-        event.setRunState(RunState.of(original.getRunState()));
+        event.setRunStatus(RunStatus.of(original.getRunStatus()));
         event.setTriggerTime(new Date(original.getTriggerTime()));
         event.setRunStartTime(original.getRunStartTime());
         event.setRunEndTime(current.getRunEndTime());

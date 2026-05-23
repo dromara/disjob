@@ -229,14 +229,14 @@ public class DisjobJobController extends BaseController {
      */
     @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "修改作业配置状态", businessType = BusinessType.UPDATE)
-    @PostMapping("/state/change")
+    @PostMapping("/status/change")
     @ResponseBody
-    public AjaxResult changeState(@RequestParam("jobId") long jobId,
-                                  @RequestParam("toState") Integer toState) {
+    public AjaxResult changeStatus(@RequestParam("jobId") long jobId,
+                                   @RequestParam("toStatus") Integer toStatus) {
         String user = getLoginName();
         authorizeGroupService.authorizeJob(user, jobId);
 
-        schedJobService.changeJobState(user, jobId, toState);
+        schedJobService.changeJobStatus(user, jobId, toStatus);
         return success();
     }
 

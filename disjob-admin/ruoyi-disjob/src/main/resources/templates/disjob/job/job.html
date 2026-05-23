@@ -97,14 +97,14 @@
           }
         },
         {
-          field: 'jobState',
+          field: 'jobStatus',
           title: 'Job状态',
           formatter: function (value, row, index) {
             if ([[${@permission.isPermitted('disjob:job:operate')}]]) {
-              const str = (row.jobState === 0) ? 'off' : 'on';
-              return '<i style="cursor:pointer;" class="fa fa-toggle-' + str + ' text-info fa-2x" onclick="changeState(\'' + row.jobId + '\', ' + value + ')"></i> ';
+              const str = (row.jobStatus === 0) ? 'off' : 'on';
+              return '<i style="cursor:pointer;" class="fa fa-toggle-' + str + ' text-info fa-2x" onclick="changeStatus(\'' + row.jobId + '\', ' + value + ')"></i> ';
             } else {
-              return (row.jobState === 0) ? "<span class='badge badge-danger'>禁用</span>" : "<span class='badge badge-success'>启用</span>";
+              return (row.jobStatus === 0) ? "<span class='badge badge-danger'>禁用</span>" : "<span class='badge badge-success'>启用</span>";
             }
           }
         },
@@ -198,7 +198,7 @@
               return '';
             }
             const actions = [];
-            if (row.jobState === 0) {
+            if (row.jobStatus === 0) {
               actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.remove(&quot;" + row.jobId + "&quot;)'><i class='fa fa-trash'></i> 删除</a> ");
             }
             actions.push("<a class='btn btn-primary btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='trigger(&quot;" + row.jobId + "&quot;)'><i class='fa fa-hand-pointer-o'></i> 触发</a> ");
@@ -222,10 +222,10 @@
       $.modal.open("作业配置详情", url, null, null, null, ['关闭']);
     }
 
-    function changeState(jobId, fromJobState) {
-      const toJobState = (fromJobState === 0) ? 1 : 0;
-      $.modal.confirm("确认要" + (toJobState === 0 ? "禁用" : "启用") + "吗？", function () {
-        $.operate.post(prefix + "/state/change", {"jobId": jobId, "toState": toJobState});
+    function changeStatus(jobId, fromJobStatus) {
+      const toJobStatus = (fromJobStatus === 0) ? 1 : 0;
+      $.modal.confirm("确认要" + (toJobStatus === 0 ? "禁用" : "启用") + "吗？", function () {
+        $.operate.post(prefix + "/status/change", {"jobId": jobId, "toStatus": toJobStatus});
       });
     }
 
@@ -251,7 +251,7 @@
         return;
       }
       for (let i = 0, n = rows.length; i < n; i++) {
-        if (rows[i].jobState === 1) {
+        if (rows[i].jobStatus === 1) {
           $.modal.alertWarning("不能删除启用状态的作业配置[" + rows[i].jobId + "]");
           return;
         }

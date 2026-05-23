@@ -34,9 +34,9 @@ public interface SchedWorkflowMapper {
 
     int update(@Param("wnstanceId") long wnstanceId,
                @Param("curNode") String curNode,
-               @Param("toState") Integer toState,
+               @Param("toStatus") Integer toStatus,
                @Param("toInstanceId") Long toInstanceId,
-               @Param("fromStates") List<Integer> fromStates,
+               @Param("fromStatuses") List<Integer> fromStatuses,
                @Param("fromInstanceId") Long fromInstanceId);
 
     int resumeWaiting(long wnstanceId);

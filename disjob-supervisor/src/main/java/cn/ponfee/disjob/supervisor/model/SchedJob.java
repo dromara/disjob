@@ -67,9 +67,9 @@ public class SchedJob extends BaseEntity {
     /**
      * Job状态：0-已禁用；1-已启用；
      *
-     * @see JobState
+     * @see JobStatus
      */
-    private Integer jobState;
+    private Integer jobStatus;
 
     /**
      * Job执行器(支持：执行器类的全限定名、Spring bean name、DAG表达式、执行器源码等)
@@ -174,7 +174,7 @@ public class SchedJob extends BaseEntity {
     private Date nextScanTime;
 
     /**
-     * 连续扫描失败的次数，连续失败次数达到阈值后自动禁用(set job_state=0)
+     * 连续扫描失败的次数，连续失败次数达到阈值后自动禁用(set job_status=0)
      */
     private Integer scanFailedCount;
 
@@ -195,12 +195,12 @@ public class SchedJob extends BaseEntity {
 
     @Transient
     public boolean isEnabled() {
-        return JobState.ENABLED.equalsValue(jobState);
+        return JobStatus.ENABLED.equalsValue(jobStatus);
     }
 
     @Transient
     public boolean isDisabled() {
-        return JobState.DISABLED.equalsValue(jobState);
+        return JobStatus.DISABLED.equalsValue(jobStatus);
     }
 
     @Transient
@@ -267,9 +267,9 @@ public class SchedJob extends BaseEntity {
         return ++this.scanFailedCount;
     }
 
-    public boolean retryable(RunState runState, int retriedCount) {
-        Assert.state(runState.isTerminal(), "Run state must be terminated.");
-        if (!runState.isFailure()) {
+    public boolean retryable(RunStatus runStatus, int retriedCount) {
+        Assert.state(runStatus.isTerminal(), "Run status must be terminated.");
+        if (!runStatus.isFailure()) {
             return false;
         }
         return !RetryType.NONE.equalsValue(retryType) && retriedCount < retryCount;
@@ -296,7 +296,7 @@ public class SchedJob extends BaseEntity {
         this.jobExecutor = StringUtils.trim(jobExecutor);
 
         // set default
-        this.jobState = defaultIfNull(jobState, JobState.DISABLED.value());
+        this.jobStatus = defaultIfNull(jobStatus, JobStatus.DISABLED.value());
         this.retryType = defaultIfNull(retryType, RetryType.NONE.value());
         this.executeTimeout = defaultIfNull(executeTimeout, 0);
         this.collidedStrategy = defaultIfNull(collidedStrategy, CollidedStrategy.CONCURRENT.value());
@@ -305,7 +305,7 @@ public class SchedJob extends BaseEntity {
         this.triggerValue = StringUtils.trim(triggerValue);
 
         // verify
-        JobState.of(jobState);
+        JobStatus.of(jobStatus);
         Assert.isTrue(executeTimeout >= 0, () -> "Invalid execute timeout: " + executeTimeout);
         CollidedStrategy.of(collidedStrategy);
         MisfireStrategy.of(misfireStrategy);

@@ -24,34 +24,34 @@ import java.util.Arrays;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Execute state test
+ * Execute status test
  *
  * @author Ponfee
  */
-public class ExecuteStateTest {
+public class ExecuteStatusTest {
 
     @Test
     public void testOf() {
-        assertThat(ExecuteState.of(10)).isSameAs(ExecuteState.WAITING);
+        assertThat(ExecuteStatus.of(10)).isSameAs(ExecuteStatus.WAITING);
     }
 
     @Test
     public void testEquals() {
-        Assertions.assertNotSame(RunState.class.getEnumConstants(), RunState.class.getEnumConstants());
-        Assertions.assertNotSame(RunState.values(), RunState.values());
-        Assertions.assertNotSame(RunState.class.getEnumConstants(), RunState.values());
+        Assertions.assertNotSame(RunStatus.class.getEnumConstants(), RunStatus.class.getEnumConstants());
+        Assertions.assertNotSame(RunStatus.values(), RunStatus.values());
+        Assertions.assertNotSame(RunStatus.class.getEnumConstants(), RunStatus.values());
 
-        RunState[] enumConstants = RunState.class.getEnumConstants();
+        RunStatus[] enumConstants = RunStatus.class.getEnumConstants();
         Assertions.assertEquals("[WAITING, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(enumConstants));
-        enumConstants[0] = RunState.PAUSED;
+        enumConstants[0] = RunStatus.PAUSED;
         Assertions.assertEquals("[PAUSED, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(enumConstants));
-        Assertions.assertEquals("[WAITING, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(RunState.class.getEnumConstants()));
+        Assertions.assertEquals("[WAITING, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(RunStatus.class.getEnumConstants()));
 
-        RunState[] values = RunState.values();
+        RunStatus[] values = RunStatus.values();
         Assertions.assertEquals("[WAITING, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(values));
-        values[0] = RunState.PAUSED;
+        values[0] = RunStatus.PAUSED;
         Assertions.assertEquals("[PAUSED, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(values));
-        Assertions.assertEquals("[WAITING, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(RunState.values()));
+        Assertions.assertEquals("[WAITING, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(RunStatus.values()));
     }
 
 }

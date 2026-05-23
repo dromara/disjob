@@ -25,7 +25,7 @@
             </li>
             <li>
               <label>运行状态：</label>
-              <select class="form-control" name="runState" th:with="enum=${@disjobService.enums('RunState')}">
+              <select class="form-control" name="runStatus" th:with="enum=${@disjobService.enums('RunStatus')}">
                 <option value="" selected>所有</option>
                 <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}"></option>
               </select>
@@ -78,7 +78,7 @@
             </li>
             <li>
               <label>运行状态：</label>
-              <select class="form-control" name="runState" th:with="enum=${@disjobService.enums('RunState')}">
+              <select class="form-control" name="runStatus" th:with="enum=${@disjobService.enums('RunStatus')}">
                 <option value="" selected>所有</option>
                 <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}"></option>
               </select>
@@ -119,9 +119,9 @@
 <script th:inline="javascript">
   const operateFlag = [[${@permission.hasPermi('disjob:instance:operate')}]];
   const runTypes = [[${@disjobService.enums('RunType')}]];
-  const runStates = [[${@disjobService.enums('RunState')}]];
+  const runStatuses = [[${@disjobService.enums('RunStatus')}]];
   const prefix = ctx + "disjob/instance";
-  const stateMap = {10: "info", 20: "success", 30: "warning", 40: "primary", 50: "danger"};
+  const statusMap = {10: "info", 20: "success", 30: "warning", 40: "primary", 50: "danger"};
 
   const defaultOps = {
     uniqueId: "instanceId",
@@ -154,15 +154,15 @@
       }
     },
     {
-      field: 'runState',
+      field: 'runStatus',
       title: '运行状态',
       width: '70',
       formatter: function (value, row, index) {
         if (row.retrying) {
           return $.common.sprintf("<span class='badge badge-%s'>%s</span>", "success", "重试中");
         }
-        const label = $.table.selectData(runStates, value, 'value', 'desc');
-        return $.common.sprintf("<span class='badge badge-%s'>%s</span>", stateMap[value], label);
+        const label = $.table.selectData(runStatuses, value, 'value', 'desc');
+        return $.common.sprintf("<span class='badge badge-%s'>%s</span>", statusMap[value], label);
       }
     },
     {
@@ -244,21 +244,21 @@
         if (row.retrying) {
           return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="重试中请操作子实例"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
         }
-        if (row.runType === 3 && row.runState >= 40) {
+        if (row.runType === 3 && row.runStatus >= 40) {
           return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="删除操作在父实例上"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
         }
 
         const actions = [];
-        if (row.runState <= 20) {
+        if (row.runStatus <= 20) {
           actions.push("<a class='btn btn-warning btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='operate(&quot;" + row.instanceId + "&quot;, &quot;pause&quot;, &quot;暂停&quot;)'><i class='fa fa-pause'></i> 暂停</a> ");
         }
-        if (row.runState === 30) {
+        if (row.runStatus === 30) {
           actions.push("<a class='btn btn-info btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='operate(&quot;" + row.instanceId + "&quot;, &quot;resume&quot;, &quot;恢复&quot;)'><i class='fa fa-play'></i> 恢复</a> ");
         }
-        if (row.runState < 40) {
+        if (row.runStatus < 40) {
           actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='operate(&quot;" + row.instanceId + "&quot;, &quot;cancel&quot;, &quot;取消&quot;)'><i class='fa fa-remove'></i> 取消</a> ");
         }
-        if (row.runState >= 40) {
+        if (row.runStatus >= 40) {
           actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='operate(&quot;" + row.instanceId + "&quot;, &quot;remove&quot;, &quot;删除&quot;)'><i class='fa fa-trash'></i> 删除</a> ");
         }
         return '<a tabindex="0" class="btn btn-info btn-rounded btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
@@ -397,7 +397,7 @@
     const formElem = $("#" + formId);
     formElem.find("input[name='resetSearch']").val("");
     $.form.reset(formId, tableId);
-    ["jobId", "runState", "runType"].forEach(function (item) {
+    ["jobId", "runStatus", "runType"].forEach(function (item) {
       const elem = formElem.find("select[name='" + item + "']");
       elem.val(elem.val()).trigger("change");
     });

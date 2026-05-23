@@ -20,7 +20,7 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
 import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.lock.LockTemplate;
-import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunStatus;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
@@ -43,8 +43,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ExpireInstanceScanner extends AbstractHeartbeatThread {
 
-    private static final Set<RunState> MUTEX = ConcurrentHashMap.newKeySet();
-    private final RunState scanRunState;
+    private static final Set<RunStatus> MUTEX = ConcurrentHashMap.newKeySet();
+    private final RunStatus scanRunStatus;
     private final int scanBatchSize;
     private final JobManager jobManager;
     private final JobQuerier jobQuerier;
@@ -53,7 +53,7 @@ public class ExpireInstanceScanner extends AbstractHeartbeatThread {
     private final long beforeMilliseconds;
     private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> log.warn("Not discovered any worker."));
 
-    public ExpireInstanceScanner(RunState scanRunState,
+    public ExpireInstanceScanner(RunStatus scanRunStatus,
                                  SupervisorProperties conf,
                                  JobManager jobManager,
                                  JobQuerier jobQuerier,
@@ -62,10 +62,10 @@ public class ExpireInstanceScanner extends AbstractHeartbeatThread {
         // heartbeatPeriodMs:
         //   WAITING default: (15000 * 2) / 3 = 10000
         //   RUNNING default: (30000 * 2) / 3 = 20000
-        super(obtainHeartbeatPeriodMs(scanRunState, conf));
-        Assert.state(MUTEX.add(scanRunState), () -> "Expire Instance Scanner '" + scanRunState + "' already created.");
+        super(obtainHeartbeatPeriodMs(scanRunStatus, conf));
+        Assert.state(MUTEX.add(scanRunStatus), () -> "Expire Instance Scanner '" + scanRunStatus + "' already created.");
 
-        this.scanRunState = scanRunState;
+        this.scanRunStatus = scanRunStatus;
         this.scanBatchSize = conf.getScanBatchSize();
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
@@ -87,7 +87,7 @@ public class ExpireInstanceScanner extends AbstractHeartbeatThread {
 
     private boolean scan() {
         Date expireTime = new Date(System.currentTimeMillis() - beforeMilliseconds);
-        List<SchedInstance> instances = jobQuerier.findExpireInstance(scanRunState, expireTime, scanBatchSize);
+        List<SchedInstance> instances = jobQuerier.findExpireInstance(scanRunStatus, expireTime, scanBatchSize);
         instances.forEach(this::processInstance);
         return instances.size() < scanBatchSize;
     }
@@ -126,7 +126,7 @@ public class ExpireInstanceScanner extends AbstractHeartbeatThread {
 
     private void purgeExpiredInstance(SchedInstance instance, List<SchedTask> allTasks) {
         if (allTasks.stream().allMatch(SchedTask::isTerminal)) {
-            // double check instance run state
+            // double check instance run status
             SchedInstance reloadInstance = jobQuerier.getInstance(instance.getInstanceId());
             if (reloadInstance == null) {
                 log.error("Scanned instance not exists: {}", instance.getInstanceId());
@@ -136,8 +136,8 @@ public class ExpireInstanceScanner extends AbstractHeartbeatThread {
                 return;
             }
         } else {
-            // check has alive executing state task
-            if (scanRunState == RunState.RUNNING && workerClient.hasAliveTask(allTasks)) {
+            // check has alive executing status task
+            if (scanRunStatus == RunStatus.RUNNING && workerClient.hasAliveTask(allTasks)) {
                 return;
             }
         }
@@ -145,13 +145,13 @@ public class ExpireInstanceScanner extends AbstractHeartbeatThread {
         log.info("Purge scanned instance: {}, {}", instance.getInstanceId(), purged);
     }
 
-    private static long obtainHeartbeatPeriodMs(RunState scanRunState, SupervisorProperties conf) {
-        if (scanRunState == RunState.RUNNING) {
+    private static long obtainHeartbeatPeriodMs(RunStatus scanRunStatus, SupervisorProperties conf) {
+        if (scanRunStatus == RunStatus.RUNNING) {
             return conf.getScanRunningInstancePeriodMs();
-        } else if (scanRunState == RunState.WAITING) {
+        } else if (scanRunStatus == RunStatus.WAITING) {
             return conf.getScanWaitingInstancePeriodMs();
         } else {
-            throw new IllegalArgumentException("Unsupported expire instance scan run state: " + scanRunState);
+            throw new IllegalArgumentException("Unsupported expire instance scan run status: " + scanRunStatus);
         }
     }
 

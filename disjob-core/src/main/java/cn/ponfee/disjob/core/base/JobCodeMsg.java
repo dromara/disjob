@@ -33,9 +33,9 @@ public enum JobCodeMsg implements CodeMsg {
     LOAD_JOB_EXECUTOR_ERROR(450, "Load job executor error."),
     INVALID_JOB_EXECUTOR(451, "Invalid job executor."),
     SPLIT_JOB_FAILED(452, "Split job failed."),
-    NOT_PAUSABLE_INSTANCE(453, "Not pausable instance state."),
-    NOT_CANCELABLE_INSTANCE(454, "Not cancelable instance state."),
-    NOT_RESUMABLE_INSTANCE(455, "Not resumable instance state."),
+    NOT_PAUSABLE_INSTANCE(453, "Not pausable instance status."),
+    NOT_CANCELABLE_INSTANCE(454, "Not cancelable instance status."),
+    NOT_RESUMABLE_INSTANCE(455, "Not resumable instance status."),
 
     SERVER_ERROR(500, "Server error."),
     JOB_EXECUTE_FAILED(560, "Job execute failed."),
