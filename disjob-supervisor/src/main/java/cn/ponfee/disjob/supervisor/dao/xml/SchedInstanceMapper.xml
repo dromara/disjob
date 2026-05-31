@@ -5,7 +5,7 @@
   <sql id="Base_Column_List">
     instance_id, rnstance_id, pnstance_id, wnstance_id, job_id,
     trigger_time, run_type, is_retrying AS retrying, run_status,
-    run_start_time, run_end_time, retry_times, next_scan_time,
+    run_start_time, run_end_time, retry_attempt, next_scan_time,
     workflow_cur_node, version
   </sql>
 
@@ -21,7 +21,7 @@
       dedup_key,
       run_status,
       run_start_time,
-      retry_times,
+      retry_attempt,
       workflow_cur_node
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
@@ -36,7 +36,7 @@
       #{item.dedupKey,jdbcType=BIGINT},
       #{item.runStatus,jdbcType=TINYINT},
       #{item.runStartTime,jdbcType=TIMESTAMP},
-      #{item.retryTimes,jdbcType=TINYINT},
+      #{item.retryAttempt,jdbcType=TINYINT},
       #{item.workflowCurNode,jdbcType=VARCHAR}
     )
     </foreach>

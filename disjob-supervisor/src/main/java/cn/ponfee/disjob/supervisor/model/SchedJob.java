@@ -94,7 +94,7 @@ public class SchedJob extends BaseEntity {
     private Integer retryCount;
 
     /**
-     * 实例失败的重试间隔(毫秒)，阶梯递增(square of sched_instance.retry_times)
+     * 实例失败的重试间隔(毫秒)，阶梯递增(retry_interval * retry_attempt^2)
      */
     private Integer retryInterval;
 
@@ -154,7 +154,7 @@ public class SchedJob extends BaseEntity {
     private Integer shutdownStrategy;
 
     /**
-     * 告警选项(bitwise OR)：1-警报；2-通知；3-全选；
+     * 告警选项Bitwise(位的或运算结果)：1-警报；2-通知；3-全选；
      */
     private Integer alertOptions;
 
@@ -174,7 +174,7 @@ public class SchedJob extends BaseEntity {
     private Date nextScanTime;
 
     /**
-     * 连续扫描失败的次数，连续失败次数达到阈值后自动禁用(set job_status=0)
+     * 连续扫描失败的次数，连续失败次数达到阈值后自动禁用
      */
     private Integer scanFailures;
 
@@ -267,26 +267,26 @@ public class SchedJob extends BaseEntity {
         return ++this.scanFailures;
     }
 
-    public boolean retryable(RunStatus runStatus, int retryTimes) {
+    public boolean retryable(RunStatus runStatus, int retryAttempt) {
         Assert.state(runStatus.isTerminal(), "Run status must be terminated.");
         if (!runStatus.isFailure()) {
             return false;
         }
-        return !RetryType.NONE.equalsValue(retryType) && retryTimes < retryCount;
+        return !RetryType.NONE.equalsValue(retryType) && retryAttempt < retryCount;
     }
 
     /**
      * Returns the retry trigger time
      *
-     * @param failCount the failure times
+     * @param retryAttempt the retry attempt
      * @return retry trigger time milliseconds
      */
-    public long computeRetryTriggerTime(int failCount) {
-        Assert.isTrue(!RetryType.NONE.equalsValue(retryType), () -> "Sched job '" + jobId + "' retry type is NONE.");
-        Assert.isTrue(retryCount > 0, () -> "Sched job '" + jobId + "' retry count must greater than 0, but actual " + retryCount);
-        Assert.isTrue(failCount <= retryCount, () -> "Sched job '" + jobId + "' exceed max retries: " + failCount + " > " + retryCount + ".");
+    public long computeRetryTriggerTime(int retryAttempt) {
+        Assert.state(!RetryType.NONE.equalsValue(retryType), () -> "Unsupported retry type " + jobId + ": NONE");
+        Assert.state(retryCount > 0, () -> "Job " + jobId + "Invalid retry count " + jobId + ": " + retryCount);
+        Assert.state(retryAttempt <= retryCount, () -> "Exceed retry count " + jobId + ": " + retryAttempt + " > " + retryCount);
         // exponential backoff
-        return System.currentTimeMillis() + (long) retryInterval * IntMath.pow(failCount, 2);
+        return System.currentTimeMillis() + (long) retryInterval * IntMath.pow(retryAttempt, 2);
     }
 
     // ----------------------------------------------------------------private methods

@@ -48,7 +48,7 @@ public class WorkflowTask extends ToJsonString implements Serializable {
     private int taskCount;
 
     /**
-     * 保存的执行快照数据
+     * 保存的执行数据
      */
-    private String executeSnapshot;
+    private String executionData;
 }

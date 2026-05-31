@@ -105,9 +105,9 @@ public class SchedInstance extends BaseEntity {
     private Date runEndTime;
 
     /**
-     * 当前是第几次重试(the maximum value is sched_job.retry_count)
+     * 当前是第几次重试(最大值为retry_count)
      */
-    private Integer retryTimes;
+    private Integer retryAttempt;
 
     /**
      * 工作流任务的当前节点(sched_workflow.cur_node，非工作流任务时为NULL)
@@ -127,8 +127,8 @@ public class SchedInstance extends BaseEntity {
     private Integer version;
 
     public static SchedInstance of(SchedInstance parent, long instanceId, long jobId,
-                                   RunType runType, long triggerTime, int retryTimes) {
-        return of(parent, parent.getWnstanceId(), instanceId, jobId, runType, triggerTime, retryTimes);
+                                   RunType runType, long triggerTime, int retryAttempt) {
+        return of(parent, parent.getWnstanceId(), instanceId, jobId, runType, triggerTime, retryAttempt);
     }
 
     /**
@@ -140,11 +140,11 @@ public class SchedInstance extends BaseEntity {
      * @param jobId        the job id
      * @param runType      the run type
      * @param triggerTime  the trigger time
-     * @param retryTimes   the retry times
+     * @param retryAttempt the retry attempt
      * @return SchedInstance
      */
     public static SchedInstance of(SchedInstance parent, Long wnstanceId, long instanceId,
-                                   long jobId, RunType runType, long triggerTime, int retryTimes) {
+                                   long jobId, RunType runType, long triggerTime, int retryAttempt) {
         Long rnstanceId = null, pnstanceId = null;
         if (parent != null) {
             rnstanceId = parent.obtainRootInstanceId();
@@ -158,7 +158,7 @@ public class SchedInstance extends BaseEntity {
         instance.setJobId(jobId);
         instance.setRunType(runType.value());
         instance.setTriggerTime(triggerTime);
-        instance.setRetryTimes(retryTimes);
+        instance.setRetryAttempt(retryAttempt);
         instance.setRunStatus(RunStatus.WAITING.value());
         return instance;
     }
@@ -179,8 +179,8 @@ public class SchedInstance extends BaseEntity {
         return isRetry() ? pnstanceId : instanceId;
     }
 
-    public int obtainRetryTimes() {
-        return retryTimes != null ? retryTimes : 0;
+    public int obtainRetryAttempt() {
+        return retryAttempt != null ? retryAttempt : 0;
     }
 
     @Transient
@@ -234,7 +234,7 @@ public class SchedInstance extends BaseEntity {
     }
 
     @Transient
-    public boolean isRunSchedule() {
+    public boolean isSchedule() {
         return RunType.SCHEDULE.equalsValue(runType);
     }
 

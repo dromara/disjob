@@ -44,12 +44,12 @@ public interface SchedTaskMapper {
 
     int start(@Param("taskId") long taskId,
               @Param("worker") String worker,
-              @Param("startIdempotencyKey") String startIdempotencyKey,
+              @Param("idempotencyKey") String idempotencyKey,
               @Param("executeStartTime") Date executeStartTime);
 
-    boolean checkStartIdempotent(@Param("taskId") long taskId,
-                                 @Param("worker") String worker,
-                                 @Param("startIdempotencyKey") String startIdempotencyKey);
+    boolean checkIdempotentKey(@Param("taskId") long taskId,
+                               @Param("worker") String worker,
+                               @Param("idempotencyKey") String idempotencyKey);
 
     int terminate(@Param("taskId") long taskId,
                   @Param("worker") String worker,
@@ -65,7 +65,7 @@ public interface SchedTaskMapper {
 
     int forceChangeStatus(@Param("instanceId") long instanceId, @Param("toStatus") int toStatus);
 
-    int savepoint(@Param("taskId") long taskId, @Param("worker") String worker, @Param("executeSnapshot") String executeSnapshot);
+    int savepoint(@Param("taskId") long taskId, @Param("worker") String worker, @Param("executionData") String executionData);
 
     /**
      * Delete the sched task.

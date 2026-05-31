@@ -63,7 +63,7 @@ public class PrimeAccumulateJobExecutor extends JobExecutor {
         public static Param of(WorkflowTask task) {
             Param param = new Param();
             param.setTaskId(task.getTaskId());
-            param.setPrimeCount(Jsons.fromJson(task.getExecuteSnapshot(), PrimeCountJobExecutor.ExecuteSnapshot.class).getCount());
+            param.setPrimeCount(Jsons.fromJson(task.getExecutionData(), PrimeCountJobExecutor.ExecutionData.class).getCount());
             return param;
         }
     }

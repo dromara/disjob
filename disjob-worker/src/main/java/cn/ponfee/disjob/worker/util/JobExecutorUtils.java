@@ -153,7 +153,7 @@ public class JobExecutorUtils {
         splitParam.setBroadcast(param.getRouteStrategy().isBroadcast());
         splitParam.setJobParam(param.getJobParam());
         splitParam.setRetryCount(param.getRetryCount());
-        splitParam.setRetryTimes(param.getRetryTimes());
+        splitParam.setRetryAttempt(param.getRetryAttempt());
         splitParam.setWorkerCount(param.getWorkerCount());
         splitParam.setPredecessorInstances(param.getPredecessorInstances());
         return splitParam;

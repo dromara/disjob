@@ -42,7 +42,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
     private long triggerTime;
     private long jobId;
     private int retryCount;
-    private int retryTimes;
+    private int retryAttempt;
     private JobType jobType;
     private RouteStrategy routeStrategy;
     private ShutdownStrategy shutdownStrategy;

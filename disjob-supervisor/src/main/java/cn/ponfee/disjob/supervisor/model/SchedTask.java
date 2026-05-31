@@ -84,9 +84,9 @@ public class SchedTask extends BaseEntity {
     private Integer executeStatus;
 
     /**
-     * 保存的执行快照数据
+     * 保存的执行数据
      */
-    private String executeSnapshot;
+    private String executionData;
 
     /**
      * 工作进程(JVM进程，GROUP:WORKER-ID:HOST:PORT)

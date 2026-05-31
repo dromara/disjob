@@ -65,7 +65,7 @@ public final class ModelConverter {
 
     public static SplitJobParam toSplitJobParam(SchedJob job, SchedInstance instance) {
         Assert.isTrue(JobType.of(job.getJobType()).isGeneral(), "Job must be general.");
-        return toSplitJobParam(job, instance.getRetryTimes(), job.getJobExecutor(), null);
+        return toSplitJobParam(job, instance.getRetryAttempt(), job.getJobExecutor(), null);
     }
 
     public static SplitJobParam toSplitJobParam(SchedJob job, SchedInstance instance,
@@ -73,7 +73,7 @@ public final class ModelConverter {
         Assert.isTrue(JobType.of(job.getJobType()).isWorkflow(), "Job must be workflow.");
         Assert.isTrue(instance.isWorkflowNode(), () -> "Split job must be node instance: " + instance);
         String curJobExecutor = instance.parseWorkflowCurNode().getName();
-        return toSplitJobParam(job, instance.getRetryTimes(), curJobExecutor, predecessorInstances);
+        return toSplitJobParam(job, instance.getRetryAttempt(), curJobExecutor, predecessorInstances);
     }
 
     public static StartTaskResult toStartTaskResult(SchedTask task) {
@@ -82,7 +82,7 @@ public final class ModelConverter {
         result.setTaskId(task.getTaskId());
         result.setTaskNo(task.getTaskNo());
         result.setTaskCount(task.getTaskCount());
-        result.setExecuteSnapshot(task.getExecuteSnapshot());
+        result.setExecutionData(task.getExecutionData());
         result.setTaskParam(task.getTaskParam());
         return result;
     }
@@ -104,8 +104,8 @@ public final class ModelConverter {
         event.setTriggerTime(new Date(source.getTriggerTime()));
         event.setRunStartTime(source.getRunStartTime());
         event.setRunEndTime(current.getRunEndTime());
-        // 如果是DAG任务，source和current都是为lead实例，此时的retryTimes始终为0
-        event.setRetryTimes(current.getRetryTimes());
+        // 如果是DAG任务，source和current都是为lead实例，此时的retryAttempt始终为0
+        event.setRetryAttempt(current.getRetryAttempt());
         return event;
     }
 
@@ -116,17 +116,17 @@ public final class ModelConverter {
         target.setTaskId(source.getTaskId());
         target.setTaskNo(source.getTaskNo());
         target.setTaskCount(source.getTaskCount());
-        target.setExecuteSnapshot(source.getExecuteSnapshot());
+        target.setExecutionData(source.getExecutionData());
         return target;
     }
 
-    private static SplitJobParam toSplitJobParam(SchedJob job, int retryTimes, String jobExecutor,
+    private static SplitJobParam toSplitJobParam(SchedJob job, int retryAttempt, String jobExecutor,
                                                  List<WorkflowInstance> predecessorInstances) {
         SplitJobParam param = new SplitJobParam();
         param.setJobExecutor(jobExecutor);
         param.setJobParam(job.getJobParam());
         param.setRetryCount(job.getRetryCount());
-        param.setRetryTimes(retryTimes);
+        param.setRetryAttempt(retryAttempt);
         param.setJobType(JobType.of(job.getJobType()));
         param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
         param.setPredecessorInstances(predecessorInstances);

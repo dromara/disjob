@@ -51,10 +51,10 @@ public class ExecutionTask extends ToJsonString implements Serializable {
     private int retryCount;
 
     /**
-     * sched_instance.retry_times
+     * sched_instance.retry_attempt
      * <p>当前是第几次重试，如果当前非重试执行，则为0
      */
-    private int retryTimes;
+    private int retryAttempt;
 
     /**
      * sched_instance.trigger_time
@@ -99,8 +99,8 @@ public class ExecutionTask extends ToJsonString implements Serializable {
     private String taskParam;
 
     /**
-     * 保存的执行快照数据
+     * 保存的执行数据
      */
-    private String executeSnapshot;
+    private String executionData;
 
 }

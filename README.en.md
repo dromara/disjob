@@ -71,7 +71,7 @@ disjob                                        # Main project①pom.xml
 - Need to specify the group, Job tasks will only be dispatched to the specified group of Workers for execution
 - Provides the ability to split tasks, override the method [JobSplitter#split](disjob-worker/src/main/java/cn/ponfee/disjob/worker/executor/JobSplitter.java) to split many tasks, then distributed and parallel execution
 - Supports pausing and cancelling running tasks, paused tasks can be resumed for execution, failed tasks support retry
-- Supports savepoint task execution snapshot, so that manually or abnormally paused tasks can be resumed from the savepoint
+- Supports savepoint task execution data, so that manually or abnormally paused tasks can be resumed from the savepoint
 - If a task throw [PauseTaskException](disjob-worker/src/main/java/cn/ponfee/disjob/worker/exception/PauseTaskException.java) at executing, then will pause all instance tasks (even if dispatched other worker machine tasks)
 - Supports broadcast tasks, broadcast tasks will be dispatched to all workers under the group for execution
 - Supports dependencies jobs, multiple Jobs configured with dependencies will be executed in the established dependency order

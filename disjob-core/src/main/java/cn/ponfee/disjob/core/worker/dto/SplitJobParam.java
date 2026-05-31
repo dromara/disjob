@@ -38,7 +38,7 @@ public class SplitJobParam extends AuthenticationParam {
     private String jobExecutor;
     private String jobParam;
     private int retryCount;
-    private int retryTimes;
+    private int retryAttempt;
     private JobType jobType;
     private RouteStrategy routeStrategy;
 

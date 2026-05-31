@@ -85,7 +85,7 @@ public class SchedJobExport {
     private Integer retryCount;
 
     /**
-     * 实例失败的重试间隔(毫秒)，阶梯递增(square of sched_instance.retry_times)
+     * 实例失败的重试间隔(毫秒)，阶梯递增(retry_interval * retry_attempt^2)
      */
     @Excel(name = "重试间隔(毫秒)")
     private Integer retryInterval;
@@ -145,7 +145,7 @@ public class SchedJobExport {
     private Integer shutdownStrategy;
 
     /**
-     * 告警选项(bitwise OR)：1-警报；2-通知；3-全选；
+     * 告警选项Bitwise(位的或运算结果)：1-警报；2-通知；3-全选；
      */
     @Excel(name = "告警选项")
     private Integer alertOptions;

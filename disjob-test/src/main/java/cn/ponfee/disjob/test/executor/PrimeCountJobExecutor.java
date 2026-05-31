@@ -97,36 +97,36 @@ public class PrimeCountJobExecutor extends JobExecutor {
         Assert.isTrue(step > 0, "Step must be greater than zero.");
         Assert.isTrue(n > 0, "N must be greater than zero.");
 
-        ExecuteSnapshot execution;
-        if (StringUtils.isEmpty(task.getExecuteSnapshot())) {
-            execution = ExecuteSnapshot.of(start);
+        ExecutionData data;
+        if (StringUtils.isEmpty(task.getExecutionData())) {
+            data = ExecutionData.of(start);
         } else {
-            execution = Jsons.fromJson(task.getExecuteSnapshot(), ExecuteSnapshot.class);
-            if (execution.getNext() == null || execution.isFinished()) {
-                Assert.isTrue(execution.isFinished() && execution.getNext() == null, "Invalid execute snapshot data.");
+            data = Jsons.fromJson(task.getExecutionData(), ExecutionData.class);
+            if (data.getNext() == null || data.isFinished()) {
+                Assert.isTrue(data.isFinished() && data.getNext() == null, "Invalid execution data.");
                 return ExecutionResult.success();
             }
         }
 
-        long delta = blockSize - 1, next = execution.getNext();
+        long delta = blockSize - 1, next = data.getNext();
         long nextSavepointTimeMillis = System.currentTimeMillis() + SAVEPOINT_INTERVAL_MS;
         while (next <= n) {
-            pauseIfStopped(savepoint, execution);
+            pauseIfStopped(savepoint, data);
 
             long count = Prime.MillerRabin.countPrimes(next, Math.min(next + delta, n));
             Thread.sleep(97 + ThreadLocalRandom.current().nextLong(197));
-            execution.increment(count);
+            data.increment(count);
 
             next += step;
             if (next > n) {
-                execution.setNext(null);
-                execution.setFinished(true);
+                data.setNext(null);
+                data.setFinished(true);
             } else {
-                execution.setNext(next);
+                data.setNext(next);
             }
 
-            if (execution.isFinished() || nextSavepointTimeMillis < System.currentTimeMillis()) {
-                savepoint.save(Jsons.toJson(execution));
+            if (data.isFinished() || nextSavepointTimeMillis < System.currentTimeMillis()) {
+                savepoint.save(Jsons.toJson(data));
                 nextSavepointTimeMillis = System.currentTimeMillis() + SAVEPOINT_INTERVAL_MS;
             }
         }
@@ -157,7 +157,7 @@ public class PrimeCountJobExecutor extends JobExecutor {
 
     @Setter
     @Getter
-    public static class ExecuteSnapshot implements Serializable {
+    public static class ExecutionData implements Serializable {
         private static final long serialVersionUID = -5866894559175629912L;
 
         private Long next;
@@ -168,8 +168,8 @@ public class PrimeCountJobExecutor extends JobExecutor {
             this.count += delta;
         }
 
-        public static ExecuteSnapshot of(long start) {
-            ExecuteSnapshot e = new ExecuteSnapshot();
+        public static ExecutionData of(long start) {
+            ExecutionData e = new ExecutionData();
             e.setNext(start);
             e.setCount(0);
             e.setFinished(false);

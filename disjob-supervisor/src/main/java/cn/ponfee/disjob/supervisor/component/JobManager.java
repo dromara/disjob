@@ -171,9 +171,9 @@ public class JobManager {
         return isOneAffectedRow(instanceMapper.updateNextScanTime(inst.getInstanceId(), nextScanTime, inst.getVersion()));
     }
 
-    public boolean savepoint(long taskId, String worker, String executeSnapshot) {
-        CoreUtils.checkClobMaximumLength(executeSnapshot, "Execute snapshot");
-        return isOneAffectedRow(taskMapper.savepoint(taskId, worker, executeSnapshot));
+    public boolean savepoint(long taskId, String worker, String executionData) {
+        CoreUtils.checkClobMaximumLength(executionData, "Execution data");
+        return isOneAffectedRow(taskMapper.savepoint(taskId, worker, executionData));
     }
 
     // ------------------------------------------------------------------database operation within spring @Transactional
@@ -300,15 +300,15 @@ public class JobManager {
     public StartTaskResult startTask(StartTaskParam param) {
         param.check();
         return doInSynchronizedTransaction0(param.getInstanceId(), param.getWnstanceId(), lockInstanceId -> {
-            String startIdempotencyKey = param.getStartIdempotencyKey();
-            log.info("Task trace [{}] starting: {}, {}", param.getTaskId(), param.getWorker(), startIdempotencyKey);
+            String idempotencyKey = param.getIdempotencyKey();
+            log.info("Task trace [{}] starting: {}, {}", param.getTaskId(), param.getWorker(), idempotencyKey);
             Date now = new Date();
             // 如果先`get`查一次然后`start`，最后再`get`查会返回之前get时的一级缓存
-            if (isNoAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), startIdempotencyKey, now))) {
-                if (!taskMapper.checkStartIdempotent(param.getTaskId(), param.getWorker(), startIdempotencyKey)) {
+            if (isNoAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), idempotencyKey, now))) {
+                if (!taskMapper.checkIdempotentKey(param.getTaskId(), param.getWorker(), idempotencyKey)) {
                     return StartTaskResult.failure("Start task failure.");
                 }
-                log.info("Start task idempotent: {}, {}, {}", param.getTaskId(), param.getWorker(), startIdempotencyKey);
+                log.info("Start task idempotent: {}, {}, {}", param.getTaskId(), param.getWorker(), idempotencyKey);
             }
             if (isNoAffectedRow(instanceMapper.start(param.getInstanceId(), now))) {
                 SchedInstance instance = instanceMapper.get(param.getInstanceId());
@@ -845,15 +845,15 @@ public class JobManager {
 
     private Long retryJob0(SchedInstance failed) throws JobException {
         SchedJob job = getRequiredJob(failed.getJobId());
-        int retryTimes = failed.obtainRetryTimes();
-        if (!job.retryable(RunStatus.of(failed.getRunStatus()), retryTimes)) {
+        int retryAttempt = failed.obtainRetryAttempt();
+        if (!job.retryable(RunStatus.of(failed.getRunStatus()), retryAttempt)) {
             return null;
         }
 
         // build retry instance
         long retryInstanceId = generateId();
-        long triggerTime = job.computeRetryTriggerTime(++retryTimes);
-        SchedInstance retryInstance = SchedInstance.of(failed, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retryTimes);
+        long triggerTime = job.computeRetryTriggerTime(++retryAttempt);
+        SchedInstance retryInstance = SchedInstance.of(failed, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retryAttempt);
         retryInstance.setWorkflowCurNode(failed.getWorkflowCurNode());
         // build retry tasks
         List<SchedTask> tasks = splitRetryTask(job, failed, retryInstance);
@@ -1000,7 +1000,7 @@ public class JobManager {
         }
 
         // 2、if fixed trigger type job then update the job next trigger time
-        if (job.isEnabled() && job.isFixedTriggerType() && source.isRunSchedule()) {
+        if (job.isEnabled() && job.isFixedTriggerType() && source.isSchedule()) {
             TriggerType triggerType = TriggerType.of(job.getTriggerType());
             long lastTriggerTime = source.getTriggerTime(), nextTriggerTime;
             if (triggerType == TriggerType.FIXED_RATE) {

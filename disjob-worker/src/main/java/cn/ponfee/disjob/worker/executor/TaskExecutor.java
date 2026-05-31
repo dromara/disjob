@@ -56,7 +56,7 @@ abstract class TaskExecutor {
      * Pause task if stopped
      *
      * @param savepoint the savepoint
-     * @param data      the execute snapshot data
+     * @param data      the execute data
      * @throws Exception if occur error
      */
     protected final void pauseIfStopped(Savepoint savepoint, Object data) throws Exception {

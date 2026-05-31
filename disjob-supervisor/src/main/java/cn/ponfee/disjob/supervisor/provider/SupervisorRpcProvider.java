@@ -85,8 +85,8 @@ public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
     }
 
     @Override
-    public boolean savepoint(long taskId, String worker, String executeSnapshot) {
-        return jobManager.savepoint(taskId, worker, executeSnapshot);
+    public boolean savepoint(long taskId, String worker, String executionData) {
+        return jobManager.savepoint(taskId, worker, executionData);
     }
 
     // -------------------------------------------------------for other supervisor invoke method

@@ -64,9 +64,9 @@ public class StartTaskResult extends ToJsonString implements Serializable {
     private String taskParam;
 
     /**
-     * 保存的执行快照数据
+     * 保存的执行数据
      */
-    private String executeSnapshot;
+    private String executionData;
 
     public static StartTaskResult failure(String failedMessage) {
         StartTaskResult result = new StartTaskResult();

@@ -39,11 +39,11 @@ public class StartTaskParam extends ToJsonString implements Serializable {
     private long instanceId;
     private long taskId;
     private String worker;
-    private String startIdempotencyKey;
+    private String idempotencyKey;
     private JobType jobType;
 
     public static StartTaskParam of(long jobId, Long wnstanceId, long instanceId, long taskId,
-                                    JobType jobType, String worker, String startIdempotencyKey) {
+                                    JobType jobType, String worker, String idempotencyKey) {
         StartTaskParam param = new StartTaskParam();
         param.setJobId(jobId);
         param.setWnstanceId(wnstanceId);
@@ -51,7 +51,7 @@ public class StartTaskParam extends ToJsonString implements Serializable {
         param.setTaskId(taskId);
         param.setJobType(jobType);
         param.setWorker(worker);
-        param.setStartIdempotencyKey(startIdempotencyKey);
+        param.setIdempotencyKey(idempotencyKey);
 
         param.check();
         return param;
@@ -59,7 +59,7 @@ public class StartTaskParam extends ToJsonString implements Serializable {
 
     public void check() {
         Assert.hasText(worker, "Start task worker cannot be empty.");
-        Assert.hasText(startIdempotencyKey, "Start task idempotency key cannot be empty.");
+        Assert.hasText(idempotencyKey, "Start task idempotency key cannot be empty.");
         Assert.notNull(jobType, "Start task job type cannot be null.");
     }
 

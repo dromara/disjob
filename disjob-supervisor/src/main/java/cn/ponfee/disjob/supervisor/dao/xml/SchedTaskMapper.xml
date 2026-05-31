@@ -9,7 +9,7 @@
   <sql id="Large_Column_List">
     <include refid="Base_Column_List" />,
     execute_start_time, execute_end_time, task_param,
-    execute_snapshot, dispatch_failures, error_msg
+    execution_data, dispatch_failures, error_msg
   </sql>
 
   <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
@@ -73,19 +73,19 @@
     SET execute_status = 20,
         execute_start_time = IFNULL(execute_start_time, #{executeStartTime,jdbcType=TIMESTAMP}),
         worker = #{worker,jdbcType=VARCHAR},
-        start_idempotency_key = #{startIdempotencyKey,jdbcType=VARCHAR}
+        idempotency_key = #{idempotencyKey,jdbcType=VARCHAR}
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_status = 10
   </update>
 
-  <select id="checkStartIdempotent" resultType="_boolean">
+  <select id="checkIdempotentKey" resultType="_boolean">
     SELECT EXISTS (
       SELECT 1
       FROM sched_task
       WHERE task_id = #{taskId,jdbcType=BIGINT}
         AND execute_status = 20
         AND worker = #{worker,jdbcType=VARCHAR}
-        AND start_idempotency_key = #{startIdempotencyKey,jdbcType=VARCHAR}
+        AND idempotency_key = #{idempotencyKey,jdbcType=VARCHAR}
     ) e
   </select>
 
@@ -129,7 +129,7 @@
 
   <update id="savepoint">
     UPDATE sched_task
-    SET execute_snapshot = #{executeSnapshot,jdbcType=LONGVARCHAR}
+    SET execution_data = #{executionData,jdbcType=LONGVARCHAR}
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_status = 20
       AND worker = #{worker,jdbcType=VARCHAR}

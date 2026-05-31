@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.worker.executor;
 
 /**
- * Save task execution snapshot
+ * Save task execution data
  *
  * @author Ponfee
  */
@@ -25,12 +25,12 @@ package cn.ponfee.disjob.worker.executor;
 public interface Savepoint {
 
     /**
-     * Save the task execution snapshot
+     * Save the task execution data
      *
-     * @param executeSnapshot the task execution snapshot data
+     * @param executionData the task execution data
      * @throws Exception if saved occur exception
      */
-    void save(String executeSnapshot) throws Exception;
+    void save(String executionData) throws Exception;
 
-    Savepoint NOOP = executeSnapshot -> {};
+    Savepoint NOOP = executionData -> {};
 }

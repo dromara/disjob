@@ -54,14 +54,14 @@ public interface SupervisorRpcService {
     boolean cancelInstance(long instanceId, Operation operation);
 
     /**
-     * Savepoint the task execution snapshot data
+     * Savepoint the task execution data
      *
      * @param taskId          the taskId
      * @param worker          the worker
-     * @param executeSnapshot the execution snapshot data
+     * @param executionData   the execution data
      * @return {@code true} if saved successful
      */
     @PostMapping("/task/savepoint")
-    boolean savepoint(long taskId, String worker, String executeSnapshot);
+    boolean savepoint(long taskId, String worker, String executionData);
 
 }

@@ -52,7 +52,7 @@ final class WorkerTask {
     private final long triggerTime;
     private final long jobId;
     private final int retryCount;
-    private final int retryTimes;
+    private final int retryAttempt;
     private final JobType jobType;
     private final RouteStrategy routeStrategy;
     private final ShutdownStrategy shutdownStrategy;
@@ -71,7 +71,7 @@ final class WorkerTask {
         this.triggerTime = param.getTriggerTime();
         this.jobId = param.getJobId();
         this.retryCount = param.getRetryCount();
-        this.retryTimes = param.getRetryTimes();
+        this.retryAttempt = param.getRetryAttempt();
         this.jobType = Objects.requireNonNull(param.getJobType());
         this.routeStrategy = Objects.requireNonNull(param.getRouteStrategy());
         this.shutdownStrategy = Objects.requireNonNull(param.getShutdownStrategy());
@@ -157,7 +157,7 @@ final class WorkerTask {
         target.setTaskId(taskId);
         target.setJobId(jobId);
         target.setRetryCount(retryCount);
-        target.setRetryTimes(retryTimes);
+        target.setRetryAttempt(retryAttempt);
         target.setBroadcast(routeStrategy.isBroadcast());
         target.setJobType(jobType);
         target.setWnstanceId(wnstanceId);
@@ -166,7 +166,7 @@ final class WorkerTask {
 
         target.setTaskNo(source.getTaskNo());
         target.setTaskCount(source.getTaskCount());
-        target.setExecuteSnapshot(source.getExecuteSnapshot());
+        target.setExecutionData(source.getExecutionData());
         target.setTaskParam(source.getTaskParam());
 
         return target;

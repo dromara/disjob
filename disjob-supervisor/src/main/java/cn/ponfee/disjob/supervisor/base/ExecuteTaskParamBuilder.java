@@ -55,7 +55,7 @@ public final class ExecuteTaskParamBuilder {
         param.setTriggerTime(triggerTime);
         param.setJobId(job.getJobId());
         param.setRetryCount(job.getRetryCount());
-        param.setRetryTimes(instance.getRetryTimes());
+        param.setRetryAttempt(instance.getRetryAttempt());
         param.setJobType(JobType.of(job.getJobType()));
         param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
         param.setShutdownStrategy(ShutdownStrategy.of(job.getShutdownStrategy()));

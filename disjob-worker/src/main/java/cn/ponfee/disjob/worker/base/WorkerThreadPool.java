@@ -527,12 +527,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         @Override
-        public void save(String executeSnapshot) throws Exception {
-            if (executeSnapshot != null && executeSnapshot.length() > JobConstants.CLOB_MAXIMUM_LENGTH) {
-                throw new SavepointFailedException("Execution snapshot length too large: " + executeSnapshot.length());
+        public void save(String executionData) throws Exception {
+            if (executionData != null && executionData.length() > JobConstants.CLOB_MAXIMUM_LENGTH) {
+                throw new SavepointFailedException("Execution data length too large: " + executionData.length());
             }
-            if (!supervisorRpcClient.savepoint(taskId, worker, executeSnapshot)) {
-                throw new SavepointFailedException("Save execution snapshot data occur error.");
+            if (!supervisorRpcClient.savepoint(taskId, worker, executionData)) {
+                throw new SavepointFailedException("Save execution data occur error.");
             }
         }
     }
