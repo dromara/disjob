@@ -71,10 +71,12 @@ public class JavaUtilDateFormatTest {
 
     @Test
     public void test0() throws ParseException {
+        System.out.println(JavaUtilDateFormat.DEFAULT.parse("Thu Jan 01 00:00:00 CST 1970"));
+        System.out.println(LocalDateTimeFormat.DEFAULT.parse("Thu Jan 01 00:00:00 CST 1970"));
         Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse("2022-01-02 03:04:05.678");
         assertEquals("Sun Jan 02 03:04:05 CST 2022", date.toString());
         assertEquals("Sun Jan 02 17:04:05 CST 2022", new Date(date.toString()).toString());
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(Dates.DATE_TO_STRING_PATTERN, Locale.ROOT);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(Dates.DATE_TO_STRING_PATTERN, Locale.ENGLISH);
         assertEquals("Sun Jan 02 03:04:05 CST 2022", Dates.toDate(LocalDateTime.parse(date.toString(), dtf)).toString());
         assertEquals("Sun Jan 02 17:04:05 CST 2022", Date.from(ZonedDateTime.parse(date.toString(), dtf).toInstant()).toString());
 

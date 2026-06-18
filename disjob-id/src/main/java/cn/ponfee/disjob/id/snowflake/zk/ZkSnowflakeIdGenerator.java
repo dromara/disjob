@@ -48,7 +48,7 @@ public @interface ZkSnowflakeIdGenerator {
 
     String curatorFrameworkRef() default "";
 
-    String bizTag() default "disjob";
+    String bizName() default "disjob";
 
     int workerIdBitLength() default 8;
 
@@ -61,10 +61,10 @@ public @interface ZkSnowflakeIdGenerator {
 
         BasicZkSnowflake(CuratorFramework curatorFramework,
                          Object supervisor,
-                         String bizTag,
+                         String bizName,
                          int sequenceBitLength,
                          int workerIdBitLength) {
-            super(curatorFramework, bizTag, serializeSupervisor(supervisor), sequenceBitLength, workerIdBitLength);
+            super(curatorFramework, bizName, serializeSupervisor(supervisor), sequenceBitLength, workerIdBitLength);
         }
 
         /**
@@ -95,10 +95,10 @@ public @interface ZkSnowflakeIdGenerator {
 
         AnnotatedZkSnowflake(@Autowired CuratorFramework curatorFramework, // use @Primary CuratorFramework bean
                              @Autowired @Qualifier(LOCAL_SUPERVISOR) Object supervisor,
-                             String bizTag,
+                             String bizName,
                              int sequenceBitLength,
                              int workerIdBitLength) {
-            super(curatorFramework, supervisor, bizTag, sequenceBitLength, workerIdBitLength);
+            super(curatorFramework, supervisor, bizName, sequenceBitLength, workerIdBitLength);
         }
     }
 
@@ -119,7 +119,7 @@ public @interface ZkSnowflakeIdGenerator {
                 bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicZkSnowflake.LOCAL_SUPERVISOR));
             }
 
-            bd.getConstructorArgumentValues().addIndexedArgumentValue(2, config.bizTag());
+            bd.getConstructorArgumentValues().addIndexedArgumentValue(2, config.bizName());
             bd.getConstructorArgumentValues().addIndexedArgumentValue(3, config.workerIdBitLength());
             bd.getConstructorArgumentValues().addIndexedArgumentValue(4, config.sequenceBitLength());
 

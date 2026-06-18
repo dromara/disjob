@@ -17,14 +17,14 @@
 package cn.ponfee.disjob.supervisor.disjob_admin;
 
 import cn.ponfee.disjob.common.spring.MybatisDataSourceConfigurer;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.test.context.TestConfiguration;
 
 /**
  * Admin DataSource Config
  *
  * @author Ponfee
  */
-@Configuration
+@TestConfiguration
 @MybatisDataSourceConfigurer(
     mapperLocations = "classpath*:cn/ponfee/disjob/supervisor/disjob_admin/xml/*.xml",
     basePackages = {"cn.ponfee.disjob.supervisor.disjob_admin", "cn.ponfee.disjob.unknown"},

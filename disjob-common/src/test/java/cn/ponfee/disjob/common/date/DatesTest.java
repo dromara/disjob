@@ -129,7 +129,7 @@ public class DatesTest {
         Date now = new Date(0);
         System.out.println(now); // Thu Jan 01 08:00:00 CST 1970
         System.out.println(new Date("Thu Jan 01 00:00:00 CST 1970")); // Thu Jan 01 14:00:00 CST 1970
-        Assertions.assertEquals(now, toDate(LocalDateTime.parse(now.toString(), DateTimeFormatter.ofPattern(DATE_TO_STRING_PATTERN, Locale.ROOT))));
+        Assertions.assertEquals(now, toDate(LocalDateTime.parse(now.toString(), DateTimeFormatter.ofPattern(DATE_TO_STRING_PATTERN, Locale.ENGLISH))));
 
         System.out.println(FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS").format(System.currentTimeMillis()));
         String str = "2023-01-03 15:23:45.321";
@@ -344,7 +344,7 @@ public class DatesTest {
     @Test
     public void testZone() throws ParseException {
         String source = "Wed Jul 19 21:14:25 CST 2023";
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_TO_STRING_PATTERN, Locale.ROOT);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_TO_STRING_PATTERN, Locale.ENGLISH);
 
         // 14小时时差
         Assertions.assertEquals("2023-07-20 11:14:25", Dates.format(FastDateFormat.getInstance(DATE_TO_STRING_PATTERN, Locale.ENGLISH).parse(source)));

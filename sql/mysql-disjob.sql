@@ -178,13 +178,13 @@ CREATE TABLE IF NOT EXISTS `sched_lock` (
 
 CREATE TABLE IF NOT EXISTS `sched_snowflake` (
   `id`                    BIGINT        UNSIGNED   NOT NULL  AUTO_INCREMENT               COMMENT 'auto increment primary key id',
-  `biz_tag`               VARCHAR(60)              NOT NULL                               COMMENT 'biz tag',
-  `server_tag`            VARCHAR(128)             NOT NULL                               COMMENT 'server tag, for example ip:port',
+  `biz_name`              VARCHAR(60)              NOT NULL                               COMMENT 'biz name',
+  `server_name`           VARCHAR(128)             NOT NULL                               COMMENT 'server name, for example ip:port',
   `worker_id`             INT           UNSIGNED   NOT NULL                               COMMENT 'snowflake worker-id',
   `heartbeat_time`        BIGINT        UNSIGNED   NOT NULL                               COMMENT 'last heartbeat time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_biztag_servertag` (`biz_tag`, `server_tag`),
-  UNIQUE KEY `uk_biztag_workerid` (`biz_tag`, `worker_id`)
+  UNIQUE KEY `uk_bizname_servername` (`biz_name`, `server_name`),
+  UNIQUE KEY `uk_bizname_workerid` (`biz_name`, `worker_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='Allocate snowflake worker-id';
 
 CREATE TABLE IF NOT EXISTS `sched_registry` (

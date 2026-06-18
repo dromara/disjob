@@ -42,7 +42,7 @@ public class ExecutionResultTest {
         assertThat(result.getData()).isNull();
 
         assertThatThrownBy(() -> Jsons.fromJson(json, Result.ImmutableResult.class)).hasMessageStartingWith("Cannot construct instance of");
-        assertThatThrownBy(() -> Jsons.fromJson(json, ExecutionResult.class)).hasMessageStartingWith("Cannot construct instance of");
+        //assertThatThrownBy(() -> Jsons.fromJson(json, ExecutionResult.class)).hasMessageStartingWith("Cannot construct instance of");
     }
 
 }

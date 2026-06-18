@@ -60,7 +60,7 @@ public class LocalDateTimeFormat {
     /**
      * For {@code java.util.Date#toString}
      */
-    private static final DateTimeFormatter CST_FORMATTER = DateTimeFormatter.ofPattern(Dates.DATE_TO_STRING_PATTERN, Locale.ROOT);
+    private static final DateTimeFormatter CST_FORMATTER = DateTimeFormatter.ofPattern(Dates.DATE_TO_STRING_PATTERN, Locale.ENGLISH);
 
     /**
      * 兜底解析器

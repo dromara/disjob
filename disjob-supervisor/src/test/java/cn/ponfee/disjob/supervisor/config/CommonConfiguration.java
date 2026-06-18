@@ -16,14 +16,14 @@
 
 package cn.ponfee.disjob.supervisor.config;
 
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 /**
  * @author Ponfee
  */
-@Configuration
+@TestConfiguration
 public class CommonConfiguration {
 
     // 按文件代码顺序，string2先于string1执行

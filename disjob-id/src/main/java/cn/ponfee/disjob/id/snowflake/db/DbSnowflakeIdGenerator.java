@@ -58,7 +58,7 @@ public @interface DbSnowflakeIdGenerator {
 
     String jdbcTemplateRef() default "";
 
-    String bizTag() default "disjob";
+    String bizName() default "disjob";
 
     int workerIdBitLength() default 8;
 
@@ -71,10 +71,10 @@ public @interface DbSnowflakeIdGenerator {
 
         BasicDbSnowflake(JdbcTemplate jdbcTemplate,
                          Object supervisor,
-                         String bizTag,
+                         String bizName,
                          int sequenceBitLength,
                          int workerIdBitLength) {
-            super(jdbcTemplate, bizTag, serializeSupervisor(supervisor), sequenceBitLength, workerIdBitLength);
+            super(jdbcTemplate, bizName, serializeSupervisor(supervisor), sequenceBitLength, workerIdBitLength);
         }
 
         /**
@@ -105,10 +105,10 @@ public @interface DbSnowflakeIdGenerator {
 
         AnnotatedDbSnowflake(@Autowired JdbcTemplate jdbcTemplate, // use @Primary JdbcTemplate bean
                              @Autowired @Qualifier(LOCAL_SUPERVISOR) Object supervisor,
-                             String bizTag,
+                             String bizName,
                              int sequenceBitLength,
                              int workerIdBitLength) {
-            super(jdbcTemplate, supervisor, bizTag, sequenceBitLength, workerIdBitLength);
+            super(jdbcTemplate, supervisor, bizName, sequenceBitLength, workerIdBitLength);
         }
     }
 
@@ -129,7 +129,7 @@ public @interface DbSnowflakeIdGenerator {
                 bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicDbSnowflake.LOCAL_SUPERVISOR));
             }
 
-            bd.getConstructorArgumentValues().addIndexedArgumentValue(2, config.bizTag());
+            bd.getConstructorArgumentValues().addIndexedArgumentValue(2, config.bizName());
             bd.getConstructorArgumentValues().addIndexedArgumentValue(3, config.workerIdBitLength());
             bd.getConstructorArgumentValues().addIndexedArgumentValue(4, config.sequenceBitLength());
 

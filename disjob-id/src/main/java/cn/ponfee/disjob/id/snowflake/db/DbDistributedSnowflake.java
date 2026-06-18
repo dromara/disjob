@@ -66,34 +66,34 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
     private static final String CREATE_TABLE_DDL =
         "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                                    \n" +
         "  `id`              BIGINT        UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment primary key id',       \n" +
-        "  `biz_tag`         VARCHAR(60)             NOT NULL                  COMMENT 'biz tag',                             \n" +
-        "  `server_tag`      VARCHAR(128)            NOT NULL                  COMMENT 'server tag, for example ip:port',     \n" +
+        "  `biz_name`        VARCHAR(60)             NOT NULL                  COMMENT 'biz name',                            \n" +
+        "  `server_name`     VARCHAR(128)            NOT NULL                  COMMENT 'server name, for example ip:port',    \n" +
         "  `worker_id`       INT           UNSIGNED  NOT NULL                  COMMENT 'snowflake worker-id',                 \n" +
         "  `heartbeat_time`  BIGINT        UNSIGNED  NOT NULL                  COMMENT 'last heartbeat time',                 \n" +
         "  PRIMARY KEY (`id`),                                                                                                \n" +
-        "  UNIQUE KEY `uk_biztag_servertag` (`biz_tag`, `server_tag`),                                                        \n" +
-        "  UNIQUE KEY `uk_biztag_workerid` (`biz_tag`, `worker_id`)                                                           \n" +
+        "  UNIQUE KEY `uk_bizname_servername` (`biz_name`, `server_name`),                                                    \n" +
+        "  UNIQUE KEY `uk_bizname_workerid` (`biz_name`, `worker_id`)                                                         \n" +
         ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='Allocate snowflake worker-id'; \n" ;
 
-    private static final String QUERY_ALL_SQL = "SELECT biz_tag, server_tag, worker_id, heartbeat_time FROM " + TABLE_NAME + " WHERE biz_tag=?";
+    private static final String QUERY_ALL_SQL = "SELECT biz_name, server_name, worker_id, heartbeat_time FROM " + TABLE_NAME + " WHERE biz_name=?";
 
-    private static final String GET_WORKER_SQL = "SELECT biz_tag, server_tag, worker_id, heartbeat_time FROM " + TABLE_NAME + " WHERE biz_tag=? AND server_tag=?";
+    private static final String GET_WORKER_SQL = "SELECT biz_name, server_name, worker_id, heartbeat_time FROM " + TABLE_NAME + " WHERE biz_name=? AND server_name=?";
 
-    private static final String REMOVE_DEAD_SQL = "DELETE FROM " + TABLE_NAME + " WHERE biz_tag=? AND heartbeat_time<?";
+    private static final String REMOVE_DEAD_SQL = "DELETE FROM " + TABLE_NAME + " WHERE biz_name=? AND heartbeat_time<?";
 
-    private static final String REMOVE_INVALID_SQL = "DELETE FROM " + TABLE_NAME + " WHERE biz_tag=? AND server_tag=?";
+    private static final String REMOVE_INVALID_SQL = "DELETE FROM " + TABLE_NAME + " WHERE biz_name=? AND server_name=?";
 
-    private static final String REGISTER_WORKER_SQL = "INSERT INTO " + TABLE_NAME + " (biz_tag, server_tag, worker_id, heartbeat_time) VALUES (?, ?, ?, ?)";
+    private static final String REGISTER_WORKER_SQL = "INSERT INTO " + TABLE_NAME + " (biz_name, server_name, worker_id, heartbeat_time) VALUES (?, ?, ?, ?)";
 
-    private static final String DEREGISTER_WORKER_SQL = "DELETE FROM " + TABLE_NAME + " WHERE biz_tag=? AND server_tag=?";
+    private static final String DEREGISTER_WORKER_SQL = "DELETE FROM " + TABLE_NAME + " WHERE biz_name=? AND server_name=?";
 
-    private static final String REUSE_WORKER_SQL = "UPDATE " + TABLE_NAME + " SET heartbeat_time=? WHERE biz_tag=? AND server_tag=? AND heartbeat_time=?";
+    private static final String REUSE_WORKER_SQL = "UPDATE " + TABLE_NAME + " SET heartbeat_time=? WHERE biz_name=? AND server_name=? AND heartbeat_time=?";
 
-    private static final String HEARTBEAT_WORKER_SQL = "UPDATE " + TABLE_NAME + " SET heartbeat_time=? WHERE biz_tag=? AND server_tag=?";
+    private static final String HEARTBEAT_WORKER_SQL = "UPDATE " + TABLE_NAME + " SET heartbeat_time=? WHERE biz_name=? AND server_name=?";
 
     private final JdbcTemplateWrapper jdbcTemplateWrapper;
-    private final String bizTag;
-    private final String serverTag;
+    private final String bizName;
+    private final String serverName;
     private final Snowflake snowflake;
     private volatile boolean closed = false;
 
@@ -102,24 +102,24 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
      * sequenceBitLength: [0, 16383]
      *
      * @param jdbcTemplate the jdbcTemplate
-     * @param bizTag       the bizTag
-     * @param serverTag    the serverTag
+     * @param bizName      the bizName
+     * @param serverName   the serverName
      */
-    public DbDistributedSnowflake(JdbcTemplate jdbcTemplate, String bizTag, String serverTag) {
-        this(jdbcTemplate, bizTag, serverTag, 8, 14);
+    public DbDistributedSnowflake(JdbcTemplate jdbcTemplate, String bizName, String serverName) {
+        this(jdbcTemplate, bizName, serverName, 8, 14);
     }
 
     public DbDistributedSnowflake(JdbcTemplate jdbcTemplate,
-                                  String bizTag,
-                                  String serverTag,
+                                  String bizName,
+                                  String serverName,
                                   int workerIdBitLength,
                                   int sequenceBitLength) {
         int len = workerIdBitLength + sequenceBitLength;
         Assert.isTrue(len <= 22, () -> "Bit length(sequence + worker) cannot greater than 22, but actual=" + len);
 
         this.jdbcTemplateWrapper = JdbcTemplateWrapper.of(jdbcTemplate);
-        this.bizTag = bizTag;
-        this.serverTag = serverTag;
+        this.bizName = bizName;
+        this.serverName = serverName;
 
         // create table
         jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL);
@@ -141,14 +141,14 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
     @Override
     public void close() {
         closed = true;
-        ThrowingSupplier.doCaught(() -> jdbcTemplateWrapper.delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
+        ThrowingSupplier.doCaught(() -> jdbcTemplateWrapper.delete(DEREGISTER_WORKER_SQL, bizName, serverName));
     }
 
     // -------------------------------------------------------private methods
 
     private int registerWorkerId(int workerIdMaxCount) {
-        List<DbSnowflakeWorker> registeredWorkers = jdbcTemplateWrapper.list(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
-        DbSnowflakeWorker current = Collects.findAny(registeredWorkers, e -> e.equals(bizTag, serverTag));
+        List<DbSnowflakeWorker> registeredWorkers = jdbcTemplateWrapper.list(QUERY_ALL_SQL, ROW_MAPPER, bizName);
+        DbSnowflakeWorker current = Collects.findAny(registeredWorkers, e -> e.equals(bizName, serverName));
         if (current == null) {
             return findUsableWorkerId(registeredWorkers, workerIdMaxCount);
         } else {
@@ -159,9 +159,9 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
     private int findUsableWorkerId(List<DbSnowflakeWorker> registeredWorkers, int workerIdMaxCount) {
         if (registeredWorkers.size() > (workerIdMaxCount / 2)) {
             long oldestTimeMillis = System.currentTimeMillis() - EXPIRE_TIME_MILLIS;
-            jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, bizTag, oldestTimeMillis);
+            jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, bizName, oldestTimeMillis);
             // re-query
-            registeredWorkers = jdbcTemplateWrapper.list(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
+            registeredWorkers = jdbcTemplateWrapper.list(QUERY_ALL_SQL, ROW_MAPPER, bizName);
         }
 
         Set<Integer> usedWorkerIds = registeredWorkers.stream().map(DbSnowflakeWorker::getWorkerId).collect(Collectors.toSet());
@@ -175,27 +175,27 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
 
         Collections.shuffle(usableWorkerIds);
         for (Integer usableWorkerId : usableWorkerIds) {
-            Object[] args = {bizTag, serverTag, usableWorkerId, System.currentTimeMillis()};
+            Object[] args = {bizName, serverName, usableWorkerId, System.currentTimeMillis()};
             try {
                 jdbcTemplateWrapper.insert(REGISTER_WORKER_SQL, args);
                 log.info("Create snowflake db worker success: {}, {}, {}, {}", args);
                 return usableWorkerId;
             } catch (DuplicateKeyException ignored) {
-                DbSnowflakeWorker existed = jdbcTemplateWrapper.get(GET_WORKER_SQL, ROW_MAPPER, bizTag, serverTag);
+                DbSnowflakeWorker existed = jdbcTemplateWrapper.get(GET_WORKER_SQL, ROW_MAPPER, bizName, serverName);
                 if (existed != null) {
-                    log.warn("Server tag duplicated: {}", existed);
+                    log.warn("Server name duplicated: {}", existed);
                     return reuseWorkerId(existed, workerIdMaxCount);
                 }
             }
         }
 
-        throw new IllegalStateException("Cannot found usable db worker id: " + bizTag + ", " + serverTag);
+        throw new IllegalStateException("Cannot found usable db worker id: " + bizName + ", " + serverName);
     }
 
     private int reuseWorkerId(DbSnowflakeWorker current, int workerIdMaxCount) {
         Integer workerId = current.getWorkerId();
         if (workerId < 0 || workerId >= workerIdMaxCount) {
-            if (!isOneAffectedRow(jdbcTemplateWrapper.delete(REMOVE_INVALID_SQL, bizTag, serverTag))) {
+            if (!isOneAffectedRow(jdbcTemplateWrapper.delete(REMOVE_INVALID_SQL, bizName, serverName))) {
                 log.error("Deleting invalid db worker id failed.");
             }
             throw new IllegalStateException("Invalid db worker id: " + workerId);
@@ -204,16 +204,16 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
         long currentTime = System.currentTimeMillis();
         long lastHeartbeatTime = current.getHeartbeatTime();
         if (currentTime < lastHeartbeatTime) {
-            String msg = String.format("Clock moved backwards: %s, %s, %d, %d", bizTag, serverTag, currentTime, lastHeartbeatTime);
+            String msg = String.format("Clock moved backwards: %s, %s, %d, %d", bizName, serverName, currentTime, lastHeartbeatTime);
             throw new ClockMovedBackwardsException(msg);
         }
-        Object[] args = {currentTime, bizTag, serverTag, lastHeartbeatTime};
+        Object[] args = {currentTime, bizName, serverName, lastHeartbeatTime};
         if (isOneAffectedRow(jdbcTemplateWrapper.update(REUSE_WORKER_SQL, args))) {
             log.info("Reuse db worker id success: {}, {}, {}, {}", args);
             return workerId;
         }
 
-        throw new IllegalStateException("Reuse db worker id failed: " + bizTag + ", " + serverTag);
+        throw new IllegalStateException("Reuse db worker id failed: " + bizName + ", " + serverName);
     }
 
     private void heartbeat() {
@@ -221,7 +221,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
             if (closed) {
                 return;
             }
-            Object[] args = {System.currentTimeMillis(), bizTag, serverTag};
+            Object[] args = {System.currentTimeMillis(), bizName, serverName};
             if (isOneAffectedRow(jdbcTemplateWrapper.update(HEARTBEAT_WORKER_SQL, args))) {
                 log.debug("Heartbeat db worker id success: {}, {}, {}", args);
             } else {

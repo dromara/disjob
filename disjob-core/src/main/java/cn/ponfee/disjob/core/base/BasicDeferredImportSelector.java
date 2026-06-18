@@ -16,13 +16,15 @@
 
 package cn.ponfee.disjob.core.base;
 
+import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.RpcControllerConfigurer;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
+import cn.ponfee.disjob.common.util.Jsons;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DeferredImportSelector;
@@ -30,8 +32,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.List;
 
 /**
  * Basic DeferredImportSelector, deferred create bean for customization
@@ -50,7 +50,14 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
     @EnableConfigurationProperties({HttpProperties.class, RetryProperties.class})
     static class BasicDeferredConfiguration {
 
-        private static final String DATE_CONFIGURER_KEY = "disjob.jackson.date-configurer.mode";
+        @ConditionalOnExpression("${disjob.jackson.customize.enabled:true}")
+        @Bean
+        Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
+            return objectMapperBuilder -> objectMapperBuilder
+                .dateFormat(JavaUtilDateFormat.DEFAULT)
+                .modulesToInstall(Jsons.createSimpleModule())
+                .modulesToInstall(Jsons.createJavaTimeModule());
+        }
 
         /**
          * <pre>
@@ -77,18 +84,6 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
         @Bean
         RpcControllerConfigurer rpcControllerConfigurer() {
             return new RpcControllerConfigurer();
-        }
-
-        @ConditionalOnProperty(name = DATE_CONFIGURER_KEY, havingValue = "multiple")
-        @Bean
-        JacksonDateConfigurer.Multiple multipleJacksonDateConfigurer(List<ObjectMapper> list) {
-            return new JacksonDateConfigurer.Multiple(list);
-        }
-
-        @ConditionalOnProperty(name = DATE_CONFIGURER_KEY, havingValue = "primary", matchIfMissing = true)
-        @Bean
-        JacksonDateConfigurer.Primary primaryJacksonDateConfigurer(@Nullable ObjectMapper objectMapper) {
-            return new JacksonDateConfigurer.Primary(objectMapper);
         }
 
         @ConditionalOnExpression("${disjob.controller.exception-handler.enabled:true}")

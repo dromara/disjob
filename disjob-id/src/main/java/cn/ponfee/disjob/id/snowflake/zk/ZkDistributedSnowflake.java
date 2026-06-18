@@ -53,15 +53,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Snowflake configuration based zookeeper
  *
  * <pre>
- * /snowflake/{bizTag}
- * ├── tag (children are EPHEMERAL node)
- * │   ├── serverTag-a   data=workerId-1
- * │   ├── serverTag-b   data=workerId-2
- * │   └── serverTag-c   data=workerId-3
+ * /snowflake/{bizName}
+ * ├── name (children are EPHEMERAL node)
+ * │   ├── serverName-a   data=workerId-1
+ * │   ├── serverName-b   data=workerId-2
+ * │   └── serverName-c   data=workerId-3
  * └── id (children are EPHEMERAL node)
- *     ├── workerId-1    data=lastHeartbeatTime + serverTag
- *     ├── workerId-2    data=lastHeartbeatTime + serverTag
- *     └── workerId-3    data=lastHeartbeatTime + serverTag
+ *     ├── workerId-1    data=lastHeartbeatTime + serverName
+ *     ├── workerId-2    data=lastHeartbeatTime + serverName
+ *     └── workerId-3    data=lastHeartbeatTime + serverName
  *
  * </pre>
  *
@@ -80,27 +80,27 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
     private final CuratorFramework curatorFramework;
 
     /**
-     * Server tag
+     * Server name
      */
-    private final String serverTag;
+    private final String serverName;
 
     /**
-     * /snowflake/{bizTag}/tag
+     * /snowflake/{bizName}/name
      */
-    private final String serverTagParentPath;
+    private final String serverNameParentPath;
 
     /**
-     * /snowflake/{bizTag}/tag/{serverTag}
+     * /snowflake/{bizName}/name/{serverName}
      */
-    private final String serverTagPath;
+    private final String serverNamePath;
 
     /**
-     * /snowflake/{bizTag}/id
+     * /snowflake/{bizName}/id
      */
     private final String workerIdParentPath;
 
     /**
-     * /snowflake/{bizTag}/id/{workerId}
+     * /snowflake/{bizName}/id/{workerId}
      */
     private final String workerIdPath;
 
@@ -116,28 +116,28 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
 
     private volatile boolean closed = false;
 
-    public ZkDistributedSnowflake(CuratorFramework curatorFramework, String bizTag, String serverTag) {
-        this(curatorFramework, bizTag, serverTag, 8, 14);
+    public ZkDistributedSnowflake(CuratorFramework curatorFramework, String bizName, String serverName) {
+        this(curatorFramework, bizName, serverName, 8, 14);
     }
 
     public ZkDistributedSnowflake(CuratorFramework curatorFramework,
-                                  String bizTag,
-                                  String serverTag,
+                                  String bizName,
+                                  String serverName,
                                   int workerIdBitLength,
                                   int sequenceBitLength) {
-        Assert.isTrue(!bizTag.contains(SEP), () -> "Biz tag cannot contains '/': " + bizTag);
-        Assert.isTrue(!serverTag.contains(SEP), () -> "Server tag cannot contains '/': " + serverTag);
+        Assert.isTrue(!bizName.contains(SEP), () -> "Biz name cannot contains '/': " + bizName);
+        Assert.isTrue(!serverName.contains(SEP), () -> "Server name cannot contains '/': " + serverName);
         int len = workerIdBitLength + sequenceBitLength;
         Assert.isTrue(len <= 22, () -> "Bit length(sequence + worker) cannot greater than 22, but actual=" + len);
         this.curatorFramework = curatorFramework;
-        this.serverTag = serverTag;
-        String snowflakeRootPath = "/snowflake/" + bizTag;
-        this.serverTagParentPath = snowflakeRootPath + "/tag";
+        this.serverName = serverName;
+        String snowflakeRootPath = "/snowflake/" + bizName;
+        this.serverNameParentPath = snowflakeRootPath + "/name";
         this.workerIdParentPath = snowflakeRootPath + "/id";
-        this.serverTagPath = serverTagParentPath + SEP + serverTag;
+        this.serverNamePath = serverNameParentPath + SEP + serverName;
 
         RetryTemplate.execute(() -> createPersistent(snowflakeRootPath), 3, 1000L);
-        RetryTemplate.execute(() -> createPersistent(serverTagParentPath), 3, 1000L);
+        RetryTemplate.execute(() -> createPersistent(serverNameParentPath), 3, 1000L);
         RetryTemplate.execute(() -> createPersistent(workerIdParentPath), 3, 1000L);
 
         // workerId取值范围：[0, workerIdMaxCount)
@@ -227,31 +227,31 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             byte[] workerIdData = getData(workerIdPath);
             if (workerIdData != null) {
                 WorkerIdData data = WorkerIdData.deserialize(workerIdData);
-                Assert.state(serverTag.equals(data.server), () -> "Inconsistent server tag: " + serverTag + " != " + data.server);
+                Assert.state(serverName.equals(data.server), () -> "Inconsistent server name: " + serverName + " != " + data.server);
             }
 
-            updateData(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
+            updateData(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverName).serialize());
         }, 3, 2000L);
     }
 
     private int registerWorkerId(int workerIdMaxCount) throws Exception {
-        byte[] serverTagData = getData(serverTagPath);
-        // 判断当前serverTag是否已经注册
-        if (ArrayUtils.isEmpty(serverTagData)) {
+        byte[] serverNameData = getData(serverNamePath);
+        // 判断当前serverName是否已经注册
+        if (ArrayUtils.isEmpty(serverNameData)) {
             // 未注册
             return findUsableWorkerId(workerIdMaxCount);
         } else {
             // 已注册
-            return reuseWorkerId(serverTagData, workerIdMaxCount);
+            return reuseWorkerId(serverNameData, workerIdMaxCount);
         }
     }
 
     private int findUsableWorkerId(int workerIdMaxCount) throws Exception {
         // 捞取所有已注册的workerId
         Set<Integer> usedWorkerIds = curatorFramework.getChildren()
-            .forPath(serverTagParentPath)
+            .forPath(serverNameParentPath)
             .stream()
-            .map(e -> serverTagParentPath + SEP + e)
+            .map(e -> serverNameParentPath + SEP + e)
             .map(ThrowingFunction.toChecked(this::getData))
             .filter(Objects::nonNull)
             .map(Bytes::toInt)
@@ -270,13 +270,13 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             boolean isCreatedWorkerIdPath = false;
             long currentTime = System.currentTimeMillis();
             try {
-                WorkerIdData data = WorkerIdData.of(currentTime, serverTag);
-                // create worker id ephemeral node: /snowflake/{bizTag}/id/{workerId}
+                WorkerIdData data = WorkerIdData.of(currentTime, serverName);
+                // create worker id ephemeral node: /snowflake/{bizName}/id/{workerId}
                 createEphemeral(workerIdPath0, data.serialize());
                 isCreatedWorkerIdPath = true;
-                // create server tag ephemeral node: /snowflake/{bizTag}/tag/{serverTag}
-                upsertEphemeral(serverTagPath, Bytes.toBytes(usableWorkerId));
-                log.info("Created snowflake zk worker success: {}, {}, {}", serverTag, usableWorkerId, currentTime);
+                // create server name ephemeral node: /snowflake/{bizName}/name/{serverName}
+                upsertEphemeral(serverNamePath, Bytes.toBytes(usableWorkerId));
+                log.info("Created snowflake zk worker success: {}, {}, {}", serverName, usableWorkerId, currentTime);
                 return usableWorkerId;
             } catch (Throwable t) {
                 log.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath0, t.getMessage());
@@ -286,53 +286,53 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
                 ExceptionUtils.rethrow(t);
             }
         }
-        throw new IllegalStateException("Cannot found usable zk worker id: " + serverTagParentPath);
+        throw new IllegalStateException("Cannot found usable zk worker id: " + serverNameParentPath);
     }
 
-    private int reuseWorkerId(byte[] serverTagData, int workerIdMaxCount) throws Exception {
-        int currentWorkerId = Bytes.toInt(serverTagData);
+    private int reuseWorkerId(byte[] serverNameData, int workerIdMaxCount) throws Exception {
+        int currentWorkerId = Bytes.toInt(serverNameData);
         if (currentWorkerId < 0 || currentWorkerId >= workerIdMaxCount) {
-            deletePath(serverTagPath);
+            deletePath(serverNamePath);
             throw new IllegalStateException("Invalid zk worker id: " + currentWorkerId);
         }
 
         byte[] workerIdData = getData(workerIdPath);
         if (workerIdData == null) {
-            WorkerIdData data = WorkerIdData.of(System.currentTimeMillis(), serverTag);
+            WorkerIdData data = WorkerIdData.of(System.currentTimeMillis(), serverName);
             upsertEphemeral(workerIdPath, data.serialize());
         } else {
             WorkerIdData data = WorkerIdData.deserialize(workerIdData);
-            if (!serverTag.equals(data.server)) {
-                throw new IllegalStateException("Inconsistent server tag, actual=" + serverTag + ", obtain=" + data.server);
+            if (!serverName.equals(data.server)) {
+                throw new IllegalStateException("Inconsistent server name, actual=" + serverName + ", obtain=" + data.server);
             }
             long currentTime = System.currentTimeMillis();
             if (currentTime < data.time) {
-                throw new ClockMovedBackwardsException(String.format("Clock moved backwards: %s, %s, %d", serverTagPath, currentTime, data.time));
+                throw new ClockMovedBackwardsException(String.format("Clock moved backwards: %s, %s, %d", serverNamePath, currentTime, data.time));
             }
-            updateData(workerIdPath, WorkerIdData.of(currentTime, serverTag).serialize());
+            updateData(workerIdPath, WorkerIdData.of(currentTime, serverName).serialize());
         }
 
-        log.info("Reuse zk worker id success: {}, {}", serverTag, currentWorkerId);
+        log.info("Reuse zk worker id success: {}, {}", serverName, currentWorkerId);
 
         return currentWorkerId;
     }
 
     private void onReconnected() throws Exception {
-        byte[] serverTagData = getData(serverTagPath);
-        if (serverTagData == null) {
-            createEphemeral(serverTagPath, Bytes.toBytes(workerId));
+        byte[] serverNameData = getData(serverNamePath);
+        if (serverNameData == null) {
+            createEphemeral(serverNamePath, Bytes.toBytes(workerId));
         } else {
-            int id = Bytes.toInt(serverTagData);
+            int id = Bytes.toInt(serverNameData);
             Assert.isTrue(id == workerId, () -> "Reconnected worker id was changed, expect=" + workerId + ", actual=" + id);
         }
 
         byte[] workerIdData = getData(workerIdPath);
         if (workerIdData == null) {
-            createEphemeral(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
+            createEphemeral(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverName).serialize());
         } else {
             WorkerIdData data = WorkerIdData.deserialize(workerIdData);
-            Assert.isTrue(serverTag.equals(data.server), () -> "Reconnected server tag was changed, expect=" + serverTag + ", actual=" + data.server);
-            updateData(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
+            Assert.isTrue(serverName.equals(data.server), () -> "Reconnected server name was changed, expect=" + serverName + ", actual=" + data.server);
+            updateData(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverName).serialize());
         }
     }
 

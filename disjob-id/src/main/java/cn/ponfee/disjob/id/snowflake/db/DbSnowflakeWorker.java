@@ -30,14 +30,14 @@ import lombok.Setter;
 @Setter
 class DbSnowflakeWorker extends ToJsonString {
 
-    private String bizTag;
-    private String serverTag;
+    private String bizName;
+    private String serverName;
     private Integer workerId;
     private Long heartbeatTime;
 
-    boolean equals(String bizTag, String serverTag) {
-        return this.bizTag.equals(bizTag)
-            && this.serverTag.equals(serverTag);
+    boolean equals(String bizName, String serverName) {
+        return this.bizName.equals(bizName)
+            && this.serverName.equals(serverName);
     }
 
 }
