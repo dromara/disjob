@@ -240,8 +240,8 @@ public final class Jsons {
     }
 
     public static Object[] parseMethodArgs(String body, Method method) {
-        // 不推荐使用fastjson，项目中尽量统一使用一种JSON序列化方式
-        //return com.alibaba.fastjson.JSON.parseArray(body, method.getGenericParameterTypes()).toArray();
+        // 不推荐使用fastjson2，项目中尽量统一使用一种JSON序列化方式
+        //return com.alibaba.fastjson2.JSON.parseArray(body, method.getGenericParameterTypes()).toArray();
         return parseArgs(body, method.getGenericParameterTypes());
     }
 

@@ -138,6 +138,11 @@ csrf:
 
 # springdoc “swagger-ui” and “api-docs” endpoint custom path, StandaloneLayout/BaseLayout
 springdoc:
+  api-docs:
+    path: /apidocs
+    enabled: true
+  show-actuator: false
+  #paths-to-exclude: /actuator/**, /xxx/**
   cache:
     disabled: true
   swagger-ui:
@@ -146,7 +151,5 @@ springdoc:
     display-request-duration: true
     groups-order: DESC
     operations-sorter: method
+    tags-sorter: alpha
     disable-swagger-default-url: true
-  api-docs:
-    path: /apidocs
-  show-actuator: true

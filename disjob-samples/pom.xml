@@ -94,7 +94,9 @@
           <encoding>${file.encoding}</encoding>
           <source>${java.version}</source>
           <target>${java.version}</target>
-          <compilerArgument>-parameters</compilerArgument>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
 
