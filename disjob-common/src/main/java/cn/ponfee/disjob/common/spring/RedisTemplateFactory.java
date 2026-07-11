@@ -29,8 +29,8 @@ import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurationBuilderCustomizer;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisProperties;
+import org.springframework.boot.data.redis.autoconfigure.LettuceClientConfigurationBuilderCustomizer;
 import org.springframework.data.redis.connection.*;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration.LettuceClientConfigurationBuilder;
@@ -56,20 +56,20 @@ import java.util.Objects;
 @Getter
 public class RedisTemplateFactory implements Closeable {
 
-    private final RedisProperties properties;
+    private final DataRedisProperties properties;
     private final ClientResources clientResources;
     private final LettuceConnectionFactory redisConnectionFactory;
     private final RedisTemplate<Object, Object> redisTemplate;
     private final StringRedisTemplate stringRedisTemplate;
 
-    public RedisTemplateFactory(RedisProperties properties) {
+    public RedisTemplateFactory(DataRedisProperties properties) {
         this(properties, DefaultClientResources.builder().build(), null);
     }
 
-    public RedisTemplateFactory(RedisProperties properties,
+    public RedisTemplateFactory(DataRedisProperties properties,
                                 ClientResources clientResources,
                                 ObjectProvider<LettuceClientConfigurationBuilderCustomizer> builderCustomizers) {
-        if (properties.getClientType() != null && properties.getClientType() != RedisProperties.ClientType.LETTUCE) {
+        if (properties.getClientType() != null && properties.getClientType() != DataRedisProperties.ClientType.LETTUCE) {
             throw new IllegalArgumentException("Unsupported redis client type: " + properties.getClientType());
         }
 
@@ -113,7 +113,7 @@ public class RedisTemplateFactory implements Closeable {
     }
 
     private LettuceClientConfigurationBuilder createBuilder() {
-        RedisProperties.Pool pool = properties.getLettuce().getPool();
+        DataRedisProperties.Pool pool = properties.getLettuce().getPool();
         LettuceClientConfigurationBuilder builder;
         if (Boolean.FALSE.equals(pool.getEnabled())) {
             builder = LettuceClientConfiguration.builder();
@@ -125,9 +125,7 @@ public class RedisTemplateFactory implements Closeable {
             if (pool.getTimeBetweenEvictionRuns() != null) {
                 poolConfig.setTimeBetweenEvictionRuns(pool.getTimeBetweenEvictionRuns());
             }
-            if (pool.getMaxWait() != null) {
-                poolConfig.setMaxWait(pool.getMaxWait());
-            }
+            poolConfig.setMaxWait(pool.getMaxWait());
             builder = LettucePoolingClientConfiguration.builder().poolConfig(poolConfig);
         }
 
@@ -138,11 +136,9 @@ public class RedisTemplateFactory implements Closeable {
         if (properties.getTimeout() != null) {
             builder.commandTimeout(properties.getTimeout());
         }
-        if (properties.getLettuce() != null) {
-            RedisProperties.Lettuce lettuce = properties.getLettuce();
-            if (lettuce.getShutdownTimeout() != null && !lettuce.getShutdownTimeout().isZero()) {
-                builder.shutdownTimeout(properties.getLettuce().getShutdownTimeout());
-            }
+        DataRedisProperties.Lettuce lettuce = properties.getLettuce();
+        if (!lettuce.getShutdownTimeout().isZero()) {
+            builder.shutdownTimeout(properties.getLettuce().getShutdownTimeout());
         }
         if (StringUtils.hasText(properties.getClientName())) {
             builder.clientName(properties.getClientName());
@@ -162,14 +158,11 @@ public class RedisTemplateFactory implements Closeable {
         if (properties.getCluster() == null) {
             clientOptionsBuilder = ClientOptions.builder();
         } else {
-            RedisProperties.Lettuce.Cluster.Refresh refreshProperties = properties.getLettuce().getCluster().getRefresh();
+            DataRedisProperties.Lettuce.Cluster.Refresh refreshProperties = properties.getLettuce().getCluster().getRefresh();
             ClusterTopologyRefreshOptions.Builder refreshBuilder = ClusterTopologyRefreshOptions.builder()
                 .dynamicRefreshSources(refreshProperties.isDynamicRefreshSources());
             if (refreshProperties.getPeriod() != null) {
                 refreshBuilder.enablePeriodicRefresh(refreshProperties.getPeriod());
-            }
-            if (refreshProperties.isAdaptive()) {
-                refreshBuilder.enableAllAdaptiveRefreshTriggers();
             }
             clientOptionsBuilder = ClusterClientOptions.builder().topologyRefreshOptions(refreshBuilder.build());
         }
@@ -182,13 +175,13 @@ public class RedisTemplateFactory implements Closeable {
     }
 
     private RedisSentinelConfiguration getSentinelConfiguration() {
-        RedisProperties.Sentinel sentinelProperties = properties.getSentinel();
+        DataRedisProperties.Sentinel sentinelProperties = properties.getSentinel();
         if (sentinelProperties == null) {
             return null;
         }
 
         RedisSentinelConfiguration config = new RedisSentinelConfiguration();
-        config.master(sentinelProperties.getMaster());
+        config.master(Objects.requireNonNull(sentinelProperties.getMaster()));
         config.setSentinels(createSentinels(sentinelProperties));
         config.setUsername(properties.getUsername());
         if (properties.getPassword() != null) {
@@ -203,11 +196,12 @@ public class RedisTemplateFactory implements Closeable {
     }
 
     private RedisClusterConfiguration getClusterConfiguration() {
-        RedisProperties.Cluster clusterProperties = properties.getCluster();
+        DataRedisProperties.Cluster clusterProperties = properties.getCluster();
         if (clusterProperties == null) {
             return null;
         }
 
+        Objects.requireNonNull(clusterProperties.getNodes());
         RedisClusterConfiguration config = new RedisClusterConfiguration(clusterProperties.getNodes());
         if (clusterProperties.getMaxRedirects() != null) {
             config.setMaxRedirects(clusterProperties.getMaxRedirects());
@@ -273,7 +267,8 @@ public class RedisTemplateFactory implements Closeable {
         }
     }
 
-    private static List<RedisNode> createSentinels(RedisProperties.Sentinel sentinel) {
+    private static List<RedisNode> createSentinels(DataRedisProperties.Sentinel sentinel) {
+        Objects.requireNonNull(sentinel.getNodes());
         List<RedisNode> nodes = new ArrayList<>(sentinel.getNodes().size());
         for (String node : sentinel.getNodes()) {
             try {

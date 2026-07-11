@@ -22,19 +22,18 @@ import cn.ponfee.disjob.core.base.Tokens;
 import cn.ponfee.disjob.core.enums.TokenType;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.core.worker.dto.AuthenticationParam;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
@@ -263,9 +262,9 @@ public class Worker extends Server implements Comparable<Worker> {
     /**
      * Custom serialize Worker based jackson.
      */
-    static class JacksonSerializer extends JsonSerializer<Worker> {
+    static class JacksonSerializer extends ValueSerializer<Worker> {
         @Override
-        public void serialize(Worker value, JsonGenerator generator, SerializerProvider provider) throws IOException {
+        public void serialize(Worker value, JsonGenerator generator, SerializationContext provider) {
             if (value == null) {
                 generator.writeNull();
             } else {
@@ -277,10 +276,10 @@ public class Worker extends Server implements Comparable<Worker> {
     /**
      * Custom deserialize Worker based jackson.
      */
-    static class JacksonDeserializer extends JsonDeserializer<Worker> {
+    static class JacksonDeserializer extends ValueDeserializer<Worker> {
         @Override
-        public Worker deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return Worker.deserialize(p.getText());
+        public Worker deserialize(JsonParser p, DeserializationContext ctx) {
+            return Worker.deserialize(p.getString());
         }
     }
 

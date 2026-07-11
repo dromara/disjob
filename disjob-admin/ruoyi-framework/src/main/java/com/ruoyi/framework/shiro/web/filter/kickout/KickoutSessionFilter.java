@@ -1,6 +1,5 @@
 package com.ruoyi.framework.shiro.web.filter.kickout;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.common.constant.ShiroConstants;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysUser;
@@ -18,6 +17,7 @@ import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.AccessControlFilter;
 import org.apache.shiro.web.util.WebUtils;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -31,7 +31,7 @@ import java.util.Deque;
  */
 public class KickoutSessionFilter extends AccessControlFilter
 {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final JsonMapper JSON_MAPPER = new JsonMapper();
 
     /**
      * 同一个用户最大会话数
@@ -139,7 +139,7 @@ public class KickoutSessionFilter extends AccessControlFilter
         if (ServletUtils.isAjaxRequest(req))
         {
             AjaxResult ajaxResult = AjaxResult.error("您已在别处登录，请您修改密码或重新登录");
-            ServletUtils.renderString(res, objectMapper.writeValueAsString(ajaxResult));
+            ServletUtils.renderString(res, JSON_MAPPER.writeValueAsString(ajaxResult));
         }
         else
         {

@@ -24,22 +24,22 @@
 
   <properties>
     <revision>1.0.0-SNAPSHOT</revision>
-    <disjob.version>3.0.0</disjob.version>
+    <disjob.version>4.0.0</disjob.version>
 
     <file.encoding>UTF-8</file.encoding>
-    <java.version>17</java.version>
+    <java.version>25</java.version>
     <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
     <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
-    <spring-boot.version>3.5.16</spring-boot.version>
+    <spring-boot.version>4.1.0</spring-boot.version>
     <shiro.version>2.2.1</shiro.version>
     <ehcache-core.version>2.6.11</ehcache-core.version>
     <thymeleaf-extras-shiro.version>2.1.0</thymeleaf-extras-shiro.version>
-    <druid-spring-boot-3-starter.version>1.2.28</druid-spring-boot-3-starter.version>
+    <druid-spring-boot-4-starter.version>1.2.28</druid-spring-boot-4-starter.version>
     <kaptcha.version>2.3.3</kaptcha.version>
-    <pagehelper-spring-boot-starter.version>2.1.1</pagehelper-spring-boot-starter.version>
+    <pagehelper-spring-boot-starter.version>4.1.1</pagehelper-spring-boot-starter.version>
     <fastjson2.version>2.0.62</fastjson2.version>
     <oshi-core.version>7.4.0</oshi-core.version>
     <poi-ooxml.version>5.5.1</poi-ooxml.version>
@@ -90,7 +90,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.14.1</version>
+        <version>3.15.0</version>
         <configuration>
           <encoding>${file.encoding}</encoding>
           <source>${java.version}</source>
