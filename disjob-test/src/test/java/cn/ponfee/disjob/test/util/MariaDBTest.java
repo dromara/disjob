@@ -60,6 +60,7 @@ public class MariaDBTest {
             .build();
         DB db = DB.newEmbeddedDB(config);
         db.start();
+        db.run("ALTER USER 'root'@'localhost' IDENTIFIED BY ''", config.isWindows() ? "root" : System.getProperty("user.name"), "");
         db.createDB(DB_NAME, "root", "");
         this.db = db;
         this.port = config.getPort();
@@ -94,11 +95,11 @@ public class MariaDBTest {
 
         Assertions.assertThatThrownBy(() -> createConnection(HOST_IP, "root", ""))
             .isInstanceOf(SQLException.class)
-            .hasMessage("null,  message from server: \"Host '192.168.1.102' is not allowed to connect to this MariaDB server\"");
+            .hasMessage("CLI-specific condition,  message from server: \"Host '192.168.1.102' is not allowed to connect to this MariaDB server\"");
 
         Assertions.assertThatThrownBy(() -> createConnection(HOST_IP, DEV_USER, ""))
             .isInstanceOf(SQLException.class)
-            .hasMessage("null,  message from server: \"Host '192.168.1.102' is not allowed to connect to this MariaDB server\"");
+            .hasMessage("CLI-specific condition,  message from server: \"Host '192.168.1.102' is not allowed to connect to this MariaDB server\"");
     }
 
     @Test
