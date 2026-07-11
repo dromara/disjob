@@ -110,13 +110,6 @@ public class CoreUtils {
         }
     }
 
-    public static void checkClobMaximumLength(String text, String name) {
-        int length = StringUtils.length(text);
-        if (length > JobConstants.CLOB_MAXIMUM_LENGTH) {
-            throw new IllegalArgumentException(name + " length too large: " + length);
-        }
-    }
-
     public static String trimRequired(String text, int maximumLength, String name) {
         if (StringUtils.isBlank(text)) {
             throw new IllegalArgumentException(name + " cannot be blank");

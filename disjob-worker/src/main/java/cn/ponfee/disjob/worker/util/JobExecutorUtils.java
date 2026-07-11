@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.dag.DAGExpression;
 import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.worker.dto.SplitJobParam;
@@ -93,7 +92,6 @@ public class JobExecutorUtils {
             } else {
                 Assert.notEmpty(taskParams, "Split job task cannot be empty.");
             }
-            taskParams.forEach(e -> CoreUtils.checkClobMaximumLength(e, "Splitting task param"));
             return taskParams;
         } catch (JobException e) {
             throw e;

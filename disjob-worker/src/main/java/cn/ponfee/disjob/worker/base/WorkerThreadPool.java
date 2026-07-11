@@ -23,7 +23,6 @@ import cn.ponfee.disjob.common.concurrent.*;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.CoreUtils;
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.enums.ExecuteStatus;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.supervisor.SupervisorRpcService;
@@ -528,9 +527,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         @Override
         public void save(String executionData) throws Exception {
-            if (executionData != null && executionData.length() > JobConstants.CLOB_MAXIMUM_LENGTH) {
-                throw new SavepointFailedException("Execution data length too large: " + executionData.length());
-            }
             if (!supervisorRpcClient.savepoint(taskId, worker, executionData)) {
                 throw new SavepointFailedException("Save execution data occur error.");
             }

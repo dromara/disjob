@@ -18,7 +18,6 @@ package cn.ponfee.disjob.supervisor.component;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.concurrent.Threads;
-import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.enums.JobType;
@@ -111,8 +110,6 @@ public class WorkerClient {
 
     void verifyJob(SchedJob job) throws JobException {
         Assert.hasText(job.getJobExecutor(), "Job executor cannot be blank.");
-        CoreUtils.checkClobMaximumLength(job.getJobExecutor(), "Job executor");
-        CoreUtils.checkClobMaximumLength(job.getJobParam(), "Job param");
         JobType.of(job.getJobType());
         RouteStrategy.of(job.getRouteStrategy());
 
@@ -129,7 +126,6 @@ public class WorkerClient {
         param.setWorkerCount(wCount);
         SplitJobResult result = groupedProxy.group(group).splitJob(param);
         List<String> taskParams = result.getTaskParams();
-        taskParams.forEach(e -> CoreUtils.checkClobMaximumLength(e, "Split task param"));
 
         int tCount = taskParams.size();
         boolean isBroadcast = param.getRouteStrategy().isBroadcast();

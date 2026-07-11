@@ -172,7 +172,6 @@ public class JobManager {
     }
 
     public boolean savepoint(long taskId, String worker, String executionData) {
-        CoreUtils.checkClobMaximumLength(executionData, "Execution data");
         return isOneAffectedRow(taskMapper.savepoint(taskId, worker, executionData));
     }
 

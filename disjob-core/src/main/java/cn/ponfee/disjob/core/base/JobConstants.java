@@ -32,11 +32,6 @@ public final class JobConstants {
     public static final String DISJOB_VERSION = VersionUtils.getVersion(JobConstants.class, "cn.ponfee", "disjob-core");
 
     /**
-     * 数据库大文本字段最大长度限制
-     */
-    public static final int CLOB_MAXIMUM_LENGTH = 65535;
-
-    /**
      * Process batch size
      */
     public static final int PROCESS_BATCH_SIZE = 100;
