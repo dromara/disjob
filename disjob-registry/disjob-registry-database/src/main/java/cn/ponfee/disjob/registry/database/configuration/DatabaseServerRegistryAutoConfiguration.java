@@ -69,7 +69,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     @ConditionalOnProperty(name = DatabaseRegistryProperties.KEY_PREFIX + ".datasource.url")
     @ConditionalOnMissingBean(name = SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER)
     @Bean(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER)
-    JdbcTemplateWrapper databaseRegistryJdbcTemplateWrapper(DatabaseRegistryProperties props) {
+    public JdbcTemplateWrapper databaseRegistryJdbcTemplateWrapper(DatabaseRegistryProperties props) {
         DatabaseRegistryProperties.DataSourceConfig p = props.getDatasource();
         HikariConfig cfg = new HikariConfig();
         cfg.setDriverClassName(StringUtils.getIfBlank(p.getDriverClassName(), () -> DatabaseDriver.fromJdbcUrl(p.getUrl()).getDriverClassName()));
@@ -112,9 +112,9 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
      */
     @ConditionalOnBean(Supervisor.Local.class)
     @Bean
-    SupervisorRegistry supervisorRegistry(DatabaseRegistryProperties config,
-                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                          @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
+    public SupervisorRegistry supervisorRegistry(DatabaseRegistryProperties config,
+                                                 @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                                                 @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
         return new DatabaseSupervisorRegistry(config, restTemplate, wrapper);
     }
 
@@ -123,9 +123,9 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
      */
     @ConditionalOnBean(Worker.Local.class)
     @Bean
-    WorkerRegistry workerRegistry(DatabaseRegistryProperties config,
-                                  @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                  @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
+    public WorkerRegistry workerRegistry(DatabaseRegistryProperties config,
+                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                                         @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
         return new DatabaseWorkerRegistry(config, restTemplate, wrapper);
     }
 
