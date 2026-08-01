@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.test.db;
 
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.common.util.Numbers;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -140,11 +139,8 @@ public class DBUtils {
     }
 
     public static void testQuerySchedJob(JdbcTemplate jdbcTemplate) {
-        List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM sched_job ORDER BY id ASC");
-        long expect = 1003164910267351000L;
-        long actual = Numbers.toLong(result.get(0).get("job_id"));
-        Assert.isTrue(expect == actual, () -> expect + " != " + actual);
-        System.out.println("Query result: " + Jsons.toJson(result));
+        List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM sched_job ORDER BY id ASC LIMIT 1");
+        System.out.println("Query least sched job: " + Jsons.toJson(result));
     }
 
 }

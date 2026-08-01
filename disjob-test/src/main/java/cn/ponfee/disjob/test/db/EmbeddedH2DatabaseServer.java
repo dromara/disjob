@@ -22,6 +22,7 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.h2.server.TcpServer;
 import org.h2.tools.RunScript;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -97,7 +98,7 @@ public class EmbeddedH2DatabaseServer {
                 String script = IOUtils.toString(fis, StandardCharsets.UTF_8);
                 RunScript.execute(conn, new StringReader(script));
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                ExceptionUtils.rethrow(e);
             }
             return null;
         });
