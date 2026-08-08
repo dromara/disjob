@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.MapUtils;
@@ -128,7 +127,7 @@ public class RestTemplateUtils {
 
     public static MappingJackson2HttpMessageConverter createMappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
         if (objectMapper == null) {
-            objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
+            objectMapper = Jsons.createObjectMapper();
         }
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
         messageConverter.setObjectMapper(objectMapper);

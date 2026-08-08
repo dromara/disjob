@@ -115,6 +115,7 @@ public class PageRequest extends Page implements TypedDictionary<String, Object>
             this.pageNumber = Math.min(pageNumber, Math.max(1, computeTotalPages(pageSize, total)));
             list = (total == 0) ? Collections.emptyList() : recordQuerier.apply((P) this);
         } else {
+            Assert.isTrue(pageSize == 0, "Unpaged size must be 0.");
             list = recordQuerier.apply((P) this);
             total = list.size();
             this.pageNumber = 1;

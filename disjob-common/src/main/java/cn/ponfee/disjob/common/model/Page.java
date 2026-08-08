@@ -39,7 +39,7 @@ public abstract class Page extends ToJsonString implements Serializable {
     protected int pageNumber;
 
     /**
-     * Page size, possible 0 if unpaged and without result.
+     * Page size, if unpaged must be 0.
      */
     protected int pageSize;
 

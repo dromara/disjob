@@ -1888,6 +1888,11 @@ var table = {
                 var patten = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[~!@#\$%\^&\*\(\)\-=_\+])[A-Za-z\d~!@#\$%\^&\*\(\)\-=_\+]{6,}$/);
                 return patten.test(text);
             },
+            escapeHtml: function(text) {
+              if (!text) return '';
+              var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+              return String(text).replace(/[&<>"']/g, function(ch) { return map[ch]; });
+            }
         }
     });
 })(jQuery);

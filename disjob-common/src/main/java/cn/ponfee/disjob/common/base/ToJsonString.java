@@ -19,7 +19,7 @@ package cn.ponfee.disjob.common.base;
 import cn.ponfee.disjob.common.util.Jsons;
 
 /**
- * Override {@code Object#toString()} method, implemented to json string.
+ * Override {@code Object#toString()} method, implemented to JSON.
  *
  * @author Ponfee
  */

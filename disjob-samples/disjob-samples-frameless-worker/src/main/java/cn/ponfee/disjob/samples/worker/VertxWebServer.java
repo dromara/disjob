@@ -38,6 +38,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -175,8 +176,8 @@ public class VertxWebServer extends AbstractVerticle {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T parseBodyArg(RoutingContext ctx, Class<T> type) {
-        Object[] args = Jsons.parseArray(ctx.body().asString(), type);
+    private static <T> T parseBodyArg(RoutingContext ctx, Class<T> type) throws IOException {
+        Object[] args = Jsons.parseArray(ctx.body().asString(), new Class[]{type});
         return (T) Collects.get(args, 0);
     }
 
