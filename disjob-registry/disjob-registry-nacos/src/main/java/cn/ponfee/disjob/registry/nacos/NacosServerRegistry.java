@@ -23,11 +23,11 @@ import cn.ponfee.disjob.registry.nacos.configuration.NacosRegistryProperties;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import jakarta.annotation.PreDestroy;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PreDestroy;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;

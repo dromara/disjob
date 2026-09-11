@@ -23,7 +23,7 @@ disjob.datasource:
       connection-timeout: 2000
 
 # redis configuration
-spring.redis:
+spring.data.redis:
   client-type: LETTUCE
   password: 123456    # redis node auth password
   host: localhost     # redis standalone host name

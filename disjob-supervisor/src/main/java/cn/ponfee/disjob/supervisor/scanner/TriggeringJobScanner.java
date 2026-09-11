@@ -29,9 +29,9 @@ import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import com.google.common.math.IntMath;
+import jakarta.annotation.PreDestroy;
 import org.springframework.dao.DuplicateKeyException;
 
-import javax.annotation.PreDestroy;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
