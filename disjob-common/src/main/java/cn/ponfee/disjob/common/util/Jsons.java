@@ -160,19 +160,19 @@ public final class Jsons {
         return json == null ? null : parse(json, JSON.constructType(type));
     }
 
-    public static <T> T fromJson(String json, Type type) {
-        return json == null ? null : parse(json, JSON.constructType(type));
-    }
-
-    public static <T> T fromJson(byte[] json, Type type) {
-        return json == null ? null : parse(json, JSON.constructType(type));
-    }
-
     public static <T> T fromJson(String json, TypeReference<T> type) {
         return json == null ? null : parse(json, JSON.constructType(type));
     }
 
     public static <T> T fromJson(byte[] json, TypeReference<T> type) {
+        return json == null ? null : parse(json, JSON.constructType(type));
+    }
+
+    public static <T> T fromJson(String json, Type type) {
+        return json == null ? null : parse(json, JSON.constructType(type));
+    }
+
+    public static <T> T fromJson(byte[] json, Type type) {
         return json == null ? null : parse(json, JSON.constructType(type));
     }
 
@@ -320,12 +320,12 @@ public final class Jsons {
 
     private static Object parse(JsonNode jsonNode, Type type) throws IOException {
         return JSON
-            .readerFor(JSON.getTypeFactory().constructType(type))
+            .readerFor(JSON.constructType(type))
             .with(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
             .readValue(JSON.treeAsTokens(jsonNode));
     }
 
-    public static <T> T parse(String json, JavaType type) {
+    private static <T> T parse(String json, JavaType type) {
         try {
             return JSON.readValue(json, type);
         } catch (IOException e) {
@@ -333,7 +333,7 @@ public final class Jsons {
         }
     }
 
-    public static <T> T parse(byte[] json, JavaType type) {
+    private static <T> T parse(byte[] json, JavaType type) {
         try {
             return JSON.readValue(json, type);
         } catch (IOException e) {
