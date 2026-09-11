@@ -81,7 +81,7 @@ public class JsonsTest {
     public void testJavaTime() {
         Instant instant = Instant.ofEpochMilli(0);
         Assertions.assertEquals("\"1970-01-01T00:00:00Z\"", Jsons.toJson(instant));
-        Assertions.assertEquals("\"1970-01-01T08:00:00\"", Jsons.toJson(LocalDateTime.ofInstant(instant, ZoneId.of("UTC+8"))));
+        Assertions.assertEquals("\"1970-01-01 08:00:00\"", Jsons.toJson(LocalDateTime.ofInstant(instant, ZoneId.of("UTC+8"))));
         Assertions.assertEquals("\"1970-01-01T08:00:00+08:00\"", Jsons.toJson(OffsetDateTime.ofInstant(instant, ZoneId.of("UTC+8"))));
         Assertions.assertEquals("\"1970-01-01T08:00:00+08:00\"", Jsons.toJson(ZonedDateTime.ofInstant(instant, ZoneId.of("UTC+8"))));
     }

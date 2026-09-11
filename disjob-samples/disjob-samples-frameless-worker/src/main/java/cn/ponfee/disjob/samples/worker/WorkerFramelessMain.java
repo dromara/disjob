@@ -43,7 +43,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisProperties;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -120,7 +120,7 @@ public class WorkerFramelessMain {
 
     private static WorkerRegistry createWorkerRegistry(YamlProperties config, RestTemplate restTemplate) {
         RedisRegistryProperties registryProps = config.bind(RedisRegistryProperties.KEY_PREFIX, RedisRegistryProperties.class);
-        RedisProperties redisProps = config.bind(RedisRegistryProperties.KEY_PREFIX, RedisProperties.class);
+        DataRedisProperties redisProps = config.bind(RedisRegistryProperties.KEY_PREFIX, DataRedisProperties.class);
         @SuppressWarnings("all")
         RedisTemplateFactory redisTemplateFactory = new RedisTemplateFactory(redisProps);
         ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, redisTemplateFactory::close);

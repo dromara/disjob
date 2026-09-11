@@ -21,27 +21,24 @@ import cn.ponfee.disjob.common.date.JacksonDate;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.date.LocalDateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.core.json.JsonWriteFeature;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.util.Assert;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.StreamWriteFeature;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.core.json.JsonWriteFeature;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.*;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.ext.javatime.deser.LocalTimeDeserializer;
+import tools.jackson.databind.ext.javatime.ser.LocalDateSerializer;
+import tools.jackson.databind.ext.javatime.ser.LocalDateTimeSerializer;
+import tools.jackson.databind.ext.javatime.ser.LocalTimeSerializer;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.node.ArrayNode;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -63,23 +60,24 @@ import java.util.Map;
  */
 public final class Jsons {
 
-    public static final TypeReference<Map<String, Object>> MAP_NORMAL = new TypeReference<Map<String, Object>>() {};
-    public static final TypeReference<List<String>> LIST_STRING = new TypeReference<List<String>>() {};
+    public static final TypeReference<Map<String, Object>> MAP_NORMAL = new TypeReference<>() {};
+    public static final TypeReference<List<String>> LIST_STRING = new TypeReference<>() {};
 
     /**
-     * Jackson ObjectMapper support json5 (thread safe)
+     * Jackson JsonMapper support json5 (thread safe)
      */
-    public static final ObjectMapper JSON5 = createObjectMapper()
-        .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES.mappedFeature())                    // 键和值：可以用单引号
-        .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER.mappedFeature()) // 字符串值：可以通过转义换行符来跨越多行
-        .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())          // 允许有未转义的控制符
-        .enable(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature())                   // 对象或数组：可以有一个尾随逗号
-        .enable(JsonReadFeature.ALLOW_YAML_COMMENTS.mappedFeature());                   // 允许YAML风格的单行和多行注释
+    public static final JsonMapper JSON5 = createJsonMapperBuilder()
+        .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES)                    // 键和值：可以用单引号
+        .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER) // 字符串值：可以通过转义换行符来跨越多行
+        .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS)          // 允许有未转义的控制符
+        .enable(JsonReadFeature.ALLOW_TRAILING_COMMA)                   // 对象或数组：可以有一个尾随逗号
+        .enable(JsonReadFeature.ALLOW_YAML_COMMENTS)                    // 允许YAML风格的单行和多行注释
+        .build();
 
     /**
-     * Jackson ObjectMapper (thread safe)
+     * Jackson JsonMapper (thread safe)
      */
-    private static final ObjectMapper JSON = createObjectMapper();
+    private static final JsonMapper JSON = createJsonMapper();
 
     // --------------------------------------------------------serialization
 
@@ -90,11 +88,7 @@ public final class Jsons {
      * @param value  the object value
      */
     public static void writeValue(OutputStream output, Object value) {
-        try {
-            JSON.writeValue(output, value);
-        } catch (IOException e) {
-            ExceptionUtils.rethrow(e);
-        }
+        JSON.writeValue(output, value);
     }
 
     /**
@@ -104,11 +98,7 @@ public final class Jsons {
      * @return JSON
      */
     public static String toJson(Object value) {
-        try {
-            return JSON.writeValueAsString(value);
-        } catch (IOException e) {
-            return ExceptionUtils.rethrow(e);
-        }
+        return JSON.writeValueAsString(value);
     }
 
     /**
@@ -118,11 +108,7 @@ public final class Jsons {
      * @return JSON byte array
      */
     public static byte[] toBytes(Object value) {
-        try {
-            return JSON.writeValueAsBytes(value);
-        } catch (IOException e) {
-            return ExceptionUtils.rethrow(e);
-        }
+        return JSON.writeValueAsBytes(value);
     }
 
     // --------------------------------------------------------deserialization
@@ -133,12 +119,12 @@ public final class Jsons {
      * @param json the JSON
      * @param type the value
      * @return object of type
-     * @see ObjectMapper#getTypeFactory()
-     * @see ObjectMapper#constructType(Type)
-     * @see com.fasterxml.jackson.databind.type.TypeFactory#constructGeneralizedType(JavaType, Class)
+     * @see JsonMapper#getTypeFactory()
+     * @see JsonMapper#constructType(Type)
+     * @see tools.jackson.databind.type.TypeFactory#constructGeneralizedType(JavaType, Class)
      */
     public static <T> T fromJson(String json, JavaType type) {
-        return json == null ? null : parse(json, type);
+        return json == null ? null : JSON.readValue(json, type);
     }
 
     /**
@@ -149,34 +135,34 @@ public final class Jsons {
      * @return object of type
      */
     public static <T> T fromJson(byte[] json, JavaType type) {
-        return json == null ? null : parse(json, type);
+        return json == null ? null : JSON.readValue(json, type);
     }
 
     public static <T> T fromJson(String json, Class<T> type) {
-        return json == null ? null : parse(json, JSON.constructType(type));
+        return json == null ? null : JSON.readValue(json, type);
     }
 
     public static <T> T fromJson(byte[] json, Class<T> type) {
-        return json == null ? null : parse(json, JSON.constructType(type));
+        return json == null ? null : JSON.readValue(json, type);
     }
 
     public static <T> T fromJson(String json, TypeReference<T> type) {
-        return json == null ? null : parse(json, JSON.constructType(type));
+        return json == null ? null : JSON.readValue(json, type);
     }
 
     public static <T> T fromJson(byte[] json, TypeReference<T> type) {
-        return json == null ? null : parse(json, JSON.constructType(type));
+        return json == null ? null : JSON.readValue(json, type);
     }
 
     public static <T> T fromJson(String json, Type type) {
-        return json == null ? null : parse(json, JSON.constructType(type));
+        return json == null ? null : JSON.readValue(json, JSON.constructType(type));
     }
 
     public static <T> T fromJson(byte[] json, Type type) {
-        return json == null ? null : parse(json, JSON.constructType(type));
+        return json == null ? null : JSON.readValue(json, JSON.constructType(type));
     }
 
-    public static Object[] parseArray(String arrayJson, Type[] types) throws IOException {
+    public static Object[] parseArray(String arrayJson, Type[] types) {
         if (arrayJson == null) {
             return null;
         }
@@ -214,44 +200,28 @@ public final class Jsons {
     public static Object[] parseMethodArgs(String argsJson, Method method) {
         // 不推荐使用fastjson2，项目中尽量统一使用一种JSON序列化方式
         //return com.alibaba.fastjson2.JSON.parseArray(argsJson, method.getGenericParameterTypes()).toArray();
-        try {
-            return parseArray(argsJson, method.getGenericParameterTypes());
-        } catch (IOException e) {
-            return ExceptionUtils.rethrow(e);
-        }
+        return parseArray(argsJson, method.getGenericParameterTypes());
+    }
+
+    public static JsonMapper createJsonMapper() {
+        return createJsonMapperBuilder().build();
     }
 
     /**
-     * <pre>也可以使用JsonMapper.Builder来构建：{@code
-     *  ObjectMapper objectMapper = JsonMapper.builder()
-     *    .serializationInclusion(JsonInclude.Include.NON_NULL)           // 序列化时忽略值为null的字段
-     *    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)     // 反序列化时忽略未知字段
-     *    .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES)                    // 键和值：可以用单引号
-     *    .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER) // 字符串值：可以通过转义换行符来跨越多行
-     *    .enable(JsonReadFeature.ALLOW_TRAILING_COMMA)                   // 对象或数组：可以有一个尾随逗号
-     *    .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS)          // 允许有未转义的控制符
-     *    .enable(JsonReadFeature.ALLOW_YAML_COMMENTS)                    // 允许YAML风格的单行和多行注释
-     *    .build();
-     * }</pre>
+     * Creates JsonMapper.Builder
      *
-     * @return ObjectMapper instance
+     * @return JsonMapper.Builder instance
      */
-    public static ObjectMapper createObjectMapper() {
-        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
-        builder.serializationInclusion(JsonInclude.Include.NON_NULL);
-        builder.factory(JsonFactory.builder().disable(JsonFactory.Feature.INTERN_FIELD_NAMES).build());
-        configureObjectMapperBuilder(builder);
-        return builder.build();
-    }
-
-    public static void configureObjectMapperBuilder(Jackson2ObjectMapperBuilder builder) {
-        // Common config
-        builder.featuresToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) // 反序列化时忽略未知属性
-            .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)       // Date不序列化为时间戳
-            .featuresToDisable(SerializationFeature.FAIL_ON_EMPTY_BEANS)             // 解决报错：No serializer found for class XXX and no properties discovered to create BeanSerializer
-            .featuresToEnable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN)       // BigDecimal禁用科学计数格式输出，new BigDecimal("0.00000000000000001"): 1E-17 -> 0.00000000000000001
-            .featuresToDisable(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES)        // 禁止无双引号字段
-            .featuresToEnable(JsonWriteFeature.QUOTE_FIELD_NAMES.mappedFeature());   // 字段加双引号
+    private static JsonMapper.Builder createJsonMapperBuilder() {
+        JsonFactory jsonFactory = JsonFactory.builder().disable(JsonFactory.Feature.INTERN_PROPERTY_NAMES).build();
+        JsonMapper.Builder builder = JsonMapper.builder(jsonFactory)
+            .changeDefaultPropertyInclusion(e -> e.withValueInclusion(JsonInclude.Include.NON_NULL))
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) // 反序列化时忽略未知属性
+            .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)         // Date不序列化为时间戳
+            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)          // 解决报错：No serializer found for class XXX and no properties discovered to create BeanSerializer
+            .enable(StreamWriteFeature.WRITE_BIGDECIMAL_AS_PLAIN)       // BigDecimal禁用科学计数格式输出，new BigDecimal("0.00000000000000001"): 1E-17 -> 0.00000000000000001
+            .disable(JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES)     // 禁止无双引号字段
+            .enable(JsonWriteFeature.QUOTE_PROPERTY_NAMES);             // 字段加双引号
 
         // java.util.Date config
         // java.util.Date：registerModule > JsonFormat(会使用setTimeZone) > setDateFormat(会使用setTimeZone)
@@ -259,86 +229,66 @@ public final class Jsons {
         //   2）如果设置了setTimeZone，则会调用setDateFormat#setTimeZone(注：setTimeZone对registerModule无影响)
         //   3）如果实体字段使用了JsonFormat注解，则setDateFormat不生效(会使用jackson内置的格式化器，默认为0时区，此时要setTimeZone)
         //   4）JsonFormat注解对registerModule无影响(registerModule优先级最高)
-        builder.timeZone(JavaUtilDateFormat.DEFAULT.getTimeZone()) // TimeZone.getDefault()
-            .dateFormat(JavaUtilDateFormat.DEFAULT);               // default date format
+        builder.defaultTimeZone(JavaUtilDateFormat.DEFAULT.getTimeZone()) // TimeZone.getDefault()
+            .defaultDateFormat(JavaUtilDateFormat.DEFAULT);               // default date format
 
         // register module
-        builder.modulesToInstall(createSimpleModule())
-            .modulesToInstall(createJavaTimeModule())
-            .modulesToInstall(new Jdk8Module());
+        builder.addModule(createCustomizationModule());
 
         // Others config
         //builder.propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+
+        return builder;
     }
 
-    public static SimpleModule createSimpleModule() {
-        SimpleModule simpleModule = new SimpleModule();
+    public static SimpleModule createCustomizationModule() {
+        SimpleModule customizationModule = new SimpleModule();
 
-        // java.util.Date module config
-        simpleModule.addSerializer(Date.class, JacksonDate.INSTANCE.serializer());
-        simpleModule.addDeserializer(Date.class, JacksonDate.INSTANCE.deserializer());
+        // java.util.Date config
+        customizationModule.addSerializer(Date.class, JacksonDate.INSTANCE.serializer());
+        customizationModule.addDeserializer(Date.class, JacksonDate.INSTANCE.deserializer());
 
-        // 金额序列化
-        //simpleModule.addSerializer(Money.class, JacksonMoney.INSTANCE.serializer());
-        //simpleModule.addDeserializer(Money.class, JacksonMoney.INSTANCE.deserializer());
-
-        // 返回给端上浏览器JavaScript Number数值过大时会有问题：Number.MAX_SAFE_INTEGER = 9007199254740991，即“0x1FFFFFFFFFFFFFL”
-        // 当数值大于`9007199254740991`时就有可能会丢失精度：1234567891011121314 -> 1234567891011121400
-        //simpleModule.addSerializer(long.class, ToStringSerializer.instance);
-        //simpleModule.addSerializer(BigInteger.class, ToStringSerializer.instance);
-
-        return simpleModule;
-    }
-
-    public static JavaTimeModule createJavaTimeModule() {
-        // java new time module config
+        // java8 time module config
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(Dates.DATETIME_PATTERN);
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(Dates.TIME_PATTERN);
-        JavaTimeModule javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(dateTimeFormatter));
-        javaTimeModule.addDeserializer(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
+        customizationModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(dateTimeFormatter));
+        customizationModule.addDeserializer(LocalDateTime.class, new ValueDeserializer<>() {
             @Override
-            public LocalDateTime deserialize(JsonParser parser, DeserializationContext ctx) throws IOException {
-                String text = parser.getText();
+            public LocalDateTime deserialize(JsonParser parser, DeserializationContext ctx) {
+                String text = parser.getString();
                 return StringUtils.isBlank(text) ? null : LocalDateTimeFormat.DEFAULT.parse(text);
             }
         });
-        javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ISO_DATE));
-        javaTimeModule.addDeserializer(LocalDate.class, new JsonDeserializer<LocalDate>() {
+        customizationModule.addSerializer(LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ISO_DATE));
+        customizationModule.addDeserializer(LocalDate.class, new ValueDeserializer<>() {
             @Override
-            public LocalDate deserialize(JsonParser parser, DeserializationContext ctx) throws IOException {
-                String text = parser.getText();
+            public LocalDate deserialize(JsonParser parser, DeserializationContext ctx) {
+                String text = parser.getString();
                 return StringUtils.isBlank(text) ? null : LocalDateTimeFormat.DEFAULT.parse(text).toLocalDate();
             }
         });
-        javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(timeFormatter));
-        javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(timeFormatter));
-        return javaTimeModule;
+        customizationModule.addSerializer(LocalTime.class, new LocalTimeSerializer(timeFormatter));
+        customizationModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(timeFormatter));
+
+        // 金额序列化
+        //customizationModule.addSerializer(Money.class, JacksonMoney.INSTANCE.serializer());
+        //customizationModule.addDeserializer(Money.class, JacksonMoney.INSTANCE.deserializer());
+
+        // 返回给端上浏览器JavaScript Number数值过大时会有问题：Number.MAX_SAFE_INTEGER = 9007199254740991，即"0x1FFFFFFFFFFFFFL"
+        // 当数值大于`9007199254740991`时就有可能会丢失精度：1234567891011121314 -> 1234567891011121400
+        //customizationModule.addSerializer(Long.class, ToStringSerializer.instance);
+        //customizationModule.addSerializer(BigInteger.class, ToStringSerializer.instance);
+
+        return customizationModule;
     }
 
     // --------------------------------------------------------private methods
 
-    private static Object parse(JsonNode jsonNode, Type type) throws IOException {
+    private static Object parse(JsonNode jsonNode, Type type) {
         return JSON
             .readerFor(JSON.constructType(type))
             .with(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
             .readValue(JSON.treeAsTokens(jsonNode));
-    }
-
-    private static <T> T parse(String json, JavaType type) {
-        try {
-            return JSON.readValue(json, type);
-        } catch (IOException e) {
-            return ExceptionUtils.rethrow(e);
-        }
-    }
-
-    private static <T> T parse(byte[] json, JavaType type) {
-        try {
-            return JSON.readValue(json, type);
-        } catch (IOException e) {
-            return ExceptionUtils.rethrow(e);
-        }
     }
 
 }

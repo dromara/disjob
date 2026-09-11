@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -45,7 +44,7 @@ import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -53,6 +52,7 @@ import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.databind.json.JsonMapper;
 
 import javax.net.ssl.SSLContext;
 import java.lang.reflect.Array;
@@ -95,15 +95,15 @@ public class RestTemplateUtils {
     public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
     public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
 
-    public static RestTemplate create(int connectTimeout, int readTimeout, ObjectMapper objectMapper) {
-        return create(connectTimeout, readTimeout, objectMapper, StandardCharsets.UTF_8);
+    public static RestTemplate create(int connectTimeout, int readTimeout, JsonMapper jsonMapper) {
+        return create(connectTimeout, readTimeout, jsonMapper, StandardCharsets.UTF_8);
     }
 
-    public static RestTemplate create(int connectTimeout, int readTimeout, ObjectMapper objectMapper, Charset charset) {
-        return create(connectTimeout, readTimeout, createMappingJackson2HttpMessageConverter(objectMapper), charset);
+    public static RestTemplate create(int connectTimeout, int readTimeout, JsonMapper jsonMapper, Charset charset) {
+        return create(connectTimeout, readTimeout, createJacksonJsonHttpMessageConverter(jsonMapper), charset);
     }
 
-    public static RestTemplate create(int connectTimeout, int readTimeout, MappingJackson2HttpMessageConverter messageConverter, Charset charset) {
+    public static RestTemplate create(int connectTimeout, int readTimeout, JacksonJsonHttpMessageConverter messageConverter, Charset charset) {
         SSLContext sslContext = ThrowingSupplier.doChecked(() -> SSLContexts.custom().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build());
         ConnectionConfig connectionConfig = ConnectionConfig.custom()
             .setConnectTimeout(connectTimeout, TimeUnit.MILLISECONDS) // connectTimeout：连接超时时间（默认3分钟）
@@ -140,17 +140,16 @@ public class RestTemplateUtils {
         return restTemplate;
     }
 
-    public static MappingJackson2HttpMessageConverter createMappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
-        if (objectMapper == null) {
-            objectMapper = Jsons.createObjectMapper();
+    public static JacksonJsonHttpMessageConverter createJacksonJsonHttpMessageConverter(JsonMapper jsonMapper) {
+        if (jsonMapper == null) {
+            jsonMapper = Jsons.createJsonMapper();
         }
-        MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
-        messageConverter.setObjectMapper(objectMapper);
+        JacksonJsonHttpMessageConverter messageConverter = new JacksonJsonHttpMessageConverter(jsonMapper);
         extendSupportedMediaTypes(messageConverter);
         return messageConverter;
     }
 
-    public static void extendSupportedMediaTypes(MappingJackson2HttpMessageConverter converter) {
+    public static void extendSupportedMediaTypes(JacksonJsonHttpMessageConverter converter) {
         List<MediaType> supportedMediaTypes = Collects.concat(
             converter.getSupportedMediaTypes(),
             MediaType.TEXT_PLAIN,
