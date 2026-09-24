@@ -21,20 +21,24 @@ import cn.ponfee.disjob.alert.email.configuration.EmailAlertSenderProperties;
 import cn.ponfee.disjob.alert.sender.AlertRecipientMapper;
 import cn.ponfee.disjob.alert.sender.AlertSender;
 import cn.ponfee.disjob.common.collect.Collects;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.jndi.JndiLocatorDelegate;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.naming.NamingException;
 import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Email alert sender
@@ -49,10 +53,12 @@ public class EmailAlertSender extends AlertSender {
     private final EmailAlertSenderProperties config;
     private final JavaMailSenderImpl sender;
 
-    public EmailAlertSender(EmailAlertSenderProperties config, AlertRecipientMapper mapper) {
+    public EmailAlertSender(EmailAlertSenderProperties config,
+                            AlertRecipientMapper mapper,
+                            ObjectProvider<SslBundles> sslBundles) {
         super(CHANNEL, "Email", mapper);
         this.config = config;
-        this.sender = createMailSender(config);
+        this.sender = createMailSender(config, sslBundles.getIfAvailable());
         log.info("Email alert sender initialized: {}", config);
     }
 
@@ -79,7 +85,7 @@ public class EmailAlertSender extends AlertSender {
 
     // ----------------------------------------------------------private static methods
 
-    private static JavaMailSenderImpl createMailSender(EmailAlertSenderProperties config) {
+    private static JavaMailSenderImpl createMailSender(EmailAlertSenderProperties config, SslBundles sslBundles) {
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
         String jndiName = config.getJndiName();
         if (StringUtils.isNotBlank(jndiName)) {
@@ -95,9 +101,12 @@ public class EmailAlertSender extends AlertSender {
             }
             sender.setUsername(config.getUsername());
             sender.setPassword(config.getPassword());
-            sender.setProtocol(config.getProtocol());
-            if (!config.getProperties().isEmpty()) {
-                sender.setJavaMailProperties(Collects.toProperties(config.getProperties()));
+            String protocol = StringUtils.defaultIfBlank(config.getProtocol(), "smtp");
+            sender.setProtocol(protocol);
+
+            Properties properties = buildProperties(config, protocol, sslBundles);
+            if (!properties.isEmpty()) {
+                sender.setJavaMailProperties(properties);
             }
         }
 
@@ -114,6 +123,18 @@ public class EmailAlertSender extends AlertSender {
             }
         }
         return sender;
+    }
+
+    private static Properties buildProperties(EmailAlertSenderProperties config, String protocol, SslBundles sslBundles) {
+        Properties properties = Collects.toProperties(config.getProperties());
+        if (config.getSsl().isEnabled()) {
+            properties.put("mail." + protocol + ".ssl.enable", "true");
+        }
+        if (config.getSsl().getBundle() != null && sslBundles != null) {
+            SslBundle sslBundle = sslBundles.getBundle(config.getSsl().getBundle());
+            properties.put("mail." + protocol + ".ssl.socketFactory", sslBundle.createSslContext().getSocketFactory());
+        }
+        return properties;
     }
 
     private static InternetAddress[] buildRecipients(Map<String, String> alertRecipients) throws Exception {

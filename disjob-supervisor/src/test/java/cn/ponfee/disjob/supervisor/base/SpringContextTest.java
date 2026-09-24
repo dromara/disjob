@@ -17,11 +17,11 @@
 package cn.ponfee.disjob.supervisor.base;
 
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
+import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.env.Environment;
 
-import javax.annotation.Resource;
 import java.util.regex.Pattern;
 
 /**

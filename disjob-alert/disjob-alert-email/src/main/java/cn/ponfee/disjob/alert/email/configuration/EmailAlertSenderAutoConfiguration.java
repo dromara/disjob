@@ -19,10 +19,12 @@ package cn.ponfee.disjob.alert.email.configuration;
 import cn.ponfee.disjob.alert.Alerter;
 import cn.ponfee.disjob.alert.email.EmailAlertSender;
 import cn.ponfee.disjob.alert.sender.AlertRecipientMapper;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -44,8 +46,9 @@ public class EmailAlertSenderAutoConfiguration {
 
     @Bean
     EmailAlertSender emailAlertSender(EmailAlertSenderProperties config,
-                                      @Qualifier(EMAIL_RECIPIENT_MAPPER_BEAN_NAME) AlertRecipientMapper mapper) {
-        return new EmailAlertSender(config, mapper);
+                                      @Qualifier(EMAIL_RECIPIENT_MAPPER_BEAN_NAME) AlertRecipientMapper mapper,
+                                             ObjectProvider<SslBundles> sslBundles /*@Nullable SslBundles sslBundles*/) {
+        return new EmailAlertSender(config, mapper, sslBundles);
     }
 
 }

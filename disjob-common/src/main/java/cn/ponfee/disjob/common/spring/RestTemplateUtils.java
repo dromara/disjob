@@ -26,15 +26,17 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustAllStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.ssl.SSLContexts;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.TrustAllStrategy;
+import org.apache.hc.core5.http.protocol.HttpContext;
+import org.apache.hc.core5.ssl.SSLContexts;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -59,6 +61,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -102,15 +105,27 @@ public class RestTemplateUtils {
 
     public static RestTemplate create(int connectTimeout, int readTimeout, MappingJackson2HttpMessageConverter messageConverter, Charset charset) {
         SSLContext sslContext = ThrowingSupplier.doChecked(() -> SSLContexts.custom().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build());
+        ConnectionConfig connectionConfig = ConnectionConfig.custom()
+            .setConnectTimeout(connectTimeout, TimeUnit.MILLISECONDS) // connectTimeout：连接超时时间（默认3分钟）
+            .setSocketTimeout(readTimeout, TimeUnit.MILLISECONDS)     // socketTimeout：连接建立后每个 read/write 操作的等待时间
+            //.setIdleTimeout(300, TimeUnit.SECONDS)                  // idleTimeout：连接池中空闲连接的存活时间
+            .build();
+        PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+            .setTlsSocketStrategy(new DefaultClientTlsStrategy(sslContext))
+            .setDefaultConnectionConfig(connectionConfig)
+            .build();
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setResponseTimeout(readTimeout, TimeUnit.MILLISECONDS)   // responseTimeout：与 socketTimeout 相同
+            //.setConnectionRequestTimeout(180, TimeUnit.SECONDS)     // connectionRequestTimeout：从连接池中获取连接的超时时间（默认3分钟）
+            .build();
         CloseableHttpClient httpClient = HttpClients.custom()
-            .setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE))
+            .setConnectionManager(connectionManager)
+            .setDefaultRequestConfig(requestConfig)
             .build();
 
         //SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         requestFactory.setHttpClient(httpClient);
-        requestFactory.setConnectTimeout(connectTimeout);
-        requestFactory.setReadTimeout(readTimeout);
         requestFactory.setHttpContextFactory(new HttpContextFactory());
 
         RestTemplate restTemplate = new RestTemplate(requestFactory);

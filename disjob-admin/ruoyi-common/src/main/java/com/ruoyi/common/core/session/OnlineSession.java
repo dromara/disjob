@@ -47,7 +47,6 @@ public class OnlineSession extends SimpleSession
         return host;
     }
 
-    @Override
     public void setHost(String host)
     {
         this.host = host;

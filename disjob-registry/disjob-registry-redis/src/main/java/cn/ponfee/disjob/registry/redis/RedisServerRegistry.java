@@ -25,6 +25,7 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.enums.RegistryEventType;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
+import jakarta.annotation.PreDestroy;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.data.redis.core.RedisCallback;
@@ -33,7 +34,6 @@ import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;

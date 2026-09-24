@@ -39,8 +39,8 @@
     </dependency>
     <dependency>
       <groupId>com.alibaba</groupId>
-      <artifactId>druid-spring-boot-starter</artifactId>
-      <version>${druid-spring-boot-starter.version}</version>
+      <artifactId>druid-spring-boot-3-starter</artifactId>
+      <version>${druid-spring-boot-3-starter.version}</version>
     </dependency>
 
     <!--Shiro核心框架 -->
@@ -57,6 +57,7 @@
     <dependency>
       <groupId>org.ehcache</groupId>
       <artifactId>ehcache</artifactId>
+      <classifier>jakarta</classifier>
     </dependency>
 
     <!-- Commons third lib -->
@@ -84,8 +85,8 @@
     <!-- Api doc -->
     <dependency>
       <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-ui</artifactId>
-      <version>1.8.0</version>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>2.9.1</version>
     </dependency>
   </dependencies>
 

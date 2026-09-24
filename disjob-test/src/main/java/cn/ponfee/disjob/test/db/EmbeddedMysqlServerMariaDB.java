@@ -25,6 +25,7 @@ import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.commons.io.IOUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -76,6 +77,7 @@ public class EmbeddedMysqlServerMariaDB {
         System.out.println("Embedded maria db starting...");
         ShutdownHookManager.addShutdownHook(Integer.MAX_VALUE, db::stop);
         db.start();
+        db.run("ALTER USER 'root'@'localhost' IDENTIFIED BY ''", configuration.isWindows() ? "root" : System.getProperty("user.name"), "");
         for (String script : DBUtils.loadScript()) {
             // 以数据库的root用户身份连接mysql：base/bin/mysql -h xxx -u root -p
             // script = correctScriptForMariaDB(script);
@@ -100,10 +102,10 @@ public class EmbeddedMysqlServerMariaDB {
         System.out.println("Embedded maria db started!");
     }
 
-    private static String createDirectory(String name) throws IOException {
+    private static File createDirectory(String name) throws IOException {
         String dataDir = MavenProjects.getProjectBaseDir() + "/target/mariadb/" + name;
         Files.cleanOrMakeDir(dataDir);
-        return dataDir;
+        return new File(dataDir);
     }
 
     /*
