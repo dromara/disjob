@@ -176,6 +176,7 @@ public final class Threads {
             return;
         }
 
+        /*
         try {
             // 调用后，thread中正在执行的run方法内部会抛出java.lang.ThreadDeath异常
             // 如果在run方法内用 try{...} catch(Throwable e){} 捕获住，则线程不会停止执行
@@ -185,6 +186,7 @@ public final class Threads {
         } catch (Throwable t) {
             log.error("Invoke java.lang.Thread#stop() method failed: {}", thread.getName(), t);
         }
+        */
     }
 
     private static boolean join(Thread thread, long joinTimeoutMills) {

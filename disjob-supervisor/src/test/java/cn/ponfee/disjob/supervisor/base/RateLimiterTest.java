@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.supervisor.base;
 
 import cn.ponfee.disjob.common.concurrent.Threads;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import com.google.common.util.concurrent.RateLimiter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -44,6 +43,7 @@ public class RateLimiterTest {
         thread.join();
     }
 
+    /*
     @Test
     public void testStop() throws InterruptedException {
         MyThread1 thread = new MyThread1();
@@ -67,6 +67,7 @@ public class RateLimiterTest {
         t.start();
         Thread.sleep(100);
     }
+    */
 
     @Test
     public void testInterrupt() throws InterruptedException {

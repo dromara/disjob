@@ -61,7 +61,7 @@
     <!-- testcontainers mysql-->
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>mysql</artifactId>
+      <artifactId>testcontainers-mysql</artifactId>
       <optional>true</optional>
     </dependency>
 

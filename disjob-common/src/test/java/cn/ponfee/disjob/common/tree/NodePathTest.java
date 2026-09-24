@@ -18,13 +18,13 @@ package cn.ponfee.disjob.common.tree;
 
 import cn.ponfee.disjob.common.util.Comparators;
 import cn.ponfee.disjob.common.util.Jsons;
-import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.*;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import tools.jackson.core.type.TypeReference;
 
 import java.util.Arrays;
 import java.util.Collections;

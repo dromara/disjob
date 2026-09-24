@@ -22,16 +22,16 @@
 
   <properties>
     <revision>1.0.0-SNAPSHOT</revision>
-    <disjob.version>3.0.1-SNAPSHOT</disjob.version>
+    <disjob.version>4.0.1-SNAPSHOT</disjob.version>
 
     <file.encoding>UTF-8</file.encoding>
-    <java.version>17</java.version>
+    <java.version>25</java.version>
     <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
     <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
-    <spring-boot.version>3.5.16</spring-boot.version>
+    <spring-boot.version>4.1.1</spring-boot.version>
   </properties>
 
   <dependencyManagement>
@@ -89,7 +89,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.14.1</version>
+        <version>3.15.0</version>
         <configuration>
           <encoding>${file.encoding}</encoding>
           <source>${java.version}</source>

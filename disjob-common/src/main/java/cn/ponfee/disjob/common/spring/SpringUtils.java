@@ -18,8 +18,8 @@ package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.util.ProxyUtils;
 import org.apache.commons.io.IOUtils;
-import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.boot.web.server.WebServer;
+import org.springframework.boot.web.server.context.WebServerApplicationContext;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -51,14 +51,14 @@ public final class SpringUtils {
     /**
      * Spring-boot web server port key
      *
-     * @see org.springframework.boot.autoconfigure.web.ServerProperties#getPort()
+     * @see org.springframework.boot.web.server.autoconfigure.ServerProperties#getPort()
      */
     public static final String SPRING_BOOT_SERVER_PORT = "server.port";
 
     /**
      * Spring-boot web server servlet context-path key
      *
-     * @see org.springframework.boot.autoconfigure.web.ServerProperties#getServlet().getContextPath()
+     * @see org.springframework.boot.web.server.autoconfigure.ServerProperties#getServlet().getContextPath()
      */
     public static final String SPRING_BOOT_CONTEXT_PATH = "server.servlet.context-path";
 
