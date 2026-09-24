@@ -119,7 +119,7 @@ public class UserRealm extends AuthorizingRealm
      */
     public void clearCachedAuthorizationInfo(Object principal)
     {
-        SimplePrincipalCollection principals = new SimplePrincipalCollection(principal, getName());
+        PrincipalCollection principals = new SimplePrincipalCollection(principal, getName());
         this.clearCachedAuthorizationInfo(principals);
     }
 
@@ -131,10 +131,7 @@ public class UserRealm extends AuthorizingRealm
         Cache<Object, AuthorizationInfo> cache = getAuthorizationCache();
         if (cache != null)
         {
-            for (Object key : cache.keys())
-            {
-                cache.remove(key);
-            }
+            cache.clear();
         }
     }
 }

@@ -8,7 +8,7 @@ import com.ruoyi.system.domain.SysUserOnline;
 import com.ruoyi.system.mapper.SysUserOnlineMapper;
 import com.ruoyi.system.service.ISysUserOnlineService;
 import org.apache.shiro.cache.Cache;
-import org.apache.shiro.cache.ehcache.EhCacheManager;
+import org.apache.shiro.cache.CacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -117,14 +117,13 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
     @Override
     public void removeUserCache(String loginName, String sessionId)
     {
-        EhCacheManager ehCacheManager = SpringUtils.getBean(EhCacheManager.class);
-        Cache<String, Deque<Serializable>> cache = ehCacheManager.getCache(ShiroConstants.SYS_USERCACHE);
+        CacheManager cacheManager = SpringUtils.getBean(CacheManager.class);
+        Cache<String, Deque<Serializable>> cache = cacheManager.getCache(ShiroConstants.SYS_USERCACHE);
         Deque<Serializable> deque = cache.get(loginName);
-        if (StringUtils.isEmpty(deque) || deque.size() == 0)
+        if (StringUtils.isNotEmpty(deque))
         {
-            return;
+            deque.remove(sessionId);
         }
-        deque.remove(sessionId);
     }
 
     /**

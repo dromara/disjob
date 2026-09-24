@@ -1149,9 +1149,8 @@ var table = {
                 table.set();
                 $.modal.confirm("确定删除该条" + table.options.modalName + "信息吗？", function() {
                     var url = $.common.isEmpty(id) ? table.options.removeUrl : table.options.removeUrl.replace("{id}", id);
-                    // 为什么这里的tree-table要用get?
                     if (table.options.type == table_type.bootstrapTreeTable) {
-                        $.operate.get(url);
+                        $.operate.post(url);
                     } else {
                         var data = { "ids": id };
                         $.operate.submit(url, "post", "json", data);

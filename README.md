@@ -113,8 +113,8 @@ disjob                                        # 主项目①pom.xml
 | Disjob version | Git branch  | **Spring-boot version** | **JDK version** |
 |----------------|-------------|-------------------------|-----------------|
 | **2.2.5**      | 2.2.x       | 2.7.18                  | 8               |
-| **3.0.0**      | springboot3 | 3.5.16                  | 17              |
-| **4.0.0**      | springboot4 | 4.1.0                   | 25              |
+| **3.0.1**      | springboot3 | 3.5.16                  | 17              |
+| **4.0.1**      | springboot4 | 4.1.1                   | 25              |
 
 ## Quick Start
 

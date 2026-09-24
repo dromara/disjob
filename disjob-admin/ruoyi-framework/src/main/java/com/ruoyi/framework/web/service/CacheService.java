@@ -6,7 +6,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * 缓存操作处理
@@ -35,7 +34,7 @@ public class CacheService
      */
     public Set<String> getCacheKeys(String cacheName)
     {
-        return new TreeSet<>(CacheUtils.getCache(cacheName).keys());
+        return CacheUtils.getCacheKeys(cacheName);
     }
 
     /**

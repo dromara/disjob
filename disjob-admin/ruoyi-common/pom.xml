@@ -51,8 +51,12 @@
     </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-ehcache</artifactId>
+      <artifactId>shiro-jcache</artifactId>
       <version>${shiro.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
     </dependency>
 
     <!-- Commons third lib -->
