@@ -491,7 +491,7 @@ public class JobManager {
     public boolean pauseInstance(long instanceId) {
         log.info("Pause instance: {}", instanceId);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
-            return Functions.executeIfTrue(instance.isPausable(), () -> pauseInstance(instance));
+            return Functions.runIfTrue(instance.isPausable(), () -> pauseInstance(instance));
         });
     }
 
@@ -506,7 +506,7 @@ public class JobManager {
         log.info("Cancel instance: {}, {}", instanceId, ops);
         Assert.isTrue(ops.toStatus().isFailure(), () -> "Cancel instance operation invalid: " + ops);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
-            return Functions.executeIfTrue(!instance.isTerminal(), () -> cancelInstance(instance, ops));
+            return Functions.runIfTrue(!instance.isTerminal(), () -> cancelInstance(instance, ops));
         });
     }
 
@@ -519,7 +519,7 @@ public class JobManager {
     public boolean resumeInstance(long instanceId) {
         log.info("Resume instance: {}", instanceId);
         return doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
-            return Functions.executeIfTrue(instance.isPaused(), () -> resumeInstance(instance));
+            return Functions.runIfTrue(instance.isPaused(), () -> resumeInstance(instance));
         });
     }
 

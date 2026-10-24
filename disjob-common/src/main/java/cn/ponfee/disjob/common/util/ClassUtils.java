@@ -16,10 +16,10 @@
 
 package cn.ponfee.disjob.common.util;
 
-import cn.ponfee.disjob.common.base.Null;
 import cn.ponfee.disjob.common.base.Symbol;
 import cn.ponfee.disjob.common.collect.ArrayHashKey;
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.exception.Try;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import com.google.common.base.Joiner;
@@ -290,10 +290,10 @@ public final class ClassUtils {
             } catch (Exception e) {
                 // No such constructor, use placeholder
                 log.warn("Get constructor occur error: {}", e.getMessage());
-                return Null.BROKEN_CONSTRUCTOR;
+                return Inoperable.CONSTRUCTOR;
             }
         });
-        return constructor == Null.BROKEN_CONSTRUCTOR ? null : constructor;
+        return constructor == Inoperable.CONSTRUCTOR ? null : constructor;
     }
 
     public static <T> T newInstance(Constructor<T> constructor, Object... args) {
@@ -377,10 +377,10 @@ public final class ClassUtils {
             } catch (Exception e) {
                 // No such method, use placeholder
                 log.info("Get method failed: {}", e.getMessage());
-                return Null.BROKEN_METHOD;
+                return Inoperable.METHOD;
             }
         });
-        return method == Null.BROKEN_METHOD ? null : method;
+        return method == Inoperable.METHOD ? null : method;
     }
 
     @SuppressWarnings("unchecked")
@@ -541,6 +541,19 @@ public final class ClassUtils {
         return ArrayUtils.isEmpty(parameterTypes)
             ? "()"
             : "(" + Joiner.on(", ").join(parameterTypes) + ")";
+    }
+
+    private static class Inoperable {
+        static final Constructor<Inoperable> CONSTRUCTOR = Try.call(Inoperable.class::getDeclaredConstructor).get();
+        static final Method METHOD = Try.call(() -> Inoperable.class.getDeclaredMethod("method")).get();
+
+        Inoperable() {
+            throw new Error("Inoperable constructor.");
+        }
+
+        void method() {
+            throw new Error("Inoperable method.");
+        }
     }
 
 }

@@ -86,14 +86,12 @@ public interface Try<R> extends Serializable {
 
     boolean isSuccess();
 
-    default Try<R> orElse(Try<R> other) {
-        Objects.requireNonNull(other, "other is null");
-        return isSuccess() ? this : other;
+    default R orElse(R other) {
+        return isSuccess() ? get() : other;
     }
 
-    default Try<R> orElseGet(Supplier<Try<R>> supplier) {
-        Objects.requireNonNull(supplier, "supplier is null");
-        return isSuccess() ? this : supplier.get();
+    default R orElseGet(Supplier<R> supplier) {
+        return isSuccess() ? get() : supplier.get();
     }
 
     final class Success<R> implements Try<R>, Serializable {

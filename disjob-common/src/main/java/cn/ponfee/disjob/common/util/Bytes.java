@@ -159,7 +159,12 @@ public final class Bytes {
         ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
         buffer.put(bytes);
         buffer.flip();
-        return charset.decode(buffer).array();
+        // charset.decode()返回的CharBuffer底层数组容量大于实际解码字符数，
+        // 直接取array()会带出多余的'\u0000'，故只复制[position, limit)有效区间
+        CharBuffer decoded = charset.decode(buffer);
+        char[] chars = new char[decoded.remaining()];
+        decoded.get(chars);
+        return chars;
     }
 
     /**
@@ -184,7 +189,12 @@ public final class Bytes {
         CharBuffer buffer = CharBuffer.allocate(chars.length);
         buffer.put(chars);
         buffer.flip();
-        return charset.encode(buffer).array();
+        // charset.encode()返回的ByteBuffer底层数组容量可能大于实际编码字节数，
+        // 直接取array()会带出多余字节，故只复制[position, limit)有效区间
+        ByteBuffer encoded = charset.encode(buffer);
+        byte[] bytes = new byte[encoded.remaining()];
+        encoded.get(bytes);
+        return bytes;
     }
 
     // -----------------------------------------------------------------char

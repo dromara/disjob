@@ -133,7 +133,7 @@ public final class Throwables {
             try {
                 runnable.run();
             } catch (Throwable t) {
-                log.error(message, t.getMessage());
+                log.error(message, t);
                 rethrowIfFatal(t);
             }
         }

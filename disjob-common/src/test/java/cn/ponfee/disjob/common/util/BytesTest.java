@@ -66,4 +66,17 @@ public class BytesTest {
         Assertions.assertArrayEquals("abc".getBytes(StandardCharsets.UTF_8), Bytes.toBytes("abc", StandardCharsets.UTF_8));
     }
 
+    @Test
+    public void testCharArrayCharset() {
+        // 多字节字符集：解码长度应等于实际字符数（而非底层缓冲区容量）
+        for (String str : new String[]{"", "abc", "中", "中文中文", "a中b文"}) {
+            byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
+            Assertions.assertArrayEquals(str.toCharArray(), Bytes.toCharArray(bytes, StandardCharsets.UTF_8));
+            Assertions.assertArrayEquals(bytes, Bytes.toBytes(str.toCharArray(), StandardCharsets.UTF_8));
+        }
+        // 单字节字符集(默认US_ASCII)同样保持正确
+        Assertions.assertArrayEquals("abc".toCharArray(), Bytes.toCharArray("abc".getBytes(StandardCharsets.US_ASCII)));
+        Assertions.assertArrayEquals("abc".getBytes(StandardCharsets.US_ASCII), Bytes.toBytes("abc".toCharArray()));
+    }
+
 }

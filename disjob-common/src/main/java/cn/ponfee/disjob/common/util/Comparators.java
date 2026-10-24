@@ -66,7 +66,8 @@ public final class Comparators {
             if (a.getClass().isInstance(b)) {
                 return ((Comparable) a).compareTo(b);
             } else if (b.getClass().isInstance(a)) {
-                return ((Comparable) b).compareTo(a);
+                // a是b的子类，用b的比较逻辑比较后取反，以保持(a相对b)的方向一致
+                return -((Comparable) b).compareTo(a);
             }
         }
 

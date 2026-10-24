@@ -106,7 +106,7 @@ public class SchedGroupService extends SingletonClassConstraint {
         if (CollectionUtils.isNotEmpty(workers)) {
             throw new KeyAlreadyExistsException("Cannot delete group that has alive worker: " + group);
         }
-        return Functions.executeIfTrue(
+        return Functions.runIfTrue(
             isOneAffectedRow(groupMapper.softDelete(group, user)),
             this::refreshAndPublish
         );
@@ -114,7 +114,7 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     public boolean update(String user, SchedGroupUpdateRequest request) {
         request.checkAndTrim();
-        return Functions.executeIfTrue(
+        return Functions.runIfTrue(
             isOneAffectedRow(groupMapper.update(request.toSchedGroup(user))),
             this::refreshAndPublish
         );
@@ -125,7 +125,7 @@ public class SchedGroupService extends SingletonClassConstraint {
     }
 
     public boolean updateToken(String user, String group, TokenType type, String newToken, String oldToken) {
-        return Functions.executeIfTrue(
+        return Functions.runIfTrue(
             isOneAffectedRow(groupMapper.updateToken(group, type, newToken, user, oldToken)),
             this::refreshAndPublish
         );
@@ -133,7 +133,7 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     public boolean updateOwnUser(String user, String group, String ownUser) {
         ownUser = SchedGroup.checkOwnUser(ownUser);
-        return Functions.executeIfTrue(
+        return Functions.runIfTrue(
             isOneAffectedRow(groupMapper.updateOwnUser(group, ownUser, user)),
             this::refreshAndPublish
         );

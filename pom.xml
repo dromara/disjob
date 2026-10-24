@@ -64,7 +64,7 @@
 
     <spring-boot.version>2.7.18</spring-boot.version>
     <mapstruct.version>1.6.3</mapstruct.version>
-    <guava.version>33.7.1-jre</guava.version>
+    <guava.version>33.7.2-jre</guava.version>
     <commons-collections4.version>4.6.0</commons-collections4.version>
     <commons-io.version>2.22.0</commons-io.version>
     <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
@@ -194,7 +194,7 @@
           <plugin>
             <groupId>org.sonatype.central</groupId>
             <artifactId>central-publishing-maven-plugin</artifactId>
-            <version>0.11.0</version>
+            <version>0.12.0</version>
             <extensions>true</extensions>
             <configuration>
               <publishingServerId>central</publishingServerId>

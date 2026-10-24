@@ -58,18 +58,6 @@ public final class GenericUtils {
         return (Map) properties;
     }
 
-    // ----------------------------------------------------------------------------class actual type argument
-
-    /**
-     * 获取泛型的实际类型参数
-     *
-     * @param clazz the class
-     * @return actual type
-     */
-    public static <T> Class<T> getActualTypeArgument(Class<?> clazz) {
-        return getActualTypeArgument(clazz, 0);
-    }
-
     /**
      * public class GenericClass extends GenericSuperClass<Long,Integer,...,String> implements GenericInterface<String,Short,..,Long> {}
      *
@@ -77,13 +65,12 @@ public final class GenericUtils {
      * @param genericArgsIndex the generic arg index
      * @return generic type
      */
-    @SuppressWarnings("unchecked")
     public static <T> Class<T> getActualTypeArgument(Class<?> clazz, int genericArgsIndex) {
         int index = 0;
         for (Type type : getGenericTypes(clazz)) {
             if (type instanceof ParameterizedType) {
                 Type[] acts = ((ParameterizedType) type).getActualTypeArguments();
-                if (acts.length + index < genericArgsIndex) {
+                if (acts.length + index <= genericArgsIndex) {
                     index += acts.length;
                 } else {
                     return getActualType(null, acts[genericArgsIndex - index]);
@@ -91,13 +78,7 @@ public final class GenericUtils {
             }
         }
 
-        return (Class<T>) Object.class;
-    }
-
-    // ----------------------------------------------------------------------------method actual arg type argument
-
-    public static <T> Class<T> getActualArgTypeArgument(Method method, int methodArgsIndex) {
-        return getActualArgTypeArgument(method, methodArgsIndex, 0);
+        throw new IndexOutOfBoundsException("Generic type index out of bounds: " + genericArgsIndex);
     }
 
     /**
@@ -112,12 +93,6 @@ public final class GenericUtils {
         return getActualTypeArgument(method.getGenericParameterTypes()[methodArgsIndex], genericArgsIndex);
     }
 
-    // ----------------------------------------------------------------------------method actual return type argument
-
-    public static <T> Class<T> getActualReturnTypeArgument(Method method) {
-        return getActualReturnTypeArgument(method, 0);
-    }
-
     /**
      * public List<String> genericMethod(){}
      *
@@ -127,12 +102,6 @@ public final class GenericUtils {
      */
     public static <T> Class<T> getActualReturnTypeArgument(Method method, int genericArgsIndex) {
         return getActualTypeArgument(method.getGenericReturnType(), genericArgsIndex);
-    }
-
-    // ----------------------------------------------------------------------------get actual type argument
-
-    public static <T> Class<T> getActualTypeArgument(Field field) {
-        return getActualTypeArgument(field, 0);
     }
 
     /**
@@ -145,8 +114,6 @@ public final class GenericUtils {
     public static <T> Class<T> getActualTypeArgument(Field field, int genericArgsIndex) {
         return getActualTypeArgument(field.getGenericType(), genericArgsIndex);
     }
-
-    // -------------------------------------------------------------------get actual variable type
 
     public static <T> Class<T> getFieldActualType(Class<?> clazz, String fieldName) {
         Field field = ClassUtils.getField(clazz, fieldName);
