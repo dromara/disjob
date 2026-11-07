@@ -74,7 +74,7 @@
           <include>application-mysql.yml</include>
           <include>application-worker.yml</include>
           <include>application-supervisor.yml</include>
-          <include>application-registry-redis.yml</include>
+          <include>application-registry-nacos.yml</include>
           <include>application-web.yml</include>
         </includes>
       </resource>
