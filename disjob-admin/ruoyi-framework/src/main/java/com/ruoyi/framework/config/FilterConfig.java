@@ -2,13 +2,13 @@ package com.ruoyi.framework.config;
 
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.xss.XssFilter;
+import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.servlet.DispatcherType;
 import java.util.HashMap;
 import java.util.Map;
 

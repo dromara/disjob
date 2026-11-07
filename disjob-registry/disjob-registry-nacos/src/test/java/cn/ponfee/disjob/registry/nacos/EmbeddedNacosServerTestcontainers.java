@@ -32,7 +32,7 @@ import java.util.concurrent.CountDownLatch;
  *
  *
  * <pre>
- *   docker pull nacos/nacos-server:v2.5.5
+ *   docker pull nacos/nacos-server:v3.3.0
  *
  *   mkdir -p /opt/docker/nacos/init.d /opt/docker/nacos/logs
  *   touch /opt/docker/nacos/init.d/custom.properties
@@ -54,7 +54,7 @@ import java.util.concurrent.CountDownLatch;
  *     -e PREFER_HOST_MODE=hostname \
  *     -v /opt/docker/nacos/init.d/custom.properties:/home/nacos/init.d/custom.properties \
  *     -v /opt/docker/nacos/logs:/home/nacos/logs \
- *     nacos/nacos-server:v2.5.5
+ *     nacos/nacos-server:v3.3.0
  *
  *     # 初始账号密码都为nacos
  *     # http://localhost:8848/nacos
@@ -66,7 +66,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class EmbeddedNacosServerTestcontainers {
 
-    private static final String NACOS_DOCKER_IMAGE_NAME = "nacos/nacos-server:v2.5.5";
+    private static final String NACOS_DOCKER_IMAGE_NAME = "nacos/nacos-server:v3.3.0";
     private static final List<String> PORT_BINDINGS = Arrays.asList("8848:8848/tcp", "8849:8849/tcp", "9848:9848/tcp", "9849:9849/tcp");
 
     public static void main(String[] args) throws Exception {
@@ -87,6 +87,11 @@ public final class EmbeddedNacosServerTestcontainers {
                 .withEnv("PREFER_HOST_MODE", "hostname")
                 .withEnv("JVM_XMS", "256m")
                 .withEnv("JVM_XMX", "256m")
+                // 3.3.x 必须提供
+                .withEnv("NACOS_AUTH_ENABLE", "false")
+                .withEnv("NACOS_AUTH_TOKEN", "ZGlzam9iMTIz")
+                .withEnv("NACOS_AUTH_IDENTITY_KEY", "test-key")
+                .withEnv("NACOS_AUTH_IDENTITY_VALUE", "test-value")
         ) {
             dockerNacosContainer.setPortBindings(PORT_BINDINGS);
 

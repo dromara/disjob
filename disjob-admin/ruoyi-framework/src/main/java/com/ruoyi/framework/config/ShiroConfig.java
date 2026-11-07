@@ -19,6 +19,7 @@ import com.ruoyi.framework.shiro.web.filter.online.OnlineSessionFilter;
 import com.ruoyi.framework.shiro.web.filter.sync.SyncOnlineSessionFilter;
 import com.ruoyi.framework.shiro.web.session.OnlineWebSessionManager;
 import com.ruoyi.framework.shiro.web.session.SpringSessionValidationScheduler;
+import jakarta.servlet.Filter;
 import org.apache.shiro.cache.jcache.JCacheManager;
 import org.apache.shiro.config.ConfigurationException;
 import org.apache.shiro.mgt.SecurityManager;
@@ -36,7 +37,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import javax.servlet.Filter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;

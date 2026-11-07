@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -90,13 +90,13 @@ public abstract class SpringBootTestMockito {
     private static final List<Field> MOCKED_FIELDS = FieldUtils.getAllFieldsList(SpringBootTestMockito.class)
         .stream()
         .filter(e -> !Modifier.isStatic(e.getModifiers()))
-        .filter(e -> e.isAnnotationPresent(MockBean.class) || MockedStatic.class.isAssignableFrom(e.getType()))
+        .filter(e -> e.isAnnotationPresent(MockitoBean.class) || MockedStatic.class.isAssignableFrom(e.getType()))
         .peek(e -> assertTrue(Modifier.isProtected(e.getModifiers()), () -> "Mock field must be protected: " + e.toGenericString()))
         .collect(Collectors.toList());
 
     // --------------------------------------------------------mocked object bean fields
 
-    @MockBean
+    @MockitoBean
     protected WorkerRpcService workerRpcService;
 
     // --------------------------------------------------------mocked class static fields
@@ -122,7 +122,7 @@ public abstract class SpringBootTestMockito {
             Object mockedObj = ThrowingSupplier.doChecked(() -> field.get(this));
             if (mockedObj instanceof MockedStatic) {
                 ((MockedStatic<?>) mockedObj).close();
-            } else if (field.isAnnotationPresent(MockBean.class)) {
+            } else if (field.isAnnotationPresent(MockitoBean.class)) {
                 Mockito.reset(mockedObj);
             } else {
                 throw new Error("Invalid mocked field: " + field.toGenericString());

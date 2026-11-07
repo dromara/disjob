@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
@@ -82,18 +81,8 @@ public class VertxWebServer extends AbstractVerticle {
         }
 
         // HttpServer.close()
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        super.vertx.close(ctx -> {
-            ctx.result();
-            countDownLatch.countDown();
-        });
-        try {
-            boolean res = countDownLatch.await(60, TimeUnit.SECONDS);
-            log.info("Close vertx success {}.", res);
-        } catch (InterruptedException e) {
-            log.error("Close vertx interrupted.", e);
-            Thread.currentThread().interrupt();
-        }
+        super.vertx.close().result();
+        log.info("Close vertx success.");
     }
 
     @Override
@@ -191,8 +180,8 @@ public class VertxWebServer extends AbstractVerticle {
         if (obj == null) {
             return null;
         }
-        if (obj instanceof CharSequence) {
-            return ((CharSequence) obj).toString();
+        if (obj instanceof CharSequence str) {
+            return str.toString();
         }
         return Jsons.toJson(obj);
     }
