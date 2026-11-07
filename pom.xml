@@ -64,7 +64,7 @@
 
     <spring-boot.version>2.7.18</spring-boot.version>
     <mapstruct.version>1.6.3</mapstruct.version>
-    <guava.version>33.7.2-jre</guava.version>
+    <guava.version>33.8.0-jre</guava.version>
     <commons-collections4.version>4.6.0</commons-collections4.version>
     <commons-io.version>2.22.0</commons-io.version>
     <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
@@ -213,7 +213,7 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.15</version>
+          <version>0.8.16</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -228,7 +228,7 @@
         <!-- https://www.mojohaus.org/flatten-maven-plugin/flatten-mojo.html -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
-        <version>1.8.0</version>
+        <version>1.9.0</version>
         <configuration>
           <updatePomFile>true</updatePomFile>
           <flattenMode>resolveCiFriendliesOnly</flattenMode>

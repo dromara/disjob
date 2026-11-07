@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  * Referenced `io.vavr.control.Try` from `io.vavr:vavr:1.0.0`
  *
  * @param <R> the type of the value in case of success
- * @author ponfee.fu
+ * @author Ponfee
  */
 public interface Try<R> extends Serializable {
 
