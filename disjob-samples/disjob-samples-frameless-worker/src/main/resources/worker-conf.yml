@@ -26,35 +26,9 @@ disjob:
     worker-token: 358678bfe34648f68b607036a27c6854
     supervisor-token: 20bb8b7f1cb94dc894b45546a7c2982f
 
-  # registry config
-  registry:
-    redis:
-      # redis registry config
-      namespace: disjob_registry
-      session-timeout-ms: 60000
-
-      # -------- redis db config start --------
-      database: 0
-      connect-timeout: 3000
-      timeout: 5000
-      lettuce:
-        pool:
-          max-active: 32
-          max-idle: 8
-          min-idle: 4
-          max-wait: 5000
-        shutdown-timeout: 5000
-      password: 123456               # redis node auth password
-      #username: node_auth           # redis node auth username(redis 6.x ACL)
-
-      # redis standalone config
-      host: localhost                # redis standalone host name
-      port: 6379                     # redis standalone port
-
-      # redis sentinel config
-      #sentinel:
-      #  master: REDIS_SENTINEL
-      #  nodes: 112.74.170.75:16379,112.74.170.75:16380
-      #  #password: 123456            # redis sentinel auth password
-      #  #username: sentinel_auth     # redis sentinel auth username(redis 6.x ACL)
-      # -------- redis db config end --------
+  # zookeeper registry config
+  registry.zookeeper:
+    namespace: disjob_registry
+    connect-string: localhost:2181
+    username:
+    password:

@@ -1,5 +1,5 @@
 server.port: 8081
-spring.profiles.include: web,mysql,supervisor,worker,registry-redis
+spring.profiles.include: web,mysql,supervisor,worker,registry-zookeeper
 
 # 屏蔽告警信息：Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
 spring.thymeleaf.check-template-location: false
