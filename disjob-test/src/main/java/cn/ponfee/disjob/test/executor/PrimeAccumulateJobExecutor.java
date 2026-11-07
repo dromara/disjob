@@ -19,9 +19,9 @@ package cn.ponfee.disjob.test.executor;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.dag.WorkflowTask;
 import cn.ponfee.disjob.worker.executor.*;
-import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.core.type.TypeReference;
 
 import java.util.Collections;
 import java.util.List;

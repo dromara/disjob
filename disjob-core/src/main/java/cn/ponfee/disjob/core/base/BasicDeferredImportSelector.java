@@ -21,17 +21,17 @@ import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.RpcControllerConfigurer;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.Jsons;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DeferredImportSelector;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Basic DeferredImportSelector, deferred create bean for customization
@@ -52,11 +52,10 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
 
         @ConditionalOnExpression("${disjob.jackson.customize.enabled:true}")
         @Bean
-        Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
-            return objectMapperBuilder -> objectMapperBuilder
-                .dateFormat(JavaUtilDateFormat.DEFAULT)
-                .modulesToInstall(Jsons.createSimpleModule())
-                .modulesToInstall(Jsons.createJavaTimeModule());
+        JsonMapperBuilderCustomizer jsonMapperBuilderCustomizer() {
+            return jsonMapperBuilder -> jsonMapperBuilder
+                .defaultDateFormat(JavaUtilDateFormat.DEFAULT)
+                .addModule(Jsons.createCustomizationModule());
         }
 
         /**
@@ -75,9 +74,9 @@ public class BasicDeferredImportSelector implements DeferredImportSelector {
 
         @ConditionalOnMissingBean(name = JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
         @Bean(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
-        RestTemplate restTemplate(HttpProperties http, @Nullable ObjectMapper objectMapper) {
+        RestTemplate restTemplate(HttpProperties http, @Nullable JsonMapper jsonMapper) {
             http.check();
-            return RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
+            return RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), jsonMapper);
         }
 
         @ConditionalOnMissingBean

@@ -7,9 +7,9 @@ import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.supervisor.GroupInfoService;
 import cn.ponfee.disjob.core.supervisor.Supervisor;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.context.WebServerApplicationContext;
+import org.springframework.boot.web.server.autoconfigure.ServerProperties;
+import org.springframework.boot.web.server.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 

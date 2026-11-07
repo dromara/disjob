@@ -20,17 +20,16 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.base.Tokens;
 import cn.ponfee.disjob.core.enums.TokenType;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.springframework.util.Assert;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -229,9 +228,9 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
     /**
      * Custom serialize Supervisor based jackson.
      */
-    static class JacksonSerializer extends JsonSerializer<Supervisor> {
+    static class JacksonSerializer extends ValueSerializer<Supervisor> {
         @Override
-        public void serialize(Supervisor value, JsonGenerator generator, SerializerProvider provider) throws IOException {
+        public void serialize(Supervisor value, JsonGenerator generator, SerializationContext provider) {
             if (value == null) {
                 generator.writeNull();
             } else {
@@ -243,10 +242,10 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
     /**
      * Custom deserialize Supervisor based jackson.
      */
-    static class JacksonDeserializer extends JsonDeserializer<Supervisor> {
+    static class JacksonDeserializer extends ValueDeserializer<Supervisor> {
         @Override
-        public Supervisor deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return Supervisor.deserialize(p.getText());
+        public Supervisor deserialize(JsonParser p, DeserializationContext ctx) {
+            return Supervisor.deserialize(p.getString());
         }
     }
 

@@ -16,15 +16,14 @@
 
 package cn.ponfee.disjob.common.date;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.apache.commons.lang3.StringUtils;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
@@ -38,23 +37,23 @@ public class JacksonDate {
 
     public static final JacksonDate INSTANCE = new JacksonDate(JavaUtilDateFormat.DEFAULT);
 
-    private final JsonSerializer<Date> serializer;
-    private final JsonDeserializer<Date> deserializer;
+    private final ValueSerializer<Date> serializer;
+    private final ValueDeserializer<Date> deserializer;
 
     public JacksonDate(DateFormat format) {
         this.serializer = new Serializer(format);
         this.deserializer = new Deserializer(format);
     }
 
-    public JsonSerializer<Date> serializer() {
+    public ValueSerializer<Date> serializer() {
         return this.serializer;
     }
 
-    public JsonDeserializer<Date> deserializer() {
+    public ValueDeserializer<Date> deserializer() {
         return this.deserializer;
     }
 
-    private static class Serializer extends JsonSerializer<Date> {
+    private static class Serializer extends ValueSerializer<Date> {
         private final DateFormat format;
 
         private Serializer(DateFormat format) {
@@ -62,7 +61,7 @@ public class JacksonDate {
         }
 
         @Override
-        public void serialize(Date value, JsonGenerator generator, SerializerProvider provider) throws IOException {
+        public void serialize(Date value, JsonGenerator generator, SerializationContext provider) {
             if (value == null) {
                 generator.writeNull();
             } else {
@@ -71,7 +70,7 @@ public class JacksonDate {
         }
     }
 
-    private static class Deserializer extends JsonDeserializer<Date> {
+    private static class Deserializer extends ValueDeserializer<Date> {
         private final DateFormat format;
 
         private Deserializer(DateFormat format) {
@@ -79,8 +78,8 @@ public class JacksonDate {
         }
 
         @Override
-        public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            String text = p.getText();
+        public Date deserialize(JsonParser p, DeserializationContext ctx) {
+            String text = p.getString();
             if (StringUtils.isBlank(text)) {
                 return null;
             }
